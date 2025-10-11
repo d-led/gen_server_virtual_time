@@ -104,7 +104,10 @@ defmodule ProcessInLoopTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:matcher,
           on_match: [
-            {fn {:add, _a, _b} -> true; _ -> false end,
+            {fn
+               {:add, _a, _b} -> true
+               _ -> false
+             end,
              fn state ->
                {:reply, 42, state}
              end}
@@ -180,12 +183,13 @@ defmodule ProcessInLoopTest do
       trace = ActorSimulation.get_trace(simulation)
 
       assert length(trace) == 3
+
       assert Enum.all?(trace, fn event ->
-        event.from == :sender and
-          event.to == :receiver and
-          event.message == :hello and
-          event.type == :send
-      end)
+               event.from == :sender and
+                 event.to == :receiver and
+                 event.message == :hello and
+                 event.type == :send
+             end)
 
       ActorSimulation.stop(simulation)
     end
@@ -214,7 +218,7 @@ defmodule ProcessInLoopTest do
 
       ActorSimulation.stop(simulation)
     end
-    
+
     test "generates Mermaid sequence diagram" do
       simulation =
         ActorSimulation.new(trace: true)

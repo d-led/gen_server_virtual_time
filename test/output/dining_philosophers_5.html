@@ -95,7 +95,7 @@
   <div class="container">
     <h1>🍴 5 Philosophers (Classic Table)</h1>
     <div class="subtitle">Dining Philosophers Problem simulated with virtual time</div>
-    
+
     <div class="info">
       <strong>🎬 GenServerVirtualTime Actor Simulation</strong><br>
       This diagram shows the interactions between philosophers and forks over virtual time.
@@ -110,11 +110,11 @@
         To eat, a philosopher needs <strong>both adjacent forks</strong>.
       </p>
       <p>
-        <strong>Challenge:</strong> How to prevent deadlock when all philosophers 
+        <strong>Challenge:</strong> How to prevent deadlock when all philosophers
         simultaneously grab their left fork?
       </p>
       <p>
-        <strong>Solution:</strong> Asymmetric fork acquisition - odd philosophers grab 
+        <strong>Solution:</strong> Asymmetric fork acquisition - odd philosophers grab
         right fork first, even philosophers grab left fork first.
       </p>
     </div>
@@ -137,132 +137,132 @@
     <div class="diagram-container">
       <div class="mermaid">
 sequenceDiagram
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=150ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=150ms
-    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=150ms
     philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
     Note over philosopher_2,fork_2: t=150ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=150ms
+    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
+    Note over philosopher_4,fork_4: t=150ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=150ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=300ms
     philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
     Note over philosopher_4,fork_4: t=300ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=300ms
     philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
     Note over philosopher_2,fork_2: t=300ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=300ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=300ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=450ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=450ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=450ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=450ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
+    Note over philosopher_2,fork_2: t=450ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=450ms
     philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
     Note over philosopher_4,fork_4: t=450ms
-    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
-    Note over philosopher_3,fork_4: t=600ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=600ms
-    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=600ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=600ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=450ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=600ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=750ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=750ms
     philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=750ms
+    Note over philosopher_4,fork_4: t=600ms
     philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=750ms
+    Note over philosopher_1,fork_2: t=600ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
+    Note over philosopher_2,fork_2: t=600ms
+    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
+    Note over philosopher_3,fork_4: t=600ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=750ms
-    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=900ms
     philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=900ms
+    Note over philosopher_2,fork_2: t=750ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=750ms
+    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
+    Note over philosopher_4,fork_4: t=750ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=750ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=900ms
-    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
-    Note over philosopher_3,fork_4: t=900ms
+    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
+    Note over philosopher_4,fork_4: t=900ms
     philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
     Note over philosopher_1,fork_2: t=900ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
+    Note over philosopher_2,fork_2: t=900ms
+    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
+    Note over philosopher_3,fork_4: t=900ms
       </div>
     </div>
 
     <div class="code-block">
       <strong>Generated Mermaid Code:</strong>
       <pre>sequenceDiagram
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=150ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=150ms
-    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=150ms
     philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
     Note over philosopher_2,fork_2: t=150ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=150ms
+    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
+    Note over philosopher_4,fork_4: t=150ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=150ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=300ms
     philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
     Note over philosopher_4,fork_4: t=300ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=300ms
     philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
     Note over philosopher_2,fork_2: t=300ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=300ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=300ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=450ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=450ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=450ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=450ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
+    Note over philosopher_2,fork_2: t=450ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=450ms
     philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
     Note over philosopher_4,fork_4: t=450ms
-    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
-    Note over philosopher_3,fork_4: t=600ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=600ms
-    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=600ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=600ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=450ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=600ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=750ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=750ms
     philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=750ms
+    Note over philosopher_4,fork_4: t=600ms
     philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=750ms
+    Note over philosopher_1,fork_2: t=600ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
+    Note over philosopher_2,fork_2: t=600ms
+    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
+    Note over philosopher_3,fork_4: t=600ms
     philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
     Note over philosopher_3,fork_4: t=750ms
-    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
-    Note over philosopher_4,fork_4: t=900ms
     philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
-    Note over philosopher_2,fork_2: t=900ms
+    Note over philosopher_2,fork_2: t=750ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=750ms
+    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
+    Note over philosopher_4,fork_4: t=750ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=750ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=900ms
-    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
-    Note over philosopher_3,fork_4: t=900ms
+    philosopher_4->>fork_4: {:start_hungry, :fork_4, :fork_0}
+    Note over philosopher_4,fork_4: t=900ms
     philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=900ms</pre>
+    Note over philosopher_1,fork_2: t=900ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_3}
+    Note over philosopher_2,fork_2: t=900ms
+    philosopher_3->>fork_4: {:start_hungry, :fork_4, :fork_3}
+    Note over philosopher_3,fork_4: t=900ms</pre>
     </div>
 
     <div class="explanation" style="margin-top: 30px;">
@@ -278,7 +278,7 @@ sequenceDiagram
   </div>
 
   <script>
-    mermaid.initialize({ 
+    mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
       sequence: {

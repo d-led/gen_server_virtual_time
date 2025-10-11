@@ -45,19 +45,19 @@ defmodule VirtualTimeGenServerTest do
     @tag :slow
     test "waiting for real time is slow and wastes time" do
       start_time = System.monotonic_time(:millisecond)
-      
+
       {:ok, server} = TickerServer.start_link(100)
-      
+
       # We have to actually wait for real time to pass
       Process.sleep(600)
-      
+
       count = TickerServer.get_count(server)
       elapsed = System.monotonic_time(:millisecond) - start_time
-      
+
       # We actually waited ~600ms
       assert elapsed >= 500
       assert count >= 5
-      
+
       GenServer.stop(server)
     end
   end
@@ -154,7 +154,8 @@ defmodule VirtualTimeGenServerTest do
       {:ok, clock} = VirtualClock.start_link()
       VirtualTimeGenServer.set_virtual_clock(clock)
 
-      {:ok, server} = TickerServer.start_link(10_000)  # 10 second interval
+      # 10 second interval
+      {:ok, server} = TickerServer.start_link(10_000)
 
       start_time = System.monotonic_time(:millisecond)
 
@@ -177,9 +178,12 @@ defmodule VirtualTimeGenServerTest do
       VirtualTimeGenServer.set_virtual_clock(clock)
 
       # Start three servers with different intervals
-      {:ok, server1} = TickerServer.start_link(100)   # Every 100ms
-      {:ok, server2} = TickerServer.start_link(300)   # Every 300ms
-      {:ok, server3} = TickerServer.start_link(1000)  # Every 1000ms
+      # Every 100ms
+      {:ok, server1} = TickerServer.start_link(100)
+      # Every 300ms
+      {:ok, server2} = TickerServer.start_link(300)
+      # Every 1000ms
+      {:ok, server3} = TickerServer.start_link(1000)
 
       # Advance to a specific point in time
       VirtualClock.advance(clock, 3000)
@@ -193,7 +197,8 @@ defmodule VirtualTimeGenServerTest do
       VirtualClock.advance(clock, 2000)
 
       assert TickerServer.get_count(server1) == 50
-      assert TickerServer.get_count(server2) == 16  # 5000 / 300 = 16.67 -> 16
+      # 5000 / 300 = 16.67 -> 16
+      assert TickerServer.get_count(server2) == 16
       assert TickerServer.get_count(server3) == 5
 
       GenServer.stop(server1)

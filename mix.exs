@@ -93,7 +93,7 @@ defmodule GenServerVirtualTime.MixProject do
         "OMNETPP_GENERATOR.md"
       ],
       groups_for_modules: [
-        "Core": [
+        Core: [
           VirtualClock,
           VirtualTimeGenServer,
           TimeBackend,

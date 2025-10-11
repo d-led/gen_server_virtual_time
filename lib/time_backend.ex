@@ -46,6 +46,7 @@ defmodule VirtualTimeBackend do
     case Process.get(:virtual_clock) do
       nil ->
         raise "Virtual clock not set. Use VirtualTimeGenServer.set_virtual_clock/1"
+
       clock ->
         clock
     end

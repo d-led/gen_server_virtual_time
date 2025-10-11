@@ -69,7 +69,7 @@ defmodule OMNeTPPExampleGenerator do
       ned_file = Enum.find(files, fn {fname, _} -> String.ends_with?(fname, ".ned") end)
       {ned_name, _} = ned_file
       IO.puts "   - #{ned_name} (Network topology)"
-      
+
       cc_count = Enum.count(files, fn {fname, _} -> String.ends_with?(fname, ".cc") end)
       IO.puts "   - #{cc_count} C++ source files"
       IO.puts "   - CMakeLists.txt, conanfile.txt, omnetpp.ini"
@@ -127,4 +127,3 @@ end
 
 # Run the generator
 OMNeTPPExampleGenerator.run()
-

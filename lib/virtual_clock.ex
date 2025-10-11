@@ -191,6 +191,7 @@ defmodule VirtualClock do
   end
 
   defp find_next_event_time([]), do: nil
+
   defp find_next_event_time(scheduled) do
     scheduled
     |> Enum.map(& &1.trigger_time)
@@ -198,6 +199,7 @@ defmodule VirtualClock do
   end
 
   defp find_next_event_time_up_to([], _target), do: nil
+
   defp find_next_event_time_up_to(scheduled, target_time) do
     scheduled
     |> Enum.filter(fn event -> event.trigger_time <= target_time end)

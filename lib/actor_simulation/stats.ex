@@ -3,12 +3,10 @@ defmodule ActorSimulation.Stats do
   Collects and aggregates statistics from actor simulations.
   """
 
-  defstruct [
-    actors: %{},
-    total_messages: 0,
-    start_time: 0,
-    end_time: 0
-  ]
+  defstruct actors: %{},
+            total_messages: 0,
+            start_time: 0,
+            end_time: 0
 
   def new do
     %__MODULE__{}
@@ -30,12 +28,14 @@ defmodule ActorSimulation.Stats do
   def format(stats) do
     actor_summaries =
       Enum.map(stats.actors, fn {name, actor_stats} ->
-        {name, %{
-          sent: actor_stats.sent_count,
-          received: actor_stats.received_count,
-          sent_rate: calculate_rate(actor_stats.sent_count, stats.end_time - stats.start_time),
-          received_rate: calculate_rate(actor_stats.received_count, stats.end_time - stats.start_time)
-        }}
+        {name,
+         %{
+           sent: actor_stats.sent_count,
+           received: actor_stats.received_count,
+           sent_rate: calculate_rate(actor_stats.sent_count, stats.end_time - stats.start_time),
+           received_rate:
+             calculate_rate(actor_stats.received_count, stats.end_time - stats.start_time)
+         }}
       end)
       |> Map.new()
 
@@ -49,5 +49,6 @@ defmodule ActorSimulation.Stats do
   defp calculate_rate(count, duration_ms) when duration_ms > 0 do
     Float.round(count * 1000 / duration_ms, 2)
   end
+
   defp calculate_rate(_count, _duration_ms), do: 0.0
 end

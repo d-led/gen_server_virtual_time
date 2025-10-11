@@ -4,23 +4,23 @@ defmodule DiningPhilosophersTest do
   describe "Dining Philosophers simulation" do
     test "creates simulation with 5 philosophers and 5 forks" do
       simulation = DiningPhilosophers.create_simulation()
-      
+
       # Should have 5 philosophers + 5 forks = 10 actors
       assert map_size(simulation.actors) == 10
-      
+
       # Check philosophers exist
       assert Map.has_key?(simulation.actors, :philosopher_0)
       assert Map.has_key?(simulation.actors, :philosopher_4)
-      
+
       # Check forks exist
       assert Map.has_key?(simulation.actors, :fork_0)
       assert Map.has_key?(simulation.actors, :fork_4)
-      
+
       ActorSimulation.stop(simulation)
     end
 
     test "philosophers can eat without deadlock" do
-      simulation = 
+      simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
           think_time: 50,
@@ -28,49 +28,87 @@ defmodule DiningPhilosophersTest do
           trace: false
         )
         |> ActorSimulation.run(duration: 1000)
-      
+
       stats = ActorSimulation.get_stats(simulation)
-      
+
       # All philosophers should have eaten at least once
       Enum.each(0..4, fn i ->
         philosopher = :"philosopher_#{i}"
         philosopher_stats = stats.actors[philosopher]
-        
+
         # Each philosopher should have sent some messages (fork requests/releases)
-        assert philosopher_stats.sent_count > 0, 
-          "Philosopher #{i} didn't send any messages"
+        assert philosopher_stats.sent_count > 0,
+               "Philosopher #{i} didn't send any messages"
       end)
-      
+
       ActorSimulation.stop(simulation)
     end
 
     test "generates trace of fork acquisitions and releases" do
-      simulation = 
+      simulation =
         DiningPhilosophers.create_simulation(
-          num_philosophers: 3,  # Smaller for easier verification
+          # Smaller for easier verification
+          num_philosophers: 3,
           think_time: 100,
           eat_time: 50,
           trace: true
         )
         |> ActorSimulation.run(duration: 500)
-      
+
       trace = ActorSimulation.get_trace(simulation)
-      
+
       # Should have traces of philosopher-fork interactions
       assert length(trace) > 0
-      
+
       # Check that we have messages between philosophers and forks
-      fork_messages = Enum.filter(trace, fn event -> 
-        String.contains?(to_string(event.to), "fork") or 
-        String.contains?(to_string(event.from), "philosopher")
-      end)
+      fork_messages =
+        Enum.filter(trace, fn event ->
+          String.contains?(to_string(event.to), "fork") or
+            String.contains?(to_string(event.from), "philosopher")
+        end)
+
       assert length(fork_messages) > 0
-      
+
+      ActorSimulation.stop(simulation)
+    end
+
+    test "generates viewable Mermaid diagram for 2 philosophers" do
+      simulation =
+        DiningPhilosophers.create_simulation(
+          num_philosophers: 2,
+          think_time: 150,
+          eat_time: 75,
+          trace: true
+        )
+        |> ActorSimulation.run(duration: 800)
+
+      # Generate enhanced Mermaid with timestamps
+      mermaid =
+        ActorSimulation.trace_to_mermaid(simulation,
+          enhanced: true,
+          timestamps: true
+        )
+
+      # Create HTML
+      html = generate_dining_philosophers_html(mermaid, 2, "Minimal Table")
+
+      # Write to output
+      File.mkdir_p!("test/output")
+      File.write!("test/output/dining_philosophers_2.html", html)
+
+      IO.puts("\n🍴 Generated 2 Philosophers diagram: test/output/dining_philosophers_2.html")
+
+      # Verify content
+      assert String.contains?(mermaid, "philosopher_0")
+      assert String.contains?(mermaid, "philosopher_1")
+      assert String.contains?(mermaid, "fork_0")
+      assert String.contains?(mermaid, "fork_1")
+
       ActorSimulation.stop(simulation)
     end
 
     test "generates viewable Mermaid diagram for 3 philosophers" do
-      simulation = 
+      simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 3,
           think_time: 200,
@@ -78,32 +116,34 @@ defmodule DiningPhilosophersTest do
           trace: true
         )
         |> ActorSimulation.run(duration: 1000)
-      
+
       # Generate enhanced Mermaid with timestamps
-      mermaid = ActorSimulation.trace_to_mermaid(simulation, 
-        enhanced: true,
-        timestamps: true
-      )
-      
+      mermaid =
+        ActorSimulation.trace_to_mermaid(simulation,
+          enhanced: true,
+          timestamps: true
+        )
+
       # Create HTML
       html = generate_dining_philosophers_html(mermaid, 3, "Small Table")
-      
+
       # Write to output
       File.mkdir_p!("test/output")
       File.write!("test/output/dining_philosophers_3.html", html)
-      
+
       IO.puts("\n🍴 Generated 3 Philosophers diagram: test/output/dining_philosophers_3.html")
-      
+
       # Verify content
       assert String.contains?(mermaid, "philosopher_")
       assert String.contains?(mermaid, "fork_")
-      assert String.contains?(mermaid, "->>")  # Synchronous calls
-      
+      # Synchronous calls
+      assert String.contains?(mermaid, "->>")
+
       ActorSimulation.stop(simulation)
     end
-    
+
     test "generates viewable Mermaid diagram for 5 philosophers" do
-      simulation = 
+      simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
           think_time: 150,
@@ -111,31 +151,32 @@ defmodule DiningPhilosophersTest do
           trace: true
         )
         |> ActorSimulation.run(duration: 1000)
-      
+
       # Generate enhanced Mermaid with timestamps
-      mermaid = ActorSimulation.trace_to_mermaid(simulation, 
-        enhanced: true,
-        timestamps: true
-      )
-      
+      mermaid =
+        ActorSimulation.trace_to_mermaid(simulation,
+          enhanced: true,
+          timestamps: true
+        )
+
       # Create HTML
       html = generate_dining_philosophers_html(mermaid, 5, "Classic Table")
-      
+
       # Write to output
       File.write!("test/output/dining_philosophers_5.html", html)
-      
+
       IO.puts("\n🍴 Generated 5 Philosophers diagram: test/output/dining_philosophers_5.html")
-      
+
       # Verify we have all 5 philosophers and forks
       assert String.contains?(mermaid, "philosopher_0")
       assert String.contains?(mermaid, "philosopher_4")
       assert String.contains?(mermaid, "fork_4")
-      
+
       ActorSimulation.stop(simulation)
     end
 
     test "with detailed statistics shows eating counts" do
-      simulation = 
+      simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
           think_time: 100,
@@ -143,24 +184,29 @@ defmodule DiningPhilosophersTest do
           trace: false
         )
         |> ActorSimulation.run(duration: 2000)
-      
+
       stats = ActorSimulation.get_stats(simulation)
-      
+
       # Print eating statistics
       IO.puts("\n📊 Dining Philosophers Statistics:")
+
       Enum.each(0..4, fn i ->
         name = :"philosopher_#{i}"
         philosopher_stats = stats.actors[name]
         IO.puts("   #{name}: sent=#{philosopher_stats.sent_count} messages")
       end)
-      
+
       ActorSimulation.stop(simulation)
     end
   end
 
   # Helper to generate enhanced HTML for dining philosophers
   defp generate_dining_philosophers_html(mermaid_code, num_philosophers, title_suffix \\ "") do
-    full_title = if title_suffix != "", do: "#{num_philosophers} Philosophers (#{title_suffix})", else: "#{num_philosophers} Philosophers"
+    full_title =
+      if title_suffix != "",
+        do: "#{num_philosophers} Philosophers (#{title_suffix})",
+        else: "#{num_philosophers} Philosophers"
+
     """
     <!DOCTYPE html>
     <html>
@@ -259,7 +305,7 @@ defmodule DiningPhilosophersTest do
       <div class="container">
         <h1>🍴 #{full_title}</h1>
         <div class="subtitle">Dining Philosophers Problem simulated with virtual time</div>
-        
+
         <div class="info">
           <strong>🎬 GenServerVirtualTime Actor Simulation</strong><br>
           This diagram shows the interactions between philosophers and forks over virtual time.
@@ -274,11 +320,11 @@ defmodule DiningPhilosophersTest do
             To eat, a philosopher needs <strong>both adjacent forks</strong>.
           </p>
           <p>
-            <strong>Challenge:</strong> How to prevent deadlock when all philosophers 
+            <strong>Challenge:</strong> How to prevent deadlock when all philosophers
             simultaneously grab their left fork?
           </p>
           <p>
-            <strong>Solution:</strong> Asymmetric fork acquisition - odd philosophers grab 
+            <strong>Solution:</strong> Asymmetric fork acquisition - odd philosophers grab
             right fork first, even philosophers grab left fork first.
           </p>
         </div>
@@ -322,7 +368,7 @@ defmodule DiningPhilosophersTest do
       </div>
 
       <script>
-        mermaid.initialize({ 
+        mermaid.initialize({
           startOnLoad: true,
           theme: 'default',
           sequence: {
@@ -342,4 +388,3 @@ defmodule DiningPhilosophersTest do
     """
   end
 end
-

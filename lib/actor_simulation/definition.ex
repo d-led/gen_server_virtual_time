@@ -41,10 +41,14 @@ defmodule ActorSimulation.Definition do
   def match_message(definition, msg) do
     Enum.find_value(definition.on_match, fn {pattern, response} ->
       case pattern do
-        ^msg -> {:matched, response}
+        ^msg ->
+          {:matched, response}
+
         _ when is_function(pattern, 1) ->
           if pattern.(msg), do: {:matched, response}, else: nil
-        _ -> nil
+
+        _ ->
+          nil
       end
     end)
   end
@@ -83,8 +87,10 @@ defmodule ActorSimulation.Definition do
   """
   def messages_for_pattern({:periodic, _interval, message}), do: [message]
   def messages_for_pattern({:rate, _per_second, message}), do: [message]
+
   def messages_for_pattern({:burst, count, _interval, message}) do
     List.duplicate(message, count)
   end
+
   def messages_for_pattern(nil), do: []
 end
