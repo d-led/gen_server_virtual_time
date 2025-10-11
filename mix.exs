@@ -49,6 +49,7 @@ defmodule GenServerVirtualTime.MixProject do
     [
       # Documentation
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:castore, "~> 1.0", only: :dev, runtime: false},
 
       # Code quality (optional, for development)
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dining Philosophers - Condition Terminated</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui; max-width: 1400px; margin: 40px auto; padding: 20px; }
+    .mermaid { background: white; padding: 40px; border-radius: 8px; }
+    .info { background: #d1fae5; padding: 20px; border-left: 4px solid #10b981; margin-bottom: 20px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>🍴 3 Philosophers - Condition-Based Termination</h1>
+  <div class="info">
+    <strong>✅ Termination Condition Met!</strong><br>
+    Simulation stopped at <strong>600ms</strong> when all philosophers had eaten enough.<br>
+    Look for the <strong>⚡ Terminated</strong> note at the bottom of the diagram!
+  </div>
+  <div class="mermaid">
+sequenceDiagram
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,fork_2: t=100ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=100ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=100ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=200ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=200ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,fork_2: t=200ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,fork_2: t=300ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=300ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=300ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=400ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=400ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,fork_2: t=400ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,fork_2: t=500ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=500ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=500ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=600ms
+    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,fork_2: t=600ms
+    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,fork_2: t=600ms
+    Note over philosopher_2,fork_2: ⚡ Terminated at t=600ms (goal achieved)
+  </div>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default', 
+      sequence: { mirrorActors: true, messageMargin: 35 }
+    });
+  </script>
+</body>
+</html>

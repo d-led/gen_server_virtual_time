@@ -340,19 +340,29 @@ defmodule DiagramGenerationTest do
             <p>Classic problem - full complexity with deadlock-free solution.</p>
             <a href="dining_philosophers_5.html" target="_blank">View Diagram →</a>
           </div>
+
+          <div class="diagram-card">
+            <span class="badge mermaid-badge">Mermaid</span>
+            <h3>⚡ Condition Terminated</h3>
+            <p>Dining philosophers with termination indicator - shows when goal was achieved!</p>
+            <a href="dining_philosophers_condition_terminated.html" target="_blank">View Diagram →</a>
+          </div>
         </div>
-        
+
         <h2 style="margin-top: 40px;">📊 Summary</h2>
         <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 20px;">
-          <p><strong>Total Diagrams:</strong> 11</p>
-          <p><strong>Mermaid:</strong> 8 (with enhanced features: activation boxes, timestamps, arrow types)</p>
+          <p><strong>Total Diagrams:</strong> 12</p>
+          <p><strong>Mermaid:</strong> 9 (with enhanced features)</p>
           <p><strong>PlantUML:</strong> 2</p>
-          <p><strong>Special Features:</strong></p>
+          <p><strong>Dining Philosophers:</strong> 4 (2, 3, 5, and condition-terminated)</p>
+          <p><strong>Enhanced Features:</strong></p>
           <ul>
-            <li>Sync vs Async visualization (solid vs dotted arrows)</li>
-            <li>Timestamp annotations showing virtual time progression</li>
-            <li>Dining Philosophers in 3 sizes (2, 3, 5 philosophers)</li>
-            <li>Self-contained HTML with CDN resources</li>
+            <li>✅ Sync vs Async visualization (solid vs dotted arrows)</li>
+            <li>✅ Activation boxes showing actor processing</li>
+            <li>✅ Timestamp annotations showing virtual time progression</li>
+            <li>✅ Termination indicators (⚡) showing when goals achieved</li>
+            <li>✅ Self-contained HTML with CDN resources</li>
+            <li>✅ Based on <a href="https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html">Mermaid spec</a></li>
           </ul>
         </div>
 

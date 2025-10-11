@@ -201,11 +201,29 @@ defmodule DiningPhilosophersTest do
   end
 
   # Helper to generate enhanced HTML for dining philosophers
-  defp generate_dining_philosophers_html(mermaid_code, num_philosophers, title_suffix \\ "") do
+  defp generate_dining_philosophers_html(
+         mermaid_code,
+         num_philosophers,
+         title_suffix,
+         actual_duration \\ nil
+       ) do
     full_title =
       if title_suffix != "",
         do: "#{num_philosophers} Philosophers (#{title_suffix})",
         else: "#{num_philosophers} Philosophers"
+
+    termination_info =
+      if actual_duration do
+        """
+        <div class="info" style="background: #d1fae5; border-left: 4px solid #10b981;">
+          <strong>⚡ Condition-Based Termination</strong><br>
+          Simulation stopped at <strong>#{actual_duration}ms</strong> when all philosophers had eaten enough.<br>
+          Look for the <strong>⚡ Terminated</strong> note at the bottom of the diagram!
+        </div>
+        """
+      else
+        ""
+      end
 
     """
     <!DOCTYPE html>
@@ -311,6 +329,8 @@ defmodule DiningPhilosophersTest do
           This diagram shows the interactions between philosophers and forks over virtual time.
           All synchronous fork requests, grants, and releases are captured.
         </div>
+        
+        #{termination_info}
 
         <div class="explanation">
           <h3>The Problem</h3>
