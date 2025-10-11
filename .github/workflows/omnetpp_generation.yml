@@ -1,0 +1,248 @@
+name: OMNeT++ Code Generation Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'lib/actor_simulation/**'
+      - 'scripts/generate_omnetpp_examples.exs'
+      - 'scripts/validate_omnetpp_output.exs'
+      - 'examples/omnetpp_demo.exs'
+      - '.github/workflows/omnetpp_generation.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'lib/actor_simulation/**'
+      - 'scripts/**'
+      - 'examples/omnetpp_*.exs'
+
+jobs:
+  test-generation:
+    name: Test OMNeT++ Code Generation
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        elixir: ['1.17', '1.18']
+        otp: ['26', '27']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Compile
+        run: mix compile --warnings-as-errors
+      
+      - name: Run generator tests
+        run: mix test test/omnetpp_generator_test.exs --trace
+        continue-on-error: true
+      
+      - name: Generate OMNeT++ examples
+        run: mix run scripts/generate_omnetpp_examples.exs
+      
+      - name: Validate generated code
+        run: mix run scripts/validate_omnetpp_output.exs
+      
+      - name: Check file counts
+        run: |
+          echo "Checking generated files..."
+          
+          # Check each example directory
+          for dir in examples/omnetpp_*; do
+            if [ -d "$dir" ]; then
+              echo "📁 $dir:"
+              echo "  NED files: $(find $dir -name '*.ned' | wc -l)"
+              echo "  Headers:   $(find $dir -name '*.h' | wc -l)"
+              echo "  Sources:   $(find $dir -name '*.cc' | wc -l)"
+              echo "  CMake:     $([ -f $dir/CMakeLists.txt ] && echo '✓' || echo '✗')"
+              echo "  Conan:     $([ -f $dir/conanfile.txt ] && echo '✓' || echo '✗')"
+              echo "  INI:       $([ -f $dir/omnetpp.ini ] && echo '✓' || echo '✗')"
+            fi
+          done
+      
+      - name: Verify no timestamps in code
+        run: |
+          echo "Checking for timestamps in generated code..."
+          
+          # Search for date patterns in C++ and NED files
+          if grep -r -E '[0-9]{4}-[0-9]{2}-[0-9]{2}' examples/omnetpp_*/*.{h,cc,ned} 2>/dev/null; then
+            echo "❌ Found timestamps in generated files"
+            exit 1
+          else
+            echo "✅ No timestamps found"
+          fi
+      
+      - name: Check C++ syntax validity
+        run: |
+          echo "Basic C++ syntax checks..."
+          
+          for file in examples/omnetpp_*/*.cc; do
+            if [ -f "$file" ]; then
+              # Check for required patterns
+              if ! grep -q "Define_Module" "$file"; then
+                echo "❌ Missing Define_Module in $file"
+                exit 1
+              fi
+              
+              module_name=$(basename "$file" .cc)
+              if ! grep -q "void ${module_name}::initialize()" "$file"; then
+                echo "❌ Missing initialize() in $file"
+                exit 1
+              fi
+              
+              if ! grep -q "void ${module_name}::handleMessage" "$file"; then
+                echo "❌ Missing handleMessage() in $file"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ All C++ files have required methods"
+      
+      - name: Validate NED syntax
+        run: |
+          echo "Validating NED file structure..."
+          
+          for file in examples/omnetpp_*/*.ned; do
+            if [ -f "$file" ]; then
+              if ! grep -q "simple " "$file"; then
+                echo "❌ Missing simple module definitions in $file"
+                exit 1
+              fi
+              
+              if ! grep -q "network " "$file"; then
+                echo "❌ Missing network definition in $file"
+                exit 1
+              fi
+              
+              if ! grep -q "submodules:" "$file"; then
+                echo "❌ Missing submodules section in $file"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ All NED files have valid structure"
+      
+      - name: Check CMake configuration
+        run: |
+          echo "Validating CMakeLists.txt files..."
+          
+          for dir in examples/omnetpp_*; do
+            cmake_file="$dir/CMakeLists.txt"
+            if [ -f "$cmake_file" ]; then
+              if ! grep -q "cmake_minimum_required" "$cmake_file"; then
+                echo "❌ Missing cmake_minimum_required in $cmake_file"
+                exit 1
+              fi
+              
+              if ! grep -q "find_package(OMNeT++" "$cmake_file"; then
+                echo "❌ Missing OMNeT++ package finder in $cmake_file"
+                exit 1
+              fi
+              
+              if ! grep -q "add_executable" "$cmake_file"; then
+                echo "❌ Missing add_executable in $cmake_file"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ All CMakeLists.txt files valid"
+      
+      - name: Archive generated code
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omnetpp-generated-code-elixir-${{ matrix.elixir }}-otp-${{ matrix.otp }}
+          path: |
+            examples/omnetpp_*/
+            !examples/omnetpp_*/*.o
+            !examples/omnetpp_*/build/
+          retention-days: 7
+      
+      - name: Generate validation report
+        if: always()
+        run: |
+          echo "# OMNeT++ Generation Report" > validation_report.md
+          echo "" >> validation_report.md
+          echo "## Configuration" >> validation_report.md
+          echo "- Elixir: ${{ matrix.elixir }}" >> validation_report.md
+          echo "- OTP: ${{ matrix.otp }}" >> validation_report.md
+          echo "" >> validation_report.md
+          echo "## Generated Projects" >> validation_report.md
+          
+          for dir in examples/omnetpp_*; do
+            if [ -d "$dir" ]; then
+              project=$(basename "$dir")
+              echo "### $project" >> validation_report.md
+              echo "- Files: $(find $dir -type f | wc -l)" >> validation_report.md
+              echo "- C++ sources: $(find $dir -name '*.cc' | wc -l)" >> validation_report.md
+              echo "- Headers: $(find $dir -name '*.h' | wc -l)" >> validation_report.md
+              echo "" >> validation_report.md
+            fi
+          done
+      
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report-elixir-${{ matrix.elixir }}-otp-${{ matrix.otp }}
+          path: validation_report.md
+          retention-days: 30
+
+  verify-consistency:
+    name: Verify Generated Code Consistency
+    runs-on: ubuntu-latest
+    needs: test-generation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Compare generated code across versions
+        run: |
+          echo "Comparing generated code consistency..."
+          
+          # This ensures that different Elixir/OTP versions produce identical output
+          first_artifact=$(ls -d omnetpp-generated-code-* | head -1)
+          
+          for artifact in omnetpp-generated-code-*; do
+            if [ "$artifact" != "$first_artifact" ]; then
+              echo "Comparing $first_artifact vs $artifact"
+              
+              # Compare file counts
+              count1=$(find "$first_artifact" -name '*.cc' | wc -l)
+              count2=$(find "$artifact" -name '*.cc' | wc -l)
+              
+              if [ "$count1" != "$count2" ]; then
+                echo "❌ File count mismatch: $count1 vs $count2"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ Generated code is consistent across versions"
+

@@ -1,0 +1,9 @@
+[requires]
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[options]
+
+[imports]
