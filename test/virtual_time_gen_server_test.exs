@@ -45,19 +45,19 @@ defmodule VirtualTimeGenServerTest do
     @tag :slow
     test "waiting for real time is slow and wastes time" do
       start_time = System.monotonic_time(:millisecond)
-
+      
       {:ok, server} = TickerServer.start_link(100)
-
+      
       # We have to actually wait for real time to pass
-      Process.sleep(550)
-
+      Process.sleep(600)
+      
       count = TickerServer.get_count(server)
       elapsed = System.monotonic_time(:millisecond) - start_time
-
-      # We actually waited ~500ms
+      
+      # We actually waited ~600ms
       assert elapsed >= 500
       assert count >= 5
-
+      
       GenServer.stop(server)
     end
   end

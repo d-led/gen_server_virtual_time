@@ -111,6 +111,15 @@ defmodule VirtualTimeGenServer do
   @doc """
   Sets the virtual clock for the current process.
   All child processes will inherit this setting.
+
+  ## Example
+
+      iex> {:ok, clock} = VirtualClock.start_link()
+      iex> VirtualTimeGenServer.set_virtual_clock(clock)
+      VirtualTimeBackend
+      iex> VirtualTimeGenServer.get_time_backend()
+      VirtualTimeBackend
+
   """
   def set_virtual_clock(clock) do
     Process.put(:virtual_clock, clock)

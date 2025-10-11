@@ -4,6 +4,17 @@ defmodule VirtualClock do
 
   The VirtualClock maintains a virtual timestamp and scheduled events.
   Time can be advanced manually, triggering all events scheduled up to that point.
+
+  ## Example
+
+      iex> {:ok, clock} = VirtualClock.start_link()
+      iex> VirtualClock.now(clock)
+      0
+      iex> VirtualClock.advance(clock, 1000)
+      {:ok, 1000}
+      iex> VirtualClock.now(clock)
+      1000
+
   """
   use GenServer
 
