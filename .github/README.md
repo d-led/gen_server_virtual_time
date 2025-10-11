@@ -172,6 +172,7 @@ Push to main
 1. **Badge in README:**
    ```markdown
    [![Pages](https://img.shields.io/badge/diagrams-live-blue)](https://USERNAME.github.io/REPO_NAME/)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time?ref=badge_shield)
    ```
 
 2. **View artifacts without deploying:**
@@ -192,3 +193,7 @@ Push to main
 - [GitHub Pages Documentation](https://docs.github.com/en/pages)
 - [Elixir CI Best Practices](https://github.com/actions/starter-workflows/blob/main/ci/elixir.yml)
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time?ref=badge_large)
