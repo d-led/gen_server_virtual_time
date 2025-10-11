@@ -614,6 +614,12 @@ defmodule ActorSimulation.CAFGenerator do
     # Enable testing
     enable_testing()
     add_test(NAME #{project_name}_test COMMAND #{project_name}_test)
+    
+    # Generate JUnit XML report for CI
+    add_test(
+      NAME #{project_name}_test_junit
+      COMMAND #{project_name}_test --reporter junit --out test-results.xml
+    )
     """
   end
 
@@ -683,6 +689,20 @@ defmodule ActorSimulation.CAFGenerator do
           run: |
             cd build
             ./*_test --success
+            
+        - name: Generate JUnit test report
+          if: always()
+          run: |
+            cd build
+            ./*_test --reporter junit --out test-results.xml || true
+            
+        - name: Publish Test Results
+          if: always()
+          uses: EnricoMi/publish-unit-test-result-action@v2
+          with:
+            files: |
+              build/test-results.xml
+            check_name: "Test Results (${{ matrix.os }}, ${{ matrix.build_type }})"
     """
   end
 
@@ -723,6 +743,22 @@ defmodule ActorSimulation.CAFGenerator do
     # Run
     ./#{project_name}
     ```
+
+    ## Testing
+
+    ```bash
+    # Run tests with CTest
+    cd build
+    ctest --output-on-failure
+
+    # Run Catch2 tests with verbose output
+    ./#{project_name}_test --success
+
+    # Generate JUnit XML report
+    ./#{project_name}_test --reporter junit --out test-results.xml
+    ```
+
+    The CI pipeline automatically generates and publishes JUnit test reports.
 
     ## Customizing Behavior
 

@@ -30,7 +30,7 @@ defmodule GenServerVirtualTime.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
-      
+
       # Test reporting (JUnit XML for CI)
       test_paths: ["test"],
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -56,7 +56,7 @@ defmodule GenServerVirtualTime.MixProject do
     [
       # Test reporting
       {:junit_formatter, "~> 3.3", only: :test, runtime: false},
-      
+
       # Documentation
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:castore, "~> 1.0", only: :dev, runtime: false},

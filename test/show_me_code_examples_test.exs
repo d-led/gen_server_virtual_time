@@ -30,9 +30,9 @@ defmodule ShowMeCodeExamplesTest do
 
       {:ok, server} = MyServer.start_link(%{count: 0})
       VirtualClock.advance(clock, 10_000)  # 10s virtual, fast real
-      
+
       Process.sleep(20)  # Let messages process
-      
+
       count = GenServer.call(server, :get_count)
       assert count >= 9  # Should have ~10 work items
 
@@ -50,9 +50,9 @@ defmodule ShowMeCodeExamplesTest do
           on_receive: fn :data, s -> {:ok, %{s | count: s.count + 1}} end,
           initial_state: %{count: 0})
       |> Sim.run(duration: 5_000)  # 5 seconds
-      
+
       stats = Sim.get_stats(simulation)
-      
+
       # Should have sent ~250 messages (50/sec * 5sec)
       assert stats.actors[:producer].sent_count >= 200
       assert stats.actors[:consumer].received_count >= 200

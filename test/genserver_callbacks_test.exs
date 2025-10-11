@@ -149,32 +149,25 @@ defmodule GenServerCallbacksTest do
       GenServer.stop(clock)
     end
 
-    @tag :skip
-    test "multiple send_after with different delays" do
+    test "multiple send_after with different delays (using advance)" do
       {:ok, clock} = VirtualClock.start_link()
       VirtualTimeGenServer.set_virtual_clock(clock)
 
       {:ok, server} = TestServer.start_link(initial_count: 0)
 
-      # Schedule multiple works
+      # Schedule multiple works at different times
       TestServer.schedule_work(server, 100)
       TestServer.schedule_work(server, 200)
       TestServer.schedule_work(server, 300)
 
-      # Advance through each event
-      # 100ms
-      VirtualClock.advance_to_next(clock)
-      Process.sleep(10)
-      # 200ms
-      VirtualClock.advance_to_next(clock)
-      Process.sleep(10)
-      # 300ms
-      VirtualClock.advance_to_next(clock)
-      Process.sleep(10)
+      # Advance past all events
+      VirtualClock.advance(clock, 500)
+      Process.sleep(50)  # Give time for all messages to process
 
       state = TestServer.get_state(server)
       # All 3 should have triggered
       assert state.count == 30
+      assert length(state.messages_received) >= 3
 
       GenServer.stop(clock)
     end

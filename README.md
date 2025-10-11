@@ -98,7 +98,9 @@ mermaid = Sim.trace_to_mermaid(simulation, enhanced: true)
 File.write!("diagram.html", wrap_mermaid_html(mermaid))
 ```
 
-## Generate OMNeT++ Simulations 🎯
+## Generate Production C++ Code 🎯
+
+### OMNeT++ Network Simulations
 
 **NEW!** Export your ActorSimulation DSL to production-grade [OMNeT++](https://github.com/omnetpp/omnetpp) C++ code:
 
@@ -143,6 +145,65 @@ cd examples/omnetpp_pubsub
 ```
 
 Learn more in [OMNeT++ Code Generation](#omnet-code-generation) section.
+
+### CAF Actor Systems with Callback Interfaces
+
+**NEW!** Export to [C++ Actor Framework (CAF)](https://actor-framework.org/) with **callback interfaces** for customization:
+
+```elixir
+# Same simulation definition
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:publisher,
+      send_pattern: {:periodic, 100, :event},
+      targets: [:subscriber1, :subscriber2, :subscriber3])
+  |> ActorSimulation.add_actor(:subscriber1)
+  |> ActorSimulation.add_actor(:subscriber2)
+  |> ActorSimulation.add_actor(:subscriber3)
+
+# Generate CAF project with callback interfaces
+{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
+  project_name: "PubSubActors",
+  enable_callbacks: true)
+
+ActorSimulation.CAFGenerator.write_to_directory(files, "caf_output/")
+```
+
+**Generated files:**
+- `*_actor.hpp/cpp` - CAF actor implementations (DO NOT EDIT)
+- `*_callbacks.hpp` - Callback interfaces (DO NOT EDIT)
+- `*_callbacks_impl.cpp` - **Your custom code goes here!**
+- `test_actors.cpp` - [Catch2](https://github.com/catchorg/Catch2) tests
+- `CMakeLists.txt` - CMake with test target
+- `conanfile.txt` - CAF + Catch2 dependencies
+- `.github/workflows/ci.yml` - CI pipeline
+
+**Key Feature: Customize WITHOUT touching generated code!**
+
+```cpp
+// publisher_callbacks_impl.cpp (EDIT THIS!)
+void publisher_callbacks::on_event() {
+  // Add your business logic here!
+  std::cout << "Custom behavior!" << std::endl;
+  log_to_database();
+  send_metrics();
+}
+```
+
+**Why CAF?**
+- Production-ready actor systems in C++
+- Type-safe message passing
+- Distributed actors across networks
+- **Callback interfaces for clean customization**
+- Built-in Catch2 tests with CI validation
+
+**Try the demos:**
+```bash
+mix run examples/caf_demo.exs
+cd examples/caf_pubsub
+# See generated C++ code with tests!
+```
+
+Learn more in [CAF Generator Documentation](CAF_GENERATOR.md).
 
 ## More Examples
 
