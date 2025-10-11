@@ -184,7 +184,7 @@ Edit `.github/workflows/test-and-deploy-diagrams.yml`:
 on:
   push:
     branches:
-      - develop  # Change from 'main'
+      - main  # Trunk-based development
 ```
 
 ### Deploy on Tags Only

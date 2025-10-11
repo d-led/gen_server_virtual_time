@@ -90,7 +90,7 @@ These scripts are used in GitHub Actions to validate OMNeT++ code generation:
 ### Workflow: `omnetpp_generation.yml`
 
 **Triggers:**
-- Push to `main` or `develop` branches
+- Push to `main` branch (trunk-based development)
 - Pull requests to `main`
 - Changes to actor simulation code or generation scripts
 
