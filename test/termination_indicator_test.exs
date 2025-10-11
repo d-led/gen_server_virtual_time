@@ -142,7 +142,7 @@ defmodule TerminationIndicatorTest do
       #{mermaid}
         </div>
         <script>
-          mermaid.initialize({ startOnLoad: true, theme: 'default', 
+          mermaid.initialize({ startOnLoad: true, theme: 'default',
             sequence: { mirrorActors: true, messageMargin: 35 }
           });
         </script>

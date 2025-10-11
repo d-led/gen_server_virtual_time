@@ -329,7 +329,7 @@ defmodule DiningPhilosophersTest do
           This diagram shows the interactions between philosophers and forks over virtual time.
           All synchronous fork requests, grants, and releases are captured.
         </div>
-        
+
         #{termination_info}
 
         <div class="explanation">

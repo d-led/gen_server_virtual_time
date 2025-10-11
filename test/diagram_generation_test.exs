@@ -343,25 +343,43 @@ defmodule DiagramGenerationTest do
 
           <div class="diagram-card">
             <span class="badge mermaid-badge">Mermaid</span>
-            <h3>⚡ Condition Terminated</h3>
-            <p>Dining philosophers with termination indicator - shows when goal was achieved!</p>
-            <a href="dining_philosophers_condition_terminated.html" target="_blank">View Diagram →</a>
+            <h3>⚡ 2 Phil Terminated</h3>
+            <p>Stops when goal achieved - shows exact termination time!</p>
+            <a href="dining_philosophers_2_condition_terminated.html" target="_blank">View Diagram →</a>
+          </div>
+
+          <div class="diagram-card">
+            <span class="badge mermaid-badge">Mermaid</span>
+            <h3>⚡ 3 Phil Terminated</h3>
+            <p>Condition-based termination for 3 philosophers.</p>
+            <a href="dining_philosophers_3_condition_terminated.html" target="_blank">View Diagram →</a>
+          </div>
+
+          <div class="diagram-card">
+            <span class="badge mermaid-badge">Mermaid</span>
+            <h3>⚡ 5 Phil Terminated</h3>
+            <p>Classic table with termination indicator.</p>
+            <a href="dining_philosophers_5_condition_terminated.html" target="_blank">View Diagram →</a>
           </div>
         </div>
 
         <h2 style="margin-top: 40px;">📊 Summary</h2>
         <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin-top: 20px;">
-          <p><strong>Total Diagrams:</strong> 12</p>
-          <p><strong>Mermaid:</strong> 9 (with enhanced features)</p>
+          <p><strong>Total Diagrams:</strong> 14</p>
+          <p><strong>Mermaid:</strong> 11 (with enhanced features)</p>
           <p><strong>PlantUML:</strong> 2</p>
-          <p><strong>Dining Philosophers:</strong> 4 (2, 3, 5, and condition-terminated)</p>
-          <p><strong>Enhanced Features:</strong></p>
+          <p><strong>Dining Philosophers:</strong></p>
           <ul>
-            <li>✅ Sync vs Async visualization (solid vs dotted arrows)</li>
-            <li>✅ Activation boxes showing actor processing</li>
-            <li>✅ Timestamp annotations showing virtual time progression</li>
-            <li>✅ Termination indicators (⚡) showing when goals achieved</li>
-            <li>✅ Self-contained HTML with CDN resources</li>
+            <li>Fixed duration: 2, 3, 5 philosophers</li>
+            <li>Condition-terminated (⚡): 2, 3, 5 philosophers</li>
+          </ul>
+          <p><strong>Enhanced Mermaid Features:</strong></p>
+          <ul>
+            <li>✅ Different arrow types (->> vs -->>)</li>
+            <li>✅ Activation boxes showing processing</li>
+            <li>✅ Timestamp annotations (virtual time)</li>
+            <li>✅ Termination indicators (⚡ when goals achieved)</li>
+            <li>✅ Self-contained HTML with CDN</li>
             <li>✅ Based on <a href="https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html">Mermaid spec</a></li>
           </ul>
         </div>

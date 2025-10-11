@@ -201,7 +201,7 @@ For testing or emergency releases:
 
 ### CI Workflow (`.github/workflows/ci.yml`)
 
-Runs on every push to `main` or `develop` and on all pull requests.
+Runs on every push to `main` and on all pull requests (trunk-based development).
 
 **Jobs:**
 - **Test**: Runs tests on multiple Elixir/OTP versions

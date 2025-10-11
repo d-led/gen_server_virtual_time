@@ -113,7 +113,7 @@ mix run scripts/validate_omnetpp_output.exs
 
 ### CI Triggers
 
-- ✅ Push to `main` or `develop`
+- ✅ Push to `main` (trunk-based development)
 - ✅ Pull requests to `main`
 - ✅ Changes to `lib/actor_simulation/**`
 - ✅ Changes to generation scripts

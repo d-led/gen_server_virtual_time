@@ -192,7 +192,7 @@ mix run scripts/validate_omnetpp_output.exs
 
 The workflow runs on:
 
-1. **Push to main/develop**
+1. **Push to main** (trunk-based development)
    - Any changes to `lib/actor_simulation/**`
    - Changes to generation scripts
    - Changes to demo scripts
