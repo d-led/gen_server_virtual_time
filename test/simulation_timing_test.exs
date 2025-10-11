@@ -3,8 +3,6 @@ defmodule SimulationTimingTest do
 
   describe "Simulation timing information" do
     test "returns virtual time and real time elapsed" do
-      start_real_time = System.monotonic_time(:millisecond)
-
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:producer,
@@ -19,9 +17,6 @@ defmodule SimulationTimingTest do
             stats.actors[:producer].sent_count >= 5
           end
         )
-
-      end_real_time = System.monotonic_time(:millisecond)
-      real_elapsed = end_real_time - start_real_time
 
       # Virtual time info
       assert simulation.actual_duration > 0

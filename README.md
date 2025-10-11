@@ -41,65 +41,61 @@ end
 
 ## Quick Start
 
-### 1. Define Your GenServer
+### GenServerVirtualTime: Testing Real GenServers
 
 ```elixir
 defmodule MyServer do
-  use VirtualTimeGenServer
+  use VirtualTimeGenServer  # <-- Replace "use GenServer" with this
   
-  def init(interval) do
-    schedule_tick(interval)
-    {:ok, %{interval: interval, count: 0}}
+  def init(state) do
+    # Use VirtualTimeGenServer.send_after instead of Process.send_after
+    VirtualTimeGenServer.send_after(self(), :work, 1000)
+    {:ok, state}
   end
   
-  def handle_info(:tick, state) do
-    schedule_tick(state.interval)
+  # All standard GenServer callbacks work:
+  def handle_call(:get_count, _from, state), do: {:reply, state.count, state}
+  def handle_cast(:reset, state), do: {:noreply, %{state | count: 0}}
+  
+  def handle_info(:work, state) do
+    VirtualTimeGenServer.send_after(self(), :work, 1000)
     {:noreply, %{state | count: state.count + 1}}
   end
-  
-  defp schedule_tick(interval) do
-    VirtualTimeGenServer.send_after(self(), :tick, interval)
-  end
 end
-```
 
-### 2. Test With Virtual Time
-
-```elixir
-test "ticks 100 times in 10 seconds" do
+# Test advances virtual time instantly
+test "100 seconds of work completes in milliseconds" do
   {:ok, clock} = VirtualClock.start_link()
   VirtualTimeGenServer.set_virtual_clock(clock)
   
-  {:ok, server} = MyServer.start_link(100)
-  VirtualClock.advance(clock, 10_000)
+  {:ok, server} = MyServer.start_link(%{count: 0})
+  VirtualClock.advance(clock, 100_000)  # 100s virtual, 10ms real ⚡
   
-  assert get_count(server) == 100
+  assert GenServer.call(server, :get_count) == 100
 end
 ```
 
-## Actor System Simulation
-
-Simulate distributed systems with message patterns, rates, and statistics:
+### Actor DSL: Simulating Message-Passing Systems
 
 ```elixir
-# Define a pub-sub system simulation
-simulation = 
-  ActorSimulation.new(trace: true)
-  |> ActorSimulation.add_actor(:publisher,
-      send_pattern: {:rate, 100, :event},  # 100 events/second
-      targets: [:subscriber1, :subscriber2, :subscriber3])
-  |> ActorSimulation.add_actor(:subscriber1)
-  |> ActorSimulation.add_actor(:subscriber2)
-  |> ActorSimulation.add_actor(:subscriber3)
-  |> ActorSimulation.run(duration: 60_000)  # Simulate 1 minute
+alias ActorSimulation, as: Sim  # Concise style
 
-# Get statistics
-stats = ActorSimulation.get_stats(simulation)
-IO.inspect(stats.actors[:publisher].sent_count)  # 6000 messages
+# Pipeline-based simulation
+simulation = Sim.new(trace: true)
+|> Sim.add_actor(:producer, 
+    send_pattern: {:rate, 100, :data},  # 100 msgs/sec
+    targets: [:consumer])
+|> Sim.add_actor(:consumer,
+    on_receive: fn :data, s -> {:ok, %{s | count: s.count + 1}} end,
+    initial_state: %{count: 0})
+|> Sim.run(duration: 10_000)  # 10s virtual in milliseconds real
 
-# Generate sequence diagram
-plantuml = ActorSimulation.trace_to_plantuml(simulation)
-File.write!("sequence.puml", plantuml)
+stats = Sim.get_stats(simulation)
+# producer sent ~1000, consumer received ~1000
+
+# Generate and view sequence diagrams
+mermaid = Sim.trace_to_mermaid(simulation, enhanced: true)
+File.write!("diagram.html", wrap_mermaid_html(mermaid))
 ```
 
 ## Generate OMNeT++ Simulations 🎯
