@@ -1,0 +1,14 @@
+// Generated from ActorSimulation DSL
+// Callback interface for: processor
+//
+// CUSTOMIZE THIS FILE to add your own behavior!
+// The generated actor code will call these methods.
+
+#pragma once
+
+class processor_callbacks {
+  public:
+    virtual ~processor_callbacks() = default;
+
+    virtual void on_message();
+};

@@ -1,5 +1,11 @@
 defmodule DiningPhilosophersTest do
   use ExUnit.Case, async: false
+  
+  # Use fixed seed for deterministic diagram generation
+  setup_all do
+    :rand.seed(:exsss, {200, 201, 202})
+    :ok
+  end
 
   describe "Dining Philosophers simulation" do
     test "creates simulation with 5 philosophers and 5 forks" do

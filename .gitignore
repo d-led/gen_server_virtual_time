@@ -43,6 +43,11 @@ hex_metadata.config
 .env
 .env.local
 
+# Test reports (JUnit XML for CI)
+test-junit-report.xml
+**/test-junit-report.xml
+_build/test/lib/*/test-junit-report.xml
+
 # Keep test output directory but ignore its contents except README
 # (we want to track the generated HTML files to show diagram progression)
 # test/output/*

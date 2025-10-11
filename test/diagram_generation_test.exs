@@ -1,5 +1,14 @@
 defmodule DiagramGenerationTest do
   use ExUnit.Case, async: false
+  
+  # Use fixed seed for deterministic diagram generation
+  @moduletag :capture_log
+  
+  setup_all do
+    # Set seed to make tests deterministic
+    :rand.seed(:exsss, {100, 101, 102})
+    :ok
+  end
 
   @moduledoc """
   Tests that generate viewable HTML files with sequence diagrams.

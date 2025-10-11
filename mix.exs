@@ -22,7 +22,7 @@ defmodule GenServerVirtualTime.MixProject do
       homepage_url: @source_url,
       name: "GenServerVirtualTime",
 
-      # Code quality
+      # Code quality and test reporting
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
@@ -30,6 +30,10 @@ defmodule GenServerVirtualTime.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
+      
+      # Test reporting (JUnit XML for CI)
+      test_paths: ["test"],
+      elixirc_paths: elixirc_paths(Mix.env()),
       dialyzer: [
         plt_add_apps: [:mix],
         ignore_warnings: ".dialyzer_ignore.exs"
@@ -44,9 +48,15 @@ defmodule GenServerVirtualTime.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      # Test reporting
+      {:junit_formatter, "~> 3.3", only: :test, runtime: false},
+      
       # Documentation
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:castore, "~> 1.0", only: :dev, runtime: false},

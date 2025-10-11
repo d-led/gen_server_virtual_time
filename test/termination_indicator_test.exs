@@ -1,5 +1,11 @@
 defmodule TerminationIndicatorTest do
   use ExUnit.Case, async: false
+  
+  # Use fixed seed for deterministic diagram generation
+  setup_all do
+    :rand.seed(:exsss, {300, 301, 302})
+    :ok
+  end
 
   describe "Termination indicators in diagrams" do
     test "Mermaid diagram shows termination note when condition met" do

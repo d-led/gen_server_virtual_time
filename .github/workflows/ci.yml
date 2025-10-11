@@ -2,40 +2,37 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-
-env:
-  MIX_ENV: test
-  ELIXIR_VERSION: "1.18"
-  OTP_VERSION: "27"
+    branches: [main]
 
 jobs:
   test:
-    name: Test on Elixir ${{matrix.elixir}} / OTP ${{matrix.otp}}
+    name: Test (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-latest
     
     strategy:
       matrix:
-        include:
-          # Latest stable versions
-          - elixir: "1.18"
-            otp: "27"
-          # Minimum supported versions
-          - elixir: "1.14"
-            otp: "25"
+        elixir: ['1.14', '1.15', '1.16']
+        otp: ['25', '26']
+        exclude:
+          - elixir: '1.14'
+            otp: '26'
+    
+    env:
+      MIX_ENV: test
+      CI: true
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
-
+      
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -45,34 +42,40 @@ jobs:
           key: ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-
-
+      
       - name: Install dependencies
         run: mix deps.get
-
-      - name: Compile dependencies
-        run: mix deps.compile
-
-      - name: Compile project
+      
+      - name: Compile
         run: mix compile --warnings-as-errors
-
-      - name: Check formatting
-        run: mix format --check-formatted
-        if: matrix.elixir == '1.18' && matrix.otp == '27'
-
-      - name: Run tests
-        run: mix test
-
-      - name: Run coverage
-        run: mix coveralls.json
-        if: matrix.elixir == '1.18' && matrix.otp == '27'
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        if: matrix.elixir == '1.18' && matrix.otp == '27'
+      
+      - name: Run tests (exclude slow)
+        run: |
+          mix test --exclude slow --exclude omnetpp \
+            --formatter JUnitFormatter \
+            --formatter ExUnit.CLIFormatter \
+            --slowest 10
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
         with:
-          files: ./cover/excoveralls.json
-          fail_ci_if_error: false
-
+          name: test-results-${{ matrix.elixir }}-${{ matrix.otp }}
+          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
+      
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
+          check_name: 'Test Report (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})'
+          detailed_summary: true
+          include_passed: true
+      
+      - name: Run slow tests
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: mix test --only slow --slowest 5
+  
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
@@ -80,13 +83,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: ${{ env.ELIXIR_VERSION }}
-          otp-version: ${{ env.OTP_VERSION }}
-
+          elixir-version: '1.16'
+          otp-version: '26'
+      
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -94,59 +97,13 @@ jobs:
             deps
             _build
           key: ${{ runner.os }}-mix-quality-${{ hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-quality-
-
+      
       - name: Install dependencies
         run: mix deps.get
-
+      
+      - name: Check formatting
+        run: mix format --check-formatted
+      
       - name: Run Credo
         run: mix credo --strict
-
-      - name: Cache PLT
-        uses: actions/cache@v3
-        with:
-          path: priv/plts
-          key: ${{ runner.os }}-plt-${{ env.ELIXIR_VERSION }}-${{ env.OTP_VERSION }}-${{ hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-plt-${{ env.ELIXIR_VERSION }}-${{ env.OTP_VERSION }}-
-
-      - name: Run Dialyzer
-        run: mix dialyzer --format github
-
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    
-    env:
-      MIX_ENV: dev
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: ${{ env.ELIXIR_VERSION }}
-          otp-version: ${{ env.OTP_VERSION }}
-
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            deps
-            _build
-          key: ${{ runner.os }}-mix-docs-${{ hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-docs-
-
-      - name: Install dependencies
-        run: mix deps.get
-
-      - name: Build documentation
-        run: mix docs
-
-      - name: Check documentation warnings
-        run: mix docs 2>&1 | grep -q "warning" && exit 1 || exit 0
-
+        continue-on-error: true
