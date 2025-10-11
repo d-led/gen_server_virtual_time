@@ -106,24 +106,31 @@ defmodule MermaidEnhancedTest do
         )
         |> ActorSimulation.add_actor(:service,
           on_match: [
-            {:request, fn state ->
-              {:send, [{:api, :response}, {:logger, {:cast, :log}}], state}
-            end}
+            {:request,
+             fn state ->
+               {:send, [{:api, :response}, {:logger, {:cast, :log}}], state}
+             end}
           ]
         )
         |> ActorSimulation.add_actor(:logger)
         |> ActorSimulation.run(duration: 200)
 
       # Enhanced with timestamps
-      mermaid = ActorSimulation.trace_to_mermaid(simulation, 
-        enhanced: true, 
-        timestamps: true)
+      mermaid =
+        ActorSimulation.trace_to_mermaid(simulation,
+          enhanced: true,
+          timestamps: true
+        )
 
       # Should have all features
-      assert String.contains?(mermaid, "->>")        # Solid arrows
-      assert String.contains?(mermaid, "-->>")       # Dotted arrows
-      assert String.contains?(mermaid, "activate")   # Activation
-      assert String.contains?(mermaid, "Note over")  # Timestamp notes
+      # Solid arrows
+      assert String.contains?(mermaid, "->>")
+      # Dotted arrows
+      assert String.contains?(mermaid, "-->>")
+      # Activation
+      assert String.contains?(mermaid, "activate")
+      # Timestamp notes
+      assert String.contains?(mermaid, "Note over")
 
       ActorSimulation.stop(simulation)
     end
@@ -168,7 +175,7 @@ defmodule MermaidEnhancedTest do
 
       # Should have dotted arrow
       assert Enum.any?(lines, &String.contains?(&1, "caster-->>receiver"))
-      
+
       # Should NOT have activation for casts
       refute Enum.any?(lines, &String.contains?(&1, "activate"))
 
@@ -176,4 +183,3 @@ defmodule MermaidEnhancedTest do
     end
   end
 end
-

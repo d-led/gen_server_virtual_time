@@ -13,8 +13,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer,
-            send_pattern: {:periodic, 100, :data},
-            targets: [:consumer])
+          send_pattern: {:periodic, 100, :data},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
 
       assert map_size(simulation.actors) == 2
@@ -28,8 +29,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer,
-            send_pattern: {:periodic, 100, :ping},
-            targets: [:consumer])
+          send_pattern: {:periodic, 100, :ping},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
         |> ActorSimulation.run(duration: 1000)
 
@@ -50,11 +52,13 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer1,
-            send_pattern: {:periodic, 100, :data1},
-            targets: [:consumer])
+          send_pattern: {:periodic, 100, :data1},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:producer2,
-            send_pattern: {:periodic, 200, :data2},
-            targets: [:consumer])
+          send_pattern: {:periodic, 200, :data2},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
         |> ActorSimulation.run(duration: 1000)
 
@@ -78,8 +82,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer,
-            send_pattern: {:rate, 10, :tick},
-            targets: [:consumer])
+          send_pattern: {:rate, 10, :tick},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
         |> ActorSimulation.run(duration: 2000)
 
@@ -98,8 +103,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer,
-            send_pattern: {:burst, 5, 500, :batch},
-            targets: [:consumer])
+          send_pattern: {:burst, 5, 500, :batch},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
         |> ActorSimulation.run(duration: 1000)
 
@@ -120,6 +126,7 @@ defmodule ActorSimulationTest do
           :request ->
             # Send a response back to the producer
             {:send, [{:producer, :response}], state}
+
           _ ->
             {:ok, state}
         end
@@ -128,8 +135,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer,
-            send_pattern: {:periodic, 100, :request},
-            targets: [:consumer])
+          send_pattern: {:periodic, 100, :request},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer, on_receive: on_receive)
         |> ActorSimulation.run(duration: 500)
 
@@ -161,14 +169,17 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:source,
-            send_pattern: {:periodic, 100, :data},
-            targets: [:stage1])
+          send_pattern: {:periodic, 100, :data},
+          targets: [:stage1]
+        )
         |> ActorSimulation.add_actor(:stage1,
-            on_receive: forward,
-            initial_state: %{next_stage: :stage2})
+          on_receive: forward,
+          initial_state: %{next_stage: :stage2}
+        )
         |> ActorSimulation.add_actor(:stage2,
-            on_receive: forward,
-            initial_state: %{next_stage: :stage3})
+          on_receive: forward,
+          initial_state: %{next_stage: :stage3}
+        )
         |> ActorSimulation.add_actor(:stage3)
         |> ActorSimulation.run(duration: 1000)
 
@@ -194,8 +205,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:publisher,
-            send_pattern: {:periodic, 200, :event},
-            targets: [:subscriber1, :subscriber2, :subscriber3])
+          send_pattern: {:periodic, 200, :event},
+          targets: [:subscriber1, :subscriber2, :subscriber3]
+        )
         |> ActorSimulation.add_actor(:subscriber1)
         |> ActorSimulation.add_actor(:subscriber2)
         |> ActorSimulation.add_actor(:subscriber3)
@@ -223,10 +235,13 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:high_freq_producer,
-            send_pattern: {:rate, 100, :tick},  # 100 messages/second
-            targets: [:consumer])
+          # 100 messages/second
+          send_pattern: {:rate, 100, :tick},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
-        |> ActorSimulation.run(duration: 60_000)  # 1 minute
+        # 1 minute
+        |> ActorSimulation.run(duration: 60_000)
 
       elapsed = System.monotonic_time(:millisecond) - start_time
       stats = ActorSimulation.get_stats(simulation)
@@ -248,8 +263,9 @@ defmodule ActorSimulationTest do
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:producer,
-            send_pattern: {:periodic, 100, :msg},
-            targets: [:consumer])
+          send_pattern: {:periodic, 100, :msg},
+          targets: [:consumer]
+        )
         |> ActorSimulation.add_actor(:consumer)
         |> ActorSimulation.run(duration: 1000)
 

@@ -181,6 +181,7 @@ defmodule VirtualTimeGenServer do
       if virtual_clock do
         Process.put(:virtual_clock, virtual_clock)
       end
+
       Process.put(:time_backend, time_backend)
 
       case module.init(init_arg) do
@@ -203,6 +204,7 @@ defmodule VirtualTimeGenServer do
       if virtual_clock do
         Process.put(:virtual_clock, virtual_clock)
       end
+
       Process.put(:time_backend, time_backend)
 
       case module.init(init_arg) do

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>3 Philosophers (Small Table) - Dining Philosophers</title>
+  <title>2 Philosophers (Minimal Table) - Dining Philosophers</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <style>
     body {
@@ -93,7 +93,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>🍴 3 Philosophers (Small Table)</h1>
+    <h1>🍴 2 Philosophers (Minimal Table)</h1>
     <div class="subtitle">Dining Philosophers Problem simulated with virtual time</div>
 
     <div class="info">
@@ -105,7 +105,7 @@
     <div class="explanation">
       <h3>The Problem</h3>
       <p>
-        3 philosophers sit at a round table with 3 forks between them.
+        2 philosophers sit at a round table with 2 forks between them.
         Each philosopher alternates between <strong>thinking</strong> and <strong>eating</strong>.
         To eat, a philosopher needs <strong>both adjacent forks</strong>.
       </p>
@@ -137,72 +137,52 @@
     <div class="diagram-container">
       <div class="mermaid">
 sequenceDiagram
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=200ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=200ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=200ms
+    Note over philosopher_0,fork_0: t=150ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=150ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=300ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=400ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=400ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=400ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=600ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=600ms
+    Note over philosopher_0,fork_0: t=300ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=450ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=450ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=600ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=600ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=800ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=800ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=800ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=1000ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=1000ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=1000ms
+    Note over philosopher_0,fork_0: t=750ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=750ms
       </div>
     </div>
 
     <div class="code-block">
       <strong>Generated Mermaid Code:</strong>
       <pre>sequenceDiagram
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=200ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=200ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=200ms
+    Note over philosopher_0,fork_0: t=150ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=150ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=300ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=400ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=400ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=400ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=600ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=600ms
+    Note over philosopher_0,fork_0: t=300ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=450ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=450ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=600ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=600ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=800ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=800ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=800ms
-    philosopher_2->>fork_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,fork_2: t=1000ms
-    philosopher_1->>fork_2: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,fork_2: t=1000ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=1000ms</pre>
+    Note over philosopher_0,fork_0: t=750ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=750ms</pre>
     </div>
 
     <div class="explanation" style="margin-top: 30px;">

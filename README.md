@@ -2,8 +2,12 @@
 
 An extension to the GenServer behavior that allows testing time-based behavior of GenServers and simulating actor systems with a virtual time scheduler and simulator.
 
+[![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
+[![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
 [![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)]()
 [![Coverage](https://img.shields.io/badge/coverage-70.5%25-yellow)]()
+
+> **🎬 [View Live Sequence Diagrams](https://d-led.github.io/gen_server_virtual_time/)** — See automatically generated visualizations of actor message flows!
 
 ## Overview
 
