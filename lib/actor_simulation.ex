@@ -223,6 +223,9 @@ defmodule ActorSimulation do
       end
     end)
 
+    # Measure real time for simulation execution
+    start_time = System.monotonic_time(:millisecond)
+
     # Advance virtual time with optional termination check
     actual_duration =
       if terminate_when do
@@ -232,6 +235,9 @@ defmodule ActorSimulation do
         duration
       end
 
+    end_time = System.monotonic_time(:millisecond)
+    real_elapsed = end_time - start_time
+
     # Collect statistics and trace
     stats = collect_stats(simulation)
     trace = if simulation.trace_enabled, do: collect_trace(), else: []
@@ -239,9 +245,12 @@ defmodule ActorSimulation do
     # Mark if terminated early due to condition
     terminated_early = terminate_when != nil && actual_duration < duration
 
+    # Return enhanced simulation state with timing information
     %{simulation | stats: stats, trace: trace, running: false}
     |> Map.put(:actual_duration, actual_duration)
+    |> Map.put(:max_duration, duration)
     |> Map.put(:terminated_early, terminated_early)
+    |> Map.put(:real_time_elapsed, real_elapsed)
   end
 
   @doc """
