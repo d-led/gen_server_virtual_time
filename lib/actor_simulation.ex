@@ -23,9 +23,19 @@ defmodule ActorSimulation do
       IO.inspect(stats)
   """
 
-  alias ActorSimulation.{Definition, Actor, Stats}
+  alias ActorSimulation.{Actor, Definition, Stats}
 
-  defstruct [:clock, :actors, :stats, :running, :trace, :trace_enabled, :actual_duration]
+  defstruct [
+    :clock,
+    :actors,
+    :stats,
+    :running,
+    :trace,
+    :trace_enabled,
+    :actual_duration,
+    :terminated_early,
+    :termination_reason
+  ]
 
   @doc """
   Creates a new actor simulation.
@@ -226,8 +236,12 @@ defmodule ActorSimulation do
     stats = collect_stats(simulation)
     trace = if simulation.trace_enabled, do: collect_trace(), else: []
 
+    # Mark if terminated early due to condition
+    terminated_early = terminate_when != nil && actual_duration < duration
+
     %{simulation | stats: stats, trace: trace, running: false}
     |> Map.put(:actual_duration, actual_duration)
+    |> Map.put(:terminated_early, terminated_early)
   end
 
   @doc """
@@ -294,6 +308,7 @@ defmodule ActorSimulation do
   - Activation boxes for processing
   - Notes with timestamps
   - Background highlighting for grouped interactions
+  - Termination indicators showing when simulation stopped
 
   ## Example
 
@@ -311,6 +326,7 @@ defmodule ActorSimulation do
   def trace_to_mermaid(simulation, opts \\ []) do
     enhanced = Keyword.get(opts, :enhanced, true)
     show_timestamps = Keyword.get(opts, :timestamps, false)
+    show_termination = Keyword.get(opts, :show_termination, true)
 
     lines = ["sequenceDiagram"]
 
@@ -322,7 +338,35 @@ defmodule ActorSimulation do
         generate_simple_mermaid(simulation.trace)
       end
 
-    (lines ++ message_lines)
+    # Add termination indicator if simulation ended early
+    final_lines =
+      if show_termination && Map.get(simulation, :terminated_early, false) do
+        # Get all unique actors from trace
+        actors =
+          simulation.trace
+          |> Enum.flat_map(fn event -> [event.from, event.to] end)
+          |> Enum.uniq()
+
+        termination_note =
+          case {actors, Map.get(simulation, :actual_duration)} do
+            {[], _} ->
+              []
+
+            {[single], duration} ->
+              ["    Note over #{single}: ⚡ Terminated at t=#{duration}ms (goal achieved)"]
+
+            {[first, second | _], duration} ->
+              [
+                "    Note over #{first},#{second}: ⚡ Terminated at t=#{duration}ms (goal achieved)"
+              ]
+          end
+
+        message_lines ++ termination_note
+      else
+        message_lines
+      end
+
+    (lines ++ final_lines)
     |> Enum.join("\n")
   end
 

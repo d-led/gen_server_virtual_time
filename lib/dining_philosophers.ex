@@ -27,7 +27,7 @@ defmodule DiningPhilosophers do
         eat_time: 50,
         trace: true
       )
-      
+
       simulation = ActorSimulation.run(simulation, duration: 5000)
       stats = ActorSimulation.get_stats(simulation)
   """
@@ -101,7 +101,7 @@ defmodule DiningPhilosophers do
           {:send, [{first_fork, {:call, :request}}], state}
 
         _ ->
-          # Ignore responses for now in this simplified version
+          # Ignore other messages
           {:ok, state}
       end
     end

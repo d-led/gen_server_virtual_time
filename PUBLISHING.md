@@ -304,6 +304,111 @@ mix dialyzer
 mix docs
 ```
 
+### Common CI Pitfalls and Prevention
+
+To avoid CI failures, be aware of these common issues:
+
+#### 1. Missing Dependencies
+
+**Issue:** Documentation or other tools fail due to missing dependencies.
+
+**Example:** `CAStore.file_path/0 is undefined (module CAStore is not available)`
+
+**Prevention:**
+- Always run `mix docs` locally before pushing
+- If you add a dependency, ensure it's properly listed in `mix.exs`
+- Check if tools like ExDoc require additional dependencies (e.g., `castore`)
+
+**Fixed by:**
+```elixir
+# In mix.exs deps/0
+{:castore, "~> 1.0", only: :dev, runtime: false}
+```
+
+#### 2. Unused Function Parameters
+
+**Issue:** Credo warnings about default parameters that are never used without the default.
+
+**Example:** `default values for the optional arguments in function/3 are never used`
+
+**Prevention:**
+- Review all function definitions with default parameters
+- If all callers provide the argument, remove the default
+- Run `mix compile --warnings-as-errors` to catch these early
+
+**Example:**
+```elixir
+# Bad - default never used
+defp my_function(arg1, arg2, arg3 \\ "default") do
+  # All callers always provide arg3
+end
+
+# Good - no unnecessary default
+defp my_function(arg1, arg2, arg3) do
+  # ...
+end
+```
+
+#### 3. Code Complexity Warnings
+
+**Issue:** Credo reports functions exceeding complexity or nesting limits.
+
+**Example:** `Function is too complex (cyclomatic complexity is 17, max is 9)`
+
+**Prevention:**
+- Run `mix credo --strict` regularly during development
+- Break complex functions into smaller ones when possible
+- If complexity is justified, adjust `.credo.exs` thresholds:
+
+```elixir
+# In .credo.exs
+{Credo.Check.Refactor.CyclomaticComplexity, [max_complexity: 18]},
+{Credo.Check.Refactor.Nesting, [max_nesting: 3]}
+```
+
+#### 4. Formatting Issues
+
+**Issue:** CI fails on `mix format --check-formatted`
+
+**Prevention:**
+- Always run `mix format` before committing
+- Set up editor integration for auto-formatting
+- Use the pre-commit hook (see below)
+
+#### 5. Alphabetical Ordering
+
+**Issue:** Credo reports aliases not in alphabetical order
+
+**Example:** `The alias ActorSimulation.Definition is not alphabetically ordered`
+
+**Prevention:**
+```elixir
+# Bad
+alias ActorSimulation.{Definition, Actor, Stats}
+
+# Good
+alias ActorSimulation.{Actor, Definition, Stats}
+```
+
+#### Quick Pre-Push Checklist
+
+Before pushing to avoid CI failures:
+
+```bash
+# Run all CI checks locally
+mix format                      # Fix formatting
+mix compile --warnings-as-errors # Catch warnings
+mix test                        # Run tests  
+mix credo --strict              # Check code quality
+mix docs                        # Build docs
+mix dialyzer                    # Type checking (slower)
+```
+
+Or use the prepare script:
+```bash
+./scripts/prepare_release.sh
+```
+
 ### Pre-commit Hooks (Optional)
 
 Create `.git/hooks/pre-commit`:

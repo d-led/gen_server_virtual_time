@@ -155,23 +155,33 @@ defmodule ActorSimulation.Actor do
 
         Enum.each(messages_to_send, fn
           {target, message} ->
-            case Map.get(new_state.actors_map, target) do
-              nil ->
-                :ok
+            # Handle self-messages
+            target_info =
+              if target == new_state.definition.name do
+                %{pid: self(), type: :simulated}
+              else
+                Map.get(new_state.actors_map, target)
+              end
 
-              target_info ->
-                send_message(new_state, target, target_info, message)
+            case target_info do
+              nil -> :ok
+              info -> send_message(new_state, target, info, message)
             end
 
           message when is_tuple(message) and tuple_size(message) == 2 ->
             {target, msg} = message
 
-            case Map.get(new_state.actors_map, target) do
-              nil ->
-                :ok
+            # Handle self-messages
+            target_info =
+              if target == new_state.definition.name do
+                %{pid: self(), type: :simulated}
+              else
+                Map.get(new_state.actors_map, target)
+              end
 
-              target_info ->
-                send_message(new_state, target, target_info, msg)
+            case target_info do
+              nil -> :ok
+              info -> send_message(new_state, target, info, msg)
             end
         end)
 

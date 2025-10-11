@@ -2,7 +2,7 @@ name: OMNeT++ Code Generation Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
     paths:
       - 'lib/actor_simulation/**'
       - 'scripts/generate_omnetpp_examples.exs'

@@ -13,13 +13,13 @@ IO.puts("""
 The Problem:
   Five philosophers sit at a round table with five forks.
   Each philosopher needs TWO adjacent forks to eat.
-  
+
   Challenge: How to avoid deadlock?
-  
+
   Solution: Asymmetric fork acquisition
   - Even philosophers: left fork first
   - Odd philosophers: right fork first
-  
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """)
 
@@ -28,7 +28,7 @@ IO.puts("━━━━━━━━━━━━━━━━━━━━━━━�
 
 start_time = System.monotonic_time(:millisecond)
 
-simulation = 
+simulation =
   DiningPhilosophers.create_simulation(
     num_philosophers: 3,
     think_time: 100,
@@ -75,7 +75,7 @@ IO.puts("""
 
 start_time = System.monotonic_time(:millisecond)
 
-simulation = 
+simulation =
   DiningPhilosophers.create_simulation(
     num_philosophers: 5,
     think_time: 80,
@@ -113,7 +113,7 @@ Enum.each(0..4, fn i ->
 end)
 
 # Generate and save diagrams
-mermaid = ActorSimulation.trace_to_mermaid(simulation, 
+mermaid = ActorSimulation.trace_to_mermaid(simulation,
   enhanced: true,
   timestamps: true
 )
@@ -162,4 +162,3 @@ Key Mermaid Features Used:
 ║  complete interaction sequence!                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """)
-

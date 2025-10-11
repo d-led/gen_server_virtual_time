@@ -101,6 +101,8 @@
       This diagram shows the interactions between philosophers and forks over virtual time.
       All synchronous fork requests, grants, and releases are captured.
     </div>
+    
+    
 
     <div class="explanation">
       <h3>The Problem</h3>
@@ -137,52 +139,52 @@
     <div class="diagram-container">
       <div class="mermaid">
 sequenceDiagram
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=150ms
     philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,fork_0: t=150ms
-    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_1,fork_0: t=300ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=150ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=300ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=450ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=300ms
     philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,fork_0: t=450ms
-    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_1,fork_0: t=600ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=450ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=600ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=750ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=600ms
     philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,fork_0: t=750ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=750ms
       </div>
     </div>
 
     <div class="code-block">
       <strong>Generated Mermaid Code:</strong>
       <pre>sequenceDiagram
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=150ms
     philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,fork_0: t=150ms
-    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_1,fork_0: t=300ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=150ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=300ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=450ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=300ms
     philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,fork_0: t=450ms
-    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_1,fork_0: t=600ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=450ms
     philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,fork_0: t=600ms
-    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,fork_0: t=750ms
     philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_1,fork_0: t=750ms</pre>
+    Note over philosopher_1,fork_0: t=600ms
+    philosopher_1->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,fork_0: t=750ms
+    philosopher_0->>fork_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,fork_0: t=750ms</pre>
     </div>
 
     <div class="explanation" style="margin-top: 30px;">
