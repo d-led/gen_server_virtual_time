@@ -2,7 +2,7 @@ defmodule GenServerVirtualTime.MixProject do
   use Mix.Project
 
   @version "0.1.0"
-  @source_url "https://github.com/dmitryledentsov/gen_server_virtual_time"
+  @source_url "https://github.com/d-led/gen_server_virtual_time"
 
   def project do
     [

@@ -95,17 +95,17 @@ sed -i.bak "s/## \[Unreleased\]/## [Unreleased]\n\n## [$NEW_VERSION] - $TODAY/" 
 # Update version comparison links at the bottom
 if grep -q "\[Unreleased\]:" "$PROJECT_ROOT/CHANGELOG.md"; then
     # Update the Unreleased link
-    sed -i.bak "s|\[Unreleased\]:.*|\[Unreleased\]: https://github.com/dmitryledentsov/gen_server_virtual_time/compare/v$NEW_VERSION...HEAD|" "$PROJECT_ROOT/CHANGELOG.md"
+    sed -i.bak "s|\[Unreleased\]:.*|\[Unreleased\]: https://github.com/d-led/gen_server_virtual_time/compare/v$NEW_VERSION...HEAD|" "$PROJECT_ROOT/CHANGELOG.md"
     
     # Add the new version link
     sed -i.bak "/\[Unreleased\]:/a\\
-[$NEW_VERSION]: https://github.com/dmitryledentsov/gen_server_virtual_time/compare/v$CURRENT_VERSION...v$NEW_VERSION
+[$NEW_VERSION]: https://github.com/d-led/gen_server_virtual_time/compare/v$CURRENT_VERSION...v$NEW_VERSION
 " "$PROJECT_ROOT/CHANGELOG.md"
 else
     # Add initial version links if they don't exist
     echo "" >> "$PROJECT_ROOT/CHANGELOG.md"
-    echo "[Unreleased]: https://github.com/dmitryledentsov/gen_server_virtual_time/compare/v$NEW_VERSION...HEAD" >> "$PROJECT_ROOT/CHANGELOG.md"
-    echo "[$NEW_VERSION]: https://github.com/dmitryledentsov/gen_server_virtual_time/releases/tag/v$NEW_VERSION" >> "$PROJECT_ROOT/CHANGELOG.md"
+    echo "[Unreleased]: https://github.com/d-led/gen_server_virtual_time/compare/v$NEW_VERSION...HEAD" >> "$PROJECT_ROOT/CHANGELOG.md"
+    echo "[$NEW_VERSION]: https://github.com/d-led/gen_server_virtual_time/releases/tag/v$NEW_VERSION" >> "$PROJECT_ROOT/CHANGELOG.md"
 fi
 
 rm "$PROJECT_ROOT/CHANGELOG.md.bak"

@@ -34,6 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Visualization**: Generate sequence diagrams from traces
 - **OMNeT++ Integration**: Export to production-grade C++ simulations
 
-[Unreleased]: https://github.com/dmitryledentsov/gen_server_virtual_time/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/dmitryledentsov/gen_server_virtual_time/releases/tag/v0.1.0
+[Unreleased]: https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/d-led/gen_server_virtual_time/releases/tag/v0.1.0
 
