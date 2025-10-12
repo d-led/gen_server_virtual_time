@@ -101,10 +101,10 @@ defmodule DiningPhilosophersTest do
       html = generate_dining_philosophers_html(mermaid, 2, "Minimal Table")
 
       # Write to output
-      File.mkdir_p!("test/output")
-      File.write!("test/output/dining_philosophers_2.html", html)
+      File.mkdir_p!("generated/examples")
+      File.write!("generated/examples/dining_philosophers_2.html", html)
 
-      IO.puts("\n🍴 Generated 2 Philosophers diagram: test/output/dining_philosophers_2.html")
+      IO.puts("\n🍴 Generated 2 Philosophers diagram: generated/examples/dining_philosophers_2.html")
 
       # Verify content
       assert String.contains?(mermaid, "philosopher_0")
@@ -136,10 +136,10 @@ defmodule DiningPhilosophersTest do
       html = generate_dining_philosophers_html(mermaid, 3, "Small Table")
 
       # Write to output
-      File.mkdir_p!("test/output")
-      File.write!("test/output/dining_philosophers_3.html", html)
+      File.mkdir_p!("generated/examples")
+      File.write!("generated/examples/dining_philosophers_3.html", html)
 
-      IO.puts("\n🍴 Generated 3 Philosophers diagram: test/output/dining_philosophers_3.html")
+      IO.puts("\n🍴 Generated 3 Philosophers diagram: generated/examples/dining_philosophers_3.html")
 
       # Verify content
       assert String.contains?(mermaid, "philosopher_")
@@ -171,10 +171,10 @@ defmodule DiningPhilosophersTest do
       html = generate_dining_philosophers_html(mermaid, 5, "Classic Table")
 
       # Write to output
-      File.mkdir_p!("test/output")
-      File.write!("test/output/dining_philosophers_5.html", html)
+      File.mkdir_p!("generated/examples")
+      File.write!("generated/examples/dining_philosophers_5.html", html)
 
-      IO.puts("\n🍴 Generated 5 Philosophers diagram: test/output/dining_philosophers_5.html")
+      IO.puts("\n🍴 Generated 5 Philosophers diagram: generated/examples/dining_philosophers_5.html")
 
       # Verify we have all 5 philosophers and forks
       assert String.contains?(mermaid, "philosopher_0")

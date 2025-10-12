@@ -124,7 +124,7 @@ defmodule TerminationIndicatorTest do
       assert String.contains?(mermaid, "#{simulation.actual_duration}ms")
 
       # Save to file for visual verification
-      File.mkdir_p!("test/output")
+      File.mkdir_p!("generated/examples")
 
       html = """
       <!DOCTYPE html>
@@ -158,10 +158,10 @@ defmodule TerminationIndicatorTest do
       </html>
       """
 
-      File.write!("test/output/dining_philosophers_condition_terminated.html", html)
+      File.write!("generated/examples/dining_philosophers_condition_terminated.html", html)
 
       IO.puts(
-        "\n✅ Generated condition-terminated diagram: test/output/dining_philosophers_condition_terminated.html"
+        "\n✅ Generated condition-terminated diagram: generated/examples/dining_philosophers_condition_terminated.html"
       )
 
       IO.puts("   Look for the ⚡ Terminated note showing when the goal was achieved!")
