@@ -26,7 +26,10 @@ jobs:
     - name: Install Pony toolchain (Ubuntu)
       run: |
         sudo apt-get update
-        curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
+        # Download and install ponyup with retry
+        for i in {1..3}; do
+          curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh && break || sleep 5
+        done
         sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
         export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
@@ -96,7 +99,10 @@ jobs:
     - name: Install Pony toolchain
       run: |
         sudo apt-get update
-        curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
+        # Download and install ponyup with retry
+        for i in {1..3}; do
+          curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh && break || sleep 5
+        done
         sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
         export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
