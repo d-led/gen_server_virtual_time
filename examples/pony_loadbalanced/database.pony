@@ -3,6 +3,7 @@
 
 use "collections"
 use "time"
+use "console_logger"
 use "database_callbacks"
 
 
@@ -10,13 +11,15 @@ actor Database
   let _env: Env
   let _timers: Timers = Timers
   let _targets: Array[Database] = Array[Database]
+  let logger: ConsoleLogger
   let _callbacks: DatabaseCallbacks
 
 
-  new create(env: Env, targets: Array[Database] val = recover Array[Database] end) =>
+  new create(env: Env, logger': ConsoleLogger, targets: Array[Database] val = recover Array[Database] end) =>
     _env = env
+    logger = logger'
     _targets.append(targets)
-    _callbacks = recover DatabaseCallbacksImpl end
+    _callbacks = DatabaseCallbacksImpl(logger)
 
 
 

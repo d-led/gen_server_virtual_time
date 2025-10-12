@@ -13,7 +13,7 @@ public class Worker1CallbacksImpl implements Worker1Callbacks {
   @Override
   public void onProcessTask() {
     // TODO: Implement custom behavior for process_task
-    System.out.println("Worker1: process_task");
+    System.out.println("Worker1: Received process_task message");
   }
 
 }

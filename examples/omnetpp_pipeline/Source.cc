@@ -15,12 +15,13 @@ void Source::initialize() {
 void Source::handleMessage(cMessage *msg) {
     if (msg->isSelfMessage()) {
         // Send messages
+        EV << getName() << ": Processing message\n";
         for (int i = 0; i < 1; i++) {
             cMessage *outMsg = new cMessage("msg");
             send(outMsg, "out", i);
             sendCount++;
         }
-
+        EV << getName() << ": Sent " << 1 << " messages\n";
 
         // Reschedule
         scheduleAt(simTime() + 0.02, msg);

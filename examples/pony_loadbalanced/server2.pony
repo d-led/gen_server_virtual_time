@@ -3,6 +3,7 @@
 
 use "collections"
 use "time"
+use "console_logger"
 use "server2_callbacks"
 
 
@@ -10,13 +11,15 @@ actor Server2
   let _env: Env
   let _timers: Timers = Timers
   let _targets: Array[Server2] = Array[Server2]
+  let logger: ConsoleLogger
   let _callbacks: Server2Callbacks
 
 
-  new create(env: Env, targets: Array[Server2] val = recover Array[Server2] end) =>
+  new create(env: Env, logger': ConsoleLogger, targets: Array[Server2] val = recover Array[Server2] end) =>
     _env = env
+    logger = logger'
     _targets.append(targets)
-    _callbacks = recover Server2CallbacksImpl end
+    _callbacks = Server2CallbacksImpl(logger)
 
 
 

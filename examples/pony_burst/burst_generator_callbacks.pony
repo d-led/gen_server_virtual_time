@@ -3,6 +3,8 @@
 //
 // Implement this trait to add custom behavior!
 
+use "console_logger"
+
 trait BurstGeneratorCallbacks
   fun ref on_batch()
 
@@ -14,7 +16,12 @@ class BurstGeneratorCallbacksImpl is BurstGeneratorCallbacks
   The generated actor code will call these methods.
   """
 
+  let _logger: ConsoleLogger
+
+  new create(logger: ConsoleLogger) =>
+    _logger = logger
+
   fun ref on_batch() =>
     // TODO: Implement custom behavior for batch
-    None
+    _logger.log("BurstGenerator: Received batch message")
 

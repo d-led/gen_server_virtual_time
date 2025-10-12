@@ -3,6 +3,8 @@
 //
 // Implement this trait to add custom behavior!
 
+use "console_logger"
+
 trait Stage2Callbacks
   fun ref on_message()
 
@@ -14,7 +16,12 @@ class Stage2CallbacksImpl is Stage2Callbacks
   The generated actor code will call these methods.
   """
 
+  let _logger: ConsoleLogger
+
+  new create(logger: ConsoleLogger) =>
+    _logger = logger
+
   fun ref on_message() =>
     // TODO: Implement custom behavior
-    None
+    _logger.log("Stage2: Processing message")
 

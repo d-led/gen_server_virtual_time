@@ -2,6 +2,7 @@
 // PonyTest tests for pubsub_actors
 
 use "ponytest"
+use "../console_logger"
 use "..publisher"
 use "..subscriber1"
 use "..subscriber2"
@@ -37,7 +38,8 @@ class iso _TestPublisher is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Publisher(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Publisher(h.env, logger)
     h.complete(true)
 
 class iso _TestSubscriber1 is UnitTest
@@ -48,7 +50,8 @@ class iso _TestSubscriber1 is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Subscriber1(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Subscriber1(h.env, logger)
     h.complete(true)
 
 class iso _TestSubscriber2 is UnitTest
@@ -59,7 +62,8 @@ class iso _TestSubscriber2 is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Subscriber2(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Subscriber2(h.env, logger)
     h.complete(true)
 
 class iso _TestSubscriber3 is UnitTest
@@ -70,6 +74,7 @@ class iso _TestSubscriber3 is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Subscriber3(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Subscriber3(h.env, logger)
     h.complete(true)
 

@@ -2,6 +2,7 @@
 // PonyTest tests for pipeline_actors
 
 use "ponytest"
+use "../console_logger"
 use "..source"
 use "..stage1"
 use "..stage2"
@@ -39,7 +40,8 @@ class iso _TestSource is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Source(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Source(h.env, logger)
     h.complete(true)
 
 class iso _TestStage1 is UnitTest
@@ -50,7 +52,8 @@ class iso _TestStage1 is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Stage1(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Stage1(h.env, logger)
     h.complete(true)
 
 class iso _TestStage2 is UnitTest
@@ -61,7 +64,8 @@ class iso _TestStage2 is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Stage2(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Stage2(h.env, logger)
     h.complete(true)
 
 class iso _TestStage3 is UnitTest
@@ -72,7 +76,8 @@ class iso _TestStage3 is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Stage3(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Stage3(h.env, logger)
     h.complete(true)
 
 class iso _TestSink is UnitTest
@@ -83,6 +88,7 @@ class iso _TestSink is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Sink(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Sink(h.env, logger)
     h.complete(true)
 

@@ -3,6 +3,8 @@
 //
 // Implement this trait to add custom behavior!
 
+use "console_logger"
+
 trait PublisherCallbacks
   fun ref on_event()
 
@@ -14,7 +16,12 @@ class PublisherCallbacksImpl is PublisherCallbacks
   The generated actor code will call these methods.
   """
 
+  let _logger: ConsoleLogger
+
+  new create(logger: ConsoleLogger) =>
+    _logger = logger
+
   fun ref on_event() =>
     // TODO: Implement custom behavior for event
-    None
+    _logger.log("Publisher: Received event message")
 

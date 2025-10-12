@@ -13,7 +13,7 @@ public class ResultCollectorCallbacksImpl implements ResultCollectorCallbacks {
   @Override
   public void onAggregateResults() {
     // TODO: Implement custom behavior for aggregate_results
-    System.out.println("ResultCollector: aggregate_results");
+    System.out.println("ResultCollector: Received aggregate_results message");
   }
 
 }

@@ -3,6 +3,7 @@
 
 use "collections"
 use "time"
+use "console_logger"
 use "processor_callbacks"
 
 
@@ -10,13 +11,15 @@ actor Processor
   let _env: Env
   let _timers: Timers = Timers
   let _targets: Array[Processor] = Array[Processor]
+  let logger: ConsoleLogger
   let _callbacks: ProcessorCallbacks
 
 
-  new create(env: Env, targets: Array[Processor] val = recover Array[Processor] end) =>
+  new create(env: Env, logger': ConsoleLogger, targets: Array[Processor] val = recover Array[Processor] end) =>
     _env = env
+    logger = logger'
     _targets.append(targets)
-    _callbacks = recover ProcessorCallbacksImpl end
+    _callbacks = ProcessorCallbacksImpl(logger)
 
 
 

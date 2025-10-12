@@ -3,6 +3,7 @@
 
 use "collections"
 use "time"
+use "console_logger"
 use "burst_generator_callbacks"
 
 
@@ -10,13 +11,15 @@ actor BurstGenerator
   let _env: Env
   let _timers: Timers = Timers
   let _targets: Array[BurstGenerator] = Array[BurstGenerator]
+  let logger: ConsoleLogger
   let _callbacks: BurstGeneratorCallbacks
 
 
-  new create(env: Env, targets: Array[BurstGenerator] val = recover Array[BurstGenerator] end) =>
+  new create(env: Env, logger': ConsoleLogger, targets: Array[BurstGenerator] val = recover Array[BurstGenerator] end) =>
     _env = env
+    logger = logger'
     _targets.append(targets)
-    _callbacks = recover BurstGeneratorCallbacksImpl end
+    _callbacks = BurstGeneratorCallbacksImpl(logger)
 let timer = Timer(BatchBurstTimer(this, 10), 1.0 as U64 * 1_000_000_000, 1.0 as U64 * 1_000_000_000)
     _timers(consume timer)
 

@@ -13,7 +13,7 @@ public class LoadBalancerCallbacksImpl implements LoadBalancerCallbacks {
   @Override
   public void onDistributeWork() {
     // TODO: Implement custom behavior for distribute_work
-    System.out.println("LoadBalancer: distribute_work");
+    System.out.println("LoadBalancer: Received distribute_work message");
   }
 
 }

@@ -8,6 +8,36 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- **Generator Documentation in README** - Added prominent table listing all 5
+  code generators (CAF, Phony, Pony, VLINGO, OMNeT++) with links and feature
+  descriptions at the top of README
+
+### Changed
+
+- **Enhanced Console Output in All Generators** - All generated code now
+  produces visible output during execution for better demos and debugging:
+  - **CAF**: Added `std::cout` logging in callback implementations
+  - **Phony**: Added `fmt.Printf` logging in callback implementations
+  - **Pony**: Replaced unsafe `@printf` with thread-safe `ConsoleLogger` actor
+    following [best practices](https://github.com/d-led/DDDwithActorsPony)
+  - **VLINGO**: Added `System.out.println` logging in callback implementations
+  - **OMNeT++**: Enhanced `EV` logging with actor names and message details
+- **Pony Generator Thread Safety** - Implemented dedicated `ConsoleLogger` actor
+  for thread-safe console output
+  - Eliminates race conditions from `@printf` FFI calls
+  - Uses `env.out` through actor message passing
+  - All Pony actors now accept and use `ConsoleLogger` parameter
+  - Updated tests to use `ConsoleLogger`
+- **Regenerated All Examples** - Updated all example projects in `examples/` and
+  `generated/` directories to reflect generator improvements:
+  - CAF examples (pubsub, pipeline, burst, loadbalanced)
+  - Phony examples (pubsub, pipeline, burst, loadbalanced)
+  - Pony examples (pubsub, pipeline, burst, loadbalanced)
+  - OMNeT++ examples (pubsub, pipeline, burst, loadbalanced)
+  - VLINGO example (loadbalanced)
+
 ## [0.2.0] - 2025-10-12
 
 ### Added

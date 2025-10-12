@@ -3,6 +3,7 @@
 
 use "collections"
 use "time"
+use "console_logger"
 use "publisher_callbacks"
 
 
@@ -10,13 +11,15 @@ actor Publisher
   let _env: Env
   let _timers: Timers = Timers
   let _targets: Array[Publisher] = Array[Publisher]
+  let logger: ConsoleLogger
   let _callbacks: PublisherCallbacks
 
 
-  new create(env: Env, targets: Array[Publisher] val = recover Array[Publisher] end) =>
+  new create(env: Env, logger': ConsoleLogger, targets: Array[Publisher] val = recover Array[Publisher] end) =>
     _env = env
+    logger = logger'
     _targets.append(targets)
-    _callbacks = recover PublisherCallbacksImpl end
+    _callbacks = PublisherCallbacksImpl(logger)
 let timer = Timer(EventTimer(this), 0.1 as U64 * 1_000_000_000, 0.1 as U64 * 1_000_000_000)
     _timers(consume timer)
 

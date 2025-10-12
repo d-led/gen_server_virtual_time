@@ -3,6 +3,8 @@
 //
 // Implement this trait to add custom behavior!
 
+use "console_logger"
+
 trait SourceCallbacks
   fun ref on_data()
 
@@ -14,7 +16,12 @@ class SourceCallbacksImpl is SourceCallbacks
   The generated actor code will call these methods.
   """
 
+  let _logger: ConsoleLogger
+
+  new create(logger: ConsoleLogger) =>
+    _logger = logger
+
   fun ref on_data() =>
     // TODO: Implement custom behavior for data
-    None
+    _logger.log("Source: Received data message")
 

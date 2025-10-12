@@ -3,6 +3,7 @@
 
 use "collections"
 use "time"
+use "console_logger"
 use "load_balancer_callbacks"
 
 
@@ -10,13 +11,15 @@ actor LoadBalancer
   let _env: Env
   let _timers: Timers = Timers
   let _targets: Array[LoadBalancer] = Array[LoadBalancer]
+  let logger: ConsoleLogger
   let _callbacks: LoadBalancerCallbacks
 
 
-  new create(env: Env, targets: Array[LoadBalancer] val = recover Array[LoadBalancer] end) =>
+  new create(env: Env, logger': ConsoleLogger, targets: Array[LoadBalancer] val = recover Array[LoadBalancer] end) =>
     _env = env
+    logger = logger'
     _targets.append(targets)
-    _callbacks = recover LoadBalancerCallbacksImpl end
+    _callbacks = LoadBalancerCallbacksImpl(logger)
 let timer = Timer(RequestTimer(this), 0.01 as U64 * 1_000_000_000, 0.01 as U64 * 1_000_000_000)
     _timers(consume timer)
 

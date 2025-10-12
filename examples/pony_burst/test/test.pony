@@ -2,6 +2,7 @@
 // PonyTest tests for burst_actors
 
 use "ponytest"
+use "../console_logger"
 use "..processor"
 use "..burst_generator"
 
@@ -33,7 +34,8 @@ class iso _TestProcessor is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = Processor(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = Processor(h.env, logger)
     h.complete(true)
 
 class iso _TestBurstGenerator is UnitTest
@@ -44,6 +46,7 @@ class iso _TestBurstGenerator is UnitTest
   fun apply(h: TestHelper) =>
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
-    let _actor = BurstGenerator(h.env)
+    let logger = ConsoleLogger(h.env.out)
+    let _actor = BurstGenerator(h.env, logger)
     h.complete(true)
 
