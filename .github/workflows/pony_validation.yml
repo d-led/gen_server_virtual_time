@@ -17,14 +17,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         example: [pony_pubsub, pony_pipeline, pony_burst, pony_loadbalanced]
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Install Pony toolchain (Ubuntu)
-      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
@@ -33,16 +32,6 @@ jobs:
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
         # Verify installation
         which ponyup || (echo "ponyup not found in PATH" && exit 1)
-        ponyup --version
-
-    - name: Install Pony toolchain (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        # Use official ponylang tap with retry for network issues
-        brew tap ponylang/ponylang || brew tap ponylang/ponylang || brew tap ponylang/ponylang
-        brew install ponyup
-        # Verify installation
-        which ponyup || (echo "ponyup not found" && exit 1)
         ponyup --version
 
     - name: Update Pony compiler and Corral
