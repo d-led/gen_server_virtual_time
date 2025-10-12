@@ -1,0 +1,116 @@
+name: CAF (C++) Code Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'lib/actor_simulation/caf_generator.ex'
+      - 'examples/caf_*/**'
+      - 'scripts/generate_caf_examples.exs'
+      - '.github/workflows/caf_validation.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-caf-examples:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        example: [caf_pubsub, caf_pipeline, caf_burst, caf_loadbalanced]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install build tools
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake python3-pip
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install cmake python@3.11
+        fi
+
+    - name: Install Conan
+      run: |
+        pip3 install conan
+        conan --version
+
+    - name: Configure Conan profile
+      run: |
+        conan profile detect --force
+
+    - name: Install dependencies with Conan
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        mkdir -p build
+        cd build
+        conan install .. --build=missing -s build_type=Release
+
+    - name: Configure with CMake
+      working-directory: examples/${{ matrix.example }}/build
+      run: |
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+
+    - name: Build
+      working-directory: examples/${{ matrix.example }}/build
+      run: |
+        cmake --build . --config Release
+
+    - name: Run tests
+      working-directory: examples/${{ matrix.example }}/build
+      run: |
+        ctest -C Release --output-on-failure
+
+    - name: Run application (with timeout)
+      working-directory: examples/${{ matrix.example }}/build
+      shell: bash
+      run: |
+        timeout 5 ./*_test --success || true
+
+  regenerate-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: '1.17'
+        otp-version: '27'
+
+    - name: Install Elixir dependencies
+      run: mix deps.get
+
+    - name: Regenerate CAF examples
+      run: mix run scripts/generate_caf_examples.exs
+
+    - name: Check for uncommitted changes
+      run: |
+        git diff --exit-code examples/caf_* || (echo "Generated files differ from committed files!" && exit 1)
+
+    - name: Install build tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake python3-pip
+
+    - name: Install Conan
+      run: |
+        pip3 install conan
+        conan profile detect --force
+
+    - name: Validate all regenerated examples
+      run: |
+        for example in examples/caf_*; do
+          echo "Validating $example..."
+          cd $example
+          mkdir -p build
+          cd build
+          conan install .. --build=missing -s build_type=Release || exit 1
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake || exit 1
+          cmake --build . --config Release || exit 1
+          ctest -C Release --output-on-failure || exit 1
+          cd ../..
+        done
+
