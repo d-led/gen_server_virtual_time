@@ -470,16 +470,23 @@ defmodule ActorSimulation.PhonyGenerator do
           run: go mod download
 
         - name: Build
-          run: go build -v ./...
+          run: make build
 
         - name: Test
           run: go test -v ./...
 
-        - name: Run application (with timeout)
+        - name: Run Demo Application
           shell: bash
           run: |
-            go build -o #{project_name} .
-            timeout 5 ./#{project_name} || true
+            # Determine binary name: {project}.phony.{os}
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            if [ -f "go.mod" ]; then
+              PROJECT_NAME=$(grep -o 'module [^ ]*' go.mod | head -1 | awk '{print $2}' | xargs basename)
+            else
+              PROJECT_NAME="#{project_name}"
+            fi
+            BINARY="${PROJECT_NAME}.phony.${OS_NAME}"
+            timeout 5 ./"${BINARY}" || true
     """
   end
 

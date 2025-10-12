@@ -656,7 +656,7 @@ defmodule ActorSimulation.CAFGenerator do
     CMakeToolchain
 
     [options]
-    caf:shared=False
+    caf/*:shared=False
     """
   end
 
@@ -701,6 +701,16 @@ defmodule ActorSimulation.CAFGenerator do
           run: |
             cd build
             cmake --build . --config ${{ matrix.build_type }}
+
+        - name: Run Demo
+          run: |
+            cd build
+            # Determine binary name: {project}.caf.{os}
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            PROJECT_NAME=$(grep -o 'project([^)]*)' ../CMakeLists.txt | head -1 | sed 's/project(\\([^ ]*\\).*/\\1/')
+            BINARY="${PROJECT_NAME}.caf.${OS_NAME}"
+            # Run demo for 3 seconds
+            timeout 3s ./"${BINARY}" || true
 
         - name: Test
           run: |

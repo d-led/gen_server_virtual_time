@@ -102,10 +102,12 @@ defmodule MermaidReportTest do
           targets: [:stage1]
         )
         |> ActorSimulation.add_actor(:stage1,
+          targets: [:stage2],
           on_receive: forward,
           initial_state: %{next: :stage2}
         )
         |> ActorSimulation.add_actor(:stage2,
+          targets: [:sink],
           on_receive: forward,
           initial_state: %{next: :sink}
         )
@@ -352,7 +354,7 @@ defmodule MermaidReportTest do
       )
       """
 
-      # Create the actual simulation
+      # Create the actual simulation with proper ring topology
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:actor0,
@@ -360,34 +362,46 @@ defmodule MermaidReportTest do
           targets: [:actor1]
         )
         |> ActorSimulation.add_actor(:actor1,
-          on_match: [
-            {:token, fn state -> {:send, [{:actor2, :token}], state} end}
-          ]
+          targets: [:actor2],
+          on_receive: fn msg, state ->
+            {:send, [{state.next, msg}], state}
+          end,
+          initial_state: %{next: :actor2}
         )
         |> ActorSimulation.add_actor(:actor2,
-          on_match: [
-            {:token, fn state -> {:send, [{:actor3, :token}], state} end}
-          ]
+          targets: [:actor3],
+          on_receive: fn msg, state ->
+            {:send, [{state.next, msg}], state}
+          end,
+          initial_state: %{next: :actor3}
         )
         |> ActorSimulation.add_actor(:actor3,
-          on_match: [
-            {:token, fn state -> {:send, [{:actor4, :token}], state} end}
-          ]
+          targets: [:actor4],
+          on_receive: fn msg, state ->
+            {:send, [{state.next, msg}], state}
+          end,
+          initial_state: %{next: :actor4}
         )
         |> ActorSimulation.add_actor(:actor4,
-          on_match: [
-            {:token, fn state -> {:send, [{:actor5, :token}], state} end}
-          ]
+          targets: [:actor5],
+          on_receive: fn msg, state ->
+            {:send, [{state.next, msg}], state}
+          end,
+          initial_state: %{next: :actor5}
         )
         |> ActorSimulation.add_actor(:actor5,
-          on_match: [
-            {:token, fn state -> {:send, [{:actor6, :token}], state} end}
-          ]
+          targets: [:actor6],
+          on_receive: fn msg, state ->
+            {:send, [{state.next, msg}], state}
+          end,
+          initial_state: %{next: :actor6}
         )
         |> ActorSimulation.add_actor(:actor6,
-          on_match: [
-            {:token, fn state -> {:send, [{:actor0, :token}], state} end}
-          ]
+          targets: [:actor0],
+          on_receive: fn msg, state ->
+            {:send, [{state.next, msg}], state}
+          end,
+          initial_state: %{next: :actor0}
         )
         |> ActorSimulation.run(duration: 1500)
 

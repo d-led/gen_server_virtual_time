@@ -50,6 +50,8 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       |> add_cmake_file(actors, network_name)
       |> add_conan_file()
       |> add_ini_file(network_name, sim_time_limit)
+      |> add_ci_pipeline(network_name)
+      |> add_readme(network_name)
 
     {:ok, files}
   end
@@ -425,6 +427,159 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
     # Random seed
     seed-set = 0
+    """
+  end
+
+  defp add_ci_pipeline(files, network_name) do
+    content = generate_ci_pipeline(network_name)
+    [{".github/workflows/ci.yml", content} | files]
+  end
+
+  defp add_readme(files, network_name) do
+    content = generate_readme(network_name)
+    [{"README.md", content} | files]
+  end
+
+  defp generate_ci_pipeline(_network_name) do
+    """
+    name: CI
+
+    on:
+      push:
+        branches: [ main, develop ]
+      pull_request:
+        branches: [ main ]
+
+    jobs:
+      build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+          matrix:
+            os: [ubuntu-latest, macos-latest]
+
+        steps:
+        - uses: actions/checkout@v3
+
+        - name: Install CMake
+          run: |
+            if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo apt-get update
+              sudo apt-get install -y cmake
+            elif [ "$RUNNER_OS" == "macOS" ]; then
+              brew install cmake
+            fi
+          shell: bash
+
+        - name: Install OMNeT++
+          run: |
+            # Note: This is a placeholder. In practice, OMNeT++ installation
+            # requires more setup. Consider using a pre-built Docker image
+            # or caching the installation.
+            echo "OMNeT++ would be installed here"
+            echo "For CI, consider using omnetpp/omnetpp-circle Docker image"
+          shell: bash
+
+        - name: Configure
+          run: |
+            mkdir -p build
+            cd build
+            cmake ..
+
+        - name: Build
+          run: |
+            cd build
+            cmake --build .
+
+        - name: Run Demo Simulation
+          run: |
+            cd build
+            # Determine binary name: {project}.omnetpp.{os}
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            PROJECT_NAME=$(grep -o 'project([^)]*)' ../CMakeLists.txt | head -1 | sed 's/project(\\([^ ]*\\).*/\\1/')
+            BINARY="${PROJECT_NAME}.omnetpp.${OS_NAME}"
+            # Run simulation with config from omnetpp.ini
+            if [ -f "../omnetpp.ini" ]; then
+              ./"${BINARY}" -u Cmdenv -c General -n ..
+            fi
+    """
+  end
+
+  defp generate_readme(network_name) do
+    """
+    # #{network_name}
+
+    Generated from ActorSimulation DSL using OMNeT++.
+
+    ## About
+
+    This project uses [OMNeT++](https://omnetpp.org/), a discrete event simulation
+    framework that provides:
+
+    - **Network topology definition** (NED files)
+    - **Event-driven simulation** engine
+    - **Message passing** between modules
+    - **Statistics collection** and analysis
+    - **Graphical and command-line** interfaces
+
+    The code is generated from a high-level Elixir DSL and provides:
+    - OMNeT++ simple modules (C++ implementations)
+    - Network topology (NED files)
+    - Configuration files (omnetpp.ini)
+    - CMake build system
+
+    ## Prerequisites
+
+    - **OMNeT++ 6.0+** - [Install OMNeT++](https://omnetpp.org/download/)
+    - **CMake 3.15+**
+    - **C++17 compatible compiler**
+
+    ## Building
+
+    ```bash
+    # Create build directory
+    mkdir build
+    cd build
+
+    # Configure
+    cmake ..
+
+    # Build
+    cmake --build .
+
+    # Binary will be named: #{network_name}.omnetpp.{darwin|linux|exe}
+    ```
+
+    ## Running
+
+    ```bash
+    cd build
+
+    # Run simulation (command-line interface)
+    ./#{network_name}.omnetpp.darwin -u Cmdenv -c General -n ..
+
+    # Or use the GUI (if OMNeT++ IDE is installed)
+    ./#{network_name}.omnetpp.darwin -u Qtenv -c General -n ..
+    ```
+
+    ## Project Structure
+
+    - `*.cc`, `*.h` - Generated C++ simple modules
+    - `*.ned` - Network topology definition
+    - `omnetpp.ini` - Simulation configuration
+    - `CMakeLists.txt` - Build configuration
+
+    ## CI/CD
+
+    A GitHub Actions workflow is included that:
+    - Builds on Ubuntu and macOS
+    - Runs the simulation demo
+    - Can be extended for result validation
+
+    ## OMNeT++ Resources
+
+    - [Documentation](https://doc.omnetpp.org/)
+    - [Tutorials](https://docs.omnetpp.org/tutorials/)
+    - [Community](https://omnetpp.org/community)
     """
   end
 

@@ -274,7 +274,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
     Map.get(stats.actors, actor_name)
   end
 
-  defp generate_html(mermaid_code, simulation, title, stats, model_source \\ nil) do
+  defp generate_html(mermaid_code, simulation, title, stats, model_source) do
     formatted_stats = Stats.format(stats)
     stats_table = generate_stats_table(formatted_stats)
     simulation_summary = generate_simulation_summary(simulation)
@@ -575,7 +575,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
         """
         <div class="summary-card">
           <div class="label">Termination</div>
-          <div class="value">✓ Normal</div>
+          <div class="value">✓ Quiescence</div>
         </div>
         """
       end

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Generators - GenServerVirtualTime</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .hero h1 {
+      font-size: 3em;
+      margin: 0 0 20px 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 1.2em;
+      color: #666;
+      max-width: 800px;
+      margin: 0 auto 30px auto;
+      line-height: 1.6;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .nav-buttons a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .nav-buttons a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    .nav-buttons a.secondary {
+      background: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+    .nav-buttons a.secondary:hover {
+      background: #667eea;
+      color: white;
+    }
+    .generators-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin: 40px 0;
+    }
+    .generator-card {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 30px;
+      border: 1px solid #e9ecef;
+      transition: all 0.3s;
+    }
+    .generator-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .generator-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .generator-icon {
+      font-size: 2em;
+      margin-right: 15px;
+    }
+    .generator-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #333;
+      margin: 0;
+    }
+    .generator-description {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .generator-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px 0;
+    }
+    .generator-features li {
+      padding: 5px 0;
+      color: #555;
+    }
+    .generator-features li::before {
+      content: "✅ ";
+      margin-right: 8px;
+    }
+    .code-example {
+      background: #2d3748;
+      color: #e2e8f0;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .code-example .comment {
+      color: #68d391;
+    }
+    .code-example .keyword {
+      color: #f687b3;
+    }
+    .code-example .string {
+      color: #fbb6ce;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 30px 0;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .comparison-table th,
+    .comparison-table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .comparison-table th {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+    .comparison-table tr:hover {
+      background: #f8f9fa;
+    }
+    .workflow {
+      background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+      border-left: 6px solid #f57c00;
+      padding: 25px;
+      border-radius: 10px;
+      margin: 30px 0;
+    }
+    .workflow h3 {
+      margin: 0 0 15px 0;
+      color: #e65100;
+    }
+    .workflow ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .workflow li {
+      margin: 8px 0;
+      color: #5d4037;
+    }
+    .benefits {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    .benefit {
+      background: #f0f4f8;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .benefit-icon {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    .benefit h4 {
+      margin: 0 0 10px 0;
+      color: #2d3748;
+    }
+    .benefit p {
+      margin: 0;
+      color: #4a5568;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>🚀 Code Generators</h1>
+      <p>
+        Translate your Elixir actor simulations into production-ready code in multiple languages and frameworks. 
+        Complete build systems, tests, and documentation included!
+      </p>
+      <div class="nav-buttons">
+        <a href="index.html">← Back to Examples</a>
+        <a href="https://github.com/d-led/gen_server_virtual_time" target="_blank">📦 GitHub</a>
+        <a href="https://hexdocs.pm/gen_server_virtual_time" target="_blank">📚 Documentation</a>
+        <a href="https://hex.pm/packages/gen_server_virtual_time" target="_blank">💎 Hex Package</a>
+      </div>
+    </div>
+
+    <div class="generators-grid">
+      <div class="generator-card">
+        <div class="generator-header">
+          <div class="generator-icon">🌐</div>
+          <h3 class="generator-title">OMNeT++</h3>
+        </div>
+        <div class="generator-description">
+          Network simulation framework with GUI tools and INET framework support.
+        </div>
+        <ul class="generator-features">
+          <li>NED topology files</li>
+          <li>C++ simple modules</li>
+          <li>CMake build system</li>
+          <li>INI configuration</li>
+        </ul>
+        <div class="code-example">
+<span class="comment">#!/usr/bin/env elixir</span>
+<span class="keyword">Mix.install</span>([{:gen_server_virtual_time, <span class="string">"~> 0.2.0"</span>}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:sender,
+      send_pattern: {:periodic, 100, :msg},
+      targets: [:receiver])
+  |> ActorSimulation.add_actor(:receiver)
+
+{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+  network_name: "SimpleNetwork")
+
+ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_out/")
+        </div>
+      </div>
+
+      <div class="generator-card">
+        <div class="generator-header">
+          <div class="generator-icon">⚡</div>
+          <h3 class="generator-title">CAF</h3>
+        </div>
+        <div class="generator-description">
+          C++ Actor Framework for high-performance production systems with callback interfaces.
+        </div>
+        <ul class="generator-features">
+          <li>C++ actor classes</li>
+          <li>Callback interfaces</li>
+          <li>Catch2 test framework</li>
+          <li>CMake integration</li>
+        </ul>
+        <div class="code-example">
+<span class="comment">#!/usr/bin/env elixir</span>
+<span class="keyword">Mix.install</span>([{:gen_server_virtual_time, <span class="string">"~> 0.2.0"</span>}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:worker,
+      send_pattern: {:rate, 50, :task},
+      targets: [:processor])
+  |> ActorSimulation.add_actor(:processor)
+
+{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
+  project_name: "MyActors",
+  enable_callbacks: true)
+
+ActorSimulation.CAFGenerator.write_to_directory(files, "caf_out/")
+        </div>
+      </div>
+
+      <div class="generator-card">
+        <div class="generator-header">
+          <div class="generator-icon">🦄</div>
+          <h3 class="generator-title">Pony</h3>
+        </div>
+        <div class="generator-description">
+          Capabilities-secure language with data-race freedom and type-safe actors.
+        </div>
+        <ul class="generator-features">
+          <li>Type-safe actors</li>
+          <li>Data-race freedom</li>
+          <li>Reference capabilities</li>
+          <li>Built-in testing</li>
+        </ul>
+        <div class="code-example">
+<span class="comment">#!/usr/bin/env elixir</span>
+<span class="keyword">Mix.install</span>([{:gen_server_virtual_time, <span class="string">"~> 0.2.0"</span>}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:sender,
+      send_pattern: {:burst, 10, 1000, :batch},
+      targets: [:receiver])
+  |> ActorSimulation.add_actor(:receiver)
+
+{:ok, files} = ActorSimulation.PonyGenerator.generate(simulation,
+  project_name: "my_actors",
+  enable_callbacks: true)
+
+ActorSimulation.PonyGenerator.write_to_directory(files, "pony_out/")
+        </div>
+      </div>
+
+      <div class="generator-card">
+        <div class="generator-header">
+          <div class="generator-icon">🐹</div>
+          <h3 class="generator-title">Phony</h3>
+        </div>
+        <div class="generator-description">
+          Go actors with zero-allocation messaging and high concurrency.
+        </div>
+        <ul class="generator-features">
+          <li>Go actor system</li>
+          <li>Zero-allocation messaging</li>
+          <li>Built-in tests</li>
+          <li>Go modules support</li>
+        </ul>
+        <div class="code-example">
+<span class="comment">#!/usr/bin/env elixir</span>
+<span class="keyword">Mix.install</span>([{:gen_server_virtual_time, <span class="string">"~> 0.2.0"</span>}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:worker,
+      send_pattern: {:periodic, 100, :tick},
+      targets: [:processor])
+  |> ActorSimulation.add_actor(:processor)
+
+{:ok, files} = ActorSimulation.PhonyGenerator.generate(simulation,
+  project_name: "my_actors",
+  enable_callbacks: true)
+
+ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
+        </div>
+      </div>
+
+      <div class="generator-card">
+        <div class="generator-header">
+          <div class="generator-icon">☕</div>
+          <h3 class="generator-title">Vlingo</h3>
+        </div>
+        <div class="generator-description">
+          Java actor framework with enterprise features and reactive streams.
+        </div>
+        <ul class="generator-features">
+          <li>Java actor classes</li>
+          <li>Maven build system</li>
+          <li>Enterprise features</li>
+          <li>Reactive streams</li>
+        </ul>
+        <div class="code-example">
+<span class="comment">#!/usr/bin/env elixir</span>
+<span class="keyword">Mix.install</span>([{:gen_server_virtual_time, <span class="string">"~> 0.2.0"</span>}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:worker,
+      send_pattern: {:periodic, 100, :task},
+      targets: [:processor])
+  |> ActorSimulation.add_actor(:processor)
+
+{:ok, files} = ActorSimulation.VlingoGenerator.generate(simulation,
+  project_name: "my_actors")
+
+ActorSimulation.VlingoGenerator.write_to_directory(files, "vlingo_out/")
+        </div>
+      </div>
+    </div>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Generator</th>
+          <th>Purpose</th>
+          <th>Output</th>
+          <th>Key Feature</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OMNeT++</strong></td>
+          <td>Network simulation</td>
+          <td>NED + C++</td>
+          <td>GUI tools, INET framework</td>
+        </tr>
+        <tr>
+          <td><strong>CAF</strong></td>
+          <td>Production actors</td>
+          <td>C++ + Catch2</td>
+          <td>Callback interfaces</td>
+        </tr>
+        <tr>
+          <td><strong>Pony</strong></td>
+          <td>Safe concurrency</td>
+          <td>Type-safe actors</td>
+          <td>Data-race freedom</td>
+        </tr>
+        <tr>
+          <td><strong>Phony</strong></td>
+          <td>Go actors</td>
+          <td>Go + tests</td>
+          <td>Zero-allocation messaging</td>
+        </tr>
+        <tr>
+          <td><strong>Vlingo</strong></td>
+          <td>Java actors</td>
+          <td>Java + Maven</td>
+          <td>Enterprise features</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="workflow">
+      <h3>🚀 Development Workflow</h3>
+      <ol>
+        <li><strong>Prototype</strong> in Elixir (fast iteration)</li>
+        <li><strong>Test</strong> with virtual time (deterministic)</li>
+        <li><strong>Visualize</strong> with sequence diagrams</li>
+        <li><strong>Generate</strong> to your target language</li>
+        <li><strong>Deploy</strong> to production</li>
+      </ol>
+    </div>
+
+    <div class="benefits">
+      <div class="benefit">
+        <div class="benefit-icon">✅</div>
+        <h4>Portable</h4>
+        <p>One file, no setup required</p>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">🔄</div>
+        <h4>Reproducible</h4>
+        <p>Same input = same output</p>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">📤</div>
+        <h4>Shareable</h4>
+        <p>GitHub gist, email, anywhere</p>
+      </div>
+      <div class="benefit">
+        <div class="benefit-icon">⚡</div>
+        <h4>Fast</h4>
+        <p>Generate code in seconds</p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px; padding: 30px; background: #f8f9fa; border-radius: 15px;">
+      <h3>🎯 Ready to Generate?</h3>
+      <p style="margin-bottom: 25px; color: #666;">
+        Try a single-file example and generate production code in minutes!
+      </p>
+      <div class="nav-buttons">
+        <a href="https://github.com/d-led/gen_server_virtual_time/tree/main/examples" target="_blank">
+          📁 View Examples
+        </a>
+        <a href="https://hexdocs.pm/gen_server_virtual_time" target="_blank">
+          📚 Full Documentation
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

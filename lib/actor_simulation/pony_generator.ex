@@ -598,7 +598,7 @@ defmodule ActorSimulation.PonyGenerator do
     """
   end
 
-  defp generate_ci_pipeline(project_name) do
+  defp generate_ci_pipeline(_project_name) do
     """
     name: CI
 
@@ -640,7 +640,7 @@ defmodule ActorSimulation.PonyGenerator do
 
         - name: Build
           run: |
-            ponyc .
+            make build
 
         - name: Build tests
           run: |
@@ -650,9 +650,13 @@ defmodule ActorSimulation.PonyGenerator do
           run: |
             ./test --sequential
 
-        - name: Run application
+        - name: Run Demo Application
           run: |
-            timeout 5 ./#{project_name} || true
+            # Determine binary name: {project}.pony.{os}
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            PROJECT_NAME=$(grep -o '"name": *"[^"]*"' corral.json | head -1 | sed 's/"name": *"\\([^"]*\\)"/\\1/')
+            BINARY="${PROJECT_NAME}.pony.${OS_NAME}"
+            timeout 5 ./"${BINARY}" || true
     """
   end
 
