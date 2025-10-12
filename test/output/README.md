@@ -31,13 +31,35 @@ Based on the [Mermaid sequence diagram documentation](https://docs.mermaidchart.
 
 ## 🔄 Regenerating Diagrams
 
-Run the diagram generation tests:
+### Running Diagram Generation Tests
+
+**⚠️ Important for Contributors:** Diagram generation tests are **excluded by default** to avoid generating HTML files on every test run. 
+
+You should run them if you:
+- Change any diagram generator code (`ActorSimulation.trace_to_mermaid`, `trace_to_plantuml`, etc.)
+- Modify the simulation framework that affects trace output
+- Update diagram HTML templates
+- Want to preview diagrams before building documentation
+
+### How to Run
+
+Run all diagram generation tests:
+
+```bash
+mix test --include diagram_generation
+```
+
+Or run specific test files:
 
 ```bash
 mix test test/diagram_generation_test.exs
+mix test test/dining_philosophers_test.exs
+mix test test/termination_indicator_test.exs
 ```
 
-This will regenerate all HTML files in this directory.
+### Automatic Generation in CI
+
+These tests run automatically in the CI pipeline's `docs` job before building documentation, ensuring diagrams are always up-to-date for releases.
 
 ## 📖 Features Demonstrated
 

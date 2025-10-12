@@ -18,7 +18,7 @@ Transform ActorSimulation DSL into production code across multiple languages:
 - **[Phony Generator](phony_generator.md)** - Zero-allocation actors (Go)
 
 ### Status & Summary
-- **[Four Generators Complete](four_generators_complete.md)** - Full implementation summary
+- **[Generators Ready](generators_ready.md)** - Complete status, ready for release!
 - **[Implementation Details](implementation_summary.md)** - Technical details
 
 ## Examples
@@ -32,18 +32,19 @@ Use these with `Mix.install` - no setup required!
 - [`single_file_omnetpp.exs`](../examples/single_file_omnetpp.exs)
 - [`single_file_caf.exs`](../examples/single_file_caf.exs)
 - [`single_file_pony.exs`](../examples/single_file_pony.exs)
+- [`single_file_phony.exs`](../examples/single_file_phony.exs)
 
 ### Generated Projects
 
-Complete, buildable C++ projects:
+Complete, buildable projects:
 
-**OMNeT++:**
+**OMNeT++ (C++):**
 - [`omnetpp_pubsub/`](../examples/omnetpp_pubsub/)
 - [`omnetpp_pipeline/`](../examples/omnetpp_pipeline/)
 - [`omnetpp_burst/`](../examples/omnetpp_burst/)
 - [`omnetpp_loadbalanced/`](../examples/omnetpp_loadbalanced/)
 
-**CAF:**
+**CAF (C++):**
 - [`caf_pubsub/`](../examples/caf_pubsub/)
 - [`caf_pipeline/`](../examples/caf_pipeline/)
 - [`caf_burst/`](../examples/caf_burst/)
@@ -54,6 +55,12 @@ Complete, buildable C++ projects:
 - [`pony_pipeline/`](../examples/pony_pipeline/)
 - [`pony_burst/`](../examples/pony_burst/)
 - [`pony_loadbalanced/`](../examples/pony_loadbalanced/)
+
+**Phony (Go):**
+- [`phony_pubsub/`](../examples/phony_pubsub/)
+- [`phony_pipeline/`](../examples/phony_pipeline/)
+- [`phony_burst/`](../examples/phony_burst/)
+- [`phony_loadbalanced/`](../examples/phony_loadbalanced/)
 
 ## Development
 

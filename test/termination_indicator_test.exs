@@ -1,6 +1,8 @@
 defmodule TerminationIndicatorTest do
   use ExUnit.Case, async: false
 
+  @moduletag :diagram_generation
+
   # Use fixed seed for deterministic diagram generation
   setup_all do
     :rand.seed(:exsss, {300, 301, 302})

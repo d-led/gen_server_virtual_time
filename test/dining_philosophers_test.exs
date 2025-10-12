@@ -1,6 +1,8 @@
 defmodule DiningPhilosophersTest do
   use ExUnit.Case, async: false
 
+  @moduletag :diagram_generation
+
   # Use fixed seed for deterministic diagram generation
   setup_all do
     :rand.seed(:exsss, {200, 201, 202})

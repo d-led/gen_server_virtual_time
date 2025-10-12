@@ -3,6 +3,7 @@ defmodule DiagramGenerationTest do
 
   # Use fixed seed for deterministic diagram generation
   @moduletag :capture_log
+  @moduletag :diagram_generation
 
   setup_all do
     # Set seed to make tests deterministic
