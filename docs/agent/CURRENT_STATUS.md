@@ -78,7 +78,6 @@
 ### Visualization
 
 - Mermaid sequence diagrams
-- PlantUML diagrams
 - Enhanced features:
   - Activation boxes
   - Different arrow types

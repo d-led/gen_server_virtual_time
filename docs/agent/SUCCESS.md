@@ -38,7 +38,7 @@ Status: ✅ PRODUCTION READY
 - [x] Pattern matching for responses
 - [x] Sync and async communication ({:call, msg}, {:cast, msg})
 - [x] Message tracing with timestamps
-- [x] PlantUML sequence diagram generation
+- [x] Mermaid sequence diagram generation
 - [x] Mermaid sequence diagram generation with enhanced features
 - [x] Self-contained HTML diagrams with CDN
 - [x] Documentation leads with "Show Me The Code"
@@ -69,8 +69,6 @@ Status: ✅ PRODUCTION READY
 6. `dining_philosophers_3.html` - 3 philosophers 🍴
 7. `dining_philosophers_5.html` - 5 philosophers 🍴
 
-**PlantUML Diagrams**: 8. `plantuml_simple.html` - Alice and Bob 9.
-`plantuml_pubsub.html` - Pub-sub pattern
 
 **Plus**: `index.html` - Browseable gallery
 
@@ -179,7 +177,7 @@ DiningPhilosophers.create_simulation(num_philosophers: 5)
 - ✅ Pattern matching responses
 - ✅ Sync/async communication
 - ✅ Message tracing
-- ✅ Diagram generation (PlantUML & Mermaid)
+- ✅ Diagram generation (Mermaid)
 - ✅ Enhanced Mermaid features
 - ✅ Dining philosophers (2, 3, 5)
 - ✅ Condition-based termination
@@ -228,7 +226,7 @@ DiningPhilosophers.create_simulation(num_philosophers: 5)
 
 - ✅ 11 self-contained HTML files
 - ✅ Index page for browsing
-- ✅ Mermaid and PlantUML support
+- ✅ Mermaid support
 - ✅ Enhanced styling and features
 
 ### Demos

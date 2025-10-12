@@ -27,7 +27,7 @@ generation and the classic Dining Philosophers problem solved!
 
 9. **Sync/Async Communication** - `{:call, msg}`, `{:cast, msg}`, regular send
 10. **Message Tracing** - Capture all inter-actor communication
-11. **PlantUML Generation** - Sequence diagrams for documentation
+11. **Mermaid Generation** - Sequence diagrams for documentation
 12. **Enhanced Mermaid Generation** - Using advanced features from
     [Mermaid spec](https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html):
     - Different arrow types (solid `->>` for calls, dotted `-->>` for casts)
@@ -52,10 +52,10 @@ Excluding tags: [:omnetpp]
 .🍴 Generated 3 Philosophers diagram...
 ..📊 Dining Philosophers Statistics...
 .........✅ Generated Mermaid diagram...
-.✅ Generated PlantUML diagram...
+.✅ Generated Mermaid diagram...
 .✅ Generated timeline with timestamps...
 .✅ Generated sync/async diagram...
-.✅ Generated PlantUML pub-sub...
+.✅ Generated Mermaid pub-sub...
 .📋 Generated index page...
 .✅ Generated Mermaid pipeline...
 .......................................
@@ -77,10 +77,6 @@ All diagrams are viewable HTML files in `test/output/`:
 - `dining_philosophers_3.html` (7.8K) - 3 philosophers 🍴
 - `dining_philosophers_5.html` (11K) - 5 philosophers 🍴
 
-**PlantUML Diagrams:**
-
-- `plantuml_simple.html` (1.7K) - Alice and Bob
-- `plantuml_pubsub.html` (1.8K) - Pub-sub pattern
 
 **Index:**
 
@@ -246,7 +242,7 @@ managing virtual time ✅ send_after wrapper delegating to real/virtual time ✅
 Tests showing real vs virtual time advantages ✅ Actor simulation DSL with
 message rates ✅ Process-in-the-Loop (inject real GenServers) ✅ Pattern
 matching for responses (declarative) ✅ Sync and async communication ({:call,
-msg}, {:cast, msg}) ✅ Message tracing with timestamps ✅ PlantUML sequence
+msg}, {:cast, msg}) ✅ Message tracing with timestamps ✅ Mermaid sequence
 diagram generation ✅ Mermaid sequence diagram generation ✅ Enhanced Mermaid
 with activation boxes, notes, arrow types ✅ Self-contained HTML with CDN-based
 rendering ✅ Documentation leads with examples ✅ All documented examples tested
@@ -308,7 +304,7 @@ GenServerVirtualTime successfully delivers:
 
 - ⚡ Fast, deterministic testing of time-dependent GenServers
 - 🎭 Powerful actor simulation with statistics
-- 📊 Beautiful sequence diagram generation (PlantUML & Mermaid)
+- 📊 Beautiful sequence diagram generation (Mermaid)
 - 🍴 Classic concurrency problems solved elegantly
 - 📚 Comprehensive documentation with tested examples
 - 🎨 Visual progress tracking with generated diagrams

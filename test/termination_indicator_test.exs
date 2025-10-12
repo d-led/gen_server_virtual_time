@@ -104,7 +104,7 @@ defmodule TerminationIndicatorTest do
           name = :"philosopher_#{i}"
 
           Enum.any?(trace, fn event ->
-            event.from == name and event.to == name and 
+            event.from == name and event.to == name and
               event.message == {:mumble, "I'm full!"}
           end)
         end)

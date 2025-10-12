@@ -63,7 +63,7 @@
 ✅ Process-in-Loop   - Real GenServers in simulation
 ✅ Termination       - Condition-based stopping
 ✅ Tracing           - Complete message logs
-✅ Diagrams          - Mermaid & PlantUML
+✅ Diagrams          - Mermaid
 ✅ Timing info       - Virtual + real time (NEW!)
 ```
 

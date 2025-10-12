@@ -11,7 +11,6 @@ doc/examples/
     ├── index.html          # Reports & diagrams index
     ├── *_report.html       # Mermaid flowchart reports with statistics
     ├── mermaid_*.html      # Mermaid sequence diagrams
-    ├── plantuml_*.html     # PlantUML sequence diagrams
     └── dining_*.html       # Dining philosophers examples
 ```
 
@@ -52,7 +51,6 @@ mix test test/diagram_generation_test.exs
 # Copy generated files to doc/examples/reports/
 cp test/output/*_report.html doc/examples/reports/
 cp test/output/mermaid_*.html doc/examples/reports/
-cp test/output/plantuml_*.html doc/examples/reports/
 cp test/output/dining_*.html doc/examples/reports/
 ```
 
@@ -78,7 +76,6 @@ Features:
 - **Sync vs Async** - Different message types with arrow styles
 - **Timestamped Timeline** - Virtual time progression
 
-### PlantUML Sequence Diagrams
 - **Alice and Bob** - Basic two-actor conversation
 - **Pub-Sub Pattern** - Publisher with multiple subscribers
 

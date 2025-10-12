@@ -55,7 +55,6 @@ mermaid = Sim.trace_to_mermaid(sim, enhanced: true)
 ### 3. Visualize Message Flows
 
 - **Mermaid** diagrams with activation boxes, timestamps
-- **PlantUML** diagrams
 - **Self-contained HTML** - open in browser
 - **Termination indicators** - show when goals achieved ⚡
 
@@ -164,8 +163,6 @@ test/output/
 ├── mermaid_sync_async.html
 ├── mermaid_with_timestamps.html
 ├── mermaid_pipeline.html
-├── plantuml_simple.html
-├── plantuml_pubsub.html
 ├── dining_philosophers_2.html
 ├── dining_philosophers_3.html
 ├── dining_philosophers_5.html
@@ -268,7 +265,7 @@ open test/output/index.html
 ✅ **Core library**: Stable, tested, documented  
 ✅ **All GenServer callbacks**: Supported  
 ✅ **Actor DSL**: Feature-complete  
-✅ **Visualization**: Enhanced Mermaid & PlantUML  
+✅ **Visualization**: Enhanced Mermaid  
 ✅ **CI/CD**: GitHub Actions ready  
 ✅ **Performance**: Fast tests, extreme speedups  
 ✅ **Quality**: No warnings, no flaky tests  

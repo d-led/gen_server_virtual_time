@@ -178,7 +178,7 @@ Need to optimize VirtualClock event processing.
 - **Backward Compatible**: All changes are additive, no breaking changes
 - **Production Ready**: Core features are stable and tested
 - **Actor DSL**: Separate from GenServer, works alongside it
-- **Diagram Generation**: Self-contained HTML files with Mermaid/PlantUML
+- **Diagram Generation**: Self-contained HTML files with Mermaid
 
 ---
 

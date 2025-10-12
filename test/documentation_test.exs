@@ -188,7 +188,7 @@ defmodule DocumentationTest do
   end
 
   describe "Message Tracing examples" do
-    test "PlantUML generation" do
+    test "Mermaid generation" do
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:client,

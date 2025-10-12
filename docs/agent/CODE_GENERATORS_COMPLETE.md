@@ -322,7 +322,7 @@ production:
 
 - **Prototype** in Elixir (fast, interactive)
 - **Test** with virtual time (instant, deterministic)
-- **Visualize** with sequence diagrams (Mermaid, PlantUML)
+- **Visualize** with sequence diagrams (Mermaid)
 - **Validate** with OMNeT++ (large-scale simulation)
 - **Deploy** with CAF (production actor systems)
 - **Customize** via callbacks (clean separation)

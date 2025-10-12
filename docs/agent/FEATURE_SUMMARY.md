@@ -93,9 +93,9 @@ trace = ActorSimulation.get_trace(simulation)
 #   ...
 # ]
 
-# Generate PlantUML sequence diagram
-plantuml = ActorSimulation.trace_to_plantuml(simulation)
-File.write!("diagram.puml", plantuml)
+# Generate Mermaid sequence diagram
+mermaid = ActorSimulation.trace_to_mermaid(simulation)
+File.write!("diagram.md", mermaid)
 ```
 
 **Trace Events Include:**
@@ -131,7 +131,7 @@ Added 11 new tests covering:
 - Pattern matching with exact patterns and predicates
 - Sync/async communication (call, cast, send)
 - Message tracing and trace collection
-- PlantUML sequence diagram generation
+- Mermaid sequence diagram generation
 - Timestamp tracking in virtual time
 
 **Total Tests**: ~~37~~ **189** (all passing ✅) - Updated count from v0.2.0
@@ -147,7 +147,7 @@ ActorSimulation.new(trace: true)
 ActorSimulation.add_process(simulation, name, module: M, args: args)
 ActorSimulation.enable_trace(simulation)
 ActorSimulation.get_trace(simulation)
-ActorSimulation.trace_to_plantuml(simulation)
+ActorSimulation.trace_to_mermaid(simulation)
 ```
 
 ### Actor Definition
@@ -229,7 +229,7 @@ simulation = ActorSimulation.new(trace: true)  # Enable tracing
   |> run(duration: 1000)
 
 trace = get_trace(simulation)                   # Get trace
-plantuml = trace_to_plantuml(simulation)       # Generate diagram
+mermaid = trace_to_mermaid(simulation)        # Generate diagram
 ```
 
 ## Future Enhancements
@@ -249,7 +249,7 @@ New features inspired by:
 
 - Hardware-in-the-Loop testing methodologies
 - Pattern matching in Elixir/Erlang
-- Sequence diagram tools (PlantUML, Mermaid)
+- Sequence diagram tools (Mermaid)
 - RxJS TestScheduler's tracing capabilities
 
 ---

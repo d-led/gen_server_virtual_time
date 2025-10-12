@@ -168,7 +168,6 @@ Trace Format Changed: No ✅
 | Statistics             | ✅       | ✅          | ❌ No     |
 | Tracing                | ✅       | ✅ Enhanced | ❌ No     |
 | Mermaid                | ✅ Basic | ✅ Enhanced | ❌ No     |
-| PlantUML               | ✅       | ✅          | ❌ No     |
 | Process-in-Loop        | ✅       | ✅          | ❌ No     |
 | Pattern Matching       | ✅       | ✅          | ❌ No     |
 | Fixed Duration         | ✅       | ✅          | ❌ No     |

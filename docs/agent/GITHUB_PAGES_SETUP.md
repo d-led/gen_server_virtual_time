@@ -51,7 +51,6 @@ Every push to `main` automatically publishes:
 - **Timeline with Timestamps** - Virtual time progression
 - **Dining Philosophers (2, 3, 5)** - Concurrency visualization
 
-### PlantUML Sequence Diagrams
 
 - **Alice and Bob** - Simple conversation
 - **Pub-Sub Pattern** - One-to-many broadcast
@@ -60,7 +59,6 @@ Every push to `main` automatically publishes:
 
 - Self-contained HTML files (no external dependencies beyond CDN)
 - Mermaid.js live rendering
-- PlantUML server-side rendering
 - Source code viewing
 - Responsive design
 
@@ -151,7 +149,6 @@ open http://localhost:8000
 1. Open browser console (F12) to check for errors
 2. Verify CDN is accessible
    (https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js)
-3. Check PlantUML server is up (https://www.plantuml.com/plantuml/)
 4. Try regenerating: `mix test --force`
 
 ### Workflow Never Triggers
@@ -240,7 +237,7 @@ on:
 4. **Artifact Download:** Don't want to wait for Pages? Download artifacts
    directly from any workflow run.
 
-5. **Multiple Formats:** Generate both Mermaid and PlantUML to see which renders
+5. **Mermaid Format:** Generate Mermaid diagrams that render client-side
    better for your use case.
 
 ## 📚 Next Steps

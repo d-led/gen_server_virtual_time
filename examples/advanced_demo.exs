@@ -228,7 +228,7 @@ IO.puts("""
 ║  • Pattern Matching: Declarative message handling            ║
 ║  • Sync/Async: {:call, msg} and {:cast, msg}                 ║
 ║  • Message Tracing: Capture all communication                ║
-║  • Sequence Diagrams: Auto-generate PlantUML                 ║
+║  • Sequence Diagrams: Auto-generate Mermaid                  ║
 ║                                                               ║
 ║  See README.md for complete documentation                    ║
 ╚══════════════════════════════════════════════════════════════╝

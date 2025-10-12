@@ -205,7 +205,7 @@ ls -la  # See all generated files
 
 1. 🚀 **Prototype** - Rapid iteration in Elixir with instant feedback
 2. 🧪 **Test** - Validate with virtual time and fast simulations
-3. 📊 **Visualize** - Generate PlantUML sequence diagrams
+3. 📊 **Visualize** - Generate Mermaid sequence diagrams
 4. ⚡ **Scale** - Export to OMNeT++ for large-scale C++ simulations
 5. 🎯 **Deploy** - Leverage OMNeT++ ecosystem and performance
 

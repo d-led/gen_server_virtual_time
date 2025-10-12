@@ -95,11 +95,6 @@ or run `mix test` to see actual test count (189 tests as of v0.2.0).
 
 ### 10. Diagram Generation
 
-#### PlantUML
-
-- ✅ `trace_to_plantuml/1`
-- ✅ Standard sequence diagram format
-- ✅ Rendered via PlantUML server
 
 #### Mermaid (Enhanced) ⭐ NEW
 
@@ -148,12 +143,7 @@ All viewable in browser at `test/output/index.html`:
 - `dining_philosophers_3.html` - 3 philosophers
 - `dining_philosophers_5.html` - 5 philosophers
 
-**PlantUML Diagrams** (2):
-
-- `plantuml_simple.html` - Alice and Bob
-- `plantuml_pubsub.html` - Pub-sub pattern
-
-**Total**: 11 self-contained HTML files
+**Total**: 9 self-contained HTML files
 
 ### 14. Demo Scripts
 
@@ -259,7 +249,7 @@ ActorSimulation.stop/1
 # Tracing
 ActorSimulation.enable_trace/1
 ActorSimulation.get_trace/1
-ActorSimulation.trace_to_plantuml/1
+ActorSimulation.trace_to_mermaid/1
 ActorSimulation.trace_to_mermaid/2
 
 # Utilities

@@ -194,7 +194,7 @@ defmodule ProcessInLoopTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "generates PlantUML sequence diagram" do
+    test "generates Mermaid sequence diagram" do
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:client,

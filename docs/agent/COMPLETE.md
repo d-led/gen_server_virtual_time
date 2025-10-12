@@ -21,7 +21,7 @@ All requested features have been implemented, tested, and documented!
 7. ✅ **Sync/Async Communication** - `{:call, msg}`, `{:cast, msg}`, and regular
    send
 8. ✅ **Message Tracing** - Capture all inter-actor communication
-9. ✅ **PlantUML Diagrams** - Generate PlantUML sequence diagrams
+9. ✅ **Mermaid Diagrams** - Generate Mermaid sequence diagrams
 10. ✅ **Mermaid Diagrams** - Generate Mermaid sequence diagrams (GitHub/GitLab
     native!)
 
@@ -85,7 +85,7 @@ Finished in 11.1 seconds
 - Pattern matching declarative responses
 - Sync vs async communication
 - Message tracing with timestamps
-- PlantUML generation
+- Mermaid generation
 - Mermaid generation
 - Complex request-response pipeline
 
@@ -124,7 +124,7 @@ ActorSimulation.enable_trace/1              # Enable tracing
 ActorSimulation.run/2                       # Run simulation
 ActorSimulation.get_stats/1                 # Get statistics
 ActorSimulation.get_trace/1                 # Get trace events
-ActorSimulation.trace_to_plantuml/1         # Generate PlantUML
+ActorSimulation.trace_to_mermaid/1         # Generate Mermaid
 ActorSimulation.trace_to_mermaid/1          # Generate Mermaid
 ActorSimulation.stop/1                      # Cleanup
 ```
@@ -146,7 +146,7 @@ ActorSimulation.stop/1                      # Cleanup
 4. **Dual Mode** - Works with both real processes and simulated actors
 5. **Pattern Matching** - Declarative message handling
 6. **Universal Tracing** - Captures call, cast, and send
-7. **Diagram Generation** - Auto-generate PlantUML and Mermaid
+7. **Diagram Generation** - Auto-generate Mermaid
 
 ### 📁 File Summary
 
@@ -186,7 +186,7 @@ ActorSimulation.stop/1                      # Cleanup
 ✅ Process-in-the-Loop (inject real GenServers) ✅ Pattern matching for
 responses (declarative) ✅ Sync and async communication ({:call, msg}, {:cast,
 msg}) ✅ Message tracing with timestamps ✅ Sequence diagram generation
-(PlantUML + Mermaid) ✅ Documentation leads with "Show Me The Code" ✅ All
+(Mermaid) ✅ Documentation leads with "Show Me The Code" ✅ All
 documented examples are tested ✅ Concise, useful doctests
 
 ### 🚀 Usage Example
@@ -207,17 +207,17 @@ simulation =
 stats = ActorSimulation.get_stats(simulation)
 
 # Generate diagrams
-plantuml = ActorSimulation.trace_to_plantuml(simulation)
+mermaid = ActorSimulation.trace_to_mermaid(simulation)
 mermaid = ActorSimulation.trace_to_mermaid(simulation)
 
-File.write!("sequence.puml", plantuml)
+File.write!("sequence.md", mermaid)
 File.write!("sequence.mmd", mermaid)
 ```
 
 ### 🏆 Success Metrics
 
 ✅ 63/63 tests passing ✅ 100x+ speed improvement over real time ✅ Zero flaky
-tests (deterministic) ✅ Both PlantUML and Mermaid support ✅
+tests (deterministic) ✅ Mermaid support ✅
 Process-in-the-Loop working ✅ Pattern matching implemented ✅ Sync/async
 communication ✅ Message tracing with diagrams ✅ Documentation examples all
 tested ✅ Concise doctests throughout

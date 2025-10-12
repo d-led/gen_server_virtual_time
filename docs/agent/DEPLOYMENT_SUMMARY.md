@@ -70,7 +70,6 @@ Your beautiful sequence diagrams:
 - Timeline with timestamps
 - Dining philosophers (2, 3, and 5 philosophers)
 
-### PlantUML Diagrams (2 total)
 
 - Alice and Bob conversation
 - Pub-sub pattern
@@ -80,7 +79,7 @@ Your beautiful sequence diagrams:
 A beautiful `index.html` with:
 
 - Grid layout of all diagrams
-- Categorization (Mermaid vs PlantUML)
+- Categorization (Mermaid)
 - Descriptions and links
 - Responsive design
 

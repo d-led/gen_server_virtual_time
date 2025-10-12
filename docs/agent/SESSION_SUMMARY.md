@@ -63,7 +63,7 @@
 - ✅ Process-in-the-Loop
 - ✅ Condition-based termination
 - ✅ Message tracing
-- ✅ Sequence diagrams (Mermaid & PlantUML)
+- ✅ Sequence diagrams (Mermaid)
 
 ### Dining Philosophers
 

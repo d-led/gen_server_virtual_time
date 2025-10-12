@@ -8,13 +8,6 @@ and this project adheres to
 
 ## [Unreleased]
 
-### Removed
-
-- **PlantUML Support** - Removed PlantUML diagram generation due to external server dependency issues
-  - Removed `ActorSimulation.trace_to_plantuml/1` function
-  - Removed PlantUML HTML generation tests and files
-  - Removed PlantUML links from reports index
-  - Kept only Mermaid diagrams which work entirely client-side
 
 ## [0.2.1-rc.0] - 2025-10-12
 
@@ -188,7 +181,7 @@ and this project adheres to
 
 - **Diagram Generation in Tests** - Auto-generate viewable HTML files
   - Self-contained HTML with CDN-based Mermaid.js
-  - PlantUML diagrams via PlantUML server
+  - Mermaid diagrams with client-side rendering
   - Stored in `test/output/` for visual progress tracking
 
 ### Changed
@@ -236,7 +229,7 @@ and this project adheres to
 - **Pattern Matching Responses** - Declarative message handling with `on_match`
 - **Sync/Async Communication** - Support for call, cast, and send
 - **Message Tracing** - Capture all inter-actor communication
-- **PlantUML Generation** - Generate PlantUML sequence diagrams
+- **Mermaid Generation** - Generate Mermaid sequence diagrams
 - **Mermaid Generation** - Generate Mermaid sequence diagrams
 - **Statistics Collection** - Track message counts and rates
 - Comprehensive test suite (70+ tests)
