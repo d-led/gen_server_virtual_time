@@ -20,7 +20,7 @@ actor Publisher
     logger = logger'
     _targets.append(targets)
     _callbacks = PublisherCallbacksImpl(logger)
-let timer = Timer(EventTimer(this), 0.1 as U64 * 1_000_000_000, 0.1 as U64 * 1_000_000_000)
+    let timer = Timer(EventTimer(this), 100000000, 100000000)
     _timers(consume timer)
 
 
@@ -34,8 +34,8 @@ let timer = Timer(EventTimer(this), 0.1 as U64 * 1_000_000_000, 0.1 as U64 * 1_0
 class EventTimer is TimerNotify
   let _actor: Publisher tag
 
-  new iso create(actor: Publisher tag) =>
-    _actor = actor
+  new iso create(actor': Publisher) =>
+    _actor = actor'
 
   fun ref apply(timer: Timer, count: U64): Bool =>
     _actor.event()

@@ -20,7 +20,7 @@ actor LoadBalancer
     logger = logger'
     _targets.append(targets)
     _callbacks = LoadBalancerCallbacksImpl(logger)
-let timer = Timer(RequestTimer(this), 0.01 as U64 * 1_000_000_000, 0.01 as U64 * 1_000_000_000)
+    let timer = Timer(RequestTimer(this), 10000000, 10000000)
     _timers(consume timer)
 
 
@@ -34,8 +34,8 @@ let timer = Timer(RequestTimer(this), 0.01 as U64 * 1_000_000_000, 0.01 as U64 *
 class RequestTimer is TimerNotify
   let _actor: LoadBalancer tag
 
-  new iso create(actor: LoadBalancer tag) =>
-    _actor = actor
+  new iso create(actor': LoadBalancer) =>
+    _actor = actor'
 
   fun ref apply(timer: Timer, count: U64): Bool =>
     _actor.request()

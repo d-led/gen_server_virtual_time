@@ -20,7 +20,7 @@ actor Source
     logger = logger'
     _targets.append(targets)
     _callbacks = SourceCallbacksImpl(logger)
-let timer = Timer(DataTimer(this), 0.02 as U64 * 1_000_000_000, 0.02 as U64 * 1_000_000_000)
+    let timer = Timer(DataTimer(this), 20000000, 20000000)
     _timers(consume timer)
 
 
@@ -34,8 +34,8 @@ let timer = Timer(DataTimer(this), 0.02 as U64 * 1_000_000_000, 0.02 as U64 * 1_
 class DataTimer is TimerNotify
   let _actor: Source tag
 
-  new iso create(actor: Source tag) =>
-    _actor = actor
+  new iso create(actor': Source) =>
+    _actor = actor'
 
   fun ref apply(timer: Timer, count: U64): Bool =>
     _actor.data()

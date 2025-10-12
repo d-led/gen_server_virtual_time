@@ -20,7 +20,7 @@ actor BurstGenerator
     logger = logger'
     _targets.append(targets)
     _callbacks = BurstGeneratorCallbacksImpl(logger)
-let timer = Timer(BatchBurstTimer(this, 10), 1.0 as U64 * 1_000_000_000, 1.0 as U64 * 1_000_000_000)
+    let timer = Timer(BatchBurstTimer(this, 10), 1000000000, 1000000000)
     _timers(consume timer)
 
 
@@ -35,8 +35,8 @@ class BatchBurstTimer is TimerNotify
   let _actor: BurstGenerator tag
   let _burst_count: USize
 
-  new iso create(actor: BurstGenerator tag, burst_count: USize) =>
-    _actor = actor
+  new iso create(actor': BurstGenerator, burst_count: USize) =>
+    _actor = actor'
     _burst_count = burst_count
 
   fun ref apply(timer: Timer, count: U64): Bool =>

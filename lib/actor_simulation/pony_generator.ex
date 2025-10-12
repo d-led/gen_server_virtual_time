@@ -227,39 +227,39 @@ defmodule ActorSimulation.PonyGenerator do
         ""
 
       {:periodic, interval_ms, message} ->
-        interval_sec = interval_ms / 1000.0
+        interval_ns = trunc(interval_ms * 1_000_000)
         msg_name = message_name(message)
 
         """
-        let timer = Timer(#{actor_class_name(msg_name)}Timer(this), #{interval_sec} as U64 * 1_000_000_000, #{interval_sec} as U64 * 1_000_000_000)
+            let timer = Timer(#{actor_class_name(msg_name)}Timer(this), #{interval_ns}, #{interval_ns})
             _timers(consume timer)
         """
 
       {:rate, per_second, message} ->
-        interval_sec = 1.0 / per_second
+        interval_ns = trunc((1000.0 / per_second) * 1_000_000)
         msg_name = message_name(message)
 
         """
-        let timer = Timer(#{actor_class_name(msg_name)}Timer(this), #{interval_sec} as U64 * 1_000_000_000, #{interval_sec} as U64 * 1_000_000_000)
+            let timer = Timer(#{actor_class_name(msg_name)}Timer(this), #{interval_ns}, #{interval_ns})
             _timers(consume timer)
         """
 
       {:burst, count, interval_ms, message} ->
-        interval_sec = interval_ms / 1000.0
+        interval_ns = trunc(interval_ms * 1_000_000)
         msg_name = message_name(message)
 
         """
-        let timer = Timer(#{actor_class_name(msg_name)}BurstTimer(this, #{count}), #{interval_sec} as U64 * 1_000_000_000, #{interval_sec} as U64 * 1_000_000_000)
+            let timer = Timer(#{actor_class_name(msg_name)}BurstTimer(this, #{count}), #{interval_ns}, #{interval_ns})
             _timers(consume timer)
         """
 
       {:self_message, delay_ms, message} ->
-        delay_sec = delay_ms / 1000.0
+        delay_ns = trunc(delay_ms * 1_000_000)
         msg_name = message_name(message)
 
         """
         // One-shot self-message timer
-            let timer = Timer(#{actor_class_name(msg_name)}OneShotTimer(this), #{delay_sec} as U64 * 1_000_000_000, 0)
+            let timer = Timer(#{actor_class_name(msg_name)}OneShotTimer(this), #{delay_ns}, 0)
             _timers(consume timer)
         """
     end
@@ -310,8 +310,8 @@ defmodule ActorSimulation.PonyGenerator do
         class #{actor_class_name(msg_name)}Timer is TimerNotify
           let _actor: #{actor_name} tag
 
-          new iso create(actor: #{actor_name} tag) =>
-            _actor = actor
+          new iso create(actor': #{actor_name}) =>
+            _actor = actor'
 
           fun ref apply(timer: Timer, count: U64): Bool =>
             _actor.#{msg_name}()
@@ -326,8 +326,8 @@ defmodule ActorSimulation.PonyGenerator do
         class #{actor_class_name(msg_name)}Timer is TimerNotify
           let _actor: #{actor_name} tag
 
-          new iso create(actor: #{actor_name} tag) =>
-            _actor = actor
+          new iso create(actor': #{actor_name}) =>
+            _actor = actor'
 
           fun ref apply(timer: Timer, count: U64): Bool =>
             _actor.#{msg_name}()
@@ -343,8 +343,8 @@ defmodule ActorSimulation.PonyGenerator do
           let _actor: #{actor_name} tag
           let _burst_count: USize
 
-          new iso create(actor: #{actor_name} tag, burst_count: USize) =>
-            _actor = actor
+          new iso create(actor': #{actor_name}, burst_count: USize) =>
+            _actor = actor'
             _burst_count = burst_count
 
           fun ref apply(timer: Timer, count: U64): Bool =>
@@ -364,8 +364,8 @@ defmodule ActorSimulation.PonyGenerator do
         class #{actor_class_name(msg_name)}OneShotTimer is TimerNotify
           let _actor: #{actor_name} tag
 
-          new iso create(actor: #{actor_name} tag) =>
-            _actor = actor
+          new iso create(actor': #{actor_name}) =>
+            _actor = actor'
 
           fun ref apply(timer: Timer, count: U64): Bool =>
             _actor.#{msg_name}()
