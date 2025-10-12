@@ -29,18 +29,31 @@ jobs:
         sudo apt-get update
         curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
         sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
+        export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
+        # Verify installation
+        which ponyup || (echo "ponyup not found in PATH" && exit 1)
+        ponyup --version
 
     - name: Install Pony toolchain (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew tap ponylang/ponylang
+        # Use official ponylang tap with retry for network issues
+        brew tap ponylang/ponylang || brew tap ponylang/ponylang || brew tap ponylang/ponylang
         brew install ponyup
+        # Verify installation
+        which ponyup || (echo "ponyup not found" && exit 1)
+        ponyup --version
 
     - name: Update Pony compiler and Corral
       run: |
+        # Ensure ponyup is in PATH
+        export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         ponyup update ponyc release
         ponyup update corral release
+        # Add bin directories to PATH
+        echo "$HOME/.local/share/ponyup/ponyc/release/bin" >> $GITHUB_PATH
+        echo "$HOME/.local/share/ponyup/corral/release/bin" >> $GITHUB_PATH
 
     - name: Fetch dependencies
       working-directory: examples/${{ matrix.example }}
@@ -96,15 +109,31 @@ jobs:
         sudo apt-get update
         curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
         sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
+        export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
+        # Verify installation
+        which ponyup || (echo "ponyup not found in PATH" && exit 1)
+        ponyup --version
 
     - name: Update Pony compiler
       run: |
+        # Ensure ponyup is in PATH
+        export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         ponyup update ponyc release
         ponyup update corral release
+        # Add bin directories to PATH
+        echo "$HOME/.local/share/ponyup/ponyc/release/bin" >> $GITHUB_PATH
+        echo "$HOME/.local/share/ponyup/corral/release/bin" >> $GITHUB_PATH
+        # Verify
+        which ponyc || (echo "ponyc not found" && exit 1)
+        which corral || (echo "corral not found" && exit 1)
+        ponyc --version
+        corral --version
 
     - name: Validate all regenerated examples
       run: |
+        # Ensure PATH includes pony tools
+        export PATH="$HOME/.local/share/ponyup/bin:$HOME/.local/share/ponyup/ponyc/release/bin:$HOME/.local/share/ponyup/corral/release/bin:$PATH"
         for example in examples/pony_*; do
           echo "Validating $example..."
           cd $example
