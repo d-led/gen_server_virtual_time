@@ -191,6 +191,24 @@ defmodule OMNeTPPGeneratorTest do
 
       assert ned =~ "output out[3]"
     end
+
+    test "generates self-message pattern with scheduleAt" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:timer,
+          send_pattern: {:self_message, 500, :timeout},
+          targets: []
+        )
+
+      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "TestNetwork")
+
+      {_name, source} = Enum.find(files, fn {name, _} -> name == "Timer.cc" end)
+
+      # Should schedule a one-shot self-message
+      assert source =~ "// One-shot self-message after delay"
+      assert source =~ "scheduleAt(simTime() + 0.5"
+      assert source =~ "// Do not reschedule (one-shot)"
+    end
   end
 
   describe "write_to_directory/2" do

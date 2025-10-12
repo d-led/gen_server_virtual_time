@@ -250,6 +250,15 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       nil ->
         "    // No send pattern defined\n"
 
+      {:self_message, delay_ms, _message} ->
+        delay_sec = delay_ms / 1000.0
+
+        """
+            // One-shot self-message after delay
+            selfMsg = new cMessage("selfMsg");
+            scheduleAt(simTime() + #{delay_sec}, selfMsg);
+        """
+
       pattern ->
         interval = pattern_to_interval(pattern)
 
@@ -264,6 +273,20 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     case definition.send_pattern do
       nil ->
         "        // No send pattern\n"
+
+      {:self_message, _delay_ms, _message} ->
+        target_count = length(definition.targets)
+
+        """
+                // One-shot self-message - send to targets but don't reschedule
+                for (int i = 0; i < #{target_count}; i++) {
+                    cMessage *outMsg = new cMessage("msg");
+                    send(outMsg, "out", i);
+                    sendCount++;
+                }
+                EV << "Self-message timeout triggered\\n";
+                // Do not reschedule (one-shot)
+        """
 
       {:burst, _count, _interval, _message} ->
         target_count = length(definition.targets)
@@ -311,6 +334,10 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
   defp pattern_to_interval({:burst, _count, interval_ms, _message}) do
     interval_ms / 1000.0
+  end
+
+  defp pattern_to_interval({:self_message, delay_ms, _message}) do
+    delay_ms / 1000.0
   end
 
   defp generate_cmake(actors, network_name) do

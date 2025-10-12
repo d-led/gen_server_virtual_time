@@ -401,5 +401,28 @@ defmodule VlingoGeneratorTest do
       package_dir = Path.join([temp_dir, "src", "main", "java", "com", "mycompany", "actors"])
       assert File.dir?(package_dir)
     end
+
+    test "generates self-message pattern with scheduler" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:timer,
+          send_pattern: {:self_message, 500, :timeout},
+          targets: []
+        )
+
+      {:ok, files} =
+        VlingoGenerator.generate(simulation,
+          project_name: "test",
+          group_id: "com.example"
+        )
+
+      {_name, actor} =
+        Enum.find(files, fn {name, _} -> name == "src/main/java/com/example/TimerActor.java" end)
+
+      # Should use scheduler for delayed self-message
+      assert actor =~ "// Schedule one-shot self-message"
+      assert actor =~ "scheduler().scheduleOnce"
+      assert actor =~ "500L"
+    end
   end
 end

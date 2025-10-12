@@ -173,6 +173,15 @@ defmodule ActorSimulation.VlingoGenerator do
         "  void process();"
       end
 
+    # Check if this actor uses scheduling
+    scheduled_extends =
+      case definition.send_pattern do
+        {:periodic, _, _} -> " extends io.vlingo.xoom.actors.Scheduled<Object>"
+        {:rate, _, _} -> " extends io.vlingo.xoom.actors.Scheduled<Object>"
+        {:burst, _, _, _} -> " extends io.vlingo.xoom.actors.Scheduled<Object>"
+        _ -> ""
+      end
+
     """
     // Generated from ActorSimulation DSL
     // Protocol interface for: #{name}
@@ -183,7 +192,7 @@ defmodule ActorSimulation.VlingoGenerator do
      * Protocol interface for #{class_name} actor.
      * This interface defines the messages that can be sent to this actor.
      */
-    public interface #{class_name}Protocol {
+    public interface #{class_name}Protocol#{scheduled_extends} {
     #{methods}
     }
     """
@@ -246,8 +255,8 @@ defmodule ActorSimulation.VlingoGenerator do
         ""
       end
 
-    # Note: Scheduling removed as Scheduled interface is not available in VLINGO XOOM 1.11.1
-    # _schedule_setup = generate_schedule_setup(definition)
+    # Self-message scheduling
+    self_message_init = generate_self_message_init(definition, class_name)
 
     # Message methods
     method_impls =
@@ -270,11 +279,23 @@ defmodule ActorSimulation.VlingoGenerator do
         """
       end
 
+    # Add intervalSignal method for scheduled actors
+    interval_signal_method = generate_interval_signal_method(definition, messages)
+
     list_import =
       if length(definition.targets) > 0 do
         "import java.util.List;\nimport java.util.ArrayList;"
       else
         ""
+      end
+
+    scheduled_import =
+      case definition.send_pattern do
+        {:periodic, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
+        {:rate, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
+        {:burst, _, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
+        {:self_message, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
+        _ -> ""
       end
 
     """
@@ -284,6 +305,7 @@ defmodule ActorSimulation.VlingoGenerator do
     package #{group_id};
 
     import io.vlingo.xoom.actors.Actor;
+    #{scheduled_import}
     #{list_import}
 
     /**
@@ -298,9 +320,10 @@ defmodule ActorSimulation.VlingoGenerator do
        * Constructor for #{class_name}Actor.
        */
       public #{class_name}Actor(#{format_constructor_params(callback_param, target_param)}) {
-    #{callback_init}#{target_init}  }
+    #{callback_init}#{target_init}#{self_message_init}  }
 
     #{method_impls}
+    #{interval_signal_method}
 
       @Override
       public void stop() {
@@ -310,16 +333,26 @@ defmodule ActorSimulation.VlingoGenerator do
     """
   end
 
-  defp generate_schedule_setup(definition) do
+  defp generate_self_message_init(definition, class_name) do
     case definition.send_pattern do
-      nil ->
-        ""
+      {:self_message, delay_ms, _message} ->
+        """
+
+            // Schedule one-shot self-message
+            scheduler().scheduleOnce(
+              selfAs(#{class_name}Protocol.class),
+              null,
+              0L,
+              #{delay_ms}L
+            );
+        """
 
       {:periodic, interval_ms, _message} ->
         """
+
             // Schedule periodic message sending
-            this.scheduled = scheduler().schedule(
-              selfAs(Scheduled.class),
+            scheduler().schedule(
+              selfAs(#{class_name}Protocol.class),
               null,
               #{interval_ms}L,
               #{interval_ms}L
@@ -330,9 +363,10 @@ defmodule ActorSimulation.VlingoGenerator do
         interval_ms = div(1000, per_second)
 
         """
+
             // Schedule rate-based message sending
-            this.scheduled = scheduler().schedule(
-              selfAs(Scheduled.class),
+            scheduler().schedule(
+              selfAs(#{class_name}Protocol.class),
               null,
               #{interval_ms}L,
               #{interval_ms}L
@@ -341,14 +375,61 @@ defmodule ActorSimulation.VlingoGenerator do
 
       {:burst, _count, interval_ms, _message} ->
         """
+
             // Schedule burst message sending
-            this.scheduled = scheduler().schedule(
-              selfAs(Scheduled.class),
+            scheduler().schedule(
+              selfAs(#{class_name}Protocol.class),
               null,
               #{interval_ms}L,
               #{interval_ms}L
             );
         """
+
+      _ ->
+        ""
+    end
+  end
+
+  defp generate_interval_signal_method(definition, messages) do
+    case definition.send_pattern do
+      {:periodic, _, _} when messages != [] ->
+        [first_msg | _] = messages
+        msg_name = GeneratorUtils.message_name(first_msg) |> GeneratorUtils.to_camel_case()
+
+        """
+
+          @Override
+          public void intervalSignal(io.vlingo.xoom.actors.Scheduled<Object> scheduled, Object data) {
+            #{msg_name}();
+          }
+        """
+
+      {:rate, _, _} when messages != [] ->
+        [first_msg | _] = messages
+        msg_name = GeneratorUtils.message_name(first_msg) |> GeneratorUtils.to_camel_case()
+
+        """
+
+          @Override
+          public void intervalSignal(io.vlingo.xoom.actors.Scheduled<Object> scheduled, Object data) {
+            #{msg_name}();
+          }
+        """
+
+      {:burst, _, _, _} when messages != [] ->
+        [first_msg | _] = messages
+        msg_name = GeneratorUtils.message_name(first_msg) |> GeneratorUtils.to_camel_case()
+
+        """
+
+          @Override
+          public void intervalSignal(io.vlingo.xoom.actors.Scheduled<Object> scheduled, Object data) {
+            #{msg_name}();
+          }
+        """
+
+      _ ->
+        ""
     end
   end
 
@@ -386,16 +467,6 @@ defmodule ActorSimulation.VlingoGenerator do
         #{callback_call}#{send_to_targets}
       }
     """
-  end
-
-  defp generate_timer_action(messages) do
-    if length(messages) > 0 do
-      [first_msg | _] = messages
-      msg_name = GeneratorUtils.message_name(first_msg) |> GeneratorUtils.to_camel_case()
-      "#{msg_name}();"
-    else
-      "// No action defined"
-    end
   end
 
   defp generate_callback_interface(name, definition, group_id) do
@@ -488,10 +559,13 @@ defmodule ActorSimulation.VlingoGenerator do
           cond do
             enable_callbacks && length(definition.targets) > 0 ->
               "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
+
             enable_callbacks ->
               "(#{class_name}Callbacks) null"
+
             length(definition.targets) > 0 ->
               "new java.util.ArrayList<>()"
+
             true ->
               ""
           end
@@ -550,10 +624,13 @@ defmodule ActorSimulation.VlingoGenerator do
       cond do
         enable_callbacks && length(definition.targets) > 0 ->
           "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
+
         enable_callbacks ->
           "(#{class_name}Callbacks) null"
+
         length(definition.targets) > 0 ->
           "new java.util.ArrayList<>()"
+
         true ->
           ""
       end

@@ -23,7 +23,7 @@ defmodule ActorSimulation do
       IO.inspect(stats)
   """
 
-  alias ActorSimulation.{Actor, Definition, Stats, MermaidReportGenerator}
+  alias ActorSimulation.{Actor, Definition, MermaidReportGenerator, Stats}
 
   defstruct [
     :clock,

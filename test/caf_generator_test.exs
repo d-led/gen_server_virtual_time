@@ -212,6 +212,24 @@ defmodule CAFGeneratorTest do
       assert cmake =~ "enable_testing()"
       assert cmake =~ "add_test"
     end
+
+    test "generates self-message pattern with delayed_send" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:timer,
+          send_pattern: {:self_message, 500, :timeout},
+          targets: []
+        )
+
+      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+
+      {_name, source} = Enum.find(files, fn {name, _} -> name == "timer_actor.cpp" end)
+
+      # Should use delayed_send to self
+      assert source =~ "delayed_send(this, std::chrono::milliseconds(500)"
+      assert source =~ "// Send message to self after delay (one-shot)"
+      assert source =~ "caf::atom(\"timeout\")"
+    end
   end
 
   describe "write_to_directory/2" do

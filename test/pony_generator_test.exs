@@ -178,6 +178,24 @@ defmodule PonyGeneratorTest do
       assert callbacks =~ "trait ProcessorCallbacks"
       assert callbacks =~ "fun ref on_tick()"
     end
+
+    test "generates self-message pattern with one-shot timer" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:timer,
+          send_pattern: {:self_message, 500, :timeout},
+          targets: []
+        )
+
+      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+
+      {_name, source} = Enum.find(files, fn {name, _} -> name == "timer.pony" end)
+
+      # Should use a one-shot timer
+      assert source =~ "// One-shot self-message timer"
+      assert source =~ "TimeoutOneShotTimer"
+      assert source =~ "false  // Don't repeat (one-shot)"
+    end
   end
 
   describe "write_to_directory/2" do

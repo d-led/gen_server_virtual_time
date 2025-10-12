@@ -67,10 +67,14 @@ defmodule ActorSimulation.Definition do
       iex> ActorSimulation.Definition.interval_for_pattern({:burst, 5, 500, :msg})
       500
 
+      iex> ActorSimulation.Definition.interval_for_pattern({:self_message, 200, :timeout})
+      200
+
   """
   def interval_for_pattern({:periodic, interval, _message}), do: interval
   def interval_for_pattern({:rate, per_second, _message}), do: div(1000, per_second)
   def interval_for_pattern({:burst, _count, interval, _message}), do: interval
+  def interval_for_pattern({:self_message, delay, _message}), do: delay
   def interval_for_pattern(nil), do: nil
 
   @doc """
@@ -84,6 +88,9 @@ defmodule ActorSimulation.Definition do
       iex> ActorSimulation.Definition.messages_for_pattern({:burst, 3, 500, :event})
       [:event, :event, :event]
 
+      iex> ActorSimulation.Definition.messages_for_pattern({:self_message, 200, :timeout})
+      [:timeout]
+
   """
   def messages_for_pattern({:periodic, _interval, message}), do: [message]
   def messages_for_pattern({:rate, _per_second, message}), do: [message]
@@ -91,6 +98,8 @@ defmodule ActorSimulation.Definition do
   def messages_for_pattern({:burst, count, _interval, message}) do
     List.duplicate(message, count)
   end
+
+  def messages_for_pattern({:self_message, _delay, message}), do: [message]
 
   def messages_for_pattern(nil), do: []
 end

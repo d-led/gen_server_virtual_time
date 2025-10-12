@@ -270,6 +270,17 @@ defmodule ActorSimulation.PhonyGenerator do
         \t\t}
         \t}()
         """
+
+      {:self_message, delay_ms, message} ->
+        msg_name = GeneratorUtils.message_name(message) |> GeneratorUtils.to_pascal_case()
+
+        """
+        \t// One-shot delayed self-message
+        \tgo func() {
+        \t\ttime.Sleep(#{delay_ms} * time.Millisecond)
+        \t\ta.Act(nil, func() { a.#{msg_name}() })
+        \t}()
+        """
     end
   end
 

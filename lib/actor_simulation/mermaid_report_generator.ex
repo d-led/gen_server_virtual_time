@@ -191,21 +191,22 @@ defmodule ActorSimulation.MermaidReportGenerator do
           targets = definition.targets || []
 
           Enum.map(targets, fn target ->
-            edge_label =
-              if show_labels && definition.send_pattern do
-                msg = extract_message_label(definition.send_pattern)
-                "#{name} -->|#{msg}| #{target}"
-              else
-                "#{name} --> #{target}"
-              end
-
-            edge_label
+            generate_edge_label(name, target, definition, show_labels)
           end)
 
         :real_process ->
           []
       end
     end)
+  end
+
+  defp generate_edge_label(name, target, definition, show_labels) do
+    if show_labels && definition.send_pattern do
+      msg = extract_message_label(definition.send_pattern)
+      "#{name} -->|#{msg}| #{target}"
+    else
+      "#{name} --> #{target}"
+    end
   end
 
   defp extract_message_label(send_pattern) do
@@ -551,7 +552,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
 
   defp generate_stats_table(formatted_stats) do
     actor_rows =
-      Enum.map(formatted_stats.actors, fn {name, actor_stats} ->
+      Enum.map_join(formatted_stats.actors, "\n", fn {name, actor_stats} ->
         activity_level = actor_stats.sent + actor_stats.received
 
         badge_class =
@@ -568,7 +569,6 @@ defmodule ActorSimulation.MermaidReportGenerator do
         </tr>
         """
       end)
-      |> Enum.join("\n")
 
     """
     <div class="section">

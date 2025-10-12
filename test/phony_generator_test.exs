@@ -173,6 +173,24 @@ defmodule PhonyGeneratorTest do
       assert source =~ "type ProcessorCallbacks interface"
       assert source =~ "OnTick()"
     end
+
+    test "generates self-message pattern with time.Sleep" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:timer,
+          send_pattern: {:self_message, 500, :timeout},
+          targets: []
+        )
+
+      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+
+      {_name, source} = Enum.find(files, fn {name, _} -> name == "timer.go" end)
+
+      # Should use time.Sleep for delayed self-message
+      assert source =~ "// One-shot delayed self-message"
+      assert source =~ "time.Sleep(500 * time.Millisecond)"
+      assert source =~ "a.Timeout()"
+    end
   end
 
   describe "write_to_directory/2" do

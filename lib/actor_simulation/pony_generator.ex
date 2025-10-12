@@ -217,6 +217,16 @@ defmodule ActorSimulation.PonyGenerator do
         let timer = Timer(#{actor_class_name(msg_name)}BurstTimer(this, #{count}), #{interval_sec} as U64 * 1_000_000_000, #{interval_sec} as U64 * 1_000_000_000)
             _timers(consume timer)
         """
+
+      {:self_message, delay_ms, message} ->
+        delay_sec = delay_ms / 1000.0
+        msg_name = message_name(message)
+
+        """
+        // One-shot self-message timer
+            let timer = Timer(#{actor_class_name(msg_name)}OneShotTimer(this), #{delay_sec} as U64 * 1_000_000_000, 0)
+            _timers(consume timer)
+        """
     end
   end
 
@@ -309,6 +319,22 @@ defmodule ActorSimulation.PonyGenerator do
               i = i + 1
             end
             true  // Keep timer running
+        """
+
+      {:self_message, _delay_ms, message} ->
+        msg_name = message_name(message)
+        actor_name = actor_class_name(name)
+
+        """
+        class #{actor_class_name(msg_name)}OneShotTimer is TimerNotify
+          let _actor: #{actor_name} tag
+
+          new iso create(actor: #{actor_name} tag) =>
+            _actor = actor
+
+          fun ref apply(timer: Timer, count: U64): Bool =>
+            _actor.#{msg_name}()
+            false  // Don't repeat (one-shot)
         """
     end
   end
@@ -714,11 +740,14 @@ defmodule ActorSimulation.PonyGenerator do
 
   defp extract_messages_from_pattern(nil), do: []
 
-  defp extract_messages_from_pattern({_type, _interval, message}) do
+  defp extract_messages_from_pattern({:periodic, _interval, message}), do: [message]
+  defp extract_messages_from_pattern({:rate, _per_second, message}), do: [message]
+
+  defp extract_messages_from_pattern({:burst, _count, _interval, message}) do
     [message]
   end
 
-  defp extract_messages_from_pattern({:burst, _count, _interval, message}) do
+  defp extract_messages_from_pattern({:self_message, _delay, message}) do
     [message]
   end
 

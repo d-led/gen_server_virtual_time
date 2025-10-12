@@ -316,6 +316,14 @@ defmodule ActorSimulation.CAFGenerator do
             delayed_send(this, std::chrono::milliseconds(#{interval_ms}), #{msg_atom});
           }
         """
+
+      {:self_message, delay_ms, message} ->
+        msg_atom = message_to_atom(message)
+
+        """
+          // Send message to self after delay (one-shot)
+          delayed_send(this, std::chrono::milliseconds(#{delay_ms}), #{msg_atom});
+        """
     end
   end
 
@@ -803,11 +811,14 @@ defmodule ActorSimulation.CAFGenerator do
 
   defp extract_messages_from_pattern(nil), do: []
 
-  defp extract_messages_from_pattern({_type, _interval, message}) do
+  defp extract_messages_from_pattern({:periodic, _interval, message}), do: [message]
+  defp extract_messages_from_pattern({:rate, _per_second, message}), do: [message]
+
+  defp extract_messages_from_pattern({:burst, _count, _interval, message}) do
     [message]
   end
 
-  defp extract_messages_from_pattern({:burst, _count, _interval, message}) do
+  defp extract_messages_from_pattern({:self_message, _delay, message}) do
     [message]
   end
 
