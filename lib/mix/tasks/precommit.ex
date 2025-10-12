@@ -31,6 +31,7 @@ defmodule Mix.Tasks.Precommit do
   @shortdoc "Run all CI checks locally"
 
   @impl Mix.Task
+  @dialyzer {:no_return, run: 1}
   def run(args) do
     run_dialyzer = "--all" in args
 
