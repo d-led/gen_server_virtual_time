@@ -27,20 +27,13 @@ jobs:
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake python3-pip
+          sudo apt-get install -y build-essential cmake
         elif [ "$RUNNER_OS" == "macOS" ]; then
-          brew install cmake python@3.11
+          brew install cmake
         fi
 
     - name: Install Conan
-      run: |
-        if [ "$RUNNER_OS" == "Linux" ]; then
-          pip3 install conan
-        elif [ "$RUNNER_OS" == "macOS" ]; then
-          pip3 install --user conan
-          echo "$HOME/Library/Python/3.11/bin" >> $GITHUB_PATH
-        fi
-        conan --version
+      uses: conan-io/setup-conan@v2
 
     - name: Configure Conan profile
       run: |
@@ -110,11 +103,13 @@ jobs:
     - name: Install build tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake python3-pip
+        sudo apt-get install -y build-essential cmake
 
     - name: Install Conan
+      uses: conan-io/setup-conan@v2
+
+    - name: Configure Conan profile
       run: |
-        pip3 install conan
         conan profile detect --force
 
     - name: Validate all regenerated examples
