@@ -36,7 +36,7 @@ jobs:
         export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
         ponyup default "x86_64-linux-ubuntu22.04"
-        ponyup --version
+        ponyup version
 
     - name: Update Pony compiler and Corral
       run: |
@@ -110,7 +110,7 @@ jobs:
         export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
         ponyup default "x86_64-linux-ubuntu22.04"
-        ponyup --version
+        ponyup version
 
     - name: Update Pony compiler
       run: |
