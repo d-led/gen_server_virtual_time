@@ -1,9 +1,6 @@
 [requires]
+# Add dependencies here
 
 [generators]
 CMakeDeps
 CMakeToolchain
-
-[options]
-
-[imports]

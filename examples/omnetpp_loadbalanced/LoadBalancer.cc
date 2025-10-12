@@ -21,9 +21,10 @@ void LoadBalancer::handleMessage(cMessage *msg) {
             sendCount++;
         }
 
-        
+
         // Reschedule
         scheduleAt(simTime() + 0.01, msg);
+
     } else {
         // Handle received message
         EV << "Received message: " << msg->getName() << "\n";

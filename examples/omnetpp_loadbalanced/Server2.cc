@@ -8,12 +8,18 @@ Define_Module(Server2);
 void Server2::initialize() {
     sendCount = 0;
     selfMsg = nullptr;
-    // No send pattern defined}
+    // No send pattern defined
+}
 
 void Server2::handleMessage(cMessage *msg) {
-    // Receive only
-    EV << "Received message: " << msg->getName() << "\n";
-    delete msg;
+    if (msg->isSelfMessage()) {
+        // No send pattern
+
+    } else {
+        // Handle received message
+        EV << "Received message: " << msg->getName() << "\n";
+        delete msg;
+    }
 }
 
 void Server2::finish() {

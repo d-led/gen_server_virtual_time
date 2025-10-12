@@ -20,7 +20,7 @@ set(SOURCES
 add_executable(LoadBalancedSystem ${SOURCES})
 
 # Link OMNeT++ libraries
-target_link_libraries(LoadBalancedSystem 
+target_link_libraries(LoadBalancedSystem
     ${OMNETPP_LIBRARIES}
 )
 

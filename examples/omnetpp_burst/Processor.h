@@ -1,19 +1,19 @@
 // Generated from ActorSimulation DSL
 // Actor: processor
 
-#ifndef __PROCESSOR_H
-#define __PROCESSOR_H
+#ifndef PROCESSOR_H
+#define PROCESSOR_H
 
 #include <omnetpp.h>
 
 using namespace omnetpp;
 
 class Processor : public cSimpleModule {
-private:
-    int sendCount;
+  private:
     cMessage *selfMsg;
+    int sendCount;
 
-protected:
+  protected:
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;

@@ -20,7 +20,7 @@ set(SOURCES
 add_executable(PipelineNetwork ${SOURCES})
 
 # Link OMNeT++ libraries
-target_link_libraries(PipelineNetwork 
+target_link_libraries(PipelineNetwork
     ${OMNETPP_LIBRARIES}
 )
 

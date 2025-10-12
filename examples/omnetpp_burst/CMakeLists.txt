@@ -17,7 +17,7 @@ set(SOURCES
 add_executable(BurstNetwork ${SOURCES})
 
 # Link OMNeT++ libraries
-target_link_libraries(BurstNetwork 
+target_link_libraries(BurstNetwork
     ${OMNETPP_LIBRARIES}
 )
 

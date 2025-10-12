@@ -284,38 +284,26 @@ defmodule ActorSimulation.VlingoGenerator do
     package #{group_id};
 
     import io.vlingo.xoom.actors.Actor;
-    import io.vlingo.xoom.actors.Scheduled;
-    import io.vlingo.xoom.common.Cancellable;
     #{list_import}
 
     /**
      * Actor implementation for #{class_name}.
      * This actor implements the #{class_name}Protocol interface.
      */
-    public class #{class_name}Actor extends Actor implements #{class_name}Protocol, Scheduled<Object> {
+    public class #{class_name}Actor extends Actor implements #{class_name}Protocol {
     #{callback_field}#{target_field}
-      private Cancellable scheduled;
       private int sendCount = 0;
 
       /**
        * Constructor for #{class_name}Actor.
        */
       public #{class_name}Actor(#{format_constructor_params(callback_param, target_param)}) {
-    #{callback_init}#{target_init}#{schedule_setup}  }
+    #{callback_init}#{target_init}  }
 
     #{method_impls}
 
       @Override
-      public void intervalSignal(Scheduled<Object> scheduled, Object data) {
-        // Timer fired, send message
-        #{generate_timer_action(messages)}
-      }
-
-      @Override
       public void stop() {
-        if (scheduled != null) {
-          scheduled.cancel();
-        }
         super.stop();
       }
     }

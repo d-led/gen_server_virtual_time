@@ -1,19 +1,19 @@
 // Generated from ActorSimulation DSL
 // Actor: sink
 
-#ifndef __SINK_H
-#define __SINK_H
+#ifndef SINK_H
+#define SINK_H
 
 #include <omnetpp.h>
 
 using namespace omnetpp;
 
 class Sink : public cSimpleModule {
-private:
-    int sendCount;
+  private:
     cMessage *selfMsg;
+    int sendCount;
 
-protected:
+  protected:
     virtual void initialize() override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;

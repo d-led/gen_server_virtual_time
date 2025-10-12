@@ -33,6 +33,9 @@
 /doc/vlingo_generator.html
 /doc/404.html
 
+# ExDoc build manifest
+/doc/.build
+
 # But DO track GitHub Pages examples
 !/doc/examples/
 !/doc/index.html

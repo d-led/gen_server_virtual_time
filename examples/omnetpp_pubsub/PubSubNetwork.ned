@@ -1,8 +1,8 @@
 // Generated from ActorSimulation DSL
-// Network: PubSubNetwork
 
 simple Publisher {
     gates:
+        input in;
         output out[3];
 }
 

@@ -19,7 +19,7 @@ set(SOURCES
 add_executable(PubSubNetwork ${SOURCES})
 
 # Link OMNeT++ libraries
-target_link_libraries(PubSubNetwork 
+target_link_libraries(PubSubNetwork
     ${OMNETPP_LIBRARIES}
 )
 

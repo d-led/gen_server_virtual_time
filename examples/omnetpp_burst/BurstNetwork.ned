@@ -1,5 +1,4 @@
 // Generated from ActorSimulation DSL
-// Network: BurstNetwork
 
 simple Processor {
     gates:
@@ -9,6 +8,7 @@ simple Processor {
 
 simple BurstGenerator {
     gates:
+        input in;
         output out[1];
 }
 

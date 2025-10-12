@@ -1,26 +1,29 @@
 // Generated from ActorSimulation DSL
-// Network: PipelineNetwork
 
 simple Source {
     gates:
+        input in;
         output out[1];
 }
 
 
 simple Stage1 {
     gates:
+        input in;
         output out[1];
 }
 
 
 simple Stage2 {
     gates:
+        input in;
         output out[1];
 }
 
 
 simple Stage3 {
     gates:
+        input in;
         output out[1];
 }
 

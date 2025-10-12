@@ -1,26 +1,29 @@
 // Generated from ActorSimulation DSL
-// Network: LoadBalancedSystem
 
 simple LoadBalancer {
     gates:
+        input in;
         output out[3];
 }
 
 
 simple Server1 {
     gates:
+        input in;
         output out[1];
 }
 
 
 simple Server2 {
     gates:
+        input in;
         output out[1];
 }
 
 
 simple Server3 {
     gates:
+        input in;
         output out[1];
 }
 
