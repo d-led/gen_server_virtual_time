@@ -217,8 +217,11 @@ defmodule VirtualTimeGenServerTest do
       VirtualTimeGenServer.use_real_time()
 
       # Start servers with explicit clocks
-      {:ok, server1} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock1)
-      {:ok, server2} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock2)
+      {:ok, server1} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock1)
+
+      {:ok, server2} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock2)
 
       # Advance clock1 independently
       VirtualClock.advance(clock1, 500)
@@ -241,7 +244,9 @@ defmodule VirtualTimeGenServerTest do
 
       # But start a server with a different local clock
       {:ok, local_clock} = VirtualClock.start_link()
-      {:ok, local_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: local_clock)
+
+      {:ok, local_server} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: local_clock)
 
       # Also start a server using the global clock (no local override)
       {:ok, global_server} = TickerServer.start_link(100)
@@ -263,11 +268,17 @@ defmodule VirtualTimeGenServerTest do
     test "multiple isolated simulations can run concurrently" do
       # Simulation 1: Fast-paced trading system
       {:ok, trading_clock} = VirtualClock.start_link()
-      {:ok, trade_processor} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 10, virtual_clock: trading_clock)
+
+      {:ok, trade_processor} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 10, virtual_clock: trading_clock)
 
       # Simulation 2: Slow periodic backup system
       {:ok, backup_clock} = VirtualClock.start_link()
-      {:ok, backup_scheduler} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 1000, virtual_clock: backup_clock)
+
+      {:ok, backup_scheduler} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 1000,
+          virtual_clock: backup_clock
+        )
 
       # Advance trading simulation by 100ms (10 trades)
       VirtualClock.advance(trading_clock, 100)
@@ -291,22 +302,23 @@ defmodule VirtualTimeGenServerTest do
       {:ok, parent_clock} = VirtualClock.start_link()
 
       # Start parent with local clock
-      parent = spawn(fn ->
-        # Simulate VirtualTimeGenServer.start_link setting local clock
-        Process.put(:virtual_clock, parent_clock)
-        Process.put(:time_backend, VirtualTimeBackend)
+      parent =
+        spawn(fn ->
+          # Simulate VirtualTimeGenServer.start_link setting local clock
+          Process.put(:virtual_clock, parent_clock)
+          Process.put(:time_backend, VirtualTimeBackend)
 
-        # Start child that should inherit the clock
-        {:ok, child_server} = TickerServer.start_link(100)
+          # Start child that should inherit the clock
+          {:ok, child_server} = TickerServer.start_link(100)
 
-        receive do
-          {:advance_and_check, from} ->
-            VirtualClock.advance(parent_clock, 300)
-            count = TickerServer.get_count(child_server)
-            send(from, {:count, count})
-            GenServer.stop(child_server)
-        end
-      end)
+          receive do
+            {:advance_and_check, from} ->
+              VirtualClock.advance(parent_clock, 300)
+              count = TickerServer.get_count(child_server)
+              send(from, {:count, count})
+              GenServer.stop(child_server)
+          end
+        end)
 
       send(parent, {:advance_and_check, self()})
 
@@ -315,7 +327,8 @@ defmodule VirtualTimeGenServerTest do
 
     test "local clock with real_time: true option should use real time backend" do
       # Start server with explicit real time (no virtual clock)
-      {:ok, server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 50, real_time: true)
+      {:ok, server} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 50, real_time: true)
 
       # Even if global clock is set, server should use real time
       {:ok, clock} = VirtualClock.start_link()
@@ -370,11 +383,19 @@ defmodule VirtualTimeGenServerTest do
 
       # Simulation A: Payment processing system
       {:ok, payment_clock} = VirtualClock.start_link()
-      {:ok, payment_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: payment_clock)
 
-      # Simulation B: Analytics aggregation system  
+      {:ok, payment_server} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100,
+          virtual_clock: payment_clock
+        )
+
+      # Simulation B: Analytics aggregation system
       {:ok, analytics_clock} = VirtualClock.start_link()
-      {:ok, analytics_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 500, virtual_clock: analytics_clock)
+
+      {:ok, analytics_server} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 500,
+          virtual_clock: analytics_clock
+        )
 
       # Test payment system at high speed
       VirtualClock.advance(payment_clock, 1000)
@@ -400,10 +421,12 @@ defmodule VirtualTimeGenServerTest do
       {:ok, clock} = VirtualClock.start_link()
 
       # Virtual time for business logic
-      {:ok, virtual_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock)
+      {:ok, virtual_server} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock)
 
       # Real time for external integration (e.g., database connection pool)
-      {:ok, real_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 50, real_time: true)
+      {:ok, real_server} =
+        VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 50, real_time: true)
 
       # Advance virtual time - only affects virtual_server
       VirtualClock.advance(clock, 500)

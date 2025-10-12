@@ -1,0 +1,92 @@
+name: Phony (Go) Code Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'lib/actor_simulation/phony_generator.ex'
+      - 'examples/phony_*/**'
+      - 'scripts/generate_phony_examples.exs'
+      - '.github/workflows/phony_validation.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-phony-examples:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: ['1.21', '1.22']
+        example: [phony_pubsub, phony_pipeline, phony_burst, phony_loadbalanced]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Download dependencies
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        go mod download
+
+    - name: Build
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        go build -v ./...
+
+    - name: Test
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        go test -v ./...
+
+    - name: Run application (with timeout)
+      working-directory: examples/${{ matrix.example }}
+      shell: bash
+      run: |
+        go build -o app .
+        timeout 5 ./app || true
+
+  regenerate-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: '1.17'
+        otp-version: '27'
+
+    - name: Install dependencies
+      run: |
+        mix deps.get
+
+    - name: Regenerate Phony examples
+      run: |
+        mix run scripts/generate_phony_examples.exs
+
+    - name: Check for uncommitted changes
+      run: |
+        git diff --exit-code examples/phony_* || (echo "Generated files differ!" && exit 1)
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Validate all regenerated examples
+      run: |
+        for example in examples/phony_*; do
+          echo "Validating $example..."
+          cd $example
+          go mod download || exit 1
+          go build -v ./... || exit 1
+          go test -v ./... || exit 1
+          cd ../..
+        done
+

@@ -104,6 +104,7 @@ See the `examples/` directory for complete single-file scripts:
 | **OMNeT++** | Network simulation | NED + C++ | GUI tools, INET framework |
 | **CAF** | Production actors | C++ + Catch2 | Callback interfaces |
 | **Pony** | Safe concurrency | Type-safe actors | Data-race freedom |
+| **Phony** | Go actors | Go + tests | Zero-allocation messaging |
 
 ## Development Workflow
 

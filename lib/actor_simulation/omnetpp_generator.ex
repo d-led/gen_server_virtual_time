@@ -60,14 +60,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
   Creates the directory if it doesn't exist.
   """
   def write_to_directory(files, output_dir) do
-    File.mkdir_p!(output_dir)
-
-    Enum.each(files, fn {filename, content} ->
-      path = Path.join(output_dir, filename)
-      File.write!(path, content)
-    end)
-
-    :ok
+    ActorSimulation.GeneratorUtils.write_to_directory(files, output_dir)
   end
 
   # Private functions

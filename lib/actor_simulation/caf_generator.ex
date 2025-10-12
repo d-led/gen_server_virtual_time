@@ -72,13 +72,7 @@ defmodule ActorSimulation.CAFGenerator do
   Creates the directory and all subdirectories as needed.
   """
   def write_to_directory(files, output_dir) do
-    Enum.each(files, fn {filename, content} ->
-      path = Path.join(output_dir, filename)
-      File.mkdir_p!(Path.dirname(path))
-      File.write!(path, content)
-    end)
-
-    :ok
+    ActorSimulation.GeneratorUtils.write_to_directory(files, output_dir)
   end
 
   # Private functions
