@@ -54,3 +54,9 @@ target_link_libraries(PipelineActors_test
 # Enable testing
 enable_testing()
 add_test(NAME PipelineActors_test COMMAND PipelineActors_test)
+
+# Generate JUnit XML report for CI
+add_test(
+  NAME PipelineActors_test_junit
+  COMMAND PipelineActors_test --reporter junit --out test-results.xml
+)

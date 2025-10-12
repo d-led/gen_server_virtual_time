@@ -54,3 +54,9 @@ target_link_libraries(LoadBalancedActors_test
 # Enable testing
 enable_testing()
 add_test(NAME LoadBalancedActors_test COMMAND LoadBalancedActors_test)
+
+# Generate JUnit XML report for CI
+add_test(
+  NAME LoadBalancedActors_test_junit
+  COMMAND LoadBalancedActors_test --reporter junit --out test-results.xml
+)

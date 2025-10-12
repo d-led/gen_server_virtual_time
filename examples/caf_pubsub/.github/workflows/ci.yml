@@ -47,3 +47,17 @@ jobs:
       run: |
         cd build
         ./*_test --success
+        
+    - name: Generate JUnit test report
+      if: always()
+      run: |
+        cd build
+        ./*_test --reporter junit --out test-results.xml || true
+        
+    - name: Publish Test Results
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: |
+          build/test-results.xml
+        check_name: "Test Results (${{ matrix.os }}, ${{ matrix.build_type }})"

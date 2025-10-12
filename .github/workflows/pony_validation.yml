@@ -1,0 +1,117 @@
+name: Pony Code Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'lib/actor_simulation/pony_generator.ex'
+      - 'examples/pony_*/**'
+      - 'scripts/generate_pony_examples.exs'
+      - '.github/workflows/pony_validation.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-pony-examples:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        example: [pony_pubsub, pony_pipeline, pony_burst, pony_loadbalanced]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Pony toolchain (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
+        sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
+        echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
+
+    - name: Install Pony toolchain (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew tap ponylang/ponylang
+        brew install ponyup
+
+    - name: Update Pony compiler and Corral
+      run: |
+        ponyup update ponyc release
+        ponyup update corral release
+
+    - name: Fetch dependencies
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        corral fetch || true
+
+    - name: Build Pony project
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        ponyc .
+
+    - name: Build Pony tests
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        ponyc test
+
+    - name: Run PonyTest tests
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        ./test --sequential
+
+    - name: Run application (with timeout)
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        timeout 5 ./${{ matrix.example }} || true
+      shell: bash
+
+  regenerate-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: '1.17'
+        otp-version: '27'
+
+    - name: Install dependencies
+      run: |
+        mix deps.get
+
+    - name: Regenerate Pony examples
+      run: |
+        mix run scripts/generate_pony_examples.exs
+
+    - name: Check for uncommitted changes
+      run: |
+        git diff --exit-code examples/pony_* || (echo "Generated files differ from committed files!" && exit 1)
+
+    - name: Install Pony toolchain
+      run: |
+        sudo apt-get update
+        curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh
+        sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
+        echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
+
+    - name: Update Pony compiler
+      run: |
+        ponyup update ponyc release
+        ponyup update corral release
+
+    - name: Validate all regenerated examples
+      run: |
+        for example in examples/pony_*; do
+          echo "Validating $example..."
+          cd $example
+          corral fetch || true
+          ponyc . || exit 1
+          ponyc test || exit 1
+          ./test --sequential || exit 1
+          cd ../..
+        done
+

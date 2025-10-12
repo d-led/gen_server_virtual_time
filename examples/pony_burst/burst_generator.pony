@@ -1,0 +1,46 @@
+// Generated from ActorSimulation DSL
+// Actor: burst_generator
+
+use "collections"
+use "time"
+use "burst_generator_callbacks"
+
+
+actor BurstGenerator
+  let _env: Env
+  let _timers: Timers = Timers
+  let _targets: Array[BurstGenerator] = Array[BurstGenerator]
+  let _callbacks: BurstGeneratorCallbacks
+
+
+  new create(env: Env, targets: Array[BurstGenerator] val = recover Array[BurstGenerator] end) =>
+    _env = env
+    _targets.append(targets)
+    _callbacks = recover BurstGeneratorCallbacksImpl end
+let timer = Timer(BatchBurstTimer(this, 10), 1.0 as U64 * 1_000_000_000, 1.0 as U64 * 1_000_000_000)
+    _timers(consume timer)
+
+
+  be batch() =>
+  _callbacks.on_batch()
+    // Send to targets
+    for target in _targets.values() do
+      target.batch()
+    end
+
+class BatchBurstTimer is TimerNotify
+  let _actor: BurstGenerator tag
+  let _burst_count: USize
+
+  new iso create(actor: BurstGenerator tag, burst_count: USize) =>
+    _actor = actor
+    _burst_count = burst_count
+
+  fun ref apply(timer: Timer, count: U64): Bool =>
+    var i: USize = 0
+    while i < _burst_count do
+      _actor.batch()
+      i = i + 1
+    end
+    true  // Keep timer running
+

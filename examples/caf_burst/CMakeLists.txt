@@ -48,3 +48,9 @@ target_link_libraries(BurstActors_test
 # Enable testing
 enable_testing()
 add_test(NAME BurstActors_test COMMAND BurstActors_test)
+
+# Generate JUnit XML report for CI
+add_test(
+  NAME BurstActors_test_junit
+  COMMAND BurstActors_test --reporter junit --out test-results.xml
+)

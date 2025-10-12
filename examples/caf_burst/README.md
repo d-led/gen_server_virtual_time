@@ -34,6 +34,22 @@ cmake --build .
 ./BurstActors
 ```
 
+## Testing
+
+```bash
+# Run tests with CTest
+cd build
+ctest --output-on-failure
+
+# Run Catch2 tests with verbose output
+./BurstActors_test --success
+
+# Generate JUnit XML report
+./BurstActors_test --reporter junit --out test-results.xml
+```
+
+The CI pipeline automatically generates and publishes JUnit test reports.
+
 ## Customizing Behavior
 
 The generated actor code uses callback interfaces to allow customization WITHOUT

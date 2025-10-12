@@ -52,3 +52,9 @@ target_link_libraries(PubSubActors_test
 # Enable testing
 enable_testing()
 add_test(NAME PubSubActors_test COMMAND PubSubActors_test)
+
+# Generate JUnit XML report for CI
+add_test(
+  NAME PubSubActors_test_junit
+  COMMAND PubSubActors_test --reporter junit --out test-results.xml
+)

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Pony
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y ponyup
+          ponyup update ponyc release
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install ponyup
+          ponyup update ponyc release
+        fi
+      shell: bash
+
+    - name: Install Corral
+      run: |
+        ponyup update corral release
+
+    - name: Fetch dependencies
+      run: |
+        corral fetch
+
+    - name: Build
+      run: |
+        ponyc .
+
+    - name: Build tests
+      run: |
+        ponyc test
+
+    - name: Run tests
+      run: |
+        ./test --sequential
+
+    - name: Run application
+      run: |
+        timeout 5 ./pipeline_actors || true

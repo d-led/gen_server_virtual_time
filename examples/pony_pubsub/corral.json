@@ -1,0 +1,9 @@
+{
+  "info": {
+    "name": "pubsub_actors",
+    "description": "Generated from ActorSimulation DSL",
+    "version": "0.1.0",
+    "license": "MIT"
+  },
+  "deps": []
+}
