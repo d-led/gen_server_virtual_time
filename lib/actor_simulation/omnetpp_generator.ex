@@ -73,7 +73,9 @@ defmodule ActorSimulation.OMNeTPPGenerator do
   end
 
   defp add_cpp_files(files, actors) do
-    Enum.reduce(actors, files, fn {name, actor_info}, acc ->
+    actors
+    |> Enum.sort_by(fn {name, _info} -> name end)
+    |> Enum.reduce(files, fn {name, actor_info}, acc ->
       case actor_info.type do
         :simulated ->
           class_name = camelize(name)
@@ -108,6 +110,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       actors
       |> Enum.filter(fn {_name, info} -> info.type == :simulated end)
       |> Enum.map(fn {name, info} -> {name, info.definition} end)
+      |> Enum.sort_by(fn {name, _definition} -> name end)
 
     simple_modules =
       Enum.map(simulated_actors, fn {name, definition} ->
@@ -352,6 +355,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       actors
       |> Enum.filter(fn {_name, info} -> info.type == :simulated end)
       |> Enum.map(fn {name, _info} -> name end)
+      |> Enum.sort()
 
     sources =
       simulated_actors
