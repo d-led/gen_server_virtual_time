@@ -1,10 +1,13 @@
 # Code Generators - Quick Start Guide
 
-This library includes **four production-ready code generators** that translate ActorSimulation DSL into different languages and frameworks.
+This library includes **four production-ready code generators** that translate
+ActorSimulation DSL into different languages and frameworks.
 
 ## Single-File Script Examples
 
-Following [Fly.io's single-file Elixir pattern](https://fly.io/phoenix-files/single-file-elixir-scripts/), you can generate complete projects with just `Mix.install`!
+Following
+[Fly.io's single-file Elixir pattern](https://fly.io/phoenix-files/single-file-elixir-scripts/),
+you can generate complete projects with just `Mix.install`!
 
 ### OMNeT++ (Network Simulation)
 
@@ -92,12 +95,12 @@ See the [`examples/`](../examples/) directory for complete single-file scripts:
 
 ## Comparison
 
-| Generator | Purpose | Output | Key Feature |
-|-----------|---------|--------|-------------|
-| **OMNeT++** | Network simulation | NED + C++ | GUI tools, INET framework |
-| **CAF** | Production actors | C++ + Catch2 | Callback interfaces |
-| **Pony** | Safe concurrency | Type-safe actors | Data-race freedom |
-| **Phony** | Go actors | Go + tests | Zero-allocation messaging |
+| Generator   | Purpose            | Output           | Key Feature               |
+| ----------- | ------------------ | ---------------- | ------------------------- |
+| **OMNeT++** | Network simulation | NED + C++        | GUI tools, INET framework |
+| **CAF**     | Production actors  | C++ + Catch2     | Callback interfaces       |
+| **Pony**    | Safe concurrency   | Type-safe actors | Data-race freedom         |
+| **Phony**   | Go actors          | Go + tests       | Zero-allocation messaging |
 
 ## Development Workflow
 
@@ -118,6 +121,7 @@ Benefits of using `Mix.install` for code generation:
 ✅ **Fast** - Generate code in seconds
 
 Perfect for:
+
 - Bug reports with minimal examples
 - Quick prototyping
 - CI/CD pipelines

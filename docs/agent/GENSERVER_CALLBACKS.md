@@ -3,6 +3,7 @@
 ## ✅ Fully Supported Callbacks
 
 ### handle_info/2 - Message Reception
+
 **Status**: ✅ Fully supported with virtual time
 
 ```elixir
@@ -18,6 +19,7 @@ end
 ```
 
 **Works with**:
+
 - `send/2` - Immediate messages
 - `VirtualTimeGenServer.send_after/3` - Delayed messages (virtual time)
 - `Process.send_after/3` - When using real time backend
@@ -27,6 +29,7 @@ end
 ---
 
 ### handle_call/3 - Synchronous RPC
+
 **Status**: ✅ Fully supported
 
 ```elixir
@@ -41,6 +44,7 @@ end
 ```
 
 **Works with**:
+
 - `GenServer.call/2` - Default 5s timeout
 - `GenServer.call/3` - Custom timeout (uses real time ⚠️)
 
@@ -51,6 +55,7 @@ end
 ---
 
 ### handle_cast/2 - Asynchronous Messages
+
 **Status**: ✅ Fully supported
 
 ```elixir
@@ -64,6 +69,7 @@ end
 ```
 
 **Works with**:
+
 - `GenServer.cast/2` - Fire and forget async messages
 
 **Tested**: ✅ Yes (1 test)
@@ -71,6 +77,7 @@ end
 ---
 
 ### init/1 - Initialization
+
 **Status**: ✅ Fully supported
 
 ```elixir
@@ -82,6 +89,7 @@ end
 ```
 
 **Supported return values**:
+
 - `{:ok, state}` - ✅ Works
 - `{:ok, state, timeout}` - ⚠️ Timeout uses real time
 - `{:ok, state, :hibernate}` - ⚠️ Not tested
@@ -94,6 +102,7 @@ end
 ---
 
 ### terminate/2 - Cleanup
+
 **Status**: ✅ Supported (delegates to module)
 
 ```elixir
@@ -109,6 +118,7 @@ end
 ---
 
 ### code_change/3 - Hot Code Reloading
+
 **Status**: ✅ Supported (delegates to module)
 
 ```elixir
@@ -120,6 +130,7 @@ end
 **Tested**: ⚠️ Not explicitly tested yet
 
 ### handle_continue/2 - OTP 21+
+
 **Status**: ✅ Fully supported
 
 ```elixir
@@ -153,14 +164,15 @@ end
 
 ### Timeouts
 
-| Timeout Type | Virtual Time? | Notes |
-|--------------|---------------|-------|
-| `VirtualTimeGenServer.send_after/3` | ✅ Yes | Use this for delays |
-| `GenServer.call/3` timeout param | ❌ No | Uses real time |
-| `:timeout` in init return | ❌ No | Uses real time |
-| `{:timeout, ms, msg}` | ❌ No | Not implemented |
+| Timeout Type                        | Virtual Time? | Notes               |
+| ----------------------------------- | ------------- | ------------------- |
+| `VirtualTimeGenServer.send_after/3` | ✅ Yes        | Use this for delays |
+| `GenServer.call/3` timeout param    | ❌ No         | Uses real time      |
+| `:timeout` in init return           | ❌ No         | Uses real time      |
+| `{:timeout, ms, msg}`               | ❌ No         | Not implemented     |
 
 **Example of limitation**:
+
 ```elixir
 # This timeout uses REAL time, not virtual
 GenServer.call(server, :slow_op, 5000)  # Waits 5 real seconds
@@ -174,15 +186,15 @@ GenServer.cast(server, :start_slow_op)
 
 ## 📊 Test Coverage Summary
 
-| Callback | Tests | Coverage |
-|----------|-------|----------|
-| `handle_info/2` | 8 | ✅ Excellent |
-| `handle_call/3` | 2 | ✅ Good |
-| `handle_cast/2` | 1 | ✅ Basic |
-| `init/1` | 10+ | ✅ Comprehensive |
-| `terminate/2` | 0 | ⚠️ TODO |
-| `code_change/3` | 0 | ⚠️ TODO |
-| `handle_continue/2` | N/A | ❌ Not supported |
+| Callback            | Tests | Coverage         |
+| ------------------- | ----- | ---------------- |
+| `handle_info/2`     | 8     | ✅ Excellent     |
+| `handle_call/3`     | 2     | ✅ Good          |
+| `handle_cast/2`     | 1     | ✅ Basic         |
+| `init/1`            | 10+   | ✅ Comprehensive |
+| `terminate/2`       | 0     | ⚠️ TODO          |
+| `code_change/3`     | 0     | ⚠️ TODO          |
+| `handle_continue/2` | N/A   | ❌ Not supported |
 
 **Total GenServer tests**: 8 dedicated + 10+ indirect  
 **All passing**: ✅ Yes
@@ -192,6 +204,7 @@ GenServer.cast(server, :start_slow_op)
 ## 🎯 Recommendations
 
 ### Do Use ✅
+
 - `handle_info/2` with `VirtualTimeGenServer.send_after/3`
 - `handle_call/3` for synchronous operations
 - `handle_cast/2` for async operations
@@ -199,11 +212,13 @@ GenServer.cast(server, :start_slow_op)
 - `GenServer.call/2` (without timeout param)
 
 ### Avoid / Workaround ⚠️
+
 - `GenServer.call/3` with timeout - timeout is real time
 - `:timeout` in init - uses real time
 - `{:continue, ...}` in init - not supported (use send_after(self(), msg, 0))
 
 ### Not Available ❌
+
 - `handle_continue/2` - not implemented
 - `{:timeout, ms, msg}` returns - not implemented
 
@@ -224,20 +239,21 @@ Priority order:
 ## 💡 Usage Examples
 
 ### All Three Callback Types Together
+
 ```elixir
 defmodule FullServer do
   use VirtualTimeGenServer
-  
+
   # Sync RPC
   def handle_call(:get_state, _from, state) do
     {:reply, state, state}
   end
-  
+
   # Async message
   def handle_cast(:reset, state) do
     {:noreply, %{state | count: 0}}
   end
-  
+
   # Timed events
   def handle_info(:tick, state) do
     VirtualTimeGenServer.send_after(self(), :tick, 1000)
@@ -250,16 +266,15 @@ test "combines all callback types" do
   {:ok, clock} = VirtualClock.start_link()
   VirtualTimeGenServer.set_virtual_clock(clock)
   {:ok, server} = FullServer.start_link(%{count: 0})
-  
+
   GenServer.call(server, :get_state)     # Sync
   GenServer.cast(server, :reset)         # Async
   VirtualClock.advance(clock, 5000)      # Timed
-  
+
   assert GenServer.call(server, :get_state).count == 5
 end
 ```
 
 ---
 
-*See `test/genserver_callbacks_test.exs` for complete working examples.*
-
+_See `test/genserver_callbacks_test.exs` for complete working examples._

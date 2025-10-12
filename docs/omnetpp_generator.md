@@ -37,9 +37,11 @@ ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_out/")
 
 ## Examples
 
-See [`examples/omnetpp_pubsub/`](../examples/omnetpp_pubsub/) for a complete generated project.
+See [`examples/omnetpp_pubsub/`](../examples/omnetpp_pubsub/) for a complete
+generated project.
 
-Try the single-file script: [`examples/single_file_omnetpp.exs`](../examples/single_file_omnetpp.exs)
+Try the single-file script:
+[`examples/single_file_omnetpp.exs`](../examples/single_file_omnetpp.exs)
 
 ## Building Generated Code
 
@@ -56,4 +58,3 @@ make
 - [OMNeT++ Homepage](https://omnetpp.org/)
 - [OMNeT++ Documentation](https://doc.omnetpp.org/)
 - [Generator Comparison](generators.md#comparison)
-

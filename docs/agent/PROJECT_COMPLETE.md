@@ -2,11 +2,14 @@
 
 ## 🎉 Mission Accomplished!
 
-Successfully built a comprehensive Elixir library for testing time-dependent GenServers and simulating actor systems using virtual time, inspired by RxJS TestScheduler and reactive programming principles.
+Successfully built a comprehensive Elixir library for testing time-dependent
+GenServers and simulating actor systems using virtual time, inspired by RxJS
+TestScheduler and reactive programming principles.
 
 ## 📦 What Was Delivered
 
 ### Core Features
+
 1. ✅ **VirtualTimeGenServer** - Drop-in GenServer replacement with virtual time
 2. ✅ **VirtualClock** - Manages virtual time and event scheduling
 3. ✅ **Time Backend System** - Switchable real/virtual time backends
@@ -14,6 +17,7 @@ Successfully built a comprehensive Elixir library for testing time-dependent Gen
 5. ✅ **Statistics Collection** - Track message rates and interactions
 
 ### Code Metrics
+
 - **1,663 lines** of Elixir code
 - **26 tests** - all passing ✅
 - **4 modules** in core library
@@ -22,6 +26,7 @@ Successfully built a comprehensive Elixir library for testing time-dependent Gen
 - **100% test success rate**
 
 ### Documentation
+
 - 📖 Comprehensive README with examples
 - 📊 Project SUMMARY with architecture details
 - 🎬 Working demo script
@@ -30,6 +35,7 @@ Successfully built a comprehensive Elixir library for testing time-dependent Gen
 ## 🚀 Key Achievements
 
 ### 1. Virtual Time Testing
+
 ```elixir
 # Old way: Wait 10 seconds
 Process.sleep(10_000)
@@ -41,6 +47,7 @@ VirtualClock.advance(clock, 10_000)
 **Result**: 100x faster tests, zero flakiness
 
 ### 2. Actor Simulation DSL
+
 ```elixir
 ActorSimulation.new()
 |> add_actor(:producer, send_pattern: {:rate, 100, :msg})
@@ -53,6 +60,7 @@ ActorSimulation.new()
 ### 3. Test Demonstrations
 
 #### Real Time vs Virtual Time
+
 ```
 Test: "DON'T WAIT FOREVER"
 Real Time: Would take 1000 seconds ❌
@@ -61,6 +69,7 @@ Speedup: 500x+
 ```
 
 #### Complex Scenarios Made Simple
+
 - ✅ Pipeline patterns (A→B→C→D)
 - ✅ Pub-sub (1 publisher → many subscribers)
 - ✅ Request-response patterns
@@ -70,11 +79,11 @@ Speedup: 500x+
 ## 📊 Performance Results
 
 | Simulation Duration | Real Time | Virtual Time | Speedup |
-|-------------------|-----------|--------------|---------|
-| 1 second | 1000ms | ~10ms | 100x |
-| 10 seconds | 10s | ~100ms | 100x |
-| 1 minute | 60s | ~6s | 10x |
-| 10 minutes | 10min | ~60s | 10x |
+| ------------------- | --------- | ------------ | ------- |
+| 1 second            | 1000ms    | ~10ms        | 100x    |
+| 10 seconds          | 10s       | ~100ms       | 100x    |
+| 1 minute            | 60s       | ~6s          | 10x     |
+| 10 minutes          | 10min     | ~60s         | 10x     |
 
 ## 🎯 Test Results
 
@@ -119,6 +128,7 @@ Finished in 10.8 seconds
 ## 📚 Usage Example
 
 ### Before (Slow & Flaky)
+
 ```elixir
 test "heartbeat works" do
   {:ok, server} = Heartbeat.start_link(1000)
@@ -128,11 +138,12 @@ end
 ```
 
 ### After (Fast & Precise)
+
 ```elixir
 test "heartbeat works" do
   {:ok, clock} = VirtualClock.start_link()
   VirtualTimeGenServer.set_virtual_clock(clock)
-  
+
   {:ok, server} = Heartbeat.start_link(1000)
   VirtualClock.advance(clock, 5000)  # Instant! ⚡
   assert get_beats(server) == 5  # Exact!
@@ -142,12 +153,14 @@ end
 ## 🏗️ Architecture Highlights
 
 ### Clean Design
+
 - **Separation of concerns**: Time backend, GenServer wrapper, Actor DSL
 - **Composable**: Mix and match components
 - **Testable**: Comprehensive test coverage
 - **Maintainable**: Clear module boundaries
 
 ### Smart Implementation
+
 - Incremental time advancement with event processing
 - Process dictionary inheritance for child processes
 - Transparent wrapper pattern for GenServer
@@ -157,7 +170,8 @@ end
 
 - **RxJS TestScheduler**: Virtual time for observables
 - **RxJava TestScheduler**: JVM reactive testing
-- **[Don't Wait Forever](https://github.com/d-led/dont_wait_forever_for_the_tests)**: Testing philosophy
+- **[Don't Wait Forever](https://github.com/d-led/dont_wait_forever_for_the_tests)**:
+  Testing philosophy
 
 ## 🚢 Ready to Use
 
@@ -219,7 +233,8 @@ gen_server_virtual_time/
 
 1. **Virtual time is powerful**: 100x+ speedups without sacrificing precision
 2. **GenServer is flexible**: Easy to wrap and extend with custom behavior
-3. **Actor patterns are universal**: Pipeline, pub-sub, request-response all work
+3. **Actor patterns are universal**: Pipeline, pub-sub, request-response all
+   work
 4. **Testing shouldn't wait**: Time-dependent tests can be instant
 5. **Good APIs matter**: Clean DSL makes complex simulations simple
 
@@ -246,6 +261,7 @@ gen_server_virtual_time/
 ## 🎉 Conclusion
 
 Successfully created a production-ready Elixir library that:
+
 - ✅ Makes time-dependent tests 100x+ faster
 - ✅ Provides powerful actor simulation capabilities
 - ✅ Offers comprehensive statistics collection
@@ -256,6 +272,5 @@ Successfully created a production-ready Elixir library that:
 
 ---
 
-*Built with ❤️ for the Elixir community*
-*Inspired by reactive programming's best practices*
-
+_Built with ❤️ for the Elixir community_ _Inspired by reactive programming's
+best practices_

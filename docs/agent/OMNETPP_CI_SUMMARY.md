@@ -2,17 +2,18 @@
 
 ## ✅ Complete CI Infrastructure for OMNeT++ Code Generation
 
-Successfully created comprehensive testing infrastructure for validating OMNeT++ code generation from ActorSimulation DSL.
+Successfully created comprehensive testing infrastructure for validating OMNeT++
+code generation from ActorSimulation DSL.
 
 ## What Was Built
 
 ### 🛠️ Helper Scripts (627 lines)
 
-| Script | Lines | Purpose |
-|--------|-------|---------|
-| `generate_omnetpp_examples.exs` | 129 | Generates all 4 OMNeT++ projects |
-| `validate_omnetpp_output.exs` | 250 | Validates generated code (unit-test style) |
-| `omnetpp_generation.yml` | 248 | GitHub Actions CI workflow |
+| Script                          | Lines | Purpose                                    |
+| ------------------------------- | ----- | ------------------------------------------ |
+| `generate_omnetpp_examples.exs` | 129   | Generates all 4 OMNeT++ projects           |
+| `validate_omnetpp_output.exs`   | 250   | Validates generated code (unit-test style) |
+| `omnetpp_generation.yml`        | 248   | GitHub Actions CI workflow                 |
 
 ### 📊 Current Validation Status
 
@@ -35,6 +36,7 @@ Successfully created comprehensive testing infrastructure for validating OMNeT++
 The validation script performs **fine-grained checks** similar to unit tests:
 
 **C++ Validation:**
+
 - ✅ Include guards present and correct
 - ✅ Proper `cSimpleModule` inheritance
 - ✅ All virtual methods declared
@@ -44,12 +46,14 @@ The validation script performs **fine-grained checks** similar to unit tests:
 - ✅ Message cleanup (delete msg)
 
 **NED Validation:**
+
 - ✅ Simple module definitions
 - ✅ Network topology
 - ✅ Submodules and connections
 - ✅ Gate syntax
 
 **Build System:**
+
 - ✅ CMake configuration
 - ✅ OMNeT++ package detection
 - ✅ Executable targets
@@ -58,11 +62,13 @@ The validation script performs **fine-grained checks** similar to unit tests:
 ### 🔄 GitHub Actions CI
 
 **Matrix Testing:**
+
 - Elixir: 1.17, 1.18
 - OTP: 26, 27
 - Total: 4 combinations
 
 **19 Validation Steps:**
+
 1. Checkout code
 2. Setup Elixir/OTP
 3. Cache dependencies
@@ -86,11 +92,13 @@ The validation script performs **fine-grained checks** similar to unit tests:
 ### 📦 Artifacts
 
 **Generated Code Artifacts:**
+
 - Retained: 7 days
 - Contains: All 4 projects
 - Format: `omnetpp-generated-code-elixir-X.Y-otp-Z`
 
 **Validation Reports:**
+
 - Retained: 30 days
 - Format: Markdown with statistics
 - Name: `validation-report-elixir-X.Y-otp-Z.md`
@@ -175,18 +183,21 @@ Total errors: 0
 ## Benefits
 
 ### 🚀 Development
+
 - Fast feedback (scripts run in seconds)
 - Comprehensive validation (20+ rules)
 - Clear error messages
 - Same checks locally and in CI
 
 ### 🔒 Quality Assurance
+
 - No regression (validates every change)
 - Memory safety checks
 - Version control friendly (no timestamps)
 - Cross-version consistency
 
 ### 🤖 CI/CD
+
 - Automated testing on every push
 - Matrix testing (4 configurations)
 - Artifact preservation
@@ -221,13 +232,13 @@ Rather than just compiling, we perform **unit-test-like checks**:
 
 ## Status
 
-| Component | Status | Files | Lines |
-|-----------|--------|-------|-------|
-| Generator Script | ✅ Complete | 1 | 129 |
-| Validator Script | ✅ Complete | 1 | 250 |
-| CI Workflow | ✅ Complete | 1 | 248 |
-| Documentation | ✅ Complete | 4 | 500+ |
-| Generated Examples | ✅ Validated | 48 | ~2000 |
+| Component          | Status       | Files | Lines |
+| ------------------ | ------------ | ----- | ----- |
+| Generator Script   | ✅ Complete  | 1     | 129   |
+| Validator Script   | ✅ Complete  | 1     | 250   |
+| CI Workflow        | ✅ Complete  | 1     | 248   |
+| Documentation      | ✅ Complete  | 4     | 500+  |
+| Generated Examples | ✅ Validated | 48    | ~2000 |
 
 ## Next Steps
 
@@ -269,10 +280,11 @@ cat .github/workflows/omnetpp_generation.yml
 
 - [scripts/README.md](scripts/README.md) - Script documentation
 - [CI_SETUP_COMPLETE.md](CI_SETUP_COMPLETE.md) - Detailed setup guide
-- [.github/workflows/omnetpp_generation.yml](.github/workflows/omnetpp_generation.yml) - CI workflow
+- [.github/workflows/omnetpp_generation.yml](.github/workflows/omnetpp_generation.yml) -
+  CI workflow
 - [OMNETPP_GENERATOR.md](OMNETPP_GENERATOR.md) - Generator documentation
 
 ---
 
-**Result:** Production-ready CI infrastructure for testing OMNeT++ code generation with comprehensive unit-test-like validation! 🎉
-
+**Result:** Production-ready CI infrastructure for testing OMNeT++ code
+generation with comprehensive unit-test-like validation! 🎉

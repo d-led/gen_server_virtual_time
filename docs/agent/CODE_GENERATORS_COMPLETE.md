@@ -1,6 +1,7 @@
 # Code Generators Complete Summary
 
-This document summarizes the two code generators added to the ActorSimulation DSL.
+This document summarizes the two code generators added to the ActorSimulation
+DSL.
 
 ## Overview
 
@@ -9,11 +10,13 @@ We now have **two production-ready C++ code generators**:
 1. **OMNeT++ Generator** - For network simulations
 2. **CAF Generator** - For production actor systems with callback customization
 
-Both generators are fully tested, include CI pipelines, and generate validated C++ code.
+Both generators are fully tested, include CI pipelines, and generate validated
+C++ code.
 
 ## OMNeT++ Generator
 
 ### Features
+
 - ✅ Complete NED network topology generation
 - ✅ C++ Simple Module implementations
 - ✅ All send patterns (periodic, rate, burst)
@@ -23,6 +26,7 @@ Both generators are fully tested, include CI pipelines, and generate validated C
 - ✅ 4 example projects generated
 
 ### Generated Files
+
 - `NetworkName.ned` - Network topology
 - `ActorName.h/cc` - Simple modules
 - `CMakeLists.txt` - Build configuration
@@ -30,12 +34,14 @@ Both generators are fully tested, include CI pipelines, and generate validated C
 - `omnetpp.ini` - Simulation parameters
 
 ### Testing
+
 ```bash
 mix test test/omnetpp_generator_test.exs  # 12 tests pass
 mix run scripts/generate_omnetpp_examples.exs
 ```
 
 ### Examples
+
 - `examples/omnetpp_pubsub/` - Pub-Sub System
 - `examples/omnetpp_pipeline/` - Message Pipeline
 - `examples/omnetpp_burst/` - Bursty Traffic
@@ -44,6 +50,7 @@ mix run scripts/generate_omnetpp_examples.exs
 ## CAF Generator (NEW!)
 
 ### Features
+
 - ✅ CAF event-based actors
 - ✅ **Callback interfaces for customization**
 - ✅ All send patterns (periodic, rate, burst)
@@ -55,6 +62,7 @@ mix run scripts/generate_omnetpp_examples.exs
 - ✅ Validation script
 
 ### Generated Files
+
 - `actor_name_actor.hpp/cpp` - Actor implementations (DO NOT EDIT)
 - `actor_name_callbacks.hpp` - Callback interfaces (DO NOT EDIT)
 - `actor_name_callbacks_impl.cpp` - **Custom code goes here!**
@@ -66,7 +74,8 @@ mix run scripts/generate_omnetpp_examples.exs
 
 ### Key Innovation: Callback Interfaces
 
-The CAF generator creates **callback interfaces** that allow developers to add custom behavior WITHOUT modifying generated code:
+The CAF generator creates **callback interfaces** that allow developers to add
+custom behavior WITHOUT modifying generated code:
 
 ```cpp
 // Generated interface (DO NOT EDIT)
@@ -86,12 +95,14 @@ void worker_callbacks::on_tick() {
 ```
 
 **Benefits:**
+
 - Clean separation: generated vs custom code
 - Version control friendly
 - Easy to upgrade generator
 - Team collaboration clarity
 
 ### Testing & Validation
+
 ```bash
 # Run generator tests
 mix test test/caf_generator_test.exs  # 13 tests pass
@@ -145,6 +156,7 @@ jobs:
 ```
 
 ### Examples
+
 - `examples/caf_pubsub/` - Pub-Sub System with tests
 - `examples/caf_pipeline/` - Message Pipeline with tests
 - `examples/caf_burst/` - Bursty Traffic with tests
@@ -152,16 +164,16 @@ jobs:
 
 ## Comparison
 
-| Feature | OMNeT++ | CAF |
-|---------|---------|-----|
-| **Purpose** | Network simulation | Production actor systems |
-| **Runtime** | Simulation time | Real-time |
-| **Customization** | Edit generated C++ | Callback interfaces |
-| **Testing** | Manual | Catch2 automated tests |
-| **CI/CD** | Manual | GitHub Actions included |
-| **GUI** | Yes (OMNeT++ IDE) | No (command-line) |
-| **Scalability** | Millions of events | Millions of messages/sec |
-| **Use Case** | Research, validation | Production deployment |
+| Feature           | OMNeT++              | CAF                      |
+| ----------------- | -------------------- | ------------------------ |
+| **Purpose**       | Network simulation   | Production actor systems |
+| **Runtime**       | Simulation time      | Real-time                |
+| **Customization** | Edit generated C++   | Callback interfaces      |
+| **Testing**       | Manual               | Catch2 automated tests   |
+| **CI/CD**         | Manual               | GitHub Actions included  |
+| **GUI**           | Yes (OMNeT++ IDE)    | No (command-line)        |
+| **Scalability**   | Millions of events   | Millions of messages/sec |
+| **Use Case**      | Research, validation | Production deployment    |
 
 ## Workflow Enabled
 
@@ -187,6 +199,7 @@ Both generators enable a powerful development workflow:
 ## Documentation
 
 ### Comprehensive Docs Created
+
 - `OMNETPP_GENERATOR.md` - OMNeT++ generator documentation
 - `CAF_GENERATOR.md` - CAF generator documentation (with callback examples)
 - Updated `README.md` - Main documentation with both generators
@@ -195,6 +208,7 @@ Both generators enable a powerful development workflow:
 ## Test Coverage
 
 ### Total Tests: 125 (all passing)
+
 - OMNeT++ Generator: 12 tests
 - CAF Generator: 13 tests
 - Original framework: 100 tests
@@ -203,12 +217,14 @@ Both generators enable a powerful development workflow:
 ## Scripts & Automation
 
 ### Generation Scripts
+
 - `examples/omnetpp_demo.exs` - Generate OMNeT++ examples
 - `examples/caf_demo.exs` - Generate CAF examples
 - `scripts/generate_omnetpp_examples.exs` - Batch OMNeT++ generation
 - `scripts/generate_caf_examples.exs` - Batch CAF generation
 
 ### Validation Scripts
+
 - `scripts/validate_caf_output.exs` - Validate CAF generated code
   - Checks required files
   - Validates C++ syntax
@@ -220,11 +236,13 @@ Both generators enable a powerful development workflow:
 ## Statistics
 
 ### Code Generated
+
 - **OMNeT++ Examples:** 48 files across 4 projects
 - **CAF Examples:** 88 files across 4 projects (with tests!)
 - **Total:** 136 production-ready C++ files
 
 ### Generator Code
+
 - `lib/actor_simulation/omnetpp_generator.ex` - 390 lines
 - `lib/actor_simulation/caf_generator.ex` - 750 lines
 - Test files: 500+ lines
@@ -233,11 +251,13 @@ Both generators enable a powerful development workflow:
 ## Dependencies
 
 ### OMNeT++ Projects
+
 - OMNeT++ 6.0+
 - CMake 3.15+
 - C++17 compiler
 
 ### CAF Projects
+
 - CAF 0.18.7 (via Conan)
 - Catch2 3.7.1 (via Conan)
 - CMake 3.15+
@@ -246,6 +266,7 @@ Both generators enable a powerful development workflow:
 ## Build Instructions
 
 ### OMNeT++ Projects
+
 ```bash
 cd examples/omnetpp_pubsub
 mkdir build && cd build
@@ -255,6 +276,7 @@ make
 ```
 
 ### CAF Projects
+
 ```bash
 cd examples/caf_pubsub
 mkdir build && cd build
@@ -284,6 +306,7 @@ ctest --output-on-failure
 ## Future Enhancements
 
 ### Potential Features
+
 1. **Typed Messages** - Custom message types in CAF
 2. **Distributed Actors** - Network transparency in CAF
 3. **State Machines** - FSM generation from on_receive
@@ -294,7 +317,8 @@ ctest --output-on-failure
 
 ## Conclusion
 
-The ActorSimulation DSL now provides **end-to-end support** from prototyping to production:
+The ActorSimulation DSL now provides **end-to-end support** from prototyping to
+production:
 
 - **Prototype** in Elixir (fast, interactive)
 - **Test** with virtual time (instant, deterministic)
@@ -315,7 +339,4 @@ The ActorSimulation DSL now provides **end-to-end support** from prototyping to 
 
 ---
 
-Generated: October 12, 2025
-Project: gen_server_virtual_time
-Version: 0.1.0
-
+Generated: October 12, 2025 Project: gen_server_virtual_time Version: 0.1.0

@@ -1,10 +1,13 @@
 # VLINGO XOOM Generator
 
-Generate production-ready Java actor systems from ActorSimulation DSL using VLINGO XOOM Actors.
+Generate production-ready Java actor systems from ActorSimulation DSL using
+VLINGO XOOM Actors.
 
 ## Overview
 
-VLINGO XOOM is a Java framework for building reactive, event-driven distributed systems. This generator translates ActorSimulation definitions into complete Maven projects with:
+VLINGO XOOM is a Java framework for building reactive, event-driven distributed
+systems. This generator translates ActorSimulation definitions into complete
+Maven projects with:
 
 - **Type-safe actor implementations** - Protocol interfaces for messaging
 - **Scheduler integration** - Built-in periodic message sending
@@ -97,9 +100,9 @@ public interface LoadBalancerProtocol {
 }
 
 // Generated actor implementation
-public class LoadBalancerActor extends Actor 
+public class LoadBalancerActor extends Actor
     implements LoadBalancerProtocol, Scheduled<Object> {
-  
+
   @Override
   public void distributeWork() {
     callbacks.onDistributeWork();
@@ -136,7 +139,7 @@ Add your business logic without modifying generated code:
 ```java
 // LoadBalancerCallbacksImpl.java (YOUR CODE HERE!)
 public class LoadBalancerCallbacksImpl implements LoadBalancerCallbacks {
-  
+
   @Override
   public void onDistributeWork() {
     // Add your custom logic
@@ -180,13 +183,13 @@ public class LoadBalancerActorTest {
 VlingoGenerator.generate(simulation,
   # Required: Maven artifact name (kebab-case)
   project_name: "my-actors",
-  
+
   # Optional: Maven group ID (default: "com.example")
   group_id: "com.mycompany.actors",
-  
+
   # Optional: VLINGO XOOM version (default: "1.11.1")
   vlingo_version: "1.11.1",
-  
+
   # Optional: Generate callback interfaces (default: true)
   enable_callbacks: true
 )
@@ -254,14 +257,14 @@ VLINGO XOOM provides:
 
 ## Comparison with Other Generators
 
-| Feature | OMNeT++ | CAF | Pony | Phony | **VLINGO** |
-|---------|---------|-----|------|-------|------------|
-| Language | C++ | C++ | Pony | Go | **Java** |
-| Type Safety | ✓ | ✓ | ✓✓✓ | ✓ | **✓✓** |
-| Callbacks | ✗ | ✓ | ✓ | ✓ | **✓** |
-| Scheduler | ✓ | ✓ | ✓ | ✓ | **✓** |
-| Enterprise Ready | ✓✓✓ | ✓ | ✓ | ✓ | **✓✓✓** |
-| JVM Ecosystem | ✗ | ✗ | ✗ | ✗ | **✓** |
+| Feature          | OMNeT++ | CAF | Pony | Phony | **VLINGO** |
+| ---------------- | ------- | --- | ---- | ----- | ---------- |
+| Language         | C++     | C++ | Pony | Go    | **Java**   |
+| Type Safety      | ✓       | ✓   | ✓✓✓  | ✓     | **✓✓**     |
+| Callbacks        | ✗       | ✓   | ✓    | ✓     | **✓**      |
+| Scheduler        | ✓       | ✓   | ✓    | ✓     | **✓**      |
+| Enterprise Ready | ✓✓✓     | ✓   | ✓    | ✓     | **✓✓✓**    |
+| JVM Ecosystem    | ✗       | ✗   | ✗    | ✗     | **✓**      |
 
 ## Learn More
 
@@ -272,18 +275,19 @@ VLINGO XOOM provides:
 
 ## Example: Load Balanced Worker Pool
 
-See `scripts/generate_vlingo_sample.exs` for a complete working example of a load-balanced worker pool with result aggregation.
+See `scripts/generate_vlingo_sample.exs` for a complete working example of a
+load-balanced worker pool with result aggregation.
 
 ```bash
 mix run scripts/generate_vlingo_sample.exs
-cd vlingo_loadbalanced_generated
+cd generated/vlingo_loadbalanced
 mvn test
 ```
 
 This generates a realistic distributed system with:
+
 - 1 load balancer distributing work (50ms period)
 - 3 workers processing tasks (200ms period)
 - 1 result collector aggregating results (2 msgs/sec)
 
 All with full JUnit 5 test coverage and customizable callbacks!
-

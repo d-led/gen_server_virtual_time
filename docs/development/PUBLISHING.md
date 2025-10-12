@@ -1,6 +1,7 @@
 # Publishing Guide
 
-This document describes how to publish `gen_server_virtual_time` to Hex.pm and HexDocs.pm, including automated workflows and maintenance procedures.
+This document describes how to publish `gen_server_virtual_time` to Hex.pm and
+HexDocs.pm, including automated workflows and maintenance procedures.
 
 ## Table of Contents
 
@@ -33,11 +34,13 @@ This document describes how to publish `gen_server_virtual_time` to Hex.pm and H
 ### Local Environment Setup
 
 1. **Authenticate with Hex:**
+
    ```bash
    mix hex.user auth
    ```
 
 2. **Install dependencies:**
+
    ```bash
    mix deps.get
    ```
@@ -53,7 +56,8 @@ This document describes how to publish `gen_server_virtual_time` to Hex.pm and H
 
 ### 1. Configure GitHub Secrets
 
-Add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+Add the following secrets to your GitHub repository (Settings → Secrets and
+variables → Actions):
 
 - `HEX_API_KEY`: Your Hex.pm API key
 
@@ -92,12 +96,14 @@ Ensure these files exist and are up-to-date:
 This is the recommended approach for production releases.
 
 1. **Prepare the release:**
+
    ```bash
    # Run pre-release checks
    ./scripts/prepare_release.sh
    ```
 
 2. **Bump the version:**
+
    ```bash
    # For a patch release (0.1.0 → 0.1.1)
    ./scripts/bump_version.sh patch
@@ -117,44 +123,50 @@ This is the recommended approach for production releases.
    - Create a git tag (e.g., `v0.1.1`)
 
 3. **Review the changes:**
+
    ```bash
    git show HEAD
    ```
 
 4. **Update CHANGELOG.md:**
-   
+
    Edit `CHANGELOG.md` and add release notes under the new version section:
 
    ```markdown
    ## [0.1.1] - 2025-10-11
 
    ### Added
+
    - New feature X
    - New feature Y
 
    ### Fixed
+
    - Bug fix A
    - Bug fix B
    ```
 
 5. **Commit CHANGELOG updates (if any):**
+
    ```bash
    git add CHANGELOG.md
    git commit --amend --no-edit
    ```
 
 6. **Push the changes:**
+
    ```bash
    git push origin main
    ```
 
 7. **Push the tag:**
+
    ```bash
    git push origin v0.1.1  # Replace with your version
    ```
 
 8. **Automated Publishing:**
-   
+
    Once the tag is pushed, GitHub Actions will automatically:
    - Run all tests
    - Build documentation
@@ -162,23 +174,27 @@ This is the recommended approach for production releases.
    - Publish docs to HexDocs.pm
    - Create a GitHub Release
 
-   Monitor progress at: `https://github.com/your-username/gen_server_virtual_time/actions`
+   Monitor progress at:
+   `https://github.com/your-username/gen_server_virtual_time/actions`
 
 ### Option 2: Manual Publishing
 
 For testing or emergency releases:
 
 1. **Ensure everything is committed:**
+
    ```bash
    git status
    ```
 
 2. **Run pre-release checks:**
+
    ```bash
    ./scripts/prepare_release.sh
    ```
 
 3. **Publish to Hex:**
+
    ```bash
    mix hex.publish
    ```
@@ -204,11 +220,13 @@ For testing or emergency releases:
 Runs on every push to `main` and on all pull requests (trunk-based development).
 
 **Jobs:**
+
 - **Test**: Runs tests on multiple Elixir/OTP versions
 - **Quality**: Runs Credo and Dialyzer for code quality
 - **Docs**: Builds documentation to ensure no errors
 
 **Matrix Testing:**
+
 - Latest stable (Elixir 1.18 / OTP 27)
 - Minimum supported (Elixir 1.14 / OTP 25)
 
@@ -217,6 +235,7 @@ Runs on every push to `main` and on all pull requests (trunk-based development).
 Triggers only when a version tag (e.g., `v1.0.0`) is pushed.
 
 **Steps:**
+
 1. Checkout code
 2. Setup Elixir environment
 3. Install dependencies
@@ -228,6 +247,7 @@ Triggers only when a version tag (e.g., `v1.0.0`) is pushed.
 ### Caching Strategy
 
 Both workflows use caching to speed up builds:
+
 - Dependencies (`deps/`)
 - Build artifacts (`_build/`)
 - Dialyzer PLT files (`priv/plts/`)
@@ -247,16 +267,19 @@ Follow [Semantic Versioning](https://semver.org/):
 ### Updating Dependencies
 
 1. **Check for updates:**
+
    ```bash
    mix hex.outdated
    ```
 
 2. **Update dependencies:**
+
    ```bash
    mix deps.update --all
    ```
 
 3. **Test thoroughly:**
+
    ```bash
    mix test
    ```
@@ -312,14 +335,17 @@ To avoid CI failures, be aware of these common issues:
 
 **Issue:** Documentation or other tools fail due to missing dependencies.
 
-**Example:** `CAStore.file_path/0 is undefined (module CAStore is not available)`
+**Example:**
+`CAStore.file_path/0 is undefined (module CAStore is not available)`
 
 **Prevention:**
+
 - Always run `mix docs` locally before pushing
 - If you add a dependency, ensure it's properly listed in `mix.exs`
 - Check if tools like ExDoc require additional dependencies (e.g., `castore`)
 
 **Fixed by:**
+
 ```elixir
 # In mix.exs deps/0
 {:castore, "~> 1.0", only: :dev, runtime: false}
@@ -327,16 +353,20 @@ To avoid CI failures, be aware of these common issues:
 
 #### 2. Unused Function Parameters
 
-**Issue:** Credo warnings about default parameters that are never used without the default.
+**Issue:** Credo warnings about default parameters that are never used without
+the default.
 
-**Example:** `default values for the optional arguments in function/3 are never used`
+**Example:**
+`default values for the optional arguments in function/3 are never used`
 
 **Prevention:**
+
 - Review all function definitions with default parameters
 - If all callers provide the argument, remove the default
 - Run `mix compile --warnings-as-errors` to catch these early
 
 **Example:**
+
 ```elixir
 # Bad - default never used
 defp my_function(arg1, arg2, arg3 \\ "default") do
@@ -356,6 +386,7 @@ end
 **Example:** `Function is too complex (cyclomatic complexity is 17, max is 9)`
 
 **Prevention:**
+
 - Run `mix credo --strict` regularly during development
 - Break complex functions into smaller ones when possible
 - If complexity is justified, adjust `.credo.exs` thresholds:
@@ -371,6 +402,7 @@ end
 **Issue:** CI fails on `mix format --check-formatted`
 
 **Prevention:**
+
 - Always run `mix format` before committing
 - Set up editor integration for auto-formatting
 - Use the pre-commit hook (see below)
@@ -379,9 +411,11 @@ end
 
 **Issue:** Credo reports aliases not in alphabetical order
 
-**Example:** `The alias ActorSimulation.Definition is not alphabetically ordered`
+**Example:**
+`The alias ActorSimulation.Definition is not alphabetically ordered`
 
 **Prevention:**
+
 ```elixir
 # Bad
 alias ActorSimulation.{Definition, Actor, Stats}
@@ -398,13 +432,14 @@ Before pushing to avoid CI failures:
 # Run all CI checks locally
 mix format                      # Fix formatting
 mix compile --warnings-as-errors # Catch warnings
-mix test                        # Run tests  
+mix test                        # Run tests
 mix credo --strict              # Check code quality
 mix docs                        # Build docs
 mix dialyzer                    # Type checking (slower)
 ```
 
 Or use the prepare script:
+
 ```bash
 ./scripts/prepare_release.sh
 ```
@@ -429,6 +464,7 @@ echo "✓ All checks passed"
 ```
 
 Make it executable:
+
 ```bash
 chmod +x .git/hooks/pre-commit
 ```
@@ -438,12 +474,14 @@ chmod +x .git/hooks/pre-commit
 ### Publishing Fails: "Package name already taken"
 
 The package name is already registered. Either:
+
 1. You need to be added as a maintainer
 2. Choose a different package name in `mix.exs`
 
 ### Publishing Fails: "Authentication failed"
 
 Check your Hex API key:
+
 ```bash
 mix hex.user auth
 # Or set HEX_API_KEY environment variable
@@ -484,12 +522,14 @@ mix hex.user auth
 If `mix.exs` version doesn't match the git tag:
 
 1. **Fix the version in mix.exs:**
+
    ```bash
    # Edit mix.exs manually or use:
    ./scripts/bump_version.sh patch --dry-run  # To see what would change
    ```
 
 2. **Delete the incorrect tag:**
+
    ```bash
    git tag -d v0.1.0
    git push origin :refs/tags/v0.1.0
@@ -504,6 +544,7 @@ If `mix.exs` version doesn't match the git tag:
 ### Build Fails on Specific Elixir/OTP Version
 
 1. **Test locally with the failing version:**
+
    ```bash
    asdf install elixir 1.14.0-otp-25
    asdf local elixir 1.14.0-otp-25
@@ -606,8 +647,8 @@ open https://github.com/your-username/gen_server_virtual_time/actions
 
 If you encounter issues not covered in this guide:
 
-1. Check existing [GitHub Issues](https://github.com/your-username/gen_server_virtual_time/issues)
+1. Check existing
+   [GitHub Issues](https://github.com/your-username/gen_server_virtual_time/issues)
 2. Search [Hex.pm Documentation](https://hex.pm/docs)
 3. Ask in [Elixir Forum](https://elixirforum.com/)
 4. Create a new issue with details about your problem
-

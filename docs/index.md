@@ -11,14 +11,18 @@ Welcome to the `gen_server_virtual_time` documentation!
 
 Transform ActorSimulation DSL into production code across multiple languages:
 
-- **[Generators Overview](generators.md)** - Quick start with single-file scripts
+- **[Generators Overview](generators.md)** - Quick start with single-file
+  scripts
 - **[OMNeT++ Generator](omnetpp_generator.md)** - Network simulations (C++)
-- **[CAF Generator](caf_generator.md)** - Production actor systems with callbacks (C++)
+- **[CAF Generator](caf_generator.md)** - Production actor systems with
+  callbacks (C++)
 - **[Pony Generator](pony_generator.md)** - Capabilities-secure actors (Pony)
 - **[Phony Generator](phony_generator.md)** - Zero-allocation actors (Go)
 
 ### Status & Summary
-- **[Generators Ready](generators_ready.md)** - Complete status, ready for release!
+
+- **[Generators Ready](generators_ready.md)** - Complete status, ready for
+  release!
 - **[Implementation Details](implementation_summary.md)** - Technical details
 
 ## Examples
@@ -39,24 +43,28 @@ Use these with `Mix.install` - no setup required!
 Complete, buildable projects:
 
 **OMNeT++ (C++):**
+
 - [`omnetpp_pubsub/`](../examples/omnetpp_pubsub/)
 - [`omnetpp_pipeline/`](../examples/omnetpp_pipeline/)
 - [`omnetpp_burst/`](../examples/omnetpp_burst/)
 - [`omnetpp_loadbalanced/`](../examples/omnetpp_loadbalanced/)
 
 **CAF (C++):**
+
 - [`caf_pubsub/`](../examples/caf_pubsub/)
 - [`caf_pipeline/`](../examples/caf_pipeline/)
 - [`caf_burst/`](../examples/caf_burst/)
 - [`caf_loadbalanced/`](../examples/caf_loadbalanced/)
 
 **Pony:**
+
 - [`pony_pubsub/`](../examples/pony_pubsub/)
 - [`pony_pipeline/`](../examples/pony_pipeline/)
 - [`pony_burst/`](../examples/pony_burst/)
 - [`pony_loadbalanced/`](../examples/pony_loadbalanced/)
 
 **Phony (Go):**
+
 - [`phony_pubsub/`](../examples/phony_pubsub/)
 - [`phony_pipeline/`](../examples/phony_pipeline/)
 - [`phony_burst/`](../examples/phony_burst/)

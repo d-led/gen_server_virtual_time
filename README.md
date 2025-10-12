@@ -1,14 +1,17 @@
 # GenServerVirtualTime
 
-Test time-based GenServers instantly. Simulate actor systems with virtual time. Export to production C++.
+Test time-based GenServers instantly. Simulate actor systems with virtual time. Model, simulate, analyze actor systems and generate boilerplate in various Actor Model implementations: in Java, Pony, Go and C++.
 
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
 [![CI](https://github.com/d-led/gen_server_virtual_time/workflows/CI/badge.svg)](https://github.com/d-led/gen_server_virtual_time/actions)
 [![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
 
-> **🎬 [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/examples/)** • 
-> **📊 [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/examples/reports/)** (NEW!)
+> **🎬
+> [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/examples/)**
+> • **📊
+> [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/examples/reports/)**
+> (NEW!)
 
 ## Show Me The Code
 
@@ -17,12 +20,12 @@ Test time-based GenServers instantly. Simulate actor systems with virtual time. 
 ```elixir
 defmodule MyServer do
   use VirtualTimeGenServer  # <-- Drop-in replacement for GenServer
-  
+
   def init(state) do
     VirtualTimeGenServer.send_after(self(), :work, 1000)
     {:ok, state}
   end
-  
+
   def handle_info(:work, state) do
     VirtualTimeGenServer.send_after(self(), :work, 1000)
     {:noreply, %{state | count: state.count + 1}}
@@ -32,10 +35,10 @@ end
 test "100 seconds completes instantly" do
   {:ok, clock} = VirtualClock.start_link()
   VirtualTimeGenServer.set_virtual_clock(clock)
-  
+
   {:ok, server} = MyServer.start_link(%{count: 0})
   VirtualClock.advance(clock, 100_000)  # 100s virtual, ~10ms real ⚡
-  
+
   assert GenServer.call(server, :get_count) == 100
 end
 ```
@@ -47,7 +50,7 @@ import ActorSimulation
 
 # Pipeline: producer → consumer
 simulation = new(trace: true)
-|> add_actor(:producer, 
+|> add_actor(:producer,
     send_pattern: {:rate, 100, :data},  # 100 msgs/sec
     targets: [:consumer])
 |> add_actor(:consumer,
@@ -65,7 +68,7 @@ stats = get_stats(simulation)
 
 ```elixir
 simulation = ActorSimulation.new()
-|> ActorSimulation.add_actor(:publisher, 
+|> ActorSimulation.add_actor(:publisher,
     send_pattern: {:periodic, 100, :event},
     targets: [:sub1, :sub2, :sub3])
 |> ActorSimulation.add_actor(:sub1)
@@ -73,8 +76,8 @@ simulation = ActorSimulation.new()
 |> ActorSimulation.add_actor(:sub3)
 
 # Generate complete OMNeT++ C++ project
-{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation, 
-  network_name: "PubSub", 
+{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+  network_name: "PubSub",
   sim_time_limit: 10)
 ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_output/")
 ```
@@ -107,7 +110,7 @@ ActorSimulation.VlingoGenerator.write_to_directory(files, "vlingo_output/")
 
 ```elixir
 # Generate Pony actor system
-{:ok, files} = ActorSimulation.PonyGenerator.generate(simulation, 
+{:ok, files} = ActorSimulation.PonyGenerator.generate(simulation,
   project_name: "pubsub",
   enable_callbacks: true)
 ActorSimulation.PonyGenerator.write_to_directory(files, "pony_output/")
@@ -151,7 +154,7 @@ public void onEvent() {
 
 ```elixir
 simulation = ActorSimulation.new(trace: true)
-|> ActorSimulation.add_actor(:client, 
+|> ActorSimulation.add_actor(:client,
     send_pattern: {:periodic, 100, :ping},
     targets: [:server])
 |> ActorSimulation.add_actor(:server,
@@ -207,28 +210,31 @@ end
 
 ## Why Virtual Time?
 
-| Problem | Real Time | Virtual Time |
-|---------|-----------|--------------|
-| Test 1 hour behavior | 1 hour wait | ~10 seconds |
-| Flaky timing issues | Common | None |
-| Precise assertions | `>= 10` | `== 10` |
-| Deterministic | No | Yes |
-| Speedup | 1x | 10-100x |
+| Problem              | Real Time   | Virtual Time |
+| -------------------- | ----------- | ------------ |
+| Test 1 hour behavior | 1 hour wait | ~10 seconds  |
+| Flaky timing issues  | Common      | None         |
+| Precise assertions   | `>= 10`     | `== 10`      |
+| Deterministic        | No          | Yes          |
+| Speedup              | 1x          | 10-100x      |
 
 ## Core Features
 
 **VirtualTimeGenServer** - Test real GenServers with virtual time
+
 - Drop-in replacement: `use VirtualTimeGenServer` instead of `use GenServer`
 - All standard callbacks: `handle_call`, `handle_cast`, `handle_info`
 - Fast: simulate hours in seconds
 
 **Actor Simulation DSL** - Prototype distributed systems
+
 - Pattern matching: declarative message handlers
 - Send patterns: periodic, rate-based, burst
 - Process-in-the-loop: mix real GenServers with simulated actors
 - Statistics & tracing built-in
 
 **Code Generation** - Export to production
+
 - **OMNeT++**: Industry-standard network simulation in C++
 - **CAF**: Production actor systems with callback interfaces
 - **Pony**: Capabilities-secure, data-race free actors
@@ -311,7 +317,7 @@ ActorSimulation.new()
 forward = fn msg, s -> {:send, [{s.next, msg}], s} end
 
 ActorSimulation.new()
-|> ActorSimulation.add_actor(:input, 
+|> ActorSimulation.add_actor(:input,
     send_pattern: {:rate, 50, :data},
     targets: [:stage1])
 |> ActorSimulation.add_actor(:stage1,
@@ -329,7 +335,7 @@ ActorSimulation.new()
 ```elixir
 defmodule MyRealServer do
   use VirtualTimeGenServer
-  
+
   def handle_call(:get, _from, state) do
     {:reply, state.requests, %{state | requests: state.requests + 1}}
   end
@@ -362,16 +368,16 @@ cd examples/caf_pubsub
 
 # VLINGO XOOM Actors (Java)
 mix run scripts/generate_vlingo_sample.exs
-cd vlingo_loadbalanced_generated
+cd generated/vlingo_loadbalanced
 mvn test  # Run JUnit 5 tests
 
 # Pony (capabilities-secure)
 mix run examples/pony_demo.exs
-cd pony_loadbalanced_generated
+cd generated/pony_loadbalanced
 
 # Phony (Go)
 mix run examples/phony_demo.exs
-cd phony_burst_generated
+cd generated/phony_burst
 ```
 
 ## Documentation
@@ -380,8 +386,10 @@ cd phony_burst_generated
 - [CAF Code Generation](docs/caf_generation.md) - Export to CAF with callbacks
 - [Pony Generator](docs/pony_generator.md) - Capabilities-secure actors
 - [Phony Generator](docs/phony_generator.md) - Go actor systems
-- [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors (NEW!)
-- [API Documentation](https://hexdocs.pm/gen_server_virtual_time) - Complete API reference
+- [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors
+  (NEW!)
+- [API Documentation](https://hexdocs.pm/gen_server_virtual_time) - Complete API
+  reference
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute
 - [Development Docs](docs/development/) - Development notes
 
@@ -390,17 +398,19 @@ cd phony_burst_generated
 Processing rate: ~6,000 virtual events per real second (M1 MacBook Pro)
 
 | Simulated Time | Real Time | Speedup |
-|----------------|-----------|---------|
-| 1 second | ~10ms | 100x |
-| 10 seconds | ~100ms | 100x |
-| 1 minute | ~6s | 10x |
-| 10 minutes | ~60s | 10x |
-| 1 hour | ~6 min | 10x |
+| -------------- | --------- | ------- |
+| 1 second       | ~10ms     | 100x    |
+| 10 seconds     | ~100ms    | 100x    |
+| 1 minute       | ~6s       | 10x     |
+| 10 minutes     | ~60s      | 10x     |
+| 1 hour         | ~6 min    | 10x     |
 
 ## Inspiration
 
-- [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler) - Virtual time for reactive programming
-- [Don't Wait Forever for Tests](https://github.com/d-led/dont_wait_forever_for_the_tests) - Testing philosophy
+- [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler) - Virtual
+  time for reactive programming
+- [Don't Wait Forever for Tests](https://github.com/d-led/dont_wait_forever_for_the_tests) -
+  Testing philosophy
 
 ## Contributing
 

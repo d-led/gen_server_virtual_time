@@ -37,7 +37,7 @@ simulation =
   )
 
 # Write to output directory
-output_dir = "omnetpp_pubsub_generated"
+output_dir = "generated/omnetpp_pubsub"
 ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
 
 IO.puts("""

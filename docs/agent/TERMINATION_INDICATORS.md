@@ -2,7 +2,8 @@
 
 ## Overview
 
-When using condition-based termination, sequence diagrams now include an explicit **termination indicator** showing when and why the simulation stopped.
+When using condition-based termination, sequence diagrams now include an
+explicit **termination indicator** showing when and why the simulation stopped.
 
 ## Visual Example
 
@@ -18,6 +19,7 @@ sequenceDiagram
 ```
 
 The **⚡ Terminated** note appears at the end of the sequence, showing:
+
 - ⏱️ Exact virtual time when simulation stopped
 - 🎯 Reason: "goal achieved" (from termination condition)
 
@@ -26,7 +28,7 @@ The **⚡ Terminated** note appears at the end of the sequence, showing:
 ### 1. Enable Condition-Based Termination
 
 ```elixir
-simulation = 
+simulation =
   DiningPhilosophers.create_simulation(num_philosophers: 3)
   |> ActorSimulation.run(
       max_duration: 10_000,
@@ -57,6 +59,7 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 ### 3. Visual Result
 
 The diagram will include at the end:
+
 ```
 Note over actor1,actor2: ⚡ Terminated at t=1234ms (goal achieved)
 ```
@@ -66,6 +69,7 @@ Note over actor1,actor2: ⚡ Terminated at t=1234ms (goal achieved)
 ### Automatic Detection
 
 The system automatically:
+
 1. Detects if `terminate_when` was used
 2. Checks if `actual_duration < max_duration`
 3. Sets `simulation.terminated_early = true`
@@ -74,6 +78,7 @@ The system automatically:
 ### Note Placement
 
 The termination note appears:
+
 - **Over two actors**: If 2+ actors in trace
 - **Over one actor**: If only 1 actor in trace
 - **At the bottom**: After all other events
@@ -96,19 +101,25 @@ end
 ## Use Cases
 
 ### 1. Dining Philosophers
+
 Shows when all philosophers have been fed:
+
 ```
 ⚡ Terminated at t=600ms (goal achieved)
 ```
 
 ### 2. Message Processing
+
 Shows when message quota reached:
+
 ```
 ⚡ Terminated at t=2500ms (goal achieved)
 ```
 
 ### 3. Convergence Detection
+
 Shows when system stabilized:
+
 ```
 ⚡ Terminated at t=1234ms (goal achieved)
 ```
@@ -116,20 +127,25 @@ Shows when system stabilized:
 ## Generated Files
 
 View these examples:
-- `test/output/dining_philosophers_condition_terminated.html` - Shows termination
+
+- `test/output/dining_philosophers_condition_terminated.html` - Shows
+  termination
 - Other dining philosopher diagrams - Run full duration (no indicator)
 
 ## API Impact
 
 ### New Fields (All Optional, Backward Compatible)
+
 - `simulation.actual_duration` - How long simulation ran
 - `simulation.terminated_early` - Boolean flag
 - `simulation.termination_reason` - Reserved for future use
 
 ### New Options (All Optional)
+
 - `show_termination: true/false` in `trace_to_mermaid/2`
 
 ### New Functions (All Additive)
+
 - `collect_current_stats/1` - Get stats during simulation
 
 ## Benefits
@@ -150,9 +166,9 @@ Simulation stopped at 600ms when all philosophers had eaten enough.
 Look for the ⚡ Terminated note at the bottom of the diagram!
 ```
 
-Then in the sequence diagram, you'll see the explicit termination marker showing exactly when the goal was achieved.
+Then in the sequence diagram, you'll see the explicit termination marker showing
+exactly when the goal was achieved.
 
 ---
 
 **This feature makes condition-based termination visual and self-documenting!**
-

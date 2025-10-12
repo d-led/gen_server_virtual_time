@@ -1,17 +1,22 @@
 # Mermaid Flowchart Reports
 
-GenServerVirtualTime can generate beautiful flowchart reports that visualize your actor system topology with embedded statistics. This feature complements the existing sequence diagrams by showing the overall system structure and message flow patterns.
+GenServerVirtualTime can generate beautiful flowchart reports that visualize
+your actor system topology with embedded statistics. This feature complements
+the existing sequence diagrams by showing the overall system structure and
+message flow patterns.
 
 ## Overview
 
 Flowchart reports show:
+
 - **Actor topology** - Visual representation of your system structure
 - **Message flows** - Arrows showing which actors communicate
 - **Embedded statistics** - Message counts and rates directly on nodes
 - **Activity-based styling** - Color coding based on message traffic
 - **Performance metrics** - Virtual time speedup and simulation stats
 
-Based on [Mermaid Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html).
+Based on
+[Mermaid Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html).
 
 ## Quick Start
 
@@ -32,6 +37,7 @@ File.write!("report.html", html)
 ```
 
 Open `report.html` in your browser to see:
+
 - Interactive Mermaid flowchart
 - Statistics table with message counts and rates
 - Simulation summary with timing metrics
@@ -60,13 +66,13 @@ ActorSimulation.generate_flowchart_report(simulation,
 
 Actors are automatically assigned shapes based on their behavior:
 
-| Shape | Behavior | Visual |
-|-------|----------|--------|
-| Stadium `([...])` | Source (sends only) | Rounded pill shape |
-| Asymmetric `>...]` | Sink (receives only) | Trapezoid pointing right |
-| Rounded `(...)` | Processor (send & receive) | Rounded rectangle |
-| Rectangle `[...]` | Passive (no send pattern) | Square corners |
-| Subroutine `[[...]]` | Real process | Double brackets |
+| Shape                | Behavior                   | Visual                   |
+| -------------------- | -------------------------- | ------------------------ |
+| Stadium `([...])`    | Source (sends only)        | Rounded pill shape       |
+| Asymmetric `>...]`   | Sink (receives only)       | Trapezoid pointing right |
+| Rounded `(...)`      | Processor (send & receive) | Rounded rectangle        |
+| Rectangle `[...]`    | Passive (no send pattern)  | Square corners           |
+| Subroutine `[[...]]` | Real process               | Double brackets          |
 
 ## Color Coding
 
@@ -193,12 +199,14 @@ IO.puts(mermaid)
 Each HTML report includes:
 
 ### 1. Simulation Summary
+
 - Virtual time duration
 - Real time elapsed
 - Speedup calculation (virtual time / real time)
 - Termination status (normal or early)
 
 ### 2. Actor Topology Flowchart
+
 - Interactive Mermaid diagram
 - Nodes with embedded statistics
 - Edges showing message flows
@@ -206,12 +214,14 @@ Each HTML report includes:
 - Shape legend
 
 ### 3. Detailed Statistics Table
+
 - Per-actor message counts
 - Send and receive rates (msg/s)
 - Activity level badges
 - Sortable columns
 
 ### 4. Summary Box
+
 - Total message count
 - Simulation duration
 - Number of actors
@@ -219,9 +229,11 @@ Each HTML report includes:
 ## Live Examples
 
 View live examples at:
+
 - [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/examples/reports/)
 
 Examples include:
+
 - Pipeline processing
 - Pub-sub systems
 - Load-balanced workers
@@ -230,16 +242,17 @@ Examples include:
 
 ## Comparison with Sequence Diagrams
 
-| Feature | Flowchart Reports | Sequence Diagrams |
-|---------|------------------|-------------------|
-| **Shows** | System topology | Message timeline |
-| **Best for** | Architecture overview | Debugging interactions |
-| **Statistics** | Embedded in nodes | Optional timestamps |
-| **Time axis** | No | Yes |
-| **Activity view** | Color coding | Message frequency |
-| **Use case** | System design, documentation | Debugging, protocol analysis |
+| Feature           | Flowchart Reports            | Sequence Diagrams            |
+| ----------------- | ---------------------------- | ---------------------------- |
+| **Shows**         | System topology              | Message timeline             |
+| **Best for**      | Architecture overview        | Debugging interactions       |
+| **Statistics**    | Embedded in nodes            | Optional timestamps          |
+| **Time axis**     | No                           | Yes                          |
+| **Activity view** | Color coding                 | Message frequency            |
+| **Use case**      | System design, documentation | Debugging, protocol analysis |
 
-**Recommendation**: Use both! Flowcharts for architecture and statistics, sequence diagrams for detailed message flows.
+**Recommendation**: Use both! Flowcharts for architecture and statistics,
+sequence diagrams for detailed message flows.
 
 ## Integration with CI/CD
 
@@ -247,18 +260,18 @@ Examples include:
 # In your test suite
 defmodule MySystemTest do
   use ExUnit.Case
-  
+
   test "generates system report", %{tmp_dir: tmp_dir} do
     simulation = build_simulation()
     |> ActorSimulation.run(duration: 5000)
-    
+
     report_path = Path.join(tmp_dir, "system_report.html")
     {:ok, _} = ActorSimulation.write_flowchart_report(
-      simulation, 
+      simulation,
       report_path,
       title: "System Test Report"
     )
-    
+
     # Optionally upload to artifact storage
     upload_test_artifact(report_path)
   end
@@ -273,7 +286,7 @@ For advanced customization, use the `MermaidReportGenerator` module directly:
 alias ActorSimulation.MermaidReportGenerator
 
 # Custom options
-html = MermaidReportGenerator.generate_report(simulation, 
+html = MermaidReportGenerator.generate_report(simulation,
   title: "Custom Report",
   show_stats_on_nodes: false,  # Hide stats from nodes
   show_message_labels: false,  # Hide message details
@@ -285,6 +298,7 @@ html = MermaidReportGenerator.generate_report(simulation,
 ## API Reference
 
 See full API documentation:
+
 - `ActorSimulation.generate_flowchart_report/2`
 - `ActorSimulation.write_flowchart_report/3`
 - `ActorSimulation.MermaidReportGenerator`
@@ -295,4 +309,3 @@ See full API documentation:
 - [ActorSimulation Documentation](./README.md)
 - [Sequence Diagrams Guide](./sequence_diagrams.md)
 - [Live Examples](https://d-led.github.io/gen_server_virtual_time/examples/)
-

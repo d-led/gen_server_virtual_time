@@ -1,6 +1,7 @@
 # Pony Generator
 
-Generate capabilities-secure Pony actor code with type safety and data-race freedom guaranteed at compile time.
+Generate capabilities-secure Pony actor code with type safety and data-race
+freedom guaranteed at compile time.
 
 ## Quick Start
 
@@ -46,9 +47,11 @@ Pony is a capabilities-secure, actor-model language that provides:
 
 ## Examples
 
-See [`examples/pony_pubsub/`](../examples/pony_pubsub/) for a complete generated project.
+See [`examples/pony_pubsub/`](../examples/pony_pubsub/) for a complete generated
+project.
 
-Try the single-file script: [`examples/single_file_pony.exs`](../examples/single_file_pony.exs)
+Try the single-file script:
+[`examples/single_file_pony.exs`](../examples/single_file_pony.exs)
 
 ## Building Generated Code
 
@@ -85,4 +88,3 @@ make test
 - [Pony Patterns](https://patterns.ponylang.io/)
 - [Pony Standard Library](https://stdlib.ponylang.io/)
 - [Generator Comparison](generators.md#comparison)
-

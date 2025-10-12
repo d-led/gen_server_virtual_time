@@ -1,6 +1,8 @@
 # ✅ GenServerVirtualTime - Complete Feature List
 
-⚠️ **HISTORICAL SNAPSHOT** - This document is from a development session and contains **OUTDATED TEST COUNTS**. See `/CHANGELOG.md` for current information or run `mix test` to see actual test count (189 tests as of v0.2.0).
+⚠️ **HISTORICAL SNAPSHOT** - This document is from a development session and
+contains **OUTDATED TEST COUNTS**. See `/CHANGELOG.md` for current information
+or run `mix test` to see actual test count (189 tests as of v0.2.0).
 
 ## Project Status: PRODUCTION READY 🚀
 
@@ -14,6 +16,7 @@
 ## Core Features
 
 ### 1. VirtualTimeGenServer
+
 - ✅ Drop-in replacement for `GenServer`
 - ✅ Supports both real and virtual time
 - ✅ `send_after/3` delegates to appropriate backend
@@ -22,6 +25,7 @@
 - ✅ **100% backward compatible with GenServer**
 
 ### 2. VirtualClock
+
 - ✅ Manages virtual time independently from real time
 - ✅ Event scheduling at specific virtual timestamps
 - ✅ Incremental time advancement
@@ -31,6 +35,7 @@
 - ✅ ~6,000 events/second processing speed
 
 ### 3. Time Backend System
+
 - ✅ `RealTimeBackend` - Production (uses `Process.send_after/3`)
 - ✅ `VirtualTimeBackend` - Testing (uses `VirtualClock`)
 - ✅ Seamless switching via `set_virtual_clock/1`
@@ -41,6 +46,7 @@
 ## Actor Simulation DSL
 
 ### 4. ActorSimulation Core
+
 - ✅ High-level API for defining actor systems
 - ✅ `new/1` - Create simulation (with optional trace)
 - ✅ `add_actor/3` - Add simulated actors
@@ -49,17 +55,20 @@
 - ✅ `stop/1` - Cleanup resources
 
 ### 5. Send Patterns
+
 - ✅ `{:periodic, interval, message}` - Regular intervals
 - ✅ `{:rate, per_second, message}` - Messages per second
 - ✅ `{:burst, count, interval, message}` - Burst sending
 
 ### 6. Message Handling
+
 - ✅ `on_receive` - Imperative function handler
 - ✅ `on_match` - Declarative pattern matching
 - ✅ Pattern predicates - Match with functions
 - ✅ Response types: `:ok`, `:reply`, `:send`
 
 ### 7. Communication Types
+
 - ✅ `{:call, message}` - Synchronous (waits for reply)
 - ✅ `{:cast, message}` - Asynchronous (fire and forget)
 - ✅ Regular messages - Standard send
@@ -70,12 +79,14 @@
 ## Advanced Features
 
 ### 8. Process-in-the-Loop ⭐ NEW
+
 - ✅ `add_process/3` - Inject real GenServers
 - ✅ Mix production code with test doubles
 - ✅ "Hardware-in-the-Loop" for processes
 - ✅ Full integration testing
 
 ### 9. Message Tracing
+
 - ✅ Enable with `trace: true`
 - ✅ Captures all inter-actor communication
 - ✅ Includes virtual timestamps
@@ -85,20 +96,24 @@
 ### 10. Diagram Generation
 
 #### PlantUML
+
 - ✅ `trace_to_plantuml/1`
 - ✅ Standard sequence diagram format
 - ✅ Rendered via PlantUML server
 
 #### Mermaid (Enhanced) ⭐ NEW
+
 - ✅ `trace_to_mermaid/2` with options
 - ✅ Solid arrows (`->>`) for synchronous calls
 - ✅ Dotted arrows (`-->>`) for asynchronous casts
 - ✅ Activation boxes showing processing
 - ✅ Timestamp notes with `Note over`
 - ✅ Options: `enhanced: true/false`, `timestamps: true/false`
-- ✅ Based on [Mermaid spec](https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html)
+- ✅ Based on
+  [Mermaid spec](https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html)
 
 ### 11. Condition-Based Termination ⭐ NEW
+
 - ✅ `terminate_when` option in `run/2`
 - ✅ Stop based on actor state, not just time
 - ✅ `collect_current_stats/1` for checking state
@@ -111,6 +126,7 @@
 ## Examples & Demos
 
 ### 12. Dining Philosophers ⭐ NEW
+
 - ✅ Classic concurrency problem solved
 - ✅ Deadlock-free asymmetric fork acquisition
 - ✅ Configurable: 2, 3, 5, or N philosophers
@@ -119,9 +135,11 @@
 - ✅ Generated HTML diagrams in `test/output/`
 
 ### 13. Generated Diagrams
+
 All viewable in browser at `test/output/index.html`:
 
 **Mermaid Diagrams** (9):
+
 - `mermaid_simple.html` - Basic request-response
 - `mermaid_pipeline.html` - Multi-stage pipeline
 - `mermaid_sync_async.html` - Sync vs async arrows
@@ -131,12 +149,14 @@ All viewable in browser at `test/output/index.html`:
 - `dining_philosophers_5.html` - 5 philosophers
 
 **PlantUML Diagrams** (2):
+
 - `plantuml_simple.html` - Alice and Bob
 - `plantuml_pubsub.html` - Pub-sub pattern
 
 **Total**: 11 self-contained HTML files
 
 ### 14. Demo Scripts
+
 - `examples/demo.exs` - Core features
 - `examples/advanced_demo.exs` - Advanced features
 - `examples/dining_philosophers_demo.exs` - Concurrency problem
@@ -147,6 +167,7 @@ All viewable in browser at `test/output/index.html`:
 ## Documentation
 
 ### 15. Documentation Quality
+
 - ✅ README leads with "Show Me The Code"
 - ✅ Problem/solution comparisons
 - ✅ Real examples before API reference
@@ -156,6 +177,7 @@ All viewable in browser at `test/output/index.html`:
 - ✅ Function-level `@doc` with usage
 
 ### 16. Supporting Docs
+
 - `README.md` - User guide (426 lines)
 - `CHANGELOG.md` - Version history
 - `SUMMARY.md` - Technical architecture
@@ -169,9 +191,11 @@ All viewable in browser at `test/output/index.html`:
 ## Testing
 
 ### 17. Comprehensive Test Suite
+
 **Total: 80 tests, 0 failures**
 
 Breakdown:
+
 - 7 tests: `VirtualClock` basics
 - 7 tests: `VirtualTimeGenServer`
 - 11 tests: `ActorSimulation` core
@@ -184,6 +208,7 @@ Breakdown:
 - 2 tests: Main module & doctests
 
 ### 18. Test Coverage
+
 - Unit tests for all modules
 - Integration tests for complex scenarios
 - Documentation tests ensure examples work
@@ -195,6 +220,7 @@ Breakdown:
 ## API Completeness
 
 ### VirtualClock API
+
 ```elixir
 VirtualClock.start_link/1
 VirtualClock.now/1
@@ -206,6 +232,7 @@ VirtualClock.scheduled_count/1
 ```
 
 ### VirtualTimeGenServer API
+
 ```elixir
 VirtualTimeGenServer.set_virtual_clock/1
 VirtualTimeGenServer.use_real_time/0
@@ -219,6 +246,7 @@ VirtualTimeGenServer.stop/3
 ```
 
 ### ActorSimulation API
+
 ```elixir
 # Core
 ActorSimulation.new/1
@@ -239,6 +267,7 @@ ActorSimulation.collect_current_stats/1  # For termination conditions
 ```
 
 ### DiningPhilosophers API ⭐ NEW
+
 ```elixir
 DiningPhilosophers.create_simulation/1
 DiningPhilosophers.eating_stats/1
@@ -251,6 +280,7 @@ DiningPhilosophers.eating_stats/1
 All changes are **100% backward compatible**:
 
 ### What Still Works (No Changes Needed)
+
 ```elixir
 # Original API - still works perfectly
 simulation = ActorSimulation.new()
@@ -260,11 +290,12 @@ stats = ActorSimulation.get_stats(simulation)
 ```
 
 ### New Optional Features
+
 ```elixir
 # New features are opt-in only
 simulation = ActorSimulation.new(trace: true)  # NEW: tracing
 |> ActorSimulation.add_process(:real, module: M)  # NEW: real processes
-|> ActorSimulation.add_actor(:actor, 
+|> ActorSimulation.add_actor(:actor,
     on_match: [{:ping, fn s -> {:reply, :pong, s} end}])  # NEW: pattern matching
 |> ActorSimulation.run(
     max_duration: 10_000,  # NEW: can use max_duration
@@ -272,7 +303,7 @@ simulation = ActorSimulation.new(trace: true)  # NEW: tracing
   )
 
 # NEW: Enhanced Mermaid
-mermaid = ActorSimulation.trace_to_mermaid(simulation, 
+mermaid = ActorSimulation.trace_to_mermaid(simulation,
   enhanced: true,  # NEW: activation boxes
   timestamps: true  # NEW: timestamp notes
 )
@@ -283,28 +314,28 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 ## Performance
 
 ### Speed Improvements
-| Scenario | Real Time | Virtual Time | Speedup |
-|----------|-----------|--------------|---------|
-| 1 second | 1000ms | ~10ms | 100x |
-| 10 seconds | 10s | ~100ms | 100x |
-| 1 minute | 60s | ~6s | 10x |
-| 1 hour | 3600s | ~360s | 10x |
+
+| Scenario   | Real Time | Virtual Time | Speedup |
+| ---------- | --------- | ------------ | ------- |
+| 1 second   | 1000ms    | ~10ms        | 100x    |
+| 10 seconds | 10s       | ~100ms       | 100x    |
+| 1 minute   | 60s       | ~6s          | 10x     |
+| 1 hour     | 3600s     | ~360s        | 10x     |
 
 ### With Termination Conditions
-| Scenario | Fixed Time | Condition-Based | Savings |
-|----------|------------|-----------------|---------|
-| 10 messages | 10,000ms | 1,000ms | 90% |
-| All fed (5 phil) | 30,000ms | 1,000ms | 97% |
-| Convergence | 10,000ms | 2,500ms | 75% |
+
+| Scenario         | Fixed Time | Condition-Based | Savings |
+| ---------------- | ---------- | --------------- | ------- |
+| 10 messages      | 10,000ms   | 1,000ms         | 90%     |
+| All fed (5 phil) | 30,000ms   | 1,000ms         | 97%     |
+| Convergence      | 10,000ms   | 2,500ms         | 75%     |
 
 ---
 
 ## File Statistics
 
-**Core Library**: 9 files (~1,100 lines)
-**Tests**: 9 files (~800 lines)
-**Examples**: 4 files (~500 lines)
-**Documentation**: 7 files (~2,000 lines)
+**Core Library**: 9 files (~1,100 lines) **Tests**: 9 files (~800 lines)
+**Examples**: 4 files (~500 lines) **Documentation**: 7 files (~2,000 lines)
 **Generated Diagrams**: 11 HTML files
 
 **Total**: ~4,400 lines of code, tests, and documentation
@@ -327,17 +358,20 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 ## Unique Value Propositions
 
 ### For Testing
+
 - **100x faster** time-dependent tests
 - **Zero flaky tests** - completely deterministic
 - **Precise assertions** - use `==` not `>=`
 
 ### For Simulation
+
 - **Actor system modeling** with statistics
 - **Visual debugging** via sequence diagrams
 - **Condition-based runs** stop when goals met
 - **Process-in-the-Loop** test real code
 
 ### For Learning
+
 - **Dining philosophers** - classic problem solved
 - **Self-contained diagrams** - see your code visualized
 - **Progressive examples** - 2, 3, 5 philosophers
@@ -357,21 +391,22 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 
 ## Comparison to Alternatives
 
-| Feature | GenServerVirtualTime | Manual Process.sleep | TestProf | Other |
-|---------|---------------------|---------------------|----------|-------|
-| Virtual Time | ✅ | ❌ | ❌ | ❌ |
-| 100x Speedup | ✅ | ❌ | Profiling only | ❌ |
-| Deterministic | ✅ | ❌ | N/A | ❌ |
-| Actor Simulation | ✅ | ❌ | ❌ | ❌ |
-| Sequence Diagrams | ✅ | ❌ | ❌ | ❌ |
-| Process-in-Loop | ✅ | ❌ | ❌ | ❌ |
-| Condition Termination | ✅ | ❌ | ❌ | ❌ |
+| Feature               | GenServerVirtualTime | Manual Process.sleep | TestProf       | Other |
+| --------------------- | -------------------- | -------------------- | -------------- | ----- |
+| Virtual Time          | ✅                   | ❌                   | ❌             | ❌    |
+| 100x Speedup          | ✅                   | ❌                   | Profiling only | ❌    |
+| Deterministic         | ✅                   | ❌                   | N/A            | ❌    |
+| Actor Simulation      | ✅                   | ❌                   | ❌             | ❌    |
+| Sequence Diagrams     | ✅                   | ❌                   | ❌             | ❌    |
+| Process-in-Loop       | ✅                   | ❌                   | ❌             | ❌    |
+| Condition Termination | ✅                   | ❌                   | ❌             | ❌    |
 
 ---
 
 ## Real-World Use Cases
 
 ### Testing
+
 - **Rate limiters** - Test hours of behavior instantly
 - **Schedulers** - Verify cron-like behavior
 - **Heartbeats** - Ensure periodic messages work
@@ -379,6 +414,7 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 - **Retries** - Verify exponential backoff
 
 ### Simulation
+
 - **Message queues** - Model throughput and latency
 - **Distributed systems** - Simulate node communication
 - **Event sourcing** - Model event streams
@@ -386,6 +422,7 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 - **Pipelines** - Test data processing chains
 
 ### Learning
+
 - **Concurrency patterns** - Dining philosophers, etc.
 - **Message passing** - Visualize actor interactions
 - **Deadlock prevention** - See solutions in action
@@ -398,12 +435,15 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
 ### None! ✅
 
 All new features are:
+
 - **Optional** - Existing code works unchanged
 - **Additive** - Only adds new functions/options
 - **Backward compatible** - No API changes to existing functions
 
 ### Migration from v0.1.0 to v0.2.0
+
 **Zero changes required!** But you can opt-in to:
+
 ```elixir
 # Optional new features
 ActorSimulation.new(trace: true)
@@ -416,6 +456,7 @@ ActorSimulation.trace_to_mermaid(sim, enhanced: true, timestamps: true)
 ## Future Possibilities
 
 Not implemented, but could add:
+
 - Time dilation (speed up/slow down)
 - Distributed simulation across nodes
 - Visual trace viewer (web UI)
@@ -428,13 +469,9 @@ Not implemented, but could add:
 
 ## Success Metrics
 
-✅ **80/80 tests passing**
-✅ **100% backward compatible**
-✅ **Zero breaking changes**
-✅ **11 generated diagram files**
-✅ **4 working demo scripts**
-✅ **4,400+ lines of code/docs**
-✅ **Production ready**
+✅ **80/80 tests passing** ✅ **100% backward compatible** ✅ **Zero breaking
+changes** ✅ **11 generated diagram files** ✅ **4 working demo scripts** ✅
+**4,400+ lines of code/docs** ✅ **Production ready**
 
 ---
 
@@ -455,8 +492,7 @@ GenServerVirtualTime is a **complete, production-ready library** that:
 
 ---
 
-*Built with ❤️ by Dmitry Ledentsov*  
-*Inspired by RxJS TestScheduler and reactive programming*  
-*Enhanced with Mermaid sequence diagrams*  
-*Demonstrates classic CS problems*
-
+_Built with ❤️ by Dmitry Ledentsov_  
+_Inspired by RxJS TestScheduler and reactive programming_  
+_Enhanced with Mermaid sequence diagrams_  
+_Demonstrates classic CS problems_

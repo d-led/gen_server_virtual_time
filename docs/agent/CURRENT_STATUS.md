@@ -17,6 +17,7 @@
 ```
 
 ### Test Categories
+
 - **Fast tests** (125): Core functionality, run in CI
 - **Slow tests** (4): Long simulations, run on main branch only
 - **Ridiculous tests** (3): Extreme time spans (years, decades, century)
@@ -26,15 +27,15 @@
 
 ## ✅ Fully Supported GenServer Callbacks
 
-| Callback | Virtual Time | Tested | Notes |
-|----------|--------------|--------|-------|
-| `init/1` | ✅ | ✅ | All return types |
-| `handle_call/3` | ✅ | ✅ | Sync RPC |
-| `handle_cast/2` | ✅ | ✅ | Async messages |
-| `handle_info/2` | ✅ | ✅ | All messages |
-| `handle_continue/2` | ✅ | ✅ | **NEW!** OTP 21+ |
-| `terminate/2` | N/A | ✅ | Cleanup |
-| `code_change/3` | N/A | ✅ | Hot reload |
+| Callback            | Virtual Time | Tested | Notes            |
+| ------------------- | ------------ | ------ | ---------------- |
+| `init/1`            | ✅           | ✅     | All return types |
+| `handle_call/3`     | ✅           | ✅     | Sync RPC         |
+| `handle_cast/2`     | ✅           | ✅     | Async messages   |
+| `handle_info/2`     | ✅           | ✅     | All messages     |
+| `handle_continue/2` | ✅           | ✅     | **NEW!** OTP 21+ |
+| `terminate/2`       | N/A          | ✅     | Cleanup          |
+| `code_change/3`     | N/A          | ✅     | Hot reload       |
 
 **Summary**: All standard GenServer callbacks work! 🎉
 
@@ -58,12 +59,14 @@
 ## 🚀 Features
 
 ### Virtual Time Testing
+
 - Test time-based GenServers instantly
 - Simulate hours in milliseconds
 - Deterministic, no flakiness
 - **Speedups**: 100x - 5 billion x faster!
 
 ### Actor Simulation
+
 - DSL for actor systems
 - Message patterns & rates
 - Pattern matching
@@ -73,6 +76,7 @@
 - **Timing info** (virtual + real) (NEW!)
 
 ### Visualization
+
 - Mermaid sequence diagrams
 - PlantUML diagrams
 - Enhanced features:
@@ -84,6 +88,7 @@
 - **Deterministic output** (NEW!)
 
 ### Examples
+
 - Dining Philosophers (2, 3, 5)
 - Pub-sub systems
 - Pipelines
@@ -95,6 +100,7 @@
 ## 📦 CI/CD
 
 ### GitHub Actions
+
 - ✅ Matrix testing (Elixir 1.14-1.16, OTP 25-26)
 - ✅ JUnit XML reports
 - ✅ Fast tests in PR checks
@@ -102,6 +108,7 @@
 - ✅ Code quality checks
 
 ### Test Reporting
+
 - JUnit XML for GitHub Actions UI
 - Test timing included
 - Slowest tests reported
@@ -112,11 +119,13 @@
 ## 📈 Performance Achievements
 
 ### Test Speed
+
 - **Fast tests**: 5.4s (125 tests) ✅ Target met!
 - **Per test average**: 43ms
 - **Slowest excluded**: < 6s for fast feedback
 
 ### Virtual Time Speedup
+
 - Basic: 100x - 1000x
 - Extreme: Up to 5 billion x!
 - **3 years simulated**: 13ms real time
@@ -138,19 +147,20 @@
 ## 💡 Example Usage
 
 ### GenServer with Virtual Time
+
 ```elixir
 defmodule MyServer do
   use VirtualTimeGenServer
-  
+
   def init(state) do
     VirtualTimeGenServer.send_after(self(), :work, 1000)
     {:ok, state, {:continue, :setup}}  # NEW: continue support!
   end
-  
+
   def handle_continue(:setup, state) do
     {:noreply, perform_setup(state)}
   end
-  
+
   def handle_info(:work, state) do
     VirtualTimeGenServer.send_after(self(), :work, 1000)
     {:noreply, %{state | count: state.count + 1}}
@@ -159,6 +169,7 @@ end
 ```
 
 ### Actor Simulation (Aliased)
+
 ```elixir
 alias ActorSimulation, as: Sim
 
@@ -175,6 +186,7 @@ IO.puts("Speedup: #{sim.actual_duration / sim.real_time_elapsed}x")
 ## 📚 Documentation
 
 ### Available Docs
+
 - `README.md` - Main documentation with examples
 - `GENSERVER_CALLBACKS.md` - Complete callback reference
 - `GENSERVER_SUPPORT.md` - Feature support matrix
@@ -183,6 +195,7 @@ IO.puts("Speedup: #{sim.actual_duration / sim.real_time_elapsed}x")
 - Generated diagrams in `test/output/` - Visual examples
 
 ### Online
+
 - HexDocs: https://hexdocs.pm/gen_server_virtual_time
 - GitHub: https://github.com/d-led/gen_server_virtual_time
 - Diagram Gallery: Open `test/output/index.html`
@@ -213,5 +226,4 @@ IO.puts("Speedup: #{sim.actual_duration / sim.real_time_elapsed}x")
 
 ---
 
-*All user requests completed. Ready for long-term use.*
-
+_All user requests completed. Ready for long-term use._

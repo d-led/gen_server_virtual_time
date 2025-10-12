@@ -1,6 +1,7 @@
 # Contributing to GenServerVirtualTime
 
-Thank you for your interest in contributing to GenServerVirtualTime! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to GenServerVirtualTime! This
+document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -34,25 +35,30 @@ This project follows a simple code of conduct:
 
 ### Finding Work
 
-1. **Check existing issues:** Look for issues labeled `good first issue` or `help wanted`
+1. **Check existing issues:** Look for issues labeled `good first issue` or
+   `help wanted`
 2. **Report bugs:** Found a bug? Open an issue first to discuss
-3. **Propose features:** Have an idea? Open an issue to discuss before implementing
+3. **Propose features:** Have an idea? Open an issue to discuss before
+   implementing
 4. **Improve documentation:** Documentation improvements are always welcome
 
 ## Development Setup
 
 1. **Fork and clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/gen_server_virtual_time.git
    cd gen_server_virtual_time
    ```
 
 2. **Install dependencies:**
+
    ```bash
    mix deps.get
    ```
 
 3. **Verify the setup:**
+
    ```bash
    mix test
    mix docs
@@ -126,7 +132,8 @@ mix run examples/omnetpp_demo.exs
 
 ### Style Guidelines
 
-- Follow the [Elixir Style Guide](https://github.com/christopheradams/elixir_style_guide)
+- Follow the
+  [Elixir Style Guide](https://github.com/christopheradams/elixir_style_guide)
 - Use `mix format` to automatically format code
 - Maximum line length: 120 characters
 - Use meaningful variable and function names
@@ -203,7 +210,8 @@ end
 ### Error Handling
 
 - Use pattern matching over try/catch when possible
-- Return `{:ok, result}` or `{:error, reason}` tuples for operations that can fail
+- Return `{:ok, result}` or `{:error, reason}` tuples for operations that can
+  fail
 - Use `!` suffix for functions that raise exceptions
 - Document all possible error returns
 
@@ -221,14 +229,14 @@ describe "advance/2" do
   test "advances clock by specified duration" do
     {:ok, clock} = VirtualClock.start_link()
     assert VirtualClock.now(clock) == 0
-    
+
     VirtualClock.advance(clock, 1000)
     assert VirtualClock.now(clock) == 1000
   end
 
   test "handles negative duration" do
     {:ok, clock} = VirtualClock.start_link()
-    
+
     assert {:error, :invalid_duration} = VirtualClock.advance(clock, -100)
   end
 end
@@ -284,9 +292,11 @@ Example:
 ## [Unreleased]
 
 ### Added
+
 - New `burst` send pattern for actor simulation (#123)
 
 ### Fixed
+
 - Virtual clock race condition in concurrent scenarios (#124)
 ```
 
@@ -302,6 +312,7 @@ Example:
 ### Before Submitting
 
 1. **Run all checks:**
+
    ```bash
    ./scripts/prepare_release.sh
    ```
@@ -349,6 +360,7 @@ Example:
 - Keep commits focused and atomic
 
 Good commit messages:
+
 ```
 Add burst send pattern to ActorSimulation
 
@@ -370,9 +382,11 @@ Related to #124
 
 ## Release Process
 
-Maintainers handle releases, but understanding the process helps with contributions:
+Maintainers handle releases, but understanding the process helps with
+contributions:
 
 1. **Version bump:**
+
    ```bash
    ./scripts/bump_version.sh patch  # or minor, major
    ```
@@ -383,6 +397,7 @@ Maintainers handle releases, but understanding the process helps with contributi
    - Review and organize entries
 
 3. **Create release:**
+
    ```bash
    git push origin main
    git push origin --tags
@@ -401,9 +416,10 @@ Maintainers handle releases, but understanding the process helps with contributi
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the
+MIT License.
 
 ## Thank You!
 
-Your contributions make this project better for everyone. Thank you for taking the time to contribute! 🎉
-
+Your contributions make this project better for everyone. Thank you for taking
+the time to contribute! 🎉

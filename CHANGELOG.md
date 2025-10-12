@@ -3,7 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
@@ -12,7 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Code Generators
-- **CAF (C++ Actor Framework) Generator** - Generate production-ready C++ actor code
+
+- **CAF (C++ Actor Framework) Generator** - Generate production-ready C++ actor
+  code
   - Full actor implementation with message passing
   - CMake build system with Conan dependency management
   - GitHub Actions CI/CD pipeline included
@@ -57,7 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - HTML export with embedded diagrams
 
 #### Enhanced GenServer Support
-- **`handle_continue/2` Support** - Full support for GenServer continuation callbacks
+
+- **`handle_continue/2` Support** - Full support for GenServer continuation
+  callbacks
   - Virtual time-aware continue handling
   - Proper sequencing with other callbacks
   - Test coverage for continue patterns
@@ -67,13 +72,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Timeout error propagation
   - Test coverage for timeout scenarios
 
-- **Complete GenServer Callbacks** - All standard GenServer callbacks now supported
+- **Complete GenServer Callbacks** - All standard GenServer callbacks now
+  supported
   - `init/1`, `handle_call/3`, `handle_cast/2`, `handle_info/2`
   - `handle_continue/2`, `terminate/2`, `code_change/3`
   - `format_status/1` and `format_status/2`
   - Full compatibility with standard GenServer behavior
 
 #### Testing & Quality
+
 - **Extensive Generator Tests** - Comprehensive test suites for all generators
   - Output validation for each generator
   - Deterministic generation tests
@@ -92,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `show_me_code_examples_test.exs` - Documentation example validation
 
 #### Examples & Documentation
+
 - **Single-File Generator Examples** - Quick-start examples for each generator
   - `single_file_caf.exs` - CAF generation demo
   - `single_file_pony.exs` - Pony generation demo
@@ -116,13 +124,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automated quality gate for development
 
 #### Features from Previous Unreleased
-- **Termination Conditions** - Simulations can now terminate based on actor state rather than fixed time
+
+- **Termination Conditions** - Simulations can now terminate based on actor
+  state rather than fixed time
   - New `terminate_when` option for `ActorSimulation.run/2`
   - New `collect_current_stats/1` function for checking state during simulation
   - `actual_duration` field tracks how long simulation actually ran
   - Fully backward compatible - existing code works unchanged
 
-- **Enhanced Mermaid Diagrams** - Using advanced [Mermaid sequence diagram features](https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html)
+- **Enhanced Mermaid Diagrams** - Using advanced
+  [Mermaid sequence diagram features](https://docs.mermaidchart.com/mermaid-oss/syntax/sequenceDiagram.html)
   - Solid arrows (`->>`) for synchronous calls
   - Dotted arrows (`-->>`) for asynchronous casts
   - Activation boxes showing when actors process messages
@@ -141,6 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Stored in `test/output/` for visual progress tracking
 
 ### Changed
+
 - **Documentation** - Reorganized to lead with "Show Me The Code"
   - Quick start examples come first
   - API reference moved after practical examples
@@ -162,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **License** - Updated to include full MIT license text
 
 ### Fixed
+
 - **Dialyzer Warnings** - Resolved type specification issues
 - **Flaky Tests** - Fixed non-deterministic test failures
 - **Generator Output** - Cleaned up trailing whitespace in generated code
@@ -172,6 +185,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-10-11
 
 ### Added
+
 - Initial release
 - **VirtualTimeGenServer** - Drop-in GenServer replacement with virtual time
 - **VirtualClock** - Virtual time management and event scheduling
@@ -190,10 +204,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete documentation
 
 ### Performance
+
 - 100x+ speedup for time-dependent tests
 - ~6,000 virtual events processed per real second
 - Deterministic, reproducible test results
 
-[Unreleased]: https://github.com/d-led/gen_server_virtual_time/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...v0.2.0
+[Unreleased]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.2.0...HEAD
+[0.2.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/d-led/gen_server_virtual_time/releases/tag/v0.1.0

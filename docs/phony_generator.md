@@ -20,7 +20,8 @@ ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
 
 ## Why Phony?
 
-[Phony](https://github.com/Arceliar/phony) is a Pony-inspired actor library for Go that provides:
+[Phony](https://github.com/Arceliar/phony) is a Pony-inspired actor library for
+Go that provides:
 
 ✅ **Zero-allocation messaging** - Efficient lock-free message passing  
 ✅ **Automatic goroutine management** - No goroutine leaks  
@@ -48,9 +49,11 @@ ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
 
 ## Examples
 
-See [`examples/phony_pubsub/`](../examples/phony_pubsub/) for a complete generated project.
+See [`examples/phony_pubsub/`](../examples/phony_pubsub/) for a complete
+generated project.
 
-Try the single-file script: [`examples/single_file_phony.exs`](../examples/single_file_phony.exs)
+Try the single-file script:
+[`examples/single_file_phony.exs`](../examples/single_file_phony.exs)
 
 ## Building Generated Code
 
@@ -75,4 +78,3 @@ go test -v ./...
 - [Phony GitHub](https://github.com/Arceliar/phony)
 - [Go Modules](https://go.dev/blog/using-go-modules)
 - [Generator Comparison](generators.md#comparison)
-

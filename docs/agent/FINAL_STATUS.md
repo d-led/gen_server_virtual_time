@@ -11,6 +11,7 @@
 ### 1. Test Time-Based GenServers Instantly ⚡
 
 **Without virtual time**: Wait for real time to pass
+
 ```elixir
 test "heartbeat over 1 hour" do
   {:ok, server} = Heartbeat.start_link()
@@ -20,12 +21,13 @@ end
 ```
 
 **With virtual time**: Instant testing
-```elixir  
+
+```elixir
 test "heartbeat over 1 hour" do
   {:ok, clock} = VirtualClock.start_link()
   VirtualTimeGenServer.set_virtual_clock(clock)
   {:ok, server} = Heartbeat.start_link()
-  
+
   VirtualClock.advance(clock, 3_600_000)  # Instant!
   assert beats == 3600
 end
@@ -66,23 +68,23 @@ mermaid = Sim.trace_to_mermaid(sim, enhanced: true)
 ```elixir
 defmodule MyServer do
   use VirtualTimeGenServer
-  
+
   def init(opts) do
     {:ok, state, {:continue, :setup}}  # ✅ Continue supported!
   end
-  
+
   def handle_continue(:setup, state) do  # ✅ NEW!
     {:noreply, perform_setup(state)}
   end
-  
+
   def handle_call(:get, _from, state) do  # ✅ Sync RPC
     {:reply, state, state}
   end
-  
+
   def handle_cast(:update, state) do  # ✅ Async
     {:noreply, update(state)}
   end
-  
+
   def handle_info(:tick, state) do  # ✅ Messages
     VirtualTimeGenServer.send_after(self(), :tick, 1000)
     {:noreply, tick(state)}
@@ -95,12 +97,14 @@ end
 ## Test Performance
 
 ### Fast Tests (Run in CI)
+
 ```
 125 tests in 5.4 seconds ✅
 Average: 43ms per test
 ```
 
 ### Ridiculous Tests (Show Power)
+
 ```
 3 years:   13ms    (5,000,000,000x speedup) 🤯
 1 decade:  121ms   (6,000,000x speedup)
@@ -117,7 +121,7 @@ Average: 43ms per test
 ✅ **JUnit XML** - Test results in GitHub UI  
 ✅ **Deterministic** - Diagrams are diff-able  
 ✅ **Fast feedback** - 5.4s for quick checks  
-✅ **Categorized** - Fast/slow/ridiculous tags  
+✅ **Categorized** - Fast/slow/ridiculous tags
 
 ---
 
@@ -126,6 +130,7 @@ Average: 43ms per test
 **Breaking changes**: 0 ✅
 
 Everything is **additive**:
+
 - New callbacks supported (handle_continue)
 - New simulation fields (timing info)
 - New test features (ridiculous tests)
@@ -151,11 +156,12 @@ Everything is **additive**:
 ## Files Generated
 
 ### Test Output (11 HTML files)
+
 ```
 test/output/
 ├── index.html (with GitHub link!)
 ├── mermaid_simple.html
-├── mermaid_sync_async.html  
+├── mermaid_sync_async.html
 ├── mermaid_with_timestamps.html
 ├── mermaid_pipeline.html
 ├── plantuml_simple.html
@@ -167,6 +173,7 @@ test/output/
 ```
 
 ### CI Reports
+
 ```
 _build/test/lib/gen_server_virtual_time/
 └── test-junit-report.xml (for GitHub Actions)
@@ -177,6 +184,7 @@ _build/test/lib/gen_server_virtual_time/
 ## Usage Patterns
 
 ### Quick Test
+
 ```elixir
 {:ok, clock} = VirtualClock.start_link()
 VirtualTimeGenServer.set_virtual_clock(clock)
@@ -188,6 +196,7 @@ assert GenServer.call(server, :get_count) == 1
 ```
 
 ### Actor Simulation
+
 ```elixir
 alias ActorSimulation, as: S
 
@@ -199,6 +208,7 @@ S.new()
 ```
 
 ### With Termination Condition
+
 ```elixir
 sim |> S.run(
   max_duration: 10_000,
@@ -216,10 +226,12 @@ sim |> S.run(
 ## Next Steps (Optional Enhancements)
 
 ### High Priority
+
 1. **Virtualize GenServer.call timeout** - Enable testing timeout scenarios
 2. **Support :timeout in init** - Virtual time for init timeouts
 
-### Low Priority  
+### Low Priority
+
 3. **format_status/2** - Optional debugging callback
 4. **Process hibernation** - Test with virtual time
 5. **Multi-call support** - For distributed systems
@@ -231,6 +243,7 @@ sim |> S.run(
 ## Verification
 
 Run tests:
+
 ```bash
 # Fast tests (5.4s)
 mix test --exclude omnetpp --exclude slow --exclude ridiculous
@@ -243,6 +256,7 @@ mix test --exclude omnetpp
 ```
 
 View diagrams:
+
 ```bash
 open test/output/index.html
 ```
@@ -258,10 +272,10 @@ open test/output/index.html
 ✅ **CI/CD**: GitHub Actions ready  
 ✅ **Performance**: Fast tests, extreme speedups  
 ✅ **Quality**: No warnings, no flaky tests  
-✅ **Compatibility**: Zero breaking changes  
+✅ **Compatibility**: Zero breaking changes
 
 **Verdict**: Ready for production use! 🎉
 
 ---
 
-*Package successfully evolved while maintaining 100% backward compatibility.*
+_Package successfully evolved while maintaining 100% backward compatibility._

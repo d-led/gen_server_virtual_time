@@ -6,7 +6,8 @@ Quick reference for setting up and accessing your published sequence diagrams.
 
 ### 1. Enable GitHub Pages
 
-1. Go to your repository on GitHub: `https://github.com/d-led/gen_server_virtual_time`
+1. Go to your repository on GitHub:
+   `https://github.com/d-led/gen_server_virtual_time`
 2. Click **Settings** → **Pages** (in the left sidebar)
 3. Under **Source**, select **GitHub Actions** from the dropdown
 4. Click **Save**
@@ -43,6 +44,7 @@ The index page shows all generated diagrams with a beautiful interface!
 Every push to `main` automatically publishes:
 
 ### Mermaid Sequence Diagrams
+
 - **Simple Request-Response** - Basic client-server pattern
 - **Authentication Pipeline** - Multi-stage auth flow
 - **Sync vs Async Communication** - Different arrow styles
@@ -50,10 +52,12 @@ Every push to `main` automatically publishes:
 - **Dining Philosophers (2, 3, 5)** - Concurrency visualization
 
 ### PlantUML Sequence Diagrams
+
 - **Alice and Bob** - Simple conversation
 - **Pub-Sub Pattern** - One-to-many broadcast
 
 ### Interactive Features
+
 - Self-contained HTML files (no external dependencies beyond CDN)
 - Mermaid.js live rendering
 - PlantUML server-side rendering
@@ -87,14 +91,14 @@ Developer pushes to main
 
 ## 🎯 Key URLs
 
-| Resource | URL |
-|----------|-----|
-| **Live Diagrams** | https://d-led.github.io/gen_server_virtual_time/ |
-| **Repository** | https://github.com/d-led/gen_server_virtual_time |
-| **Workflows** | https://github.com/d-led/gen_server_virtual_time/actions |
+| Resource           | URL                                                             |
+| ------------------ | --------------------------------------------------------------- |
+| **Live Diagrams**  | https://d-led.github.io/gen_server_virtual_time/                |
+| **Repository**     | https://github.com/d-led/gen_server_virtual_time                |
+| **Workflows**      | https://github.com/d-led/gen_server_virtual_time/actions        |
 | **Pages Settings** | https://github.com/d-led/gen_server_virtual_time/settings/pages |
-| **Hex Package** | https://hex.pm/packages/gen_server_virtual_time |
-| **Documentation** | https://hexdocs.pm/gen_server_virtual_time |
+| **Hex Package**    | https://hex.pm/packages/gen_server_virtual_time                 |
+| **Documentation**  | https://hexdocs.pm/gen_server_virtual_time                      |
 
 ## 🧪 Local Preview
 
@@ -119,6 +123,7 @@ open http://localhost:8000
 **Problem:** Action fails with "permission denied" or similar.
 
 **Solution:**
+
 1. Go to **Settings** → **Actions** → **General**
 2. Scroll to **Workflow permissions**
 3. Select **Read and write permissions**
@@ -130,6 +135,7 @@ open http://localhost:8000
 **Problem:** GitHub Pages URL returns 404 Not Found.
 
 **Solution:**
+
 1. Verify workflow completed successfully in **Actions** tab
 2. Wait 1-2 minutes (DNS propagation)
 3. Check **Settings** → **Pages** shows "Your site is live at..."
@@ -141,8 +147,10 @@ open http://localhost:8000
 **Problem:** HTML loads but diagrams don't render.
 
 **Solution:**
+
 1. Open browser console (F12) to check for errors
-2. Verify CDN is accessible (https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js)
+2. Verify CDN is accessible
+   (https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js)
 3. Check PlantUML server is up (https://www.plantuml.com/plantuml/)
 4. Try regenerating: `mix test --force`
 
@@ -151,6 +159,7 @@ open http://localhost:8000
 **Problem:** Push to main but no workflow runs.
 
 **Solution:**
+
 1. Verify `.github/workflows/test-and-deploy-diagrams.yml` is committed
 2. Check file is not in `.gitignore`
 3. Ensure `main` branch is spelled correctly in workflow
@@ -161,6 +170,7 @@ open http://localhost:8000
 ### Add New Diagrams
 
 1. Add test to `test/diagram_generation_test.exs`:
+
    ```elixir
    test "generates my new diagram" do
      simulation = # ... your simulation
@@ -184,7 +194,7 @@ Edit `.github/workflows/test-and-deploy-diagrams.yml`:
 on:
   push:
     branches:
-      - main  # Trunk-based development
+      - main # Trunk-based development
 ```
 
 ### Deploy on Tags Only
@@ -193,7 +203,7 @@ on:
 on:
   push:
     tags:
-      - 'v*'  # Deploy only on version tags
+      - "v*" # Deploy only on version tags
 ```
 
 ## 📈 Monitoring
@@ -218,15 +228,20 @@ on:
 
 ## 💡 Pro Tips
 
-1. **PR Previews:** Pull requests run tests and generate artifacts, but don't deploy. Download artifacts to preview changes.
+1. **PR Previews:** Pull requests run tests and generate artifacts, but don't
+   deploy. Download artifacts to preview changes.
 
-2. **Fast Iteration:** Use `mix test` locally to instantly see diagram changes without waiting for CI.
+2. **Fast Iteration:** Use `mix test` locally to instantly see diagram changes
+   without waiting for CI.
 
-3. **Cache Benefits:** The workflow caches Elixir dependencies, making subsequent runs much faster.
+3. **Cache Benefits:** The workflow caches Elixir dependencies, making
+   subsequent runs much faster.
 
-4. **Artifact Download:** Don't want to wait for Pages? Download artifacts directly from any workflow run.
+4. **Artifact Download:** Don't want to wait for Pages? Download artifacts
+   directly from any workflow run.
 
-5. **Multiple Formats:** Generate both Mermaid and PlantUML to see which renders better for your use case.
+5. **Multiple Formats:** Generate both Mermaid and PlantUML to see which renders
+   better for your use case.
 
 ## 📚 Next Steps
 
@@ -239,6 +254,7 @@ on:
 ## 🤝 Contributing
 
 When adding diagram features:
+
 1. Test locally first: `mix test`
 2. Verify HTML renders correctly
 3. Update index page with new diagrams
@@ -246,5 +262,5 @@ When adding diagram features:
 
 ---
 
-**Need help?** Check the [GitHub Actions README](.github/README.md) for more details.
-
+**Need help?** Check the [GitHub Actions README](.github/README.md) for more
+details.

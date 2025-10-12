@@ -5,12 +5,14 @@
 Four production-ready code generators that transform ActorSimulation DSL into:
 
 ### 1. OMNeT++ Generator
+
 - **Purpose**: Network simulations
 - **Output**: NED topology + C++ simple modules
 - **Tests**: 12 comprehensive tests
 - **Examples**: 4 projects (48 files)
 
-### 2. CAF Generator  
+### 2. CAF Generator
+
 - **Purpose**: Production actor systems
 - **Output**: C++ actors + Catch2 tests + CI pipeline
 - **Key Innovation**: **Callback interfaces** for clean customization
@@ -18,6 +20,7 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 - **Examples**: 4 projects (88 files)
 
 ### 3. Pony Generator
+
 - **Purpose**: Capabilities-secure, data-race-free actors
 - **Output**: Pony actors + PonyTest tests + CI pipeline
 - **Key Innovation**: **Callback traits** (Notifier pattern)
@@ -25,6 +28,7 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 - **Examples**: 4 projects (56 files)
 
 ### 4. Phony Generator (NEW!)
+
 - **Purpose**: High-performance Go actors
 - **Output**: Go actors + Go tests + CI pipeline
 - **Key Innovation**: **Zero-allocation messaging**
@@ -32,6 +36,7 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 - **Examples**: 4 projects (40 files)
 
 ### Shared Utilities
+
 - **GeneratorUtils** module extracts common functionality
 - Eliminates code duplication across generators
 - Provides name conversions, pattern utilities, file I/O
@@ -50,6 +55,7 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 ## Files Created
 
 ### Generator Modules
+
 - `lib/actor_simulation/generator_utils.ex` (184 lines) - Shared utilities
 - `lib/actor_simulation/omnetpp_generator.ex` (402 lines)
 - `lib/actor_simulation/caf_generator.ex` (844 lines)
@@ -57,12 +63,14 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 - `lib/actor_simulation/phony_generator.ex` (431 lines)
 
 ### Test Files
+
 - `test/omnetpp_generator_test.exs` (226 lines)
 - `test/caf_generator_test.exs` (267 lines)
 - `test/pony_generator_test.exs` (228 lines)
 - `test/phony_generator_test.exs` (179 lines)
 
 ### Documentation
+
 - `docs/README.md` - Documentation index
 - `docs/generators.md` - Quick start guide
 - `docs/omnetpp_generator.md` - OMNeT++ specifics
@@ -71,6 +79,7 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 - `docs/GENERATORS_COMPLETE.md` - This summary
 
 ### Scripts
+
 - `scripts/generate_omnetpp_examples.exs`
 - `scripts/generate_caf_examples.exs`
 - `scripts/generate_pony_examples.exs`
@@ -79,22 +88,26 @@ Four production-ready code generators that transform ActorSimulation DSL into:
 - `scripts/validate_pony_output.exs`
 
 ### Single-File Examples
+
 - `examples/single_file_omnetpp.exs`
 - `examples/single_file_caf.exs`
 - `examples/single_file_pony.exs`
 - `examples/single_file_phony.exs`
 
 ### CI Pipelines
+
 - `.github/workflows/pony_validation.yml` - Validates Pony examples
 - `.github/workflows/phony_validation.yml` - Validates Go/Phony examples
 
 ### Generated Examples (232 files!)
+
 - 16 complete C++/Pony/Go projects ready to build
 - Each with tests, CI, and documentation
 
 ## Callback Pattern Implementation
 
 ### CAF (C++ Interfaces)
+
 ```cpp
 // Generated (DO NOT EDIT)
 class worker_callbacks {
@@ -108,6 +121,7 @@ void worker_callbacks::on_task() {
 ```
 
 ### Pony (Traits)
+
 ```pony
 // Generated (DO NOT EDIT)
 trait WorkerCallbacks
@@ -120,6 +134,7 @@ class WorkerCallbacksImpl is WorkerCallbacks
 ```
 
 ### Phony (Go Interfaces)
+
 ```go
 // Generated (DO NOT EDIT)
 type WorkerCallbacks interface {
@@ -137,6 +152,7 @@ func (c *DefaultWorkerCallbacks) OnTask() {
 ## CI/CD Integration
 
 ### CAF Projects Include:
+
 - Catch2 tests
 - JUnit XML reports
 - Multi-platform builds (Ubuntu, macOS)
@@ -144,6 +160,7 @@ func (c *DefaultWorkerCallbacks) OnTask() {
 - Test result publishing
 
 ### Pony Projects Include:
+
 - PonyTest tests
 - Ponyup installation
 - Corral dependency management
@@ -151,6 +168,7 @@ func (c *DefaultWorkerCallbacks) OnTask() {
 - Test execution validation
 
 ### Phony (Go) Projects Include:
+
 - Go testing package tests
 - Go modules (go.mod)
 - Multi-platform builds (Ubuntu, macOS, Windows)
@@ -231,4 +249,3 @@ scripts/validate_*_output.exs (×2)
 **Test coverage**: 100% of implemented features  
 **Quality**: All precommit checks passing  
 **Status**: Production-ready ✅
-

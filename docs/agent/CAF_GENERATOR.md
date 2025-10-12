@@ -1,22 +1,28 @@
 # CAF (C++ Actor Framework) Code Generator
 
-This document describes the CAF code generator module that translates ActorSimulation DSL into production-ready C++ actor systems using the C++ Actor Framework.
+This document describes the CAF code generator module that translates
+ActorSimulation DSL into production-ready C++ actor systems using the C++ Actor
+Framework.
 
 ## Overview
 
-The `ActorSimulation.CAFGenerator` module generates complete, buildable CAF projects from ActorSimulation definitions. This enables a powerful workflow:
+The `ActorSimulation.CAFGenerator` module generates complete, buildable CAF
+projects from ActorSimulation definitions. This enables a powerful workflow:
 
 1. **Prototype** in Elixir with instant feedback
 2. **Test** with virtual time and deterministic execution
 3. **Export** to CAF for production C++ deployments
-4. **Customize** behavior via callback interfaces WITHOUT touching generated code
-5. **Leverage** CAF ecosystem (distributed actors, type safety, high performance)
+4. **Customize** behavior via callback interfaces WITHOUT touching generated
+   code
+5. **Leverage** CAF ecosystem (distributed actors, type safety, high
+   performance)
 
 ## Key Features
 
 ### 🎯 Callback Interfaces
 
-The generator creates **callback interfaces** that allow you to add custom behavior WITHOUT modifying generated code:
+The generator creates **callback interfaces** that allow you to add custom
+behavior WITHOUT modifying generated code:
 
 ```cpp
 // Generated callback interface (DO NOT EDIT)
@@ -34,9 +40,11 @@ void worker_callbacks::on_tick() {
 ```
 
 This design enables:
+
 - **Version control**: Track generated vs custom code separately
 - **Upgrades**: Regenerate actors without losing custom logic
-- **Team collaboration**: Clear boundaries between framework and application code
+- **Team collaboration**: Clear boundaries between framework and application
+  code
 
 ## Architecture
 
@@ -87,14 +95,17 @@ Generates complete CAF project files from an ActorSimulation.
 ```
 
 **Options:**
+
 - `:project_name` (required) - Name of the C++ project
 - `:enable_callbacks` (default: true) - Generate callback interfaces
 - `:caf_version` (default: "0.18.7") - CAF version for Conan
 
 **Returns:**
+
 - `{:ok, files}` where files is a list of `{filename, content}` tuples
 
 **Example:**
+
 ```elixir
 simulation = ActorSimulation.new()
              |> ActorSimulation.add_actor(:sender, targets: [:receiver])
@@ -114,6 +125,7 @@ Writes generated files to a directory, creating subdirectories as needed.
 ```
 
 **Example:**
+
 ```elixir
 {:ok, files} = CAFGenerator.generate(simulation, project_name: "MyActors")
 :ok = CAFGenerator.write_to_directory(files, "caf_output/")
@@ -125,12 +137,12 @@ Writes generated files to a directory, creating subdirectories as needed.
 
 Each actor becomes a CAF `event_based_actor`:
 
-| ActorSimulation | CAF |
-|-----------------|-----|
-| Actor name | Class name (snake_case_actor) |
-| `send_pattern` | `delayed_send` scheduling |
-| `targets` | Vector of `caf::actor` references |
-| Message send | `send(target, message)` |
+| ActorSimulation | CAF                               |
+| --------------- | --------------------------------- |
+| Actor name      | Class name (snake_case_actor)     |
+| `send_pattern`  | `delayed_send` scheduling         |
+| `targets`       | Vector of `caf::actor` references |
+| Message send    | `send(target, message)`           |
 
 **Example:**
 
@@ -147,7 +159,7 @@ Generates:
 // C++ CAF
 class message_generator_actor : public caf::event_based_actor {
   public:
-    message_generator_actor(caf::actor_config& cfg, 
+    message_generator_actor(caf::actor_config& cfg,
                            const std::vector<caf::actor>& targets)
       : caf::event_based_actor(cfg), targets_(targets) {
       callbacks_ = std::make_shared<message_generator_callbacks>();
@@ -166,10 +178,10 @@ class message_generator_actor : public caf::event_based_actor {
 
   private:
     void schedule_next_send() {
-      delayed_send(this, std::chrono::milliseconds(100), 
+      delayed_send(this, std::chrono::milliseconds(100),
                    caf::atom("tick"));
     }
-    
+
     void send_to_targets() {
       for (auto& target : targets_) {
         send(target, caf::atom("msg"));
@@ -187,6 +199,7 @@ send_pattern: {:periodic, interval_ms, message}
 ```
 
 Generates:
+
 ```cpp
 delayed_send(this, std::chrono::milliseconds(100), caf::atom("msg"));
 ```
@@ -198,6 +211,7 @@ send_pattern: {:rate, messages_per_second, message}
 ```
 
 Generates:
+
 ```cpp
 delayed_send(this, std::chrono::milliseconds(20), caf::atom("msg"));  // 50 msgs/sec
 ```
@@ -209,6 +223,7 @@ send_pattern: {:burst, count, interval_ms, message}
 ```
 
 Generates:
+
 ```cpp
 for (int i = 0; i < count; i++) {
     delayed_send(this, std::chrono::milliseconds(interval), caf::atom("msg"));
@@ -222,6 +237,7 @@ for (int i = 0; i < count; i++) {
 Class declarations for each actor.
 
 **Contents:**
+
 - `#pragma once` include guard
 - CAF includes
 - Callback interface include
@@ -233,6 +249,7 @@ Class declarations for each actor.
 Actor implementations.
 
 **Key methods:**
+
 - Constructor - Initialize callbacks and targets
 - `make_behavior()` - Define message handlers
 - `schedule_next_send()` - Schedule periodic messages
@@ -243,6 +260,7 @@ Actor implementations.
 Callback interface definitions (DO NOT EDIT).
 
 **Contents:**
+
 - Virtual methods for each message type
 - Virtual destructor
 - Clear documentation about customization
@@ -252,6 +270,7 @@ Callback interface definitions (DO NOT EDIT).
 Callback implementations (EDIT THIS!).
 
 **Contents:**
+
 - Method stubs with TODO comments
 - Clear indication this file is for user customization
 - Includes for necessary headers
@@ -261,6 +280,7 @@ Callback implementations (EDIT THIS!).
 Application entry point with actor system setup.
 
 **Contents:**
+
 - CAF initialization
 - Actor spawning code
 - System configuration
@@ -271,6 +291,7 @@ Application entry point with actor system setup.
 Build system configuration.
 
 **Features:**
+
 - C++17 standard
 - CAF package detection via Conan
 - All source files listed
@@ -282,6 +303,7 @@ Build system configuration.
 Package manager setup.
 
 **Contents:**
+
 - CAF dependency with version
 - CMakeDeps and CMakeToolchain generators
 - Configuration options
@@ -291,6 +313,7 @@ Package manager setup.
 GitHub Actions workflow.
 
 **Features:**
+
 - Multi-platform builds (Ubuntu, macOS)
 - Debug and Release configurations
 - Conan dependency installation
@@ -302,6 +325,7 @@ GitHub Actions workflow.
 Project documentation.
 
 **Contents:**
+
 - Build instructions
 - Customization guide
 - Project structure
@@ -316,6 +340,7 @@ mix test test/caf_generator_test.exs
 ```
 
 **Test categories:**
+
 1. Complete project generation
 2. Callback interface generation
 3. C++ header and source generation
@@ -332,7 +357,7 @@ mix test test/caf_generator_test.exs
 ### Example 1: Simple Sender-Receiver
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:sender,
       send_pattern: {:periodic, 100, :msg},
@@ -349,7 +374,7 @@ CAFGenerator.write_to_directory(files, "simple_output/")
 ### Example 2: Pub-Sub System
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:publisher,
       send_pattern: {:rate, 50, :event},
@@ -365,7 +390,7 @@ simulation =
 ### Example 3: Pipeline Processing
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:source,
       send_pattern: {:rate, 100, :data},
@@ -388,6 +413,7 @@ mix run examples/caf_demo.exs
 ```
 
 This generates 4 complete CAF projects:
+
 - Pub-Sub System
 - Message Pipeline
 - Bursty Traffic
@@ -405,7 +431,8 @@ mix run scripts/generate_caf_examples.exs
 
 ### Prerequisites
 
-1. **CAF 0.18+** - [Installation Guide](https://actor-framework.readthedocs.io/en/stable/)
+1. **CAF 0.18+** -
+   [Installation Guide](https://actor-framework.readthedocs.io/en/stable/)
 2. **CMake 3.15+**
 3. **Conan 2.0+** - Package manager
 4. **C++17 Compiler** (GCC 7+, Clang 5+, MSVC 2019+)
@@ -430,28 +457,33 @@ cmake --build .
 ### Troubleshooting
 
 **CAF not found:**
+
 ```bash
 conan install .. --build=missing -s compiler.cppstd=17
 ```
 
 **Conan profile issues:**
+
 ```bash
 conan profile detect --force
 ```
 
 ## Customizing Behavior
 
-The key feature of the CAF generator is the ability to customize behavior WITHOUT touching generated code.
+The key feature of the CAF generator is the ability to customize behavior
+WITHOUT touching generated code.
 
 ### Step-by-Step Guide
 
 1. **Generate the project:**
+
    ```bash
    mix run examples/caf_demo.exs
    cd examples/caf_pubsub
    ```
 
 2. **Find callback implementations:**
+
    ```bash
    ls *_callbacks_impl.cpp
    # publisher_callbacks_impl.cpp
@@ -460,12 +492,13 @@ The key feature of the CAF generator is the ability to customize behavior WITHOU
    ```
 
 3. **Edit callback implementation:**
+
    ```cpp
    // publisher_callbacks_impl.cpp
    void publisher_callbacks::on_event() {
      // Add your custom logic here!
      std::cout << "Publishing event with custom logic!" << std::endl;
-     
+
      // Access database, send HTTP requests, log to file, etc.
      log_to_database();
      notify_monitoring_system();
@@ -489,7 +522,7 @@ class publisher_callbacks {
   public:
     virtual void on_event();
     virtual ~publisher_callbacks() = default;
-    
+
   private:
     int event_count_ = 0;  // Add custom state
 };
@@ -498,7 +531,7 @@ class publisher_callbacks {
 void publisher_callbacks::on_event() {
   event_count_++;
   std::cout << "Event #" << event_count_ << std::endl;
-  
+
   if (event_count_ % 10 == 0) {
     std::cout << "Checkpoint: " << event_count_ << " events!" << std::endl;
   }
@@ -508,6 +541,7 @@ void publisher_callbacks::on_event() {
 ## Current Features
 
 **Supported:**
+
 - ✅ Event-based actors
 - ✅ All send patterns (periodic, rate, burst)
 - ✅ Callback interfaces for customization
@@ -528,6 +562,7 @@ void publisher_callbacks::on_event() {
    - Better IDE support
 
 2. **Custom Message Types**
+
    ```elixir
    message_types: [
      {:data_packet, [:id, :payload, :timestamp]},
@@ -554,13 +589,13 @@ void publisher_callbacks::on_event() {
 
 ### 1. Separation of Generated and Custom Code
 
-Generated files are clearly marked with "DO NOT EDIT" comments.
-Custom code goes in separate `_impl.cpp` files.
+Generated files are clearly marked with "DO NOT EDIT" comments. Custom code goes
+in separate `_impl.cpp` files.
 
 ### 2. Type Safety
 
-Uses CAF's type system for compile-time safety.
-All actor messages are typed with `caf::atom`.
+Uses CAF's type system for compile-time safety. All actor messages are typed
+with `caf::atom`.
 
 ### 3. Modern C++
 
@@ -572,6 +607,7 @@ All actor messages are typed with `caf::atom`.
 ### 4. Test-Driven
 
 Every feature is:
+
 1. Specified in tests first
 2. Implemented to pass tests
 3. Refactored for quality
@@ -585,16 +621,17 @@ Every feature is:
 
 ## Comparison with OMNeT++
 
-| Feature | OMNeT++ | CAF |
-|---------|---------|-----|
-| Purpose | Network simulation | General-purpose actors |
-| Runtime | Simulation time | Real time / production |
-| GUI | Yes | No (command-line) |
-| Scalability | Millions of events | Millions of messages/sec |
-| Customization | Edit generated C++ | Callback interfaces |
-| Use Case | Research, validation | Production systems |
+| Feature       | OMNeT++              | CAF                      |
+| ------------- | -------------------- | ------------------------ |
+| Purpose       | Network simulation   | General-purpose actors   |
+| Runtime       | Simulation time      | Real time / production   |
+| GUI           | Yes                  | No (command-line)        |
+| Scalability   | Millions of events   | Millions of messages/sec |
+| Customization | Edit generated C++   | Callback interfaces      |
+| Use Case      | Research, validation | Production systems       |
 
 **Use both:**
+
 1. Prototype in Elixir DSL
 2. Test with virtual time
 3. Validate with OMNeT++ (large-scale simulation)
@@ -650,15 +687,16 @@ Every feature is:
 
 Typical generation times (M1 MacBook Pro):
 
-| Project Size | Actors | Files | Time |
-|--------------|--------|-------|------|
-| Simple | 2 | 13 | <10ms |
-| Medium | 5 | 25 | <20ms |
-| Complex | 10 | 41 | <50ms |
+| Project Size | Actors | Files | Time  |
+| ------------ | ------ | ----- | ----- |
+| Simple       | 2      | 13    | <10ms |
+| Medium       | 5      | 25    | <20ms |
+| Complex      | 10     | 41    | <50ms |
 
 ### Generated Code Performance
 
 CAF actor systems scale to:
+
 - Millions of messages per second
 - Thousands of actors
 - Distributed across machines
@@ -677,6 +715,7 @@ The generated CI pipeline runs on every commit:
 ```
 
 To add tests to generated code:
+
 1. Add test files to CMakeLists.txt
 2. Use CAF's test framework
 3. CI will automatically run them
@@ -684,11 +723,13 @@ To add tests to generated code:
 ## Conclusion
 
 The CAF generator bridges the gap between:
+
 - **Rapid prototyping** (Elixir DSL)
 - **Production deployment** (C++ actors)
 - **Clean customization** (Callback interfaces)
 
 It enables a powerful workflow:
+
 1. Design in DSL
 2. Test with virtual time
 3. Validate in Elixir
@@ -697,6 +738,7 @@ It enables a powerful workflow:
 6. Deploy to production
 
 Perfect for:
+
 - Distributed systems
 - Real-time applications
 - Microservices
@@ -709,5 +751,5 @@ Perfect for:
 
 **Compatibility:** CAF 0.18+, CMake 3.15+, C++17
 
-**Key Differentiator:** Callback interfaces allow customization WITHOUT touching generated code!
-
+**Key Differentiator:** Callback interfaces allow customization WITHOUT touching
+generated code!

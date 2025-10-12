@@ -1,6 +1,7 @@
 # CAF (C++ Actor Framework) Generator
 
-Generate production-ready CAF actor code with callback interfaces for clean customization.
+Generate production-ready CAF actor code with callback interfaces for clean
+customization.
 
 ## Quick Start
 
@@ -20,7 +21,8 @@ ActorSimulation.CAFGenerator.write_to_directory(files, "caf_out/")
 
 ## Key Feature: Callback Interfaces
 
-The CAF generator creates **callback interfaces** so you can customize behavior WITHOUT touching generated code:
+The CAF generator creates **callback interfaces** so you can customize behavior
+WITHOUT touching generated code:
 
 ```cpp
 // worker_callbacks_impl.cpp (EDIT THIS!)
@@ -52,9 +54,11 @@ void worker_callbacks::on_task() {
 
 ## Examples
 
-See [`examples/caf_pubsub/`](../examples/caf_pubsub/) for a complete generated project.
+See [`examples/caf_pubsub/`](../examples/caf_pubsub/) for a complete generated
+project.
 
-Try the single-file script: [`examples/single_file_caf.exs`](../examples/single_file_caf.exs)
+Try the single-file script:
+[`examples/single_file_caf.exs`](../examples/single_file_caf.exs)
 
 ## Building Generated Code
 
@@ -83,4 +87,3 @@ ctest --output-on-failure
 - [CAF Documentation](https://actor-framework.readthedocs.io/)
 - [Catch2 Testing](https://github.com/catchorg/Catch2)
 - [Generator Comparison](generators.md#comparison)
-

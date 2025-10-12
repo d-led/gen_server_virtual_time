@@ -39,7 +39,7 @@ simulation =
   )
 
 # Write to output directory
-output_dir = "phony_burst_generated"
+output_dir = "generated/phony_burst"
 ActorSimulation.PhonyGenerator.write_to_directory(files, output_dir)
 
 IO.puts("""

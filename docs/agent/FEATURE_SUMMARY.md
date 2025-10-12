@@ -1,12 +1,14 @@
 # Feature Summary - GenServerVirtualTime v0.2.0
 
-⚠️ **HISTORICAL SNAPSHOT** - This document is from an earlier development session. See `/CHANGELOG.md` for current v0.2.0 features.
+⚠️ **HISTORICAL SNAPSHOT** - This document is from an earlier development
+session. See `/CHANGELOG.md` for current v0.2.0 features.
 
 ## 🎉 New Features Implemented
 
 ### 1. Process-in-the-Loop ✨
 
-Mix real GenServer implementations with simulated actors for true integration testing.
+Mix real GenServer implementations with simulated actors for true integration
+testing.
 
 ```elixir
 defmodule MyRealServer do
@@ -14,16 +16,17 @@ defmodule MyRealServer do
   def handle_call(:get, _from, state), do: {:reply, state, state}
 end
 
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_process(:real_server, module: MyRealServer, args: 0)
-  |> ActorSimulation.add_actor(:client, 
+  |> ActorSimulation.add_actor(:client,
       send_pattern: {:periodic, 100, {:call, :get}},
       targets: [:real_server])
   |> ActorSimulation.run(duration: 1000)
 ```
 
 **Benefits:**
+
 - Test real GenServers in simulated environments
 - "Hardware-in-the-Loop" style testing for processes
 - Mix production code with test doubles
@@ -43,6 +46,7 @@ ActorSimulation.add_actor(:api,
 ```
 
 **Features:**
+
 - Match exact messages: `{:ping, response_fn}`
 - Match with predicates: `{fn msg -> ... end, response_fn}`
 - Return `:reply` for sync responses
@@ -65,7 +69,9 @@ send_pattern: {:periodic, 100, :message}
 ```
 
 **Behavior:**
-- `{:call, msg}` - Blocks until reply received (uses GenServer.call for real processes)
+
+- `{:call, msg}` - Blocks until reply received (uses GenServer.call for real
+  processes)
 - `{:cast, msg}` - Non-blocking (uses GenServer.cast for real processes)
 - Regular messages - Fire and forget (uses send)
 
@@ -74,7 +80,7 @@ send_pattern: {:periodic, 100, :message}
 Capture all inter-actor communication for analysis and visualization:
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new(trace: true)
   |> add_actors_and_patterns()
   |> run(duration: 5000)
@@ -93,6 +99,7 @@ File.write!("diagram.puml", plantuml)
 ```
 
 **Trace Events Include:**
+
 - `timestamp` - Virtual time when message was sent
 - `from` - Sender actor name
 - `to` - Receiver actor name
@@ -100,6 +107,7 @@ File.write!("diagram.puml", plantuml)
 - `type` - `:call`, `:cast`, or `:send`
 
 **Use Cases:**
+
 - Generate sequence diagrams
 - Debug message flows
 - Analyze communication patterns
@@ -109,6 +117,7 @@ File.write!("diagram.puml", plantuml)
 ### 5. Documentation-First Approach 📚
 
 README now leads with "Show Me The Code" examples:
+
 - Quick start with actual code
 - Problem/solution comparisons
 - Real-world usage patterns
@@ -117,6 +126,7 @@ README now leads with "Show Me The Code" examples:
 ## Test Coverage
 
 Added 11 new tests covering:
+
 - Process-in-the-Loop integration
 - Pattern matching with exact patterns and predicates
 - Sync/async communication (call, cast, send)
@@ -124,7 +134,8 @@ Added 11 new tests covering:
 - PlantUML sequence diagram generation
 - Timestamp tracking in virtual time
 
-**Total Tests**: ~~37~~ **189** (all passing ✅) - Updated count from v0.2.0 final
+**Total Tests**: ~~37~~ **189** (all passing ✅) - Updated count from v0.2.0
+final
 
 ## API Additions
 
@@ -162,7 +173,9 @@ message            # Regular send
 ## Examples
 
 ### New: `examples/advanced_demo.exs`
+
 Demonstrates all new features:
+
 1. Process-in-the-Loop
 2. Pattern matching
 3. Sync/async communication
@@ -181,6 +194,7 @@ Demonstrates all new features:
 ✅ **100% Backward Compatible**
 
 All existing code continues to work without changes:
+
 - `on_receive` still works if `on_match` not provided
 - Regular messages still work
 - Tracing is opt-in
@@ -208,7 +222,7 @@ simulation = ActorSimulation.new()
 # After (with new features)
 simulation = ActorSimulation.new(trace: true)  # Enable tracing
   |> add_process(:real, module: M, args: nil)  # Add real process
-  |> add_actor(:server, 
+  |> add_actor(:server,
       on_match: [                              # Pattern matching
         {:ping, fn s -> {:reply, :pong, s} end}
       ])
@@ -221,6 +235,7 @@ plantuml = trace_to_plantuml(simulation)       # Generate diagram
 ## Future Enhancements
 
 Possible additions for v0.3:
+
 - Visual trace viewer (web UI)
 - Performance profiling mode
 - Mermaid diagram support
@@ -231,6 +246,7 @@ Possible additions for v0.3:
 ## Credits
 
 New features inspired by:
+
 - Hardware-in-the-Loop testing methodologies
 - Pattern matching in Elixir/Erlang
 - Sequence diagram tools (PlantUML, Mermaid)
@@ -242,4 +258,3 @@ New features inspired by:
 **Released**: 2025-10-11  
 **Tests**: 37/37 passing ✅  
 **Coverage**: 70.5%
-

@@ -40,7 +40,7 @@ IO.puts("Generating VLINGO XOOM Actors project: vlingo_loadbalanced_generated...
     enable_callbacks: true
   )
 
-output_dir = Path.join(__DIR__, "../vlingo_loadbalanced_generated")
+output_dir = Path.join(__DIR__, "../generated/vlingo_loadbalanced")
 
 # Clean up old directory if it exists
 if File.exists?(output_dir) do

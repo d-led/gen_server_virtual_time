@@ -42,7 +42,7 @@ simulation =
   )
 
 # Write to output directory
-output_dir = "pony_loadbalanced_generated"
+output_dir = "generated/pony_loadbalanced"
 ActorSimulation.PonyGenerator.write_to_directory(files, output_dir)
 
 IO.puts("""

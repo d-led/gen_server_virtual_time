@@ -13,12 +13,12 @@
 
 ## Generators
 
-| # | Name | Language | Framework | Tests | Examples | Key Feature |
-|---|------|----------|-----------|-------|----------|-------------|
-| 1 | OMNeT++ | C++ | OMNeT++ | 12 | 4 (48 files) | Network simulation |
-| 2 | CAF | C++ | CAF | 13 | 4 (88 files) | Callback interfaces + Catch2 |
-| 3 | Pony | Pony | Native | 11 | 4 (56 files) | Data-race freedom + PonyTest |
-| 4 | Phony | Go | Phony | 11 | 4 (40 files) | Zero-allocation + Go tests |
+| #   | Name    | Language | Framework | Tests | Examples     | Key Feature                  |
+| --- | ------- | -------- | --------- | ----- | ------------ | ---------------------------- |
+| 1   | OMNeT++ | C++      | OMNeT++   | 12    | 4 (48 files) | Network simulation           |
+| 2   | CAF     | C++      | CAF       | 13    | 4 (88 files) | Callback interfaces + Catch2 |
+| 3   | Pony    | Pony     | Native    | 11    | 4 (56 files) | Data-race freedom + PonyTest |
+| 4   | Phony   | Go       | Phony     | 11    | 4 (40 files) | Zero-allocation + Go tests   |
 
 **Total**: 47 generator tests + 114 framework tests = **161 tests passing**
 
@@ -33,25 +33,32 @@
 ## Key Innovations
 
 ### 1. Callback Customization Pattern
+
 Add custom behavior WITHOUT touching generated code:
+
 - **CAF**: C++ virtual interfaces
 - **Pony**: Trait implementations
 - **Phony**: Go interfaces
 
 ### 2. Shared Utilities (`GeneratorUtils`)
+
 Eliminates duplication:
+
 - Name conversions (snake_case, PascalCase, camelCase)
 - Pattern interval calculations
 - Message extraction
 - File I/O
 
 ### 3. Automated Testing
+
 - **CAF**: Catch2 + JUnit XML reports
 - **Pony**: PonyTest + multi-platform CI
 - **Phony**: Go testing + cross-platform validation
 
 ### 4. Single-File Scripts
+
 Following https://fly.io/phoenix-files/single-file-elixir-scripts/:
+
 - Portable `Mix.install` examples
 - No setup required
 - Perfect for bug reports and prototyping
@@ -59,16 +66,19 @@ Following https://fly.io/phoenix-files/single-file-elixir-scripts/:
 ## Bugs Fixed
 
 ✅ **Flaky test** (genserver_callbacks_test.exs:152)
+
 - Fixed race condition in send_after test
 - Now passes consistently
 
 ✅ **Documentation build** errors
+
 - Fixed file path references in mix.exs
 - All docs build successfully
 
 ## Documentation
 
 All in `docs/` folder:
+
 - Quick start guide
 - Generator-specific docs (4)
 - Implementation summaries
@@ -80,7 +90,7 @@ All in `docs/` folder:
 ```
 ✅ Tests: 161/161 passing
 ✅ Formatting: Perfect
-✅ Compilation: No warnings  
+✅ Compilation: No warnings
 ✅ Credo: No issues
 ✅ Documentation: Builds successfully
 ✅ Backwards compatible: 100%
@@ -89,6 +99,7 @@ All in `docs/` folder:
 ## Ready to Commit
 
 All files tracked in git:
+
 - 5 generator modules
 - 4 test files
 - 16 example projects (232 files)
@@ -100,6 +111,7 @@ All files tracked in git:
 ## What Users Can Do
 
 ### Generate Code
+
 ```bash
 # Single-file scripts (no setup!)
 elixir examples/single_file_caf.exs
@@ -113,17 +125,19 @@ mix run scripts/generate_phony_examples.exs
 ```
 
 ### Validate Code
+
 ```bash
 mix run scripts/validate_caf_output.exs
 mix run scripts/validate_pony_output.exs
 ```
 
 ### Build & Test
+
 ```bash
 # CAF
 cd examples/caf_pubsub/build && ctest
 
-# Pony  
+# Pony
 cd examples/pony_pubsub && make test
 
 # Phony (Go)
@@ -133,6 +147,7 @@ cd examples/phony_pubsub && go test -v ./...
 ## Next Steps for Release
 
 Ready for version 0.2.0:
+
 1. Update CHANGELOG.md
 2. Bump version to 0.2.0
 3. Commit all changes
@@ -158,4 +173,3 @@ Ready for version 0.2.0:
 **Ready**: Version 0.2.0 release ✅
 
 🎉 **Enjoy your break - everything is working perfectly!**
-

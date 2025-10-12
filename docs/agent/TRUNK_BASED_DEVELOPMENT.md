@@ -1,6 +1,7 @@
 # Trunk-Based Development Workflow
 
-This project uses **trunk-based development** - a streamlined approach perfect for libraries.
+This project uses **trunk-based development** - a streamlined approach perfect
+for libraries.
 
 ## Why Trunk-Based Development?
 
@@ -8,7 +9,7 @@ This project uses **trunk-based development** - a streamlined approach perfect f
 ✅ **Fast** - Quick merge to main, immediate CI feedback  
 ✅ **Safe** - Comprehensive CI validation before merge  
 ✅ **XP-aligned** - Continuous integration, small changes  
-✅ **Library-friendly** - Tag-based releases, semantic versioning  
+✅ **Library-friendly** - Tag-based releases, semantic versioning
 
 ## Workflow
 
@@ -62,12 +63,12 @@ git push origin v0.2.0
 
 ## Branch Strategy
 
-| Branch | Purpose | Lifetime |
-|--------|---------|----------|
-| `main` | Production-ready code | Permanent |
-| `feature/*` | New features | Hours to days |
-| `fix/*` | Bug fixes | Hours |
-| `refactor/*` | Code improvements | Hours to days |
+| Branch       | Purpose               | Lifetime      |
+| ------------ | --------------------- | ------------- |
+| `main`       | Production-ready code | Permanent     |
+| `feature/*`  | New features          | Hours to days |
+| `fix/*`      | Bug fixes             | Hours         |
+| `refactor/*` | Code improvements     | Hours to days |
 
 **No develop branch!** All work merges directly to main after CI validation.
 
@@ -239,12 +240,14 @@ Write Code → Commit → Push → CI Runs → Get Feedback
 ### Libraries vs Applications
 
 **Applications** might use:
+
 - develop branch
 - staging environments
 - release branches
 - longer QA cycles
 
 **Libraries** benefit from:
+
 - ✅ Single source of truth (main)
 - ✅ Tag-based releases
 - ✅ Semantic versioning
@@ -254,6 +257,7 @@ Write Code → Commit → Push → CI Runs → Get Feedback
 ### Consumer Confidence
 
 Users can:
+
 - Trust main branch (always CI-validated)
 - Use specific tags (v0.2.0)
 - Track changes via git tags
@@ -320,5 +324,5 @@ git push origin --delete develop
 5. ✅ Always deployable - main is stable
 6. ✅ XP-aligned - continuous integration
 
-**No develop branch needed!** Just main + short-lived feature branches + tags for releases.
-
+**No develop branch needed!** Just main + short-lived feature branches + tags
+for releases.

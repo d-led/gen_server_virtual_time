@@ -1,12 +1,13 @@
 # OMNeT++ Code Generation
 
-Export ActorSimulation DSL to production-grade [OMNeT++](https://github.com/omnetpp/omnetpp) C++ code.
+Export ActorSimulation DSL to production-grade
+[OMNeT++](https://github.com/omnetpp/omnetpp) C++ code.
 
 ## Quick Example
 
 ```elixir
 # Define your simulation in Elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:publisher,
       send_pattern: {:periodic, 100, :event},
@@ -25,42 +26,45 @@ ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_output/")
 
 ## Generated Files
 
-| File | Description |
-|------|-------------|
-| `NetworkName.ned` | Network topology in NED language |
-| `ActorName.h` | C++ header files for each actor module |
-| `ActorName.cc` | C++ implementation with message handling |
-| `CMakeLists.txt` | CMake build configuration |
-| `conanfile.txt` | Conan package manager configuration |
-| `omnetpp.ini` | Simulation parameters and settings |
+| File              | Description                              |
+| ----------------- | ---------------------------------------- |
+| `NetworkName.ned` | Network topology in NED language         |
+| `ActorName.h`     | C++ header files for each actor module   |
+| `ActorName.cc`    | C++ implementation with message handling |
+| `CMakeLists.txt`  | CMake build configuration                |
+| `conanfile.txt`   | Conan package manager configuration      |
+| `omnetpp.ini`     | Simulation parameters and settings       |
 
 ## DSL to OMNeT++ Mapping
 
-| ActorSimulation DSL | OMNeT++ Equivalent |
-|---------------------|-------------------|
-| `ActorSimulation.add_actor/2` | `cSimpleModule` class |
-| `send_pattern: {:periodic, ms, msg}` | `scheduleAt(simTime() + interval)` |
-| `send_pattern: {:rate, per_sec, msg}` | `scheduleAt(simTime() + 1/rate)` |
-| `send_pattern: {:burst, n, ms, msg}` | Loop sending n messages per interval |
-| `targets: [...]` | Output gates + NED connections |
-| VirtualClock time | `simTime()` |
-| Message passing | `send(msg, "out", gateIndex)` |
+| ActorSimulation DSL                   | OMNeT++ Equivalent                   |
+| ------------------------------------- | ------------------------------------ |
+| `ActorSimulation.add_actor/2`         | `cSimpleModule` class                |
+| `send_pattern: {:periodic, ms, msg}`  | `scheduleAt(simTime() + interval)`   |
+| `send_pattern: {:rate, per_sec, msg}` | `scheduleAt(simTime() + 1/rate)`     |
+| `send_pattern: {:burst, n, ms, msg}`  | Loop sending n messages per interval |
+| `targets: [...]`                      | Output gates + NED connections       |
+| VirtualClock time                     | `simTime()`                          |
+| Message passing                       | `send(msg, "out", gateIndex)`        |
 
 ## Send Pattern Examples
 
 **Periodic Messages:**
+
 ```elixir
 send_pattern: {:periodic, 100, :tick}
 # Generates: scheduleAt(simTime() + 0.1, selfMsg)
 ```
 
 **Rate-Based:**
+
 ```elixir
 send_pattern: {:rate, 50, :data}
 # Generates: scheduleAt(simTime() + 0.02, selfMsg)  # 50/sec = 0.02s interval
 ```
 
 **Burst Pattern:**
+
 ```elixir
 send_pattern: {:burst, 10, 1000, :batch}
 # Generates: for loop sending 10 messages every 1 second
@@ -99,12 +103,14 @@ To build and run generated code, you need:
 3. **C++17 compiler** - GCC 7+, Clang 5+, or MSVC 2017+
 4. **Conan (optional)** - For dependency management
 
-See [OMNeT++ Installation Guide](https://doc.omnetpp.org/omnetpp/InstallGuide.pdf) for platform-specific instructions.
+See
+[OMNeT++ Installation Guide](https://doc.omnetpp.org/omnetpp/InstallGuide.pdf)
+for platform-specific instructions.
 
 ## Example: Pub-Sub System
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:publisher,
       send_pattern: {:periodic, 100, :event},
@@ -121,6 +127,7 @@ ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_pubsub/")
 ```
 
 **Generated NED topology:**
+
 ```ned
 simple Publisher {
     gates:
@@ -146,6 +153,7 @@ network PubSubNetwork {
 ```
 
 **Generated C++ (Publisher.cc excerpt):**
+
 ```cpp
 void Publisher::initialize() {
     sendCount = 0;
@@ -194,13 +202,15 @@ ls -la  # See all generated files
 ## Why Use OMNeT++ Generation?
 
 **Development Workflow:**
+
 1. 🚀 **Prototype** - Rapid iteration in Elixir with instant feedback
-2. 🧪 **Test** - Validate with virtual time and fast simulations  
+2. 🧪 **Test** - Validate with virtual time and fast simulations
 3. 📊 **Visualize** - Generate PlantUML sequence diagrams
 4. ⚡ **Scale** - Export to OMNeT++ for large-scale C++ simulations
 5. 🎯 **Deploy** - Leverage OMNeT++ ecosystem and performance
 
 **Benefits:**
+
 - **10-100x faster prototyping** in Elixir vs writing C++
 - **Type safety** - Catch errors at compile time in generated C++
 - **Maintainability** - Single source of truth (your DSL)
@@ -210,12 +220,14 @@ ls -la  # See all generated files
 ## Limitations
 
 The generator currently supports:
+
 - ✅ Simple module actors with send patterns
 - ✅ Point-to-point message passing
 - ✅ Periodic, rate, and burst patterns
 - ✅ Basic statistics collection
 
 Not yet supported:
+
 - ❌ Complex state machines (on_receive/on_match functions)
 - ❌ Dynamic topology changes
 - ❌ Custom message types beyond cMessage
@@ -227,10 +239,11 @@ For these advanced features, use OMNeT++ directly or extend the generator.
 ## Contributing to Generator
 
 The generator is extensible and contributions are welcome:
+
 - Add support for custom message types
 - Implement state machine translation
 - Add network delay/loss models
 - Support INET framework integration
 
-See `lib/actor_simulation/omnetpp_generator.ex` and `test/omnetpp_generator_test.exs`.
-
+See `lib/actor_simulation/omnetpp_generator.ex` and
+`test/omnetpp_generator_test.exs`.

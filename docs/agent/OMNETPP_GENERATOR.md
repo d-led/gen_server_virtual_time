@@ -1,10 +1,13 @@
 # OMNeT++ Code Generator
 
-This document describes the OMNeT++ code generator module that translates ActorSimulation DSL into production-ready C++ simulation code.
+This document describes the OMNeT++ code generator module that translates
+ActorSimulation DSL into production-ready C++ simulation code.
 
 ## Overview
 
-The `ActorSimulation.OMNeTPPGenerator` module generates complete, buildable OMNeT++ projects from ActorSimulation definitions. This enables a powerful workflow:
+The `ActorSimulation.OMNeTPPGenerator` module generates complete, buildable
+OMNeT++ projects from ActorSimulation definitions. This enables a powerful
+workflow:
 
 1. **Prototype** in Elixir with instant feedback
 2. **Test** with virtual time and deterministic execution
@@ -60,13 +63,16 @@ Generates complete OMNeT++ project files from an ActorSimulation.
 ```
 
 **Options:**
+
 - `:network_name` (required) - Name of the OMNeT++ network
 - `:sim_time_limit` (default: 10.0) - Simulation duration in seconds
 
 **Returns:**
+
 - `{:ok, files}` where files is a list of `{filename, content}` tuples
 
 **Example:**
+
 ```elixir
 simulation = ActorSimulation.new()
              |> ActorSimulation.add_actor(:sender, targets: [:receiver])
@@ -86,6 +92,7 @@ Writes generated files to a directory.
 ```
 
 **Example:**
+
 ```elixir
 {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "MyNet")
 :ok = OMNeTPPGenerator.write_to_directory(files, "omnetpp_output/")
@@ -97,12 +104,12 @@ Writes generated files to a directory.
 
 Each actor becomes an OMNeT++ `cSimpleModule`:
 
-| ActorSimulation | OMNeT++ |
-|-----------------|---------|
-| Actor name | Module class name (CamelCase) |
-| `send_pattern` | Self-message scheduling |
-| `targets` | Output gates |
-| Message send | `send(msg, "out", gateIndex)` |
+| ActorSimulation | OMNeT++                       |
+| --------------- | ----------------------------- |
+| Actor name      | Module class name (CamelCase) |
+| `send_pattern`  | Self-message scheduling       |
+| `targets`       | Output gates                  |
+| Message send    | `send(msg, "out", gateIndex)` |
 
 **Example:**
 
@@ -122,7 +129,7 @@ class MessageGenerator : public cSimpleModule {
         selfMsg = new cMessage("selfMsg");
         scheduleAt(simTime() + 0.1, selfMsg);  // 100ms
     }
-    
+
     void handleMessage(cMessage *msg) {
         if (msg->isSelfMessage()) {
             send(new cMessage("tick"), "out", 0);
@@ -141,6 +148,7 @@ send_pattern: {:periodic, interval_ms, message}
 ```
 
 Generates:
+
 ```cpp
 scheduleAt(simTime() + #{interval_ms / 1000.0}, selfMsg);
 ```
@@ -152,6 +160,7 @@ send_pattern: {:rate, messages_per_second, message}
 ```
 
 Generates:
+
 ```cpp
 scheduleAt(simTime() + #{1.0 / messages_per_second}, selfMsg);
 ```
@@ -163,6 +172,7 @@ send_pattern: {:burst, count, interval_ms, message}
 ```
 
 Generates:
+
 ```cpp
 for (int i = 0; i < #{count}; i++) {
     // Send messages
@@ -218,6 +228,7 @@ network MyNetwork {
 Network topology definition in OMNeT++ NED language.
 
 **Structure:**
+
 - Simple module definitions (actors)
 - Gate declarations (inputs/outputs)
 - Network module
@@ -228,6 +239,7 @@ Network topology definition in OMNeT++ NED language.
 Module class declarations.
 
 **Contents:**
+
 - Include guards
 - Class definition extending `cSimpleModule`
 - Member variables (`sendCount`, `selfMsg`)
@@ -238,6 +250,7 @@ Module class declarations.
 Module implementations.
 
 **Key methods:**
+
 - `initialize()` - Set up and schedule first event
 - `handleMessage()` - Process messages and self-events
 - `finish()` - Cleanup and statistics
@@ -247,6 +260,7 @@ Module implementations.
 Build system configuration.
 
 **Features:**
+
 - C++17 standard
 - OMNeT++ package detection
 - Source file listing
@@ -261,6 +275,7 @@ Package manager setup (for future dependencies).
 Simulation parameters.
 
 **Settings:**
+
 - Network name
 - Simulation time limit
 - Logging options
@@ -275,6 +290,7 @@ mix test test/omnetpp_generator_test.exs
 ```
 
 **Test categories:**
+
 1. NED file generation
 2. C++ header generation
 3. C++ source generation with patterns
@@ -291,7 +307,7 @@ mix test test/omnetpp_generator_test.exs
 ### Example 1: Simple Sender-Receiver
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:sender,
       send_pattern: {:periodic, 100, :msg},
@@ -307,7 +323,7 @@ OMNeTPPGenerator.write_to_directory(files, "simple_output/")
 ### Example 2: Pub-Sub System
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:publisher,
       send_pattern: {:rate, 50, :event},
@@ -324,7 +340,7 @@ simulation =
 ### Example 3: Burst Traffic
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:burster,
       send_pattern: {:burst, 10, 1000, :batch},
@@ -344,6 +360,7 @@ mix run examples/omnetpp_demo.exs
 ```
 
 This generates 4 complete OMNeT++ projects:
+
 - Pub-Sub System
 - Message Pipeline
 - Bursty Traffic
@@ -353,7 +370,8 @@ This generates 4 complete OMNeT++ projects:
 
 ### Prerequisites
 
-1. **OMNeT++ 6.0+** - [Installation Guide](https://doc.omnetpp.org/omnetpp/InstallGuide.pdf)
+1. **OMNeT++ 6.0+** -
+   [Installation Guide](https://doc.omnetpp.org/omnetpp/InstallGuide.pdf)
 2. **CMake 3.15+**
 3. **C++17 Compiler** (GCC 7+, Clang 5+)
 
@@ -370,6 +388,7 @@ make
 ### Troubleshooting
 
 If CMake can't find OMNeT++:
+
 ```bash
 source /path/to/omnetpp/setenv
 cmake -DOMNETPP_ROOT=$OMNETPP_ROOT ..
@@ -378,12 +397,14 @@ cmake -DOMNETPP_ROOT=$OMNETPP_ROOT ..
 ## Current Limitations
 
 **Supported:**
+
 - ✅ Simple module actors
 - ✅ All send patterns (periodic, rate, burst)
 - ✅ Point-to-point connections
 - ✅ Basic statistics
 
 **Not Yet Supported:**
+
 - ❌ Complex state machines (`on_receive`/`on_match`)
 - ❌ Dynamic topology
 - ❌ Custom message types
@@ -395,6 +416,7 @@ cmake -DOMNETPP_ROOT=$OMNETPP_ROOT ..
 ### Planned Features
 
 1. **Custom Message Types**
+
    ```elixir
    message_types: [
      {:data_packet, [:id, :payload, :timestamp]},
@@ -407,6 +429,7 @@ cmake -DOMNETPP_ROOT=$OMNETPP_ROOT ..
    - Support pattern matching in C++
 
 3. **Channel Models**
+
    ```elixir
    channel: {:delay, 10, :ms},
    channel: {:loss, 0.01}  # 1% packet loss
@@ -430,6 +453,7 @@ cmake -DOMNETPP_ROOT=$OMNETPP_ROOT ..
 ### 1. No Timestamps
 
 Generated code contains no timestamps to enable:
+
 - Clean diffs in version control
 - Reproducible builds
 - Generator evolution tracking
@@ -437,6 +461,7 @@ Generated code contains no timestamps to enable:
 ### 2. Watertight C++
 
 Generated C++ code is:
+
 - **Valid** - Compiles without warnings
 - **Safe** - Proper memory management
 - **Clean** - Follows OMNeT++ best practices
@@ -445,6 +470,7 @@ Generated C++ code is:
 ### 3. Test-Driven
 
 Every feature is:
+
 1. Specified in tests first
 2. Implemented to pass tests
 3. Refactored for quality
@@ -453,6 +479,7 @@ Every feature is:
 ### 4. Composable
 
 Generator functions are:
+
 - Small and focused
 - Pure (no side effects except file I/O)
 - Testable in isolation
@@ -508,15 +535,16 @@ Generator functions are:
 
 Typical generation times (M1 MacBook Pro):
 
-| Project Size | Actors | Files | Time |
-|--------------|--------|-------|------|
-| Simple | 2 | 8 | <10ms |
-| Medium | 5 | 14 | <20ms |
-| Complex | 10 | 24 | <50ms |
+| Project Size | Actors | Files | Time  |
+| ------------ | ------ | ----- | ----- |
+| Simple       | 2      | 8     | <10ms |
+| Medium       | 5      | 14    | <20ms |
+| Complex      | 10     | 24    | <50ms |
 
 ### Generated Code Performance
 
 OMNeT++ simulations scale to:
+
 - Millions of events per second
 - Thousands of modules
 - Hours of simulated time
@@ -526,10 +554,12 @@ Much faster than Elixir for large-scale simulations.
 ## Conclusion
 
 The OMNeT++ generator bridges the gap between:
+
 - **Rapid prototyping** (Elixir)
 - **Production simulation** (C++)
 
 It enables a powerful workflow:
+
 1. Design in DSL
 2. Test with virtual time
 3. Validate in Elixir
@@ -537,15 +567,16 @@ It enables a powerful workflow:
 5. Deploy with OMNeT++
 
 Perfect for:
+
 - Communication networks
 - Distributed systems
 - IoT simulations
 - Protocol development
 - Performance analysis
 
-**Status:** Production-ready for basic patterns, extensible for advanced features.
+**Status:** Production-ready for basic patterns, extensible for advanced
+features.
 
 **Test Coverage:** 63 tests passing (100% of implemented features)
 
 **Compatibility:** OMNeT++ 6.0+, CMake 3.15+, C++17
-

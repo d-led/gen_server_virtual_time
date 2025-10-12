@@ -1,6 +1,8 @@
 # CAF Actor Framework Code Generation
 
-Export ActorSimulation DSL to production-grade [C++ Actor Framework (CAF)](https://actor-framework.org/) code with **callback interfaces** for customization.
+Export ActorSimulation DSL to production-grade
+[C++ Actor Framework (CAF)](https://actor-framework.org/) code with **callback
+interfaces** for customization.
 
 ## Quick Example
 
@@ -86,6 +88,7 @@ cmake --build .
 - **Conan 1.x or 2.x** - For CAF and Catch2 dependencies
 
 Install Conan:
+
 ```bash
 pip install conan
 ```
@@ -101,7 +104,7 @@ pip install conan
 ## Example: Pipeline Pattern
 
 ```elixir
-simulation = 
+simulation =
   ActorSimulation.new()
   |> ActorSimulation.add_actor(:source,
       send_pattern: {:rate, 100, :data},
@@ -116,6 +119,7 @@ simulation =
 ```
 
 Generated structure:
+
 ```
 caf_output/
 ├── source_actor.hpp/cpp       # CAF actor (generated)
@@ -136,6 +140,7 @@ caf_output/
 ## Callback Pattern Details
 
 **Generated Interface (DO NOT EDIT):**
+
 ```cpp
 // processor_callbacks.hpp
 class processor_callbacks {
@@ -147,15 +152,16 @@ public:
 ```
 
 **Your Implementation (EDIT THIS):**
+
 ```cpp
 // processor_callbacks_impl.cpp
 void processor_callbacks::on_data_received() {
   // Transform data
   auto result = process(input);
-  
+
   // Log metrics
   metrics.increment("processed");
-  
+
   // Forward to next stage
   forward_to_sink(result);
 }
@@ -173,7 +179,7 @@ The generator creates Catch2 tests:
 TEST_CASE("Source actor sends messages", "[source]") {
   auto sys = caf::actor_system{cfg};
   auto source = sys.spawn<source_actor>();
-  
+
   // Test message generation
   self->send(source, start_atom::value);
   self->receive(
@@ -185,6 +191,7 @@ TEST_CASE("Source actor sends messages", "[source]") {
 ```
 
 Run tests:
+
 ```bash
 ./test_actors
 ```
@@ -192,6 +199,7 @@ Run tests:
 ## CI Integration
 
 Generated `.github/workflows/ci.yml` validates:
+
 - ✅ Code compiles on Linux, macOS, Windows
 - ✅ All tests pass
 - ✅ Multiple compiler versions (GCC, Clang, MSVC)
@@ -199,6 +207,7 @@ Generated `.github/workflows/ci.yml` validates:
 ## Limitations
 
 Currently supports:
+
 - ✅ Basic send patterns (periodic, rate, burst)
 - ✅ Point-to-point messaging
 - ✅ Callback interfaces
@@ -206,6 +215,7 @@ Currently supports:
 - ✅ CI pipeline
 
 Not yet supported:
+
 - ❌ Complex state machines
 - ❌ Dynamic topology
 - ❌ Custom message types
@@ -214,10 +224,10 @@ Not yet supported:
 ## Contributing
 
 Extend the generator:
+
 - Add custom message type generation
 - Implement state machine translation
 - Support distributed configurations
 - Add more test patterns
 
 See `lib/actor_simulation/caf_generator.ex` and tests.
-

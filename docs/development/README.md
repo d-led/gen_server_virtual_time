@@ -4,17 +4,22 @@ Documentation for developers working on the GenServerVirtualTime library.
 
 ## Publishing
 
-See [PUBLISHING.md](PUBLISHING.md) for instructions on releasing new versions to Hex.pm.
+See [PUBLISHING.md](PUBLISHING.md) for instructions on releasing new versions to
+Hex.pm.
 
 ## Virtual Clock Configuration: Global vs Local
 
 ### Design Philosophy
 
-One might expect to inject configuration values (e.g., clock pid, module, etc.) directly into each actor's implementation. However, this library uses a **global virtual time** approach by default. Here's why:
+One might expect to inject configuration values (e.g., clock pid, module, etc.)
+directly into each actor's implementation. However, this library uses a **global
+virtual time** approach by default. Here's why:
 
 ### Why Global Virtual Time?
 
-**Actor systems require coordinated time.** When testing distributed systems or actor-based applications, all components must operate in the same timeframe. Consider:
+**Actor systems require coordinated time.** When testing distributed systems or
+actor-based applications, all components must operate in the same timeframe.
+Consider:
 
 ```elixir
 # Producer sends message every 100ms
@@ -22,7 +27,9 @@ One might expect to inject configuration values (e.g., clock pid, module, etc.) 
 # If they're on different timelines, timing relationships break!
 ```
 
-The global approach (via `Process.put(:virtual_clock, clock)` inherited by children) ensures:
+The global approach (via `Process.put(:virtual_clock, clock)` inherited by
+children) ensures:
+
 - All actors share the same timeline
 - Timing relationships are preserved (e.g., request/response patterns)
 - Message ordering matches production behavior
@@ -30,7 +37,9 @@ The global approach (via `Process.put(:virtual_clock, clock)` inherited by child
 
 ### But What About Isolation?
 
-The global approach works perfectly when testing a single actor system. However, you might have:
+The global approach works perfectly when testing a single actor system. However,
+you might have:
+
 - Multiple independent systems in one BEAM instance
 - Integration tests mixing virtual and real time
 - Parallel test scenarios requiring isolation
@@ -39,7 +48,8 @@ The global approach works perfectly when testing a single actor system. However,
 
 ### Local Clock Injection API
 
-The library now supports **both** approaches without breaking backwards compatibility:
+The library now supports **both** approaches without breaking backwards
+compatibility:
 
 ```elixir
 # GLOBAL: All actors share one timeline (default, best for most cases)
@@ -67,19 +77,22 @@ VirtualClock.advance(clock2, 500)   # Only actor2 advances
 
 When determining which clock to use, the system follows this priority:
 
-1. **Local options** (`virtual_clock:` or `real_time:` in `start_link/3`) - Highest priority
+1. **Local options** (`virtual_clock:` or `real_time:` in `start_link/3`) -
+   Highest priority
 2. **Global Process dictionary** (`VirtualTimeGenServer.set_virtual_clock/1`)
 3. **Real time** (default)
 
 ### When to Use Which?
 
 **Use Global Clock:**
+
 - Testing actor systems where components interact
 - Simulating distributed systems with timing dependencies
 - When all actors should advance together (most common case)
 - Examples: chat systems, trading platforms, game servers
 
 **Use Local Clock:**
+
 - Running multiple independent simulations in parallel
 - Testing components in complete isolation
 - Mixing virtual and real time in integration tests
@@ -87,6 +100,7 @@ When determining which clock to use, the system follows this priority:
 - Examples: separate payment processing and analytics systems
 
 **Use Real Time:**
+
 - Production deployments
 - Integration tests with external systems (databases, APIs)
 - Performance benchmarking
@@ -95,12 +109,14 @@ When determining which clock to use, the system follows this priority:
 ### Implementation Details
 
 The local injection works by:
+
 1. Extracting `virtual_clock` or `real_time` options from `start_link/3`
 2. Overriding the global Process dictionary values for that specific process
 3. Setting up the process with the correct time backend before calling `init/1`
 4. Allowing child processes to inherit the local clock naturally
 
-This maintains backwards compatibility—existing code using the global approach continues to work exactly as before.
+This maintains backwards compatibility—existing code using the global approach
+continues to work exactly as before.
 
 ## Project Structure
 
@@ -198,4 +214,3 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) in the root directory.
 10. Publish docs: `mix hex.publish docs`
 
 See [PUBLISHING.md](PUBLISHING.md) for detailed instructions.
-

@@ -40,7 +40,7 @@ simulation =
   )
 
 # Write to output directory
-output_dir = "caf_pipeline_generated"
+output_dir = "generated/caf_pipeline"
 ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
 
 IO.puts("""

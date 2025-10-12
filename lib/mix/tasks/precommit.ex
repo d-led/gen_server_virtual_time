@@ -13,12 +13,14 @@ defmodule Mix.Tasks.Precommit do
   ## Checks performed
 
   1. Code formatting (`mix format`)
-  2. Format verification (`mix format --check-formatted`)
-  3. Compilation with warnings as errors
-  4. Tests (`mix test`)
-  5. Code quality (`mix credo --strict`)
-  6. Documentation build (`mix docs`)
-  7. Type checking (`mix dialyzer`) - only with --all flag
+  2. Markdown formatting (`prettier` for docs/)
+  3. Format verification (`mix format --check-formatted`)
+  4. Markdown format verification
+  5. Compilation with warnings as errors
+  6. Tests (`mix test`)
+  7. Code quality (`mix credo --strict`)
+  8. Documentation build (`mix docs`)
+  9. Type checking (`mix dialyzer`) - only with --all flag
 
   ## Exit codes
 
@@ -39,7 +41,9 @@ defmodule Mix.Tasks.Precommit do
 
     checks = [
       {"Formatting code", fn -> format_code() end},
+      {"Formatting markdown files", fn -> format_markdown() end},
       {"Checking formatting", fn -> check_formatting() end},
+      {"Checking markdown formatting", fn -> check_markdown_formatting() end},
       {"Compiling with warnings as errors", fn -> compile_strict() end},
       {"Running tests", fn -> run_tests() end},
       {"Running Credo", fn -> run_credo() end},
@@ -149,6 +153,62 @@ defmodule Mix.Tasks.Precommit do
     case System.cmd("mix", ["dialyzer"], stderr_to_stdout: true) do
       {_, 0} -> :ok
       _ -> {:error, "Dialyzer found issues"}
+    end
+  end
+
+  defp format_markdown do
+    # Check if prettier is available (via npx)
+    case System.cmd("npx", ["--version"], stderr_to_stdout: true) do
+      {_, 0} ->
+        # Format markdown files in docs/ directory
+        case System.cmd(
+               "npx",
+               [
+                 "--yes",
+                 "prettier@latest",
+                 "--write",
+                 "--prose-wrap",
+                 "always",
+                 "docs/**/*.md",
+                 "*.md"
+               ],
+               stderr_to_stdout: true
+             ) do
+          {_, 0} -> :ok
+          _ -> {:error, "Failed to format markdown files"}
+        end
+
+      _ ->
+        IO.puts("    Warning: npx not available, skipping markdown formatting")
+        :ok
+    end
+  end
+
+  defp check_markdown_formatting do
+    # Check if prettier is available (via npx)
+    case System.cmd("npx", ["--version"], stderr_to_stdout: true) do
+      {_, 0} ->
+        # Check markdown files in docs/ directory
+        case System.cmd(
+               "npx",
+               [
+                 "--yes",
+                 "prettier@latest",
+                 "--check",
+                 "--prose-wrap",
+                 "always",
+                 "docs/**/*.md",
+                 "*.md"
+               ],
+               stderr_to_stdout: true
+             ) do
+          {_, 0} -> :ok
+          _ -> {:error, "Markdown files are not formatted. Run 'mix precommit' to fix."}
+        end
+
+      _ ->
+        IO.puts("    Warning: npx not available, skipping markdown format check")
+        :ok
     end
   end
 end

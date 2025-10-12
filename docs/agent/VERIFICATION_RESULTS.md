@@ -5,21 +5,25 @@
 
 ## Summary
 
-Most claims in agent summaries are **accurate**, but **test counts are outdated**.
+Most claims in agent summaries are **accurate**, but **test counts are
+outdated**.
 
 ---
 
 ## ✅ Verified TRUE
 
 ### Version
+
 - **Claim**: Version 0.2.0
 - **Reality**: ✅ Confirmed in `mix.exs` (`@version "0.2.0"`)
 
 ### Core Features
+
 - **Claim**: VirtualTimeGenServer, VirtualClock, TimeBackend system exist
 - **Reality**: ✅ All confirmed in `/lib`
 
 ### Generators
+
 - **Claim**: 5 generators exist (OMNeT++, CAF, Pony, Phony, VLINGO)
 - **Reality**: ✅ All 6 exist (including Mermaid Report Generator)
   - `lib/actor_simulation/omnetpp_generator.ex`
@@ -30,10 +34,12 @@ Most claims in agent summaries are **accurate**, but **test counts are outdated*
   - `lib/actor_simulation/mermaid_report_generator.ex`
 
 ### Callback Support
+
 - **Claim**: All generators support callbacks with `enable_callbacks` option
 - **Reality**: ✅ Confirmed - 75 matches across 4 generator files
 
 ### Advanced Features
+
 - **Claim**: DiningPhilosophers module exists
 - **Reality**: ✅ Confirmed at `lib/dining_philosophers.ex`
 
@@ -44,6 +50,7 @@ Most claims in agent summaries are **accurate**, but **test counts are outdated*
 - **Reality**: ✅ Confirmed in tests and code
 
 ### Test Files
+
 - **Claim**: 23 test files exist
 - **Reality**: ✅ Confirmed - exactly 23 `*_test.exs` files
 
@@ -54,17 +61,20 @@ Most claims in agent summaries are **accurate**, but **test counts are outdated*
 ### Test Counts (MAJOR DISCREPANCY)
 
 Multiple agent summaries claim:
+
 - `COMPLETE_FEATURE_LIST.md`: "80/80 tests passing"
 - `READY_TO_SHIP.md`: "131 tests passing, 0 failures"
 - `FEATURE_SUMMARY.md`: "37 (all passing ✅)"
 
 **Actual Reality** (verified 2025-10-12):
+
 ```bash
 $ mix test
 189 tests, 0 failures, 17 excluded
 ```
 
 **Breakdown of 23 Test Files**:
+
 1. `virtual_clock_test.exs`
 2. `virtual_time_gen_server_test.exs`
 3. `gen_server_virtual_time_test.exs`
@@ -94,6 +104,7 @@ $ mix test
 ## 📋 Files Requiring Updates
 
 ### High Priority (Outdated Test Counts)
+
 - `docs/agent/COMPLETE_FEATURE_LIST.md` - Claims 80/80 tests
 - `docs/agent/READY_TO_SHIP.md` - Claims 131 tests
 - `docs/agent/FEATURE_SUMMARY.md` - Claims 37 tests
@@ -103,7 +114,9 @@ $ mix test
 - `docs/agent/SESSION_SUMMARY.md` - May have outdated counts
 
 ### Recommendation
+
 These files should either:
+
 1. **Be updated** with current test count (189 tests, 0 failures)
 2. **Be archived/removed** as historical artifacts
 3. **Add disclaimer** that counts are from a specific development snapshot
@@ -113,17 +126,20 @@ These files should either:
 ## ✅ Accurate Documentation
 
 ### CHANGELOG.md
+
 - ✅ Accurate and well-maintained
 - ✅ Properly documents version 0.2.0 features
 - ✅ Follows Keep a Changelog format
 
 ### README.md
+
 - ✅ Accurate feature descriptions
 - ✅ All code examples work (verified by tests)
 - ✅ Generator information is current
 - ✅ Badges need update (done)
 
 ### Generator Docs
+
 - ✅ `docs/caf_generator.md` - Accurate
 - ✅ `docs/pony_generator.md` - Accurate
 - ✅ `docs/phony_generator.md` - Accurate
@@ -135,22 +151,28 @@ These files should either:
 
 ## Recommendations
 
-1. **Update all agent summaries** with correct test count: **189 tests, 0 failures**
+1. **Update all agent summaries** with correct test count: **189 tests, 0
+   failures**
 2. **Add timestamp/snapshot date** to agent summaries
-3. **Consider moving** `docs/agent/` to `docs/development/history/` to clarify these are historical
+3. **Consider moving** `docs/agent/` to `docs/development/history/` to clarify
+   these are historical
 4. **Keep** CHANGELOG.md as the authoritative version history
-5. **Archive outdated summaries** or add clear "HISTORICAL - DO NOT TRUST" warnings
+5. **Archive outdated summaries** or add clear "HISTORICAL - DO NOT TRUST"
+   warnings
 
 ---
 
 ## Conclusion
 
-The codebase is **production-ready** and **well-tested**. The agent summaries are mostly accurate in describing features, but significantly undercount the actual test coverage. The library has grown from the claimed 80-131 tests to **189 comprehensive tests**, which is a positive sign of maturity.
+The codebase is **production-ready** and **well-tested**. The agent summaries
+are mostly accurate in describing features, but significantly undercount the
+actual test coverage. The library has grown from the claimed 80-131 tests to
+**189 comprehensive tests**, which is a positive sign of maturity.
 
 **Current Status**:
+
 - ✅ 189 tests, 0 failures
 - ✅ Version 0.2.0
 - ✅ All claimed features exist and work
 - ✅ Documentation is accurate
 - ✅ Ready for production use
-
