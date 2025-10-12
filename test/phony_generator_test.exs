@@ -104,7 +104,8 @@ defmodule PhonyGeneratorTest do
       assert ci =~ "ubuntu-latest"
       assert ci =~ "actions/setup-go"
       assert ci =~ "go test"
-      assert ci =~ "go build"
+      assert ci =~ "make build"
+      assert ci =~ "Run Demo Application"
     end
 
     test "generates Go test file" do

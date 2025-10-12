@@ -27,13 +27,20 @@ jobs:
       run: go mod download
 
     - name: Build
-      run: go build -v ./...
+      run: make build
 
     - name: Test
       run: go test -v ./...
 
-    - name: Run application (with timeout)
+    - name: Run Demo Application
       shell: bash
       run: |
-        go build -o pipeline_actors .
-        timeout 5 ./pipeline_actors || true
+        # Determine binary name: {project}.phony.{os}
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        if [ -f "go.mod" ]; then
+          PROJECT_NAME=$(grep -o 'module [^ ]*' go.mod | head -1 | awk '{print $2}' | xargs basename)
+        else
+          PROJECT_NAME="pipeline_actors"
+        fi
+        BINARY="${PROJECT_NAME}.phony.${OS_NAME}"
+        timeout 5 ./"${BINARY}" || true

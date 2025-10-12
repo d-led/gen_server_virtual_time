@@ -249,8 +249,8 @@ flowchart TB
 📤 Sent: 0<br/>
 📥 Recv: 10"]
     source -->|:request<br/>every 100ms| stage1
-    stage1 --> stage2
-    stage2 --> sink
+    stage1 -->|forwarded<br/>message| stage2
+    stage2 -->|forwarded<br/>message| sink
     style source fill:#e8f5e9,stroke:#388e3c
     style stage1 fill:#e8f5e9,stroke:#388e3c
     style stage2 fill:#e8f5e9,stroke:#388e3c

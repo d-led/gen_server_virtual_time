@@ -207,11 +207,37 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   defp generate_edge_label(name, target, definition, show_labels) do
-    if show_labels && definition.send_pattern do
-      msg = extract_message_label(definition.send_pattern)
-      "#{name} -->|#{msg}| #{target}"
+    if show_labels do
+      msg_label = get_message_label(definition)
+      if msg_label do
+        "#{name} -->|#{msg_label}| #{target}"
+      else
+        "#{name} --> #{target}"
+      end
     else
       "#{name} --> #{target}"
+    end
+  end
+
+  defp get_message_label(definition) do
+    cond do
+      # Actors with send_pattern (periodic/rate/burst)
+      definition.send_pattern ->
+        extract_message_label(definition.send_pattern)
+
+      # Actors that forward messages via on_receive
+      definition.on_receive && definition.targets && length(definition.targets) > 0 ->
+        # Try to infer the forwarded message type from common patterns
+        case definition.initial_state do
+          %{next: _} ->
+            # This looks like a forwarding actor, use a generic label
+            "forwarded<br/>message"
+          _ ->
+            nil
+        end
+
+      true ->
+        nil
     end
   end
 

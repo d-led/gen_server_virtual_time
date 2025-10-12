@@ -257,13 +257,13 @@ flowchart LR
     actor6>"actor6<br/>
 📤 Sent: 15<br/>
 📥 Recv: 15"]
-    actor1 --> actor2
-    actor2 --> actor3
+    actor1 -->|forwarded<br/>message| actor2
+    actor2 -->|forwarded<br/>message| actor3
     actor0 -->|:token<br/>every 100ms| actor1
-    actor3 --> actor4
-    actor4 --> actor5
-    actor5 --> actor6
-    actor6 --> actor0
+    actor3 -->|forwarded<br/>message| actor4
+    actor4 -->|forwarded<br/>message| actor5
+    actor5 -->|forwarded<br/>message| actor6
+    actor6 -->|forwarded<br/>message| actor0
     style actor1 fill:#e8f5e9,stroke:#388e3c
     style actor2 fill:#e8f5e9,stroke:#388e3c
     style actor0 fill:#e8f5e9,stroke:#388e3c
