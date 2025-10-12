@@ -148,6 +148,15 @@ defmodule ActorSimulation.PhonyGenerator do
 
     timer_setup = generate_timer_setup(definition)
     message_handlers = generate_message_handlers(name, definition, enable_callbacks)
+    
+    # Determine which imports are needed
+    needs_time = definition.send_pattern != nil
+    needs_fmt = enable_callbacks && definition.send_pattern != nil
+    
+    imports = ["\"github.com/Arceliar/phony\""]
+    imports = if needs_fmt, do: ["\"fmt\"" | imports], else: imports
+    imports = if needs_time, do: ["\"time\"" | imports], else: imports
+    import_list = Enum.map_join(Enum.reverse(imports), "\n", &"\t#{&1}")
 
     """
     // Generated from ActorSimulation DSL
@@ -156,9 +165,7 @@ defmodule ActorSimulation.PhonyGenerator do
     package main
 
     import (
-    \t"fmt"
-    \t"time"
-    \t"github.com/Arceliar/phony"
+    #{import_list}
     )
 
     #{callback_interface}
@@ -314,7 +321,6 @@ defmodule ActorSimulation.PhonyGenerator do
 
     import (
     \t"fmt"
-    \t"time"
     )
 
     func main() {
@@ -381,7 +387,7 @@ defmodule ActorSimulation.PhonyGenerator do
 
     go #{go_version}
 
-    require github.com/Arceliar/phony v0.0.0-20220903101357-4812b9ba8f3b
+    require github.com/Arceliar/phony v0.0.0-20220903101357-530938a4b13d
     """
   end
 

@@ -4,9 +4,9 @@
 package main
 
 import (
+	"github.com/Arceliar/phony"
 	"fmt"
 	"time"
-	"github.com/Arceliar/phony"
 )
 
 // LoadBalancerCallbacks defines the callback interface

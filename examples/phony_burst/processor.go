@@ -4,8 +4,6 @@
 package main
 
 import (
-	"fmt"
-	"time"
 	"github.com/Arceliar/phony"
 )
 
