@@ -13,7 +13,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
   ## Example
 
       simulation = ActorSimulation.new()
-        |> ActorSimulation.add_actor(:sender, 
+        |> ActorSimulation.add_actor(:sender,
             send_pattern: {:periodic, 100, :msg},
             targets: [:receiver])
         |> ActorSimulation.add_actor(:receiver)
@@ -284,7 +284,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
                     sendCount++;
                 }
 
-                
+
                 // Reschedule
                 scheduleAt(simTime() + #{interval}, msg);
         """
@@ -301,7 +301,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
                     sendCount++;
                 }
 
-                
+
                 // Reschedule
                 scheduleAt(simTime() + #{interval}, msg);
         """
@@ -328,8 +328,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
     sources =
       simulated_actors
-      |> Enum.map(fn name -> "    #{camelize(name)}.cc" end)
-      |> Enum.join("\n")
+      |> Enum.map_join("\n", fn name -> "    #{camelize(name)}.cc" end)
 
     """
     cmake_minimum_required(VERSION 3.15)
@@ -350,7 +349,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     add_executable(#{network_name} ${SOURCES})
 
     # Link OMNeT++ libraries
-    target_link_libraries(#{network_name} 
+    target_link_libraries(#{network_name}
         ${OMNETPP_LIBRARIES}
     )
 
@@ -361,7 +360,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     """
   end
 
-  defp generate_conan() do
+  defp generate_conan do
     """
     [requires]
     # Add dependencies here
@@ -397,7 +396,6 @@ defmodule ActorSimulation.OMNeTPPGenerator do
   defp camelize(string) when is_binary(string) do
     string
     |> String.split("_")
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join("")
+    |> Enum.map_join("", &String.capitalize/1)
   end
 end

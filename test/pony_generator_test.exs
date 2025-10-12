@@ -182,7 +182,7 @@ defmodule PonyGeneratorTest do
 
   describe "write_to_directory/2" do
     setup do
-      temp_dir = Path.join([System.tmp_dir!(), "pony_test_#{:rand.uniform(1000000)}"])
+      temp_dir = Path.join([System.tmp_dir!(), "pony_test_#{:rand.uniform(1_000_000)}"])
       on_exit(fn -> File.rm_rf(temp_dir) end)
       {:ok, temp_dir: temp_dir}
     end
@@ -209,4 +209,3 @@ defmodule PonyGeneratorTest do
     end
   end
 end
-

@@ -21,7 +21,7 @@ defmodule ActorSimulation.CAFGenerator do
   ## Example
 
       simulation = ActorSimulation.new()
-        |> ActorSimulation.add_actor(:sender, 
+        |> ActorSimulation.add_actor(:sender,
             send_pattern: {:periodic, 100, :msg},
             targets: [:receiver])
         |> ActorSimulation.add_actor(:receiver)
@@ -449,7 +449,7 @@ defmodule ActorSimulation.CAFGenerator do
 
       // Keep system alive
       std::cout << "Actor system started. Press Ctrl+C to exit." << std::endl;
-      
+
       return 0;
     }
 
@@ -498,7 +498,7 @@ defmodule ActorSimulation.CAFGenerator do
     TEST_CASE("Actor system can be initialized", "[system]") {
       actor_system_config cfg;
       actor_system system{cfg};
-      
+
       REQUIRE(system.scheduler().num_workers() > 0);
     }
 
@@ -507,9 +507,9 @@ defmodule ActorSimulation.CAFGenerator do
     TEST_CASE("All actors can be spawned", "[actors]") {
       actor_system_config cfg;
       actor_system system{cfg};
-      
+
     #{generate_spawn_test_code(simulated_actors)}
-      
+
       // All actors spawned successfully
       SUCCEED("All actors created");
     }
@@ -517,10 +517,10 @@ defmodule ActorSimulation.CAFGenerator do
     TEST_CASE("Actors can communicate", "[communication]") {
       actor_system_config cfg;
       actor_system system{cfg};
-      
+
       // Spawn actors
     #{generate_spawn_test_code(simulated_actors)}
-      
+
       // Actors are alive
       SUCCEED("Communication test placeholder");
     }
@@ -536,7 +536,7 @@ defmodule ActorSimulation.CAFGenerator do
       TEST_CASE("#{class_name} can be created", "[#{actor_name}]") {
         actor_system_config cfg;
         actor_system system{cfg};
-        
+
         auto actor = system.spawn<#{class_name}>(std::vector<caf::actor>{});
         REQUIRE(actor != nullptr);
       }
@@ -545,13 +545,11 @@ defmodule ActorSimulation.CAFGenerator do
   end
 
   defp generate_spawn_test_code(actors) do
-    actors
-    |> Enum.map(fn {name, _def} ->
+    Enum.map_join(actors, "\n  \n", fn {name, _def} ->
       actor_name = actor_snake_case(name)
 
       "  auto #{actor_name} = system.spawn<#{actor_name}_actor>(std::vector<actor>{});\n  REQUIRE(#{actor_name} != nullptr);"
     end)
-    |> Enum.join("\n  \n")
   end
 
   defp generate_cmake(actors, project_name) do
@@ -591,7 +589,7 @@ defmodule ActorSimulation.CAFGenerator do
     add_executable(#{project_name} ${SOURCES})
 
     # Link CAF libraries
-    target_link_libraries(#{project_name} 
+    target_link_libraries(#{project_name}
       PRIVATE
         CAF::core
         CAF::io
@@ -606,7 +604,7 @@ defmodule ActorSimulation.CAFGenerator do
 
     # Test executable
     add_executable(#{project_name}_test test_actors.cpp)
-    target_link_libraries(#{project_name}_test 
+    target_link_libraries(#{project_name}_test
       PRIVATE
         CAF::core
         CAF::io
@@ -640,7 +638,7 @@ defmodule ActorSimulation.CAFGenerator do
     """
   end
 
-  defp generate_ci_pipeline() do
+  defp generate_ci_pipeline do
     """
     name: CI
 
@@ -686,18 +684,18 @@ defmodule ActorSimulation.CAFGenerator do
           run: |
             cd build
             ctest -C ${{ matrix.build_type }} --output-on-failure
-            
+
         - name: Run Catch2 tests with verbose output
           run: |
             cd build
             ./*_test --success
-            
+
         - name: Generate JUnit test report
           if: always()
           run: |
             cd build
             ./*_test --reporter junit --out test-results.xml || true
-            
+
         - name: Publish Test Results
           if: always()
           uses: EnricoMi/publish-unit-test-result-action@v2

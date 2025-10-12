@@ -34,7 +34,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
       
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             deps
@@ -57,7 +57,7 @@ jobs:
             --slowest 10
       
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-${{ matrix.elixir }}-${{ matrix.otp }}
@@ -91,7 +91,7 @@ jobs:
           otp-version: '26'
       
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             deps

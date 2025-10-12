@@ -138,6 +138,7 @@ defmodule ActorSimulation.PonyGenerator do
 
   defp generate_actor_file(name, definition, enable_callbacks) do
     actor_name = actor_class_name(name)
+
     callback_use =
       if enable_callbacks do
         """
@@ -231,6 +232,7 @@ defmodule ActorSimulation.PonyGenerator do
     behavior_defs =
       Enum.map(messages, fn msg ->
         msg_name = message_name(msg)
+
         callback_call =
           if enable_callbacks do
             """
@@ -368,11 +370,11 @@ defmodule ActorSimulation.PonyGenerator do
     class #{actor_name}CallbacksImpl is #{actor_name}Callbacks
       \"\"\"
       Default implementation of #{actor_name} callbacks.
-      
+
       CUSTOMIZE THIS CLASS to add your own behavior!
       The generated actor code will call these methods.
       \"\"\"
-      
+
     #{impl_methods_str}
     """
   end
@@ -401,7 +403,7 @@ defmodule ActorSimulation.PonyGenerator do
         \"\"\"
         Start the actor system.
         \"\"\"
-        
+
         // Spawn all actors
     #{spawn_code}
 
@@ -411,12 +413,11 @@ defmodule ActorSimulation.PonyGenerator do
 
   defp generate_spawn_code(actors) do
     actors
-    |> Enum.map(fn {name, _def} ->
+    |> Enum.map_join("\n", fn {name, _def} ->
       actor_name = actor_snake_case(name)
       class_name = actor_class_name(name)
       "    let #{actor_name} = #{class_name}(env)"
     end)
-    |> Enum.join("\n")
   end
 
   defp generate_test_file(actors, project_name) do
@@ -451,15 +452,14 @@ defmodule ActorSimulation.PonyGenerator do
   end
 
   defp generate_test_classes(actors) do
-    Enum.map(actors, fn {name, _def} ->
-      actor_name = actor_snake_case(name)
+    actors
+    |> Enum.map_join("", fn {name, _def} ->
       class_name = actor_class_name(name)
 
       """
           test(_Test#{class_name})
       """
     end)
-    |> Enum.join("")
     |> then(fn tests ->
       actor_test_cases =
         Enum.map(actors, fn {name, _def} ->
@@ -469,7 +469,7 @@ defmodule ActorSimulation.PonyGenerator do
 
           class iso _Test#{class_name} is UnitTest
             \"\"\"Test that #{class_name} actor can be created.\"\"\"
-            
+
             fun name(): String => "#{class_name} actor"
 
             fun apply(h: TestHelper) =>
@@ -486,7 +486,7 @@ defmodule ActorSimulation.PonyGenerator do
 
         class iso _TestActorSystem is UnitTest
           \"\"\"Test that the actor system can be initialized.\"\"\"
-          
+
           fun name(): String => "Actor System"
 
           fun apply(h: TestHelper) =>
@@ -715,8 +715,7 @@ defmodule ActorSimulation.PonyGenerator do
   defp actor_class_name(string) when is_binary(string) do
     string
     |> String.split("_")
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join("")
+    |> Enum.map_join("", &String.capitalize/1)
   end
 
   defp extract_messages_from_pattern(nil), do: []
@@ -739,4 +738,3 @@ defmodule ActorSimulation.PonyGenerator do
     inspect(msg) |> String.replace(~r/[^a-z0-9_]/, "_")
   end
 end
-

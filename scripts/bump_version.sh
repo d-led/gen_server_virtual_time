@@ -40,7 +40,7 @@ if ! git diff-index --quiet HEAD -- && [[ "$DRY_RUN" == false ]]; then
 fi
 
 # Extract current version from mix.exs
-CURRENT_VERSION=$(grep '@version' "$PROJECT_ROOT/mix.exs" | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+CURRENT_VERSION=$(grep '@version "' "$PROJECT_ROOT/mix.exs" | head -n1 | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
 
 if [[ -z "$CURRENT_VERSION" ]]; then
     echo -e "${RED}Error: Could not extract current version from mix.exs${NC}"
@@ -82,7 +82,7 @@ fi
 
 # Update mix.exs
 echo "Updating mix.exs..."
-sed -i.bak "s/@version \"$CURRENT_VERSION\"/@version \"$NEW_VERSION\"/" "$PROJECT_ROOT/mix.exs"
+sed -i.bak "s/^  @version \"$CURRENT_VERSION\"$/  @version \"$NEW_VERSION\"/" "$PROJECT_ROOT/mix.exs"
 rm "$PROJECT_ROOT/mix.exs.bak"
 
 # Update CHANGELOG.md

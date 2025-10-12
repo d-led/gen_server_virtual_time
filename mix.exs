@@ -99,9 +99,12 @@ defmodule GenServerVirtualTime.MixProject do
       extras: [
         "README.md",
         "CHANGELOG.md",
-        "PUBLISHING.md",
         "CONTRIBUTING.md",
-        "OMNETPP_GENERATOR.md"
+        "docs/README.md": [title: "Documentation Index"],
+        "docs/generators.md": [title: "Code Generators"],
+        "docs/omnetpp_generator.md": [title: "OMNeT++ Generator"],
+        "docs/caf_generator.md": [title: "CAF Generator"],
+        "docs/pony_generator.md": [title: "Pony Generator"]
       ],
       groups_for_modules: [
         Core: [

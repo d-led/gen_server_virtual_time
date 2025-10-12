@@ -1,38 +1,62 @@
 # Documentation Index
 
-Welcome to the GenServerVirtualTime documentation.
+Welcome to the `gen_server_virtual_time` documentation!
 
-## User Documentation
+## Core Concepts
 
-- **[Main README](../README.md)** - Quick start guide and examples
-- **[OMNeT++ Code Generation](omnetpp_generation.md)** - Export to OMNeT++ C++ network simulations
-- **[CAF Code Generation](caf_generation.md)** - Export to C++ Actor Framework with callbacks
-- **[API Documentation](https://hexdocs.pm/gen_server_virtual_time)** - Complete API reference on HexDocs
+- [Main README](../README.md) - Project overview and quick start
+- [CHANGELOG](../CHANGELOG.md) - Version history and changes
 
-## Developer Documentation
+## Code Generators
 
-- **[Development Guide](development/README.md)** - Setup, testing, and contributing
-- **[Publishing Guide](development/PUBLISHING.md)** - Release process for maintainers
-- **[Contributing Guidelines](../CONTRIBUTING.md)** - How to contribute to the project
+Transform ActorSimulation DSL into production C++ code:
 
-## Project Information
+- **[Generators Overview](generators.md)** - Quick start with single-file scripts
+- **[OMNeT++ Generator](omnetpp_generator.md)** - Network simulations
+- **[CAF Generator](caf_generator.md)** - Production actor systems with callbacks
+- **[Pony Generator](pony_generator.md)** - Capabilities-secure actors
 
-- **[Changelog](../CHANGELOG.md)** - Version history and changes
-- **[Agent Logs](agent/README.md)** - AI-assisted development history
+## Examples
+
+All examples are in the [`examples/`](../examples/) directory:
+
+### Single-File Scripts
+
+Use these with `Mix.install` - no setup required!
+
+- [`single_file_omnetpp.exs`](../examples/single_file_omnetpp.exs)
+- [`single_file_caf.exs`](../examples/single_file_caf.exs)
+- [`single_file_pony.exs`](../examples/single_file_pony.exs)
+
+### Generated Projects
+
+Complete, buildable C++ projects:
+
+**OMNeT++:**
+- [`omnetpp_pubsub/`](../examples/omnetpp_pubsub/)
+- [`omnetpp_pipeline/`](../examples/omnetpp_pipeline/)
+- [`omnetpp_burst/`](../examples/omnetpp_burst/)
+- [`omnetpp_loadbalanced/`](../examples/omnetpp_loadbalanced/)
+
+**CAF:**
+- [`caf_pubsub/`](../examples/caf_pubsub/)
+- [`caf_pipeline/`](../examples/caf_pipeline/)
+- [`caf_burst/`](../examples/caf_burst/)
+- [`caf_loadbalanced/`](../examples/caf_loadbalanced/)
+
+**Pony:**
+- [`pony_pubsub/`](../examples/pony_pubsub/)
+- [`pony_pipeline/`](../examples/pony_pipeline/)
+- [`pony_burst/`](../examples/pony_burst/)
+- [`pony_loadbalanced/`](../examples/pony_loadbalanced/)
+
+## Development
+
+- [Contributing](../CONTRIBUTING.md) - How to contribute
+- [Scripts](../scripts/README.md) - Automation scripts
 
 ## Quick Links
 
-### Getting Started
-1. Read the [main README](../README.md) for code examples
-2. Check the [API docs](https://hexdocs.pm/gen_server_virtual_time) for detailed function reference
-3. Run demo scripts: `mix run examples/demo.exs`
-
-### Code Generation
-- [OMNeT++ guide](omnetpp_generation.md) - For network simulation
-- [CAF guide](caf_generation.md) - For production actor systems
-
-### Contributing
-1. See [CONTRIBUTING.md](../CONTRIBUTING.md)
-2. Check [development guide](development/README.md) for setup
-3. Run tests with `mix test`
-
+- [Hex Package](https://hex.pm/packages/gen_server_virtual_time)
+- [GitHub Repository](https://github.com/yourusername/gen_server_virtual_time)
+- [Online Documentation](https://hexdocs.pm/gen_server_virtual_time)

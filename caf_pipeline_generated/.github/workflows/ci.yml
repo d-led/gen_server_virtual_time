@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        build_type: [Debug, Release]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Conan
+      run: |
+        pip install conan
+        conan profile detect --force
+
+    - name: Install dependencies
+      run: |
+        mkdir -p build
+        cd build
+        conan install .. --build=missing -s build_type=${{ matrix.build_type }}
+
+    - name: Configure
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Test
+      run: |
+        cd build
+        ctest -C ${{ matrix.build_type }} --output-on-failure
+
+    - name: Run Catch2 tests with verbose output
+      run: |
+        cd build
+        ./*_test --success
+
+    - name: Generate JUnit test report
+      if: always()
+      run: |
+        cd build
+        ./*_test --reporter junit --out test-results.xml || true
+
+    - name: Publish Test Results
+      if: always()
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      with:
+        files: |
+          build/test-results.xml
+        check_name: "Test Results (${{ matrix.os }}, ${{ matrix.build_type }})"
