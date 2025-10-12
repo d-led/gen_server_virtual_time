@@ -11,7 +11,7 @@ actor Main
     """
     Start the actor system.
     """
-    
+
     // Spawn all actors
     let publisher = Publisher(env)
     let subscriber1 = Subscriber1(env)

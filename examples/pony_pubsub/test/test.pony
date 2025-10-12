@@ -22,7 +22,7 @@ actor Main is TestList
 
 class iso _TestActorSystem is UnitTest
   """Test that the actor system can be initialized."""
-  
+
   fun name(): String => "Actor System"
 
   fun apply(h: TestHelper) =>
@@ -31,7 +31,7 @@ class iso _TestActorSystem is UnitTest
 
 class iso _TestPublisher is UnitTest
   """Test that Publisher actor can be created."""
-  
+
   fun name(): String => "Publisher actor"
 
   fun apply(h: TestHelper) =>
@@ -42,7 +42,7 @@ class iso _TestPublisher is UnitTest
 
 class iso _TestSubscriber1 is UnitTest
   """Test that Subscriber1 actor can be created."""
-  
+
   fun name(): String => "Subscriber1 actor"
 
   fun apply(h: TestHelper) =>
@@ -53,7 +53,7 @@ class iso _TestSubscriber1 is UnitTest
 
 class iso _TestSubscriber2 is UnitTest
   """Test that Subscriber2 actor can be created."""
-  
+
   fun name(): String => "Subscriber2 actor"
 
   fun apply(h: TestHelper) =>
@@ -64,7 +64,7 @@ class iso _TestSubscriber2 is UnitTest
 
 class iso _TestSubscriber3 is UnitTest
   """Test that Subscriber3 actor can be created."""
-  
+
   fun name(): String => "Subscriber3 actor"
 
   fun apply(h: TestHelper) =>

@@ -9,11 +9,11 @@ trait Server2Callbacks
 class Server2CallbacksImpl is Server2Callbacks
   """
   Default implementation of Server2 callbacks.
-  
+
   CUSTOMIZE THIS CLASS to add your own behavior!
   The generated actor code will call these methods.
   """
-  
+
   fun ref on_message() =>
     // TODO: Implement custom behavior
     None

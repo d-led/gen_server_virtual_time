@@ -24,7 +24,7 @@ actor Main is TestList
 
 class iso _TestActorSystem is UnitTest
   """Test that the actor system can be initialized."""
-  
+
   fun name(): String => "Actor System"
 
   fun apply(h: TestHelper) =>
@@ -33,7 +33,7 @@ class iso _TestActorSystem is UnitTest
 
 class iso _TestLoadBalancer is UnitTest
   """Test that LoadBalancer actor can be created."""
-  
+
   fun name(): String => "LoadBalancer actor"
 
   fun apply(h: TestHelper) =>
@@ -44,7 +44,7 @@ class iso _TestLoadBalancer is UnitTest
 
 class iso _TestServer1 is UnitTest
   """Test that Server1 actor can be created."""
-  
+
   fun name(): String => "Server1 actor"
 
   fun apply(h: TestHelper) =>
@@ -55,7 +55,7 @@ class iso _TestServer1 is UnitTest
 
 class iso _TestServer2 is UnitTest
   """Test that Server2 actor can be created."""
-  
+
   fun name(): String => "Server2 actor"
 
   fun apply(h: TestHelper) =>
@@ -66,7 +66,7 @@ class iso _TestServer2 is UnitTest
 
 class iso _TestServer3 is UnitTest
   """Test that Server3 actor can be created."""
-  
+
   fun name(): String => "Server3 actor"
 
   fun apply(h: TestHelper) =>
@@ -77,7 +77,7 @@ class iso _TestServer3 is UnitTest
 
 class iso _TestDatabase is UnitTest
   """Test that Database actor can be created."""
-  
+
   fun name(): String => "Database actor"
 
   fun apply(h: TestHelper) =>

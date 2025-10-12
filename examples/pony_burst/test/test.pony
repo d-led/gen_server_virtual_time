@@ -18,7 +18,7 @@ actor Main is TestList
 
 class iso _TestActorSystem is UnitTest
   """Test that the actor system can be initialized."""
-  
+
   fun name(): String => "Actor System"
 
   fun apply(h: TestHelper) =>
@@ -27,7 +27,7 @@ class iso _TestActorSystem is UnitTest
 
 class iso _TestProcessor is UnitTest
   """Test that Processor actor can be created."""
-  
+
   fun name(): String => "Processor actor"
 
   fun apply(h: TestHelper) =>
@@ -38,7 +38,7 @@ class iso _TestProcessor is UnitTest
 
 class iso _TestBurstGenerator is UnitTest
   """Test that BurstGenerator actor can be created."""
-  
+
   fun name(): String => "BurstGenerator actor"
 
   fun apply(h: TestHelper) =>

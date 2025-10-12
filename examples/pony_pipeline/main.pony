@@ -12,7 +12,7 @@ actor Main
     """
     Start the actor system.
     """
-    
+
     // Spawn all actors
     let source = Source(env)
     let stage1 = Stage1(env)

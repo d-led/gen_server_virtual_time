@@ -9,11 +9,11 @@ trait LoadBalancerCallbacks
 class LoadBalancerCallbacksImpl is LoadBalancerCallbacks
   """
   Default implementation of LoadBalancer callbacks.
-  
+
   CUSTOMIZE THIS CLASS to add your own behavior!
   The generated actor code will call these methods.
   """
-  
+
   fun ref on_request() =>
     // TODO: Implement custom behavior for request
     None

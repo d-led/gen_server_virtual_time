@@ -9,11 +9,11 @@ trait Subscriber3Callbacks
 class Subscriber3CallbacksImpl is Subscriber3Callbacks
   """
   Default implementation of Subscriber3 callbacks.
-  
+
   CUSTOMIZE THIS CLASS to add your own behavior!
   The generated actor code will call these methods.
   """
-  
+
   fun ref on_message() =>
     // TODO: Implement custom behavior
     None

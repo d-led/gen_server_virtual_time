@@ -9,11 +9,11 @@ trait Subscriber1Callbacks
 class Subscriber1CallbacksImpl is Subscriber1Callbacks
   """
   Default implementation of Subscriber1 callbacks.
-  
+
   CUSTOMIZE THIS CLASS to add your own behavior!
   The generated actor code will call these methods.
   """
-  
+
   fun ref on_message() =>
     // TODO: Implement custom behavior
     None

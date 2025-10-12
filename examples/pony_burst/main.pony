@@ -9,7 +9,7 @@ actor Main
     """
     Start the actor system.
     """
-    
+
     // Spawn all actors
     let processor = Processor(env)
     let burst_generator = BurstGenerator(env)

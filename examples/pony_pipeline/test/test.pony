@@ -24,7 +24,7 @@ actor Main is TestList
 
 class iso _TestActorSystem is UnitTest
   """Test that the actor system can be initialized."""
-  
+
   fun name(): String => "Actor System"
 
   fun apply(h: TestHelper) =>
@@ -33,7 +33,7 @@ class iso _TestActorSystem is UnitTest
 
 class iso _TestSource is UnitTest
   """Test that Source actor can be created."""
-  
+
   fun name(): String => "Source actor"
 
   fun apply(h: TestHelper) =>
@@ -44,7 +44,7 @@ class iso _TestSource is UnitTest
 
 class iso _TestStage1 is UnitTest
   """Test that Stage1 actor can be created."""
-  
+
   fun name(): String => "Stage1 actor"
 
   fun apply(h: TestHelper) =>
@@ -55,7 +55,7 @@ class iso _TestStage1 is UnitTest
 
 class iso _TestStage2 is UnitTest
   """Test that Stage2 actor can be created."""
-  
+
   fun name(): String => "Stage2 actor"
 
   fun apply(h: TestHelper) =>
@@ -66,7 +66,7 @@ class iso _TestStage2 is UnitTest
 
 class iso _TestStage3 is UnitTest
   """Test that Stage3 actor can be created."""
-  
+
   fun name(): String => "Stage3 actor"
 
   fun apply(h: TestHelper) =>
@@ -77,7 +77,7 @@ class iso _TestStage3 is UnitTest
 
 class iso _TestSink is UnitTest
   """Test that Sink actor can be created."""
-  
+
   fun name(): String => "Sink actor"
 
   fun apply(h: TestHelper) =>

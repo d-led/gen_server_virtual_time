@@ -12,7 +12,7 @@ actor Main
     """
     Start the actor system.
     """
-    
+
     // Spawn all actors
     let load_balancer = LoadBalancer(env)
     let server1 = Server1(env)

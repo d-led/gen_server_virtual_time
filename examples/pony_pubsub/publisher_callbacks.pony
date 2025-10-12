@@ -9,11 +9,11 @@ trait PublisherCallbacks
 class PublisherCallbacksImpl is PublisherCallbacks
   """
   Default implementation of Publisher callbacks.
-  
+
   CUSTOMIZE THIS CLASS to add your own behavior!
   The generated actor code will call these methods.
   """
-  
+
   fun ref on_event() =>
     // TODO: Implement custom behavior for event
     None
