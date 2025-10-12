@@ -52,6 +52,13 @@ jobs:
       - name: Run flowchart report tests  
         run: mix test test/mermaid_report_test.exs
 
+      - name: Copy sequence diagrams to reports directory
+        run: |
+          cp generated/examples/mermaid_*.html generated/examples/reports/ || true
+          cp generated/examples/plantuml_*.html generated/examples/reports/ || true
+          cp generated/examples/dining_*.html generated/examples/reports/ || true
+          echo "✅ Copied sequence diagrams to reports directory"
+
       - name: Upload all examples artifacts
         uses: actions/upload-artifact@v4
         with:
