@@ -42,14 +42,19 @@ echo "🔨 Building CAF project..."
 mkdir -p build
 cd build
 
-echo "  Installing dependencies with Conan..."
-if ! conan install .. --build=missing 2>&1 | tail -3; then
+echo "  Installing dependencies with Conan (this may take a while)..."
+echo "  Command: conan install .. --build=missing -s build_type=Release"
+echo "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+if ! conan install .. --build=missing -s build_type=Release; then
+  echo ""
   echo "❌ Conan install failed"
+  echo "  Try: conan profile detect --force"
   exit 1
 fi
+echo "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 echo "  Configuring with CMake..."
-if ! cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake; then
+if ! cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake; then
   echo "❌ CMake configuration failed"
   exit 1
 fi

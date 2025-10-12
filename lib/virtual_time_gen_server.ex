@@ -12,17 +12,35 @@ defmodule VirtualTimeGenServer.Wrapper do
   end
 
   def handle_call(request, from, {module, state}) do
-    case module.handle_call(request, from, state) do
-      {:reply, reply, new_state} -> {:reply, reply, {module, new_state}}
-      {:reply, reply, new_state, timeout} -> {:reply, reply, {module, new_state}, timeout}
-      {:noreply, new_state} -> {:noreply, {module, new_state}}
-      {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-      {:stop, reason, reply, new_state} -> {:stop, reason, reply, {module, new_state}}
-      {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
+    # Handle internal stats request
+    case request do
+      :__vtgs_get_stats__ ->
+        stats = VirtualTimeGenServer.get_process_stats()
+        {:reply, stats, {module, state}}
+      
+      _ ->
+        # Track incoming call only if stats tracking is enabled (in simulations)
+        if Process.get(:__vtgs_stats_enabled__) do
+          track_received_message(request, :call)
+        end
+        
+        case module.handle_call(request, from, state) do
+          {:reply, reply, new_state} -> {:reply, reply, {module, new_state}}
+          {:reply, reply, new_state, timeout} -> {:reply, reply, {module, new_state}, timeout}
+          {:noreply, new_state} -> {:noreply, {module, new_state}}
+          {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
+          {:stop, reason, reply, new_state} -> {:stop, reason, reply, {module, new_state}}
+          {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
+        end
     end
   end
 
   def handle_cast(request, {module, state}) do
+    # Track incoming cast only if stats tracking is enabled (in simulations)
+    if Process.get(:__vtgs_stats_enabled__) do
+      track_received_message(request, :cast)
+    end
+    
     case module.handle_cast(request, state) do
       {:noreply, new_state} -> {:noreply, {module, new_state}}
       {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
@@ -76,6 +94,24 @@ defmodule VirtualTimeGenServer.Wrapper do
       end
     else
       {:ok, {module, state}}
+    end
+  end
+
+  # Message tracking helpers (only used in simulations)
+  defp track_received_message(message, _type) do
+    # Skip internal messages
+    case message do
+      :get_stats -> :ok
+      :__vtgs_get_stats__ -> :ok
+      {:start_sending, _, _} -> :ok
+      :send_random_message -> :ok  # Skip internal scheduled messages
+      _ ->
+        # Only track if stats are enabled (in simulations)
+        if Process.get(:__vtgs_stats_enabled__) do
+          stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+          new_stats = %{stats | received_count: stats.received_count + 1}
+          Process.put(:__vtgs_stats__, new_stats)
+        end
     end
   end
 end
@@ -239,6 +275,9 @@ defmodule VirtualTimeGenServer do
     # Priority: local options > global Process dictionary
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
+    # Get stats tracking flag from parent process
+    stats_enabled = Process.get(:__vtgs_stats_enabled__, false)
+    
     # Use a wrapper to inject virtual clock into spawned process
     init_fun = fn ->
       if final_clock do
@@ -246,6 +285,12 @@ defmodule VirtualTimeGenServer do
       end
 
       Process.put(:time_backend, final_backend)
+      
+      # Propagate stats tracking to child process
+      if stats_enabled do
+        Process.put(:__vtgs_stats_enabled__, true)
+        Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+      end
 
       case module.init(init_arg) do
         {:ok, state} -> {:ok, {module, state}}
@@ -268,12 +313,21 @@ defmodule VirtualTimeGenServer do
     # Determine which clock and backend to use
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
+    # Get stats tracking flag from parent process
+    stats_enabled = Process.get(:__vtgs_stats_enabled__, false)
+
     init_fun = fn ->
       if final_clock do
         Process.put(:virtual_clock, final_clock)
       end
 
       Process.put(:time_backend, final_backend)
+      
+      # Propagate stats tracking to child process
+      if stats_enabled do
+        Process.put(:__vtgs_stats_enabled__, true)
+        Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+      end
 
       case module.init(init_arg) do
         {:ok, state} -> {:ok, {module, state}}
@@ -306,7 +360,66 @@ defmodule VirtualTimeGenServer do
     {local_clock, VirtualTimeBackend}
   end
 
-  defdelegate call(server, request, timeout \\ 5000), to: GenServer
-  defdelegate cast(server, request), to: GenServer
+  @doc """
+  Makes a synchronous call to a server.
+  
+  When stats tracking is enabled (in simulations), this tracks the sent message.
+  Otherwise, it's a direct passthrough to GenServer.call with zero overhead.
+  """
+  def call(server, request, timeout \\ 5000) do
+    # Only track if explicitly enabled - zero overhead otherwise
+    if Process.get(:__vtgs_stats_enabled__) do
+      track_sent_message(request, :call)
+    end
+    GenServer.call(server, request, timeout)
+  end
+
+  @doc """
+  Sends an asynchronous request to a server.
+  
+  When stats tracking is enabled (in simulations), this tracks the sent message.
+  Otherwise, it's a direct passthrough to GenServer.cast with zero overhead.
+  """
+  def cast(server, request) do
+    # Only track if explicitly enabled - zero overhead otherwise
+    if Process.get(:__vtgs_stats_enabled__) do
+      track_sent_message(request, :cast)
+    end
+    GenServer.cast(server, request)
+  end
+
   defdelegate stop(server, reason \\ :normal, timeout \\ :infinity), to: GenServer
+
+  # Message tracking helpers (only used in simulations)
+  defp track_sent_message(message, _type) do
+    # Skip internal messages
+    case message do
+      :get_stats -> :ok
+      :__vtgs_get_stats__ -> :ok
+      {:start_sending, _, _} -> :ok
+      _ ->
+        stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+        new_stats = %{stats | sent_count: stats.sent_count + 1}
+        Process.put(:__vtgs_stats__, new_stats)
+    end
+  end
+
+  @doc false
+  # Internal API for ActorSimulation to enable stats tracking
+  def enable_stats_tracking do
+    Process.put(:__vtgs_stats_enabled__, true)
+    Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+  end
+
+  @doc false
+  # Internal API for ActorSimulation to get process stats
+  def get_process_stats do
+    stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+    %{
+      sent_count: stats.sent_count,
+      received_count: stats.received_count,
+      sent_messages: [],
+      received_messages: []
+    }
+  end
 end

@@ -568,6 +568,8 @@ defmodule ActorSimulation.PonyGenerator do
     # Makefile for #{project_name}
 
     # Binary naming: {example}.pony.{os}
+    # Note: ponyc creates binary based on directory name, not project name
+    DIR_NAME := $(shell basename $(CURDIR))
     UNAME_S := $(shell uname -s | tr '[:upper:]' '[:lower:]')
     ifeq ($(UNAME_S),darwin)
         BINARY := #{project_name}.pony.darwin
@@ -582,7 +584,7 @@ defmodule ActorSimulation.PonyGenerator do
     build:
     \tcorral fetch
     \tponyc .
-    \tmv #{project_name} $(BINARY)
+    \tmv $(DIR_NAME) $(BINARY)
 
     test:
     \tcorral fetch
@@ -590,7 +592,7 @@ defmodule ActorSimulation.PonyGenerator do
     \t./test
 
     clean:
-    \trm -rf $(BINARY) #{project_name}.pony.* #{project_name} test
+    \trm -rf $(BINARY) #{project_name}.pony.* $(DIR_NAME) test
     \trm -rf _corral .corral
 
     run: build
@@ -633,6 +635,16 @@ defmodule ActorSimulation.PonyGenerator do
         - name: Install Corral
           run: |
             ponyup update corral release
+
+        - name: Cache Corral packages
+          uses: actions/cache@v3
+          with:
+            path: |
+              _corral
+              .corral
+            key: ${{ runner.os }}-corral-${{ hashFiles('**/corral.json') }}
+            restore-keys: |
+              ${{ runner.os }}-corral-
 
         - name: Fetch dependencies
           run: |

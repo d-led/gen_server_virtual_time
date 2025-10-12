@@ -122,7 +122,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
           generate_node(name, actor_info, stats, show_stats)
 
         :real_process ->
-          generate_process_node(name, actor_info, show_stats)
+          generate_process_node(name, actor_info, stats, show_stats)
       end
     end)
   end
@@ -153,17 +153,45 @@ defmodule ActorSimulation.MermaidReportGenerator do
     "#{name}#{shape_start}\"#{safe_label}\"#{shape_end}"
   end
 
-  defp generate_process_node(name, _actor_info, show_stats) do
-    # Real processes get a different shape (subroutine)
-    label =
-      if show_stats do
+  defp generate_process_node(name, actor_info, stats, show_stats) do
+    # Determine node shape based on targets and stats
+    targets = actor_info.targets || []
+    actor_stats = get_actor_stats(stats, name)
+
+    # Determine if this is a source, sink, or processor based on behavior
+    has_targets = length(targets) > 0
+    has_stats = actor_stats != nil
+    sent_count = if has_stats, do: actor_stats.sent_count, else: 0
+    received_count = if has_stats, do: actor_stats.received_count, else: 0
+
+    # Determine node type based on behavior (not just targets)
+    # A processor is an actor that can both send AND receive (has targets and can receive)
+    # A source is an actor that only sends (has targets but never receives)
+    # A sink is an actor that only receives (no targets)
+    is_sink = !has_targets
+    is_source = has_targets && !is_sink && sent_count > 0 && received_count == 0
+    is_processor = has_targets && !is_sink && !is_source
+
+    # Choose shape to match legend
+    {left_shape, right_shape} = cond do
+      is_source -> {"([", "])"}  # Stadium shape (oval) for source
+      is_sink -> {">", "]"}      # Asymmetric shape (L-shape) for sink
+      is_processor -> {"(", ")"} # Rounded rectangle for processor
+      true -> {"[", "]"}         # Regular rectangle for unknown
+    end
+
+    # Build label with stats
+    label = cond do
+      show_stats && has_stats ->
+        "#{name}<br/>📤 Sent: #{sent_count}<br/>📥 Recv: #{received_count}"
+      show_stats ->
         "#{name}<br/>Real Process"
-      else
+      true ->
         "#{name}"
-      end
+    end
 
     safe_label = label |> String.replace("\"", "&quot;")
-    "#{name}[[\"#{safe_label}\"]]"
+    "#{name}#{left_shape}\"#{safe_label}\"#{right_shape}"
   end
 
   defp node_shape(definition) do
@@ -189,6 +217,16 @@ defmodule ActorSimulation.MermaidReportGenerator do
     end
   end
 
+  defp generate_real_process_edge_label(name, target, _actor_info, show_labels) do
+    if show_labels do
+      # For real processes, we can't easily determine the message type from the definition
+      # but we can show a generic label indicating it's a real process message
+      "#{name} -->|:hi| #{target}"
+    else
+      "#{name} --> #{target}"
+    end
+  end
+
   defp generate_edges(actors, show_labels) do
     Enum.flat_map(actors, fn {name, actor_info} ->
       case actor_info.type do
@@ -201,7 +239,11 @@ defmodule ActorSimulation.MermaidReportGenerator do
           end)
 
         :real_process ->
-          []
+          # Handle real processes with targets
+          targets = actor_info.targets || []
+          Enum.map(targets, fn target ->
+            generate_real_process_edge_label(name, target, actor_info, show_labels)
+          end)
       end
     end)
   end
@@ -265,7 +307,8 @@ defmodule ActorSimulation.MermaidReportGenerator do
           style_for_activity(name, actor_stats)
 
         :real_process ->
-          ["style #{name} fill:#e1f5fe,stroke:#01579b,stroke-width:2px"]
+          actor_stats = get_actor_stats(stats, name)
+          style_for_activity(name, actor_stats)
       end
     end)
   end
@@ -301,6 +344,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   defp generate_html(mermaid_code, simulation, title, stats, model_source) do
+    actors = simulation.actors
     formatted_stats = Stats.format(stats)
     stats_table = generate_stats_table(formatted_stats)
     simulation_summary = generate_simulation_summary(simulation)
@@ -526,20 +570,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
           </div>
         </div>
 
-        <div class="legend">
-          <div class="legend-item">
-            <div class="legend-shape stadium"></div>
-            <span>Source (sends only)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-shape asymmetric"></div>
-            <span>Sink (receives only)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-shape rounded"></div>
-            <span>Processor (send & receive)</span>
-          </div>
-        </div>
+        #{generate_dynamic_legend(actors, stats)}
       </div>
 
       #{stats_table}
@@ -687,5 +718,110 @@ defmodule ActorSimulation.MermaidReportGenerator do
       </div>
     </div>
     """
+  end
+
+  defp generate_dynamic_legend(actors, stats) do
+    # Determine which actor types are actually present
+    actor_types = Enum.reduce(actors, %{}, fn {name, actor_info}, acc ->
+      case actor_info.type do
+        :simulated ->
+          # For simulated actors, determine type from definition
+          definition = actor_info.definition
+          targets = definition.targets || []
+
+          # Determine if this is a source, sink, or processor based on behavior
+          has_targets = length(targets) > 0
+
+          cond do
+            # Source actors (only send): stadium shape (oval)
+            definition.send_pattern != nil && definition.on_receive == nil &&
+                definition.on_match == [] ->
+              Map.put(acc, :source, true)
+
+            # Sink actors (only receive): asymmetric shape (L-shape)
+            !has_targets && definition.on_receive != nil ->
+              Map.put(acc, :sink, true)
+
+            # Processor actors (send & receive): rounded rectangle
+            true ->
+              Map.put(acc, :processor, true)
+          end
+
+        :real_process ->
+          # For real processes, determine type from stats and targets
+          targets = actor_info.targets || []
+          actor_stats = get_actor_stats(stats, name)
+
+          has_targets = length(targets) > 0
+          has_stats = actor_stats != nil
+          sent_count = if has_stats, do: actor_stats.sent_count, else: 0
+          received_count = if has_stats, do: actor_stats.received_count, else: 0
+
+          # Determine node type based on behavior
+          is_sink = !has_targets
+          is_source = has_targets && !is_sink && sent_count > 0 && received_count == 0
+          is_processor = has_targets && !is_sink && !is_source
+
+          cond do
+            is_source -> Map.put(acc, :source, true)
+            is_sink -> Map.put(acc, :sink, true)
+            is_processor -> Map.put(acc, :processor, true)
+            true -> Map.put(acc, :processor, true)  # Default to processor
+          end
+      end
+    end)
+
+    # Generate legend items only for types that are actually present
+    legend_items = []
+
+    legend_items = if Map.get(actor_types, :source) do
+      legend_items ++ [
+        """
+        <div class="legend-item">
+          <div class="legend-shape stadium"></div>
+          <span>Source (sends only)</span>
+        </div>
+        """
+      ]
+    else
+      legend_items
+    end
+
+    legend_items = if Map.get(actor_types, :sink) do
+      legend_items ++ [
+        """
+        <div class="legend-item">
+          <div class="legend-shape asymmetric"></div>
+          <span>Sink (receives only)</span>
+        </div>
+        """
+      ]
+    else
+      legend_items
+    end
+
+    legend_items = if Map.get(actor_types, :processor) do
+      legend_items ++ [
+        """
+        <div class="legend-item">
+          <div class="legend-shape rounded"></div>
+          <span>Processor (send & receive)</span>
+        </div>
+        """
+      ]
+    else
+      legend_items
+    end
+
+    # If no legend items, return empty string
+    if Enum.empty?(legend_items) do
+      ""
+    else
+      """
+      <div class="legend">
+        #{Enum.join(legend_items, "\n")}
+      </div>
+      """
+    end
   end
 end

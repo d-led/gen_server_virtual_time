@@ -81,12 +81,9 @@ defmodule ActorSimulation do
           Stats.add_actor_stats(stats, name, actor_stats)
 
         :real_process ->
-          Stats.add_actor_stats(stats, name, %{
-            sent_count: 0,
-            received_count: 0,
-            sent_messages: [],
-            received_messages: []
-          })
+          # Get stats from VirtualTimeGenServer's built-in tracking
+          real_stats = GenServer.call(actor_info.pid, :__vtgs_get_stats__)
+          Stats.add_actor_stats(stats, name, real_stats)
       end
     end)
   end
@@ -153,7 +150,11 @@ defmodule ActorSimulation do
 
     # Start the real GenServer with virtual time
     VirtualTimeGenServer.set_virtual_clock(simulation.clock)
-    {:ok, pid} = VirtualTimeGenServer.start_link(module, args, [])
+    
+    # Enable stats tracking before starting the process
+    VirtualTimeGenServer.enable_stats_tracking()
+    
+    {:ok, pid} = VirtualTimeGenServer.start_link(module, args, name: name)
 
     actors =
       Map.put(simulation.actors, name, %{
@@ -522,14 +523,9 @@ defmodule ActorSimulation do
             Stats.add_actor_stats(stats, name, actor_stats)
 
           :real_process ->
-            # For real processes, we can't easily get stats unless they implement a stats protocol
-            # For now, add empty stats
-            Stats.add_actor_stats(stats, name, %{
-              sent_count: 0,
-              received_count: 0,
-              sent_messages: [],
-              received_messages: []
-            })
+            # Get stats from VirtualTimeGenServer's built-in tracking
+            real_stats = GenServer.call(actor_info.pid, :__vtgs_get_stats__)
+            Stats.add_actor_stats(stats, name, real_stats)
         end
       end)
 

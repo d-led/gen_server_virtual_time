@@ -287,3 +287,36 @@ _build/test/lib/*/test-junit-report.xml
 *.caf.exe
 *.omnetpp.exe
 *.vlingo.exe
+
+# Conan generated files (in example directories)
+examples/*/conan*.sh
+examples/*/conan*.cmake
+examples/*/*-release-*.cmake
+examples/*/*-debug-*.cmake
+examples/*/*-relwithdebinfo-*.cmake
+examples/*/*-minsizerel-*.cmake
+examples/*/*Config.cmake
+examples/*/*ConfigVersion.cmake
+examples/*/*Targets.cmake
+examples/*/*-Target-*.cmake
+examples/*/*-data.cmake
+examples/*/cmakedeps_macros.cmake
+examples/*/Find*.cmake
+examples/*/deactivate_*.sh
+examples/*/module-*.cmake
+
+# CMake build directories and generated files
+examples/*/build/
+examples/*/cmake-build-*/
+examples/*/CMakePresets.json
+examples/*/CMakeUserPresets.json
+
+# Pony build artifacts
+examples/*/_corral/
+examples/*/.corral/
+
+# OMNeT++ build artifacts  
+examples/*/out/
+examples/*/results/
+examples/*/*.vec
+examples/*/*.sca

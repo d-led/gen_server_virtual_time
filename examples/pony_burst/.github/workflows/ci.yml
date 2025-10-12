@@ -32,13 +32,23 @@ jobs:
       run: |
         ponyup update corral release
 
+    - name: Cache Corral packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          _corral
+          .corral
+        key: ${{ runner.os }}-corral-${{ hashFiles('**/corral.json') }}
+        restore-keys: |
+          ${{ runner.os }}-corral-
+
     - name: Fetch dependencies
       run: |
         corral fetch
 
     - name: Build
       run: |
-        ponyc .
+        make build
 
     - name: Build tests
       run: |
@@ -48,6 +58,10 @@ jobs:
       run: |
         ./test --sequential
 
-    - name: Run application
+    - name: Run Demo Application
       run: |
-        timeout 5 ./burst_actors || true
+        # Determine binary name: {project}.pony.{os}
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep -o '"name": *"[^"]*"' corral.json | head -1 | sed 's/"name": *"\([^"]*\)"/\1/')
+        BINARY="${PROJECT_NAME}.pony.${OS_NAME}"
+        timeout 5 ./"${BINARY}" || true

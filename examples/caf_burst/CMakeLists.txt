@@ -4,6 +4,17 @@ project(BurstActors CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Detect OS for binary naming: {example}.caf.{os}
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(OS_SUFFIX "darwin")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(OS_SUFFIX "linux")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(OS_SUFFIX "exe")
+else()
+  set(OS_SUFFIX "bin")
+endif()
+
 # Find CAF
 find_package(CAF REQUIRED COMPONENTS core io)
 
@@ -21,6 +32,11 @@ set(SOURCES
 
 # Create executable
 add_executable(BurstActors ${SOURCES})
+
+# Set output binary name: {example}.caf.{os}
+set_target_properties(BurstActors PROPERTIES
+  OUTPUT_NAME "BurstActors.caf.${OS_SUFFIX}"
+)
 
 # Link CAF libraries
 target_link_libraries(BurstActors

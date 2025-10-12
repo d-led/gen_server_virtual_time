@@ -17,6 +17,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Cache Conan packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan2
+        key: ${{ runner.os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-conan-${{ matrix.build_type }}-
+          ${{ runner.os }}-conan-
+
     - name: Install Conan
       run: |
         pip install conan
@@ -37,6 +46,16 @@ jobs:
       run: |
         cd build
         cmake --build . --config ${{ matrix.build_type }}
+
+    - name: Run Demo
+      run: |
+        cd build
+        # Determine binary name: {project}.caf.{os}
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep -o 'project([^)]*)' ../CMakeLists.txt | head -1 | sed 's/project(\([^ ]*\).*/\1/')
+        BINARY="${PROJECT_NAME}.caf.${OS_NAME}"
+        # Run demo for 3 seconds
+        timeout 3s ./"${BINARY}" || true
 
     - name: Test
       run: |

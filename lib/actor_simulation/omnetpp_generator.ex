@@ -460,23 +460,27 @@ defmodule ActorSimulation.OMNeTPPGenerator do
         steps:
         - uses: actions/checkout@v3
 
-        - name: Install CMake
-          run: |
-            if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo apt-get update
-              sudo apt-get install -y cmake
-            elif [ "$RUNNER_OS" == "macOS" ]; then
-              brew install cmake
-            fi
-          shell: bash
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.x'
 
-        - name: Install OMNeT++
+        - name: Cache OMNeT++ installation
+          uses: actions/cache@v3
+          with:
+            path: |
+              ~/.opp_env
+              ~/.cache/opp_env
+            key: ${{ runner.os }}-omnetpp-6.2.0-${{ hashFiles('**/omnetpp.ini') }}
+            restore-keys: |
+              ${{ runner.os }}-omnetpp-6.2.0-
+              ${{ runner.os }}-omnetpp-
+
+        - name: Install OMNeT++ via opp_env
           run: |
-            # Note: This is a placeholder. In practice, OMNeT++ installation
-            # requires more setup. Consider using a pre-built Docker image
-            # or caching the installation.
-            echo "OMNeT++ would be installed here"
-            echo "For CI, consider using omnetpp/omnetpp-circle Docker image"
+            pip install opp-env
+            opp_env init
+            opp_env install omnetpp-6.2.0
           shell: bash
 
         - name: Configure

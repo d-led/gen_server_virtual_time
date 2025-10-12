@@ -40,7 +40,7 @@ defmodule ActorSimulation.CAFGenerator do
 
   - `:project_name` (required) - Name of the C++ project
   - `:enable_callbacks` (default: true) - Generate callback interfaces
-  - `:caf_version` (default: "0.18.7") - CAF version for Conan
+  - `:caf_version` (default: "1.0.2") - CAF version for Conan
 
   ## Returns
 
@@ -49,7 +49,7 @@ defmodule ActorSimulation.CAFGenerator do
   def generate(simulation, opts \\ []) do
     project_name = Keyword.fetch!(opts, :project_name)
     enable_callbacks = Keyword.get(opts, :enable_callbacks, true)
-    caf_version = Keyword.get(opts, :caf_version, "0.18.7")
+    caf_version = Keyword.get(opts, :caf_version, "1.0.2")
 
     actors = simulation.actors
 
@@ -178,6 +178,9 @@ defmodule ActorSimulation.CAFGenerator do
         ""
       end
 
+    # CAF 1.0: Define atom constants
+    atom_defs = generate_atom_definitions(definition)
+
     """
     // Generated from ActorSimulation DSL
     // Actor: #{name}
@@ -188,7 +191,7 @@ defmodule ActorSimulation.CAFGenerator do
     #include <chrono>
     #include <vector>
     #{callback_include}
-
+    #{atom_defs}
     class #{class_name} : public caf::event_based_actor {
       public:
         #{class_name}(caf::actor_config& cfg, const std::vector<caf::actor>& targets);
@@ -265,8 +268,10 @@ defmodule ActorSimulation.CAFGenerator do
             """
           end
 
+        # CAF 1.0: Use atom constant in handler signature
+        atom_name = get_atom_name_from_message(msg)
         """
-            [=](caf::atom_value msg) {
+            [=](#{atom_name}_atom) {
         #{callback_call}      send_to_targets();
               schedule_next_send();
             }
@@ -277,7 +282,7 @@ defmodule ActorSimulation.CAFGenerator do
       Enum.join(handlers, ",\n")
     else
       """
-          [=](caf::atom_value msg) {
+          [=](event_atom) {
             // Default message handler
             send_to_targets();
             schedule_next_send();
@@ -331,7 +336,8 @@ defmodule ActorSimulation.CAFGenerator do
     if length(definition.targets) > 0 do
       """
         for (auto& target : targets_) {
-          send(target, caf::atom("msg"));
+          // CAF 1.0: Use mail API instead of send
+          mail(msg_atom::value).send(target);
           send_count_++;
         }
       """
@@ -681,6 +687,15 @@ defmodule ActorSimulation.CAFGenerator do
         steps:
         - uses: actions/checkout@v3
 
+        - name: Cache Conan packages
+          uses: actions/cache@v3
+          with:
+            path: ~/.conan2
+            key: ${{ runner.os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-conan-${{ matrix.build_type }}-
+              ${{ runner.os }}-conan-
+
         - name: Install Conan
           run: |
             pip install conan
@@ -862,15 +877,61 @@ defmodule ActorSimulation.CAFGenerator do
     inspect(msg) |> String.replace(~r/[^a-z0-9_]/, "_")
   end
 
+  # CAF 1.0: Generate atom constant definitions
+  defp generate_atom_definitions(definition) do
+    atoms = collect_atoms_from_definition(definition)
+    
+    if Enum.empty?(atoms) do
+      ""
+    else
+      atom_lines = Enum.map(atoms, fn atom_str ->
+        "using #{atom_str}_atom = caf::atom_constant<caf::atom(\"#{atom_str}\")>;"
+      end)
+      
+      "\n// Atom constants for this actor\n" <> Enum.join(atom_lines, "\n") <> "\n"
+    end
+  end
+
+  defp collect_atoms_from_definition(definition) do
+    atoms = MapSet.new()
+    
+    # Always include "event" and "msg" atoms
+    atoms = MapSet.put(atoms, "event")
+    atoms = MapSet.put(atoms, "msg")
+    
+    # Add atoms from send_pattern
+    atoms = case definition.send_pattern do
+      {:periodic, _interval, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
+      {:rate, _rate, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
+      {:burst, _count, _interval, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
+      {:self_message, _delay, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
+      _ -> atoms
+    end
+    
+    MapSet.to_list(atoms)
+  end
+
+  defp get_atom_name_from_message(msg) when is_atom(msg) do
+    Atom.to_string(msg)
+  end
+
+  defp get_atom_name_from_message(msg) when is_binary(msg) do
+    msg
+  end
+
+  defp get_atom_name_from_message(_msg) do
+    "msg"
+  end
+
   defp message_to_atom(msg) when is_atom(msg) do
-    "caf::atom(\"#{msg}\")"
+    "#{msg}_atom::value"
   end
 
   defp message_to_atom(msg) when is_binary(msg) do
-    "caf::atom(\"#{msg}\")"
+    "#{msg}_atom::value"
   end
 
   defp message_to_atom(_msg) do
-    "caf::atom(\"msg\")"
+    "msg_atom::value"
   end
 end

@@ -1,5 +1,5 @@
 [requires]
-caf/0.18.7
+caf/1.0.2
 catch2/3.7.1
 
 [generators]

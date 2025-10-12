@@ -465,6 +465,7 @@ defmodule ActorSimulation.PhonyGenerator do
           uses: actions/setup-go@v4
           with:
             go-version: ${{ matrix.go-version }}
+            cache: true
 
         - name: Download dependencies
           run: go mod download

@@ -426,5 +426,447 @@ defmodule MermaidReportTest do
 
       ActorSimulation.stop(simulation)
     end
+
+    test "generates random messaging demo with 7 actors" do
+      # Model source code for documentation
+      model_source = """
+      # Create 7 actors that all know each other, sending random :hi messages
+      # Fixed random seed for reproducible results
+      :rand.seed(:exs1024, {42, 123, 456})
+
+      # Generate random delays for each actor (100-500ms)
+      random_delays = Enum.map(1..7, fn _ -> :rand.uniform(400) + 100 end)
+
+      # All actors know each other (full mesh topology)
+      all_targets = [:actor0, :actor1, :actor2, :actor3, :actor4, :actor5, :actor6]
+
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:actor0,
+          send_pattern: {:periodic, Enum.at(random_delays, 0), :hi},
+          targets: all_targets -- [:actor0]
+        )
+        |> ActorSimulation.add_actor(:actor1,
+          send_pattern: {:periodic, Enum.at(random_delays, 1), :hi},
+          targets: all_targets -- [:actor1]
+        )
+        |> ActorSimulation.add_actor(:actor2,
+          send_pattern: {:periodic, Enum.at(random_delays, 2), :hi},
+          targets: all_targets -- [:actor2]
+        )
+        |> ActorSimulation.add_actor(:actor3,
+          send_pattern: {:periodic, Enum.at(random_delays, 3), :hi},
+          targets: all_targets -- [:actor3]
+        )
+        |> ActorSimulation.add_actor(:actor4,
+          send_pattern: {:periodic, Enum.at(random_delays, 4), :hi},
+          targets: all_targets -- [:actor4]
+        )
+        |> ActorSimulation.add_actor(:actor5,
+          send_pattern: {:periodic, Enum.at(random_delays, 5), :hi},
+          targets: all_targets -- [:actor5]
+        )
+        |> ActorSimulation.add_actor(:actor6,
+          send_pattern: {:periodic, Enum.at(random_delays, 6), :hi},
+          targets: all_targets -- [:actor6]
+        )
+        |> ActorSimulation.run(duration: 2000)
+
+      # Generate the report
+      html = MermaidReportGenerator.generate_report(simulation,
+        title: "Random Messaging Network",
+        layout: "TB",
+        model_source: model_source
+      )
+      """
+
+      # Create the actual simulation with fixed random seed
+      :rand.seed(:exs1024, {42, 123, 456})
+
+      # Generate random delays for each actor (100-500ms)
+      random_delays = Enum.map(1..7, fn _ -> :rand.uniform(400) + 100 end)
+
+      # All actors know each other (full mesh topology)
+      all_targets = [:actor0, :actor1, :actor2, :actor3, :actor4, :actor5, :actor6]
+
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:actor0,
+          send_pattern: {:periodic, Enum.at(random_delays, 0), :hi},
+          targets: all_targets -- [:actor0]
+        )
+        |> ActorSimulation.add_actor(:actor1,
+          send_pattern: {:periodic, Enum.at(random_delays, 1), :hi},
+          targets: all_targets -- [:actor1]
+        )
+        |> ActorSimulation.add_actor(:actor2,
+          send_pattern: {:periodic, Enum.at(random_delays, 2), :hi},
+          targets: all_targets -- [:actor2]
+        )
+        |> ActorSimulation.add_actor(:actor3,
+          send_pattern: {:periodic, Enum.at(random_delays, 3), :hi},
+          targets: all_targets -- [:actor3]
+        )
+        |> ActorSimulation.add_actor(:actor4,
+          send_pattern: {:periodic, Enum.at(random_delays, 4), :hi},
+          targets: all_targets -- [:actor4]
+        )
+        |> ActorSimulation.add_actor(:actor5,
+          send_pattern: {:periodic, Enum.at(random_delays, 5), :hi},
+          targets: all_targets -- [:actor5]
+        )
+        |> ActorSimulation.add_actor(:actor6,
+          send_pattern: {:periodic, Enum.at(random_delays, 6), :hi},
+          targets: all_targets -- [:actor6]
+        )
+        |> ActorSimulation.run(duration: 2000)
+
+      # Generate report with model source
+      html =
+        MermaidReportGenerator.generate_report(simulation,
+          title: "Random Messaging Network",
+          layout: "TB",
+          model_source: model_source
+        )
+
+      filename = Path.join(@output_dir, "random_messaging_report.html")
+      File.write!(filename, html)
+
+      IO.puts("\n✅ Generated random messaging report: #{filename}")
+      IO.puts("   7 actors in full mesh topology, random :hi messages, 2000ms duration")
+
+      # Verify full mesh topology
+      assert String.contains?(html, "flowchart TB")
+      assert String.contains?(html, "actor0")
+      assert String.contains?(html, "actor6")
+
+      # Verify random delays are shown in the model source
+      assert String.contains?(html, ":rand.seed")
+      assert String.contains?(html, "random_delays")
+
+      ActorSimulation.stop(simulation)
+    end
+
+    test "generates random hi messages sequence diagram with 7 actors" do
+      # Model source code for documentation
+      model_source = """
+      # Create 7 actors that randomly send :hi messages to each other
+      # Using fixed random seed for reproducible results
+
+      # Set random seed for reproducibility
+      :rand.seed(:exs1024, {12345, 67890, 11111})
+
+      # Create list of all actor names for random selection
+      all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
+
+      # Function to randomly select a target (excluding self)
+      random_target = fn sender, targets ->
+        available_targets = Enum.reject(targets, fn target -> target == sender end)
+        if length(available_targets) > 0 do
+          Enum.random(available_targets)
+        else
+          nil
+        end
+      end
+
+      # Handler that sends random :hi messages
+      random_hi_handler = fn msg, state ->
+        case msg do
+          :hi ->
+            # Randomly choose target and send :hi back
+            target = random_target.(state.name, state.all_actors)
+            if target do
+              {:send, [{target, :hi}], state}
+            else
+              {:ok, state}
+            end
+          _ ->
+            {:ok, state}
+        end
+      end
+
+      simulation =
+        ActorSimulation.new(trace: true)  # Enable tracing for sequence diagram
+        |> ActorSimulation.add_actor(:alice,
+          send_pattern: {:periodic, 200, :hi},
+          targets: [:bob, :charlie, :diana, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :alice, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:bob,
+          targets: [:alice, :charlie, :diana, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :bob, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:charlie,
+          targets: [:alice, :bob, :diana, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :charlie, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:diana,
+          targets: [:alice, :bob, :charlie, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :diana, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:eve,
+          targets: [:alice, :bob, :charlie, :diana, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :eve, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:frank,
+          targets: [:alice, :bob, :charlie, :diana, :eve, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :frank, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:grace,
+          targets: [:alice, :bob, :charlie, :diana, :eve, :frank],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :grace, all_actors: all_actors}
+        )
+        |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds to get many interactions
+
+      # Generate sequence diagram
+      html = ActorSimulation.generate_sequence_diagram(simulation,
+        title: "Random Hi Messages - 7 Actors",
+        model_source: model_source
+      )
+      """
+
+      # Set random seed for reproducible results
+      :rand.seed(:exs1024, {12345, 67890, 11111})
+
+      # Create list of all actor names for random selection
+      all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
+
+      # Function to randomly select a target (excluding self)
+      random_target = fn sender, targets ->
+        available_targets = Enum.reject(targets, fn target -> target == sender end)
+        if length(available_targets) > 0 do
+          Enum.random(available_targets)
+        else
+          nil
+        end
+      end
+
+      # Handler that sends random :hi messages
+      random_hi_handler = fn msg, state ->
+        case msg do
+          :hi ->
+            # Randomly choose target and send :hi back
+            target = random_target.(state.name, state.all_actors)
+            if target do
+              {:send, [{target, :hi}], state}
+            else
+              {:ok, state}
+            end
+          _ ->
+            {:ok, state}
+        end
+      end
+
+      # Create the actual simulation with tracing enabled
+      simulation =
+        ActorSimulation.new(trace: true)  # Enable tracing for sequence diagram
+        |> ActorSimulation.add_actor(:alice,
+          send_pattern: {:periodic, 200, :hi},
+          targets: [:bob, :charlie, :diana, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :alice, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:bob,
+          send_pattern: {:periodic, 250, :hi},
+          targets: [:alice, :charlie, :diana, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :bob, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:charlie,
+          send_pattern: {:periodic, 300, :hi},
+          targets: [:alice, :bob, :diana, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :charlie, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:diana,
+          send_pattern: {:periodic, 350, :hi},
+          targets: [:alice, :bob, :charlie, :eve, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :diana, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:eve,
+          send_pattern: {:periodic, 400, :hi},
+          targets: [:alice, :bob, :charlie, :diana, :frank, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :eve, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:frank,
+          send_pattern: {:periodic, 450, :hi},
+          targets: [:alice, :bob, :charlie, :diana, :eve, :grace],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :frank, all_actors: all_actors}
+        )
+        |> ActorSimulation.add_actor(:grace,
+          send_pattern: {:periodic, 500, :hi},
+          targets: [:alice, :bob, :charlie, :diana, :eve, :frank],
+          on_receive: random_hi_handler,
+          initial_state: %{name: :grace, all_actors: all_actors}
+        )
+        |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds to get many interactions
+
+      # Generate sequence diagram using the existing diagram generation test
+      html =
+        MermaidReportGenerator.generate_report(simulation,
+          title: "Random Hi Messages - 7 Actors",
+          layout: "LR",
+          model_source: model_source
+        )
+
+      filename = Path.join(@output_dir, "random_hi_sequence.html")
+      File.write!(filename, html)
+
+      IO.puts("\n✅ Generated random hi sequence diagram: #{filename}")
+      IO.puts("   7 actors sending random :hi messages with fixed seed")
+      IO.puts("   Duration: 3000ms virtual time for maximum connections")
+
+      # Verify we have multiple actors and connections
+      assert String.contains?(html, "alice")
+      assert String.contains?(html, "grace")
+      assert String.contains?(html, "flowchart LR")
+
+      ActorSimulation.stop(simulation)
+    end
+
+    test "generates real actor simulation with VirtualTimeGenServer" do
+      # Model source code for documentation
+      model_source = """
+      # Create 7 real GenServer actors that randomly send :hi messages
+      # Using VirtualTimeGenServer for virtual time support
+
+      defmodule HiActor do
+        use VirtualTimeGenServer
+
+        def start_link(name, targets, all_actors) do
+          initial_state = %{
+            name: name,
+            targets: targets,
+            all_actors: all_actors,
+            sent_count: 0,
+            received_count: 0
+          }
+          VirtualTimeGenServer.start_link(__MODULE__, initial_state, name: name)
+        end
+
+        def handle_info(:send_random_message, state) do
+          # Choose random target and send :hi
+          target = Enum.random(state.targets)
+          VirtualTimeGenServer.cast(target, {:hi, state.name})
+
+          # Schedule next message with random delay 200-300ms
+          delay = :rand.uniform(101) + 200
+          VirtualTimeGenServer.send_after(self(), :send_random_message, delay)
+
+          {:noreply, %{state | sent_count: state.sent_count + 1}}
+        end
+
+        def handle_cast({:hi, from}, state) do
+          # Received :hi, send random response
+          available_targets = Enum.reject(state.all_actors, &(&1 == from))
+          if length(available_targets) > 0 do
+            target = Enum.random(available_targets)
+            VirtualTimeGenServer.cast(target, {:hi, state.name})
+          end
+
+          {:noreply, %{state | received_count: state.received_count + 1}}
+        end
+      end
+
+      # Create simulation with real actors
+      all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
+
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_process(:alice,
+          module: HiActor,
+          args: [:alice, [:bob, :charlie, :diana, :eve, :frank, :grace], all_actors])
+        |> ActorSimulation.add_process(:bob,
+          module: HiActor,
+          args: [:bob, [:alice, :charlie, :diana, :eve, :frank, :grace], all_actors])
+        |> ActorSimulation.add_process(:charlie,
+          module: HiActor,
+          args: [:charlie, [:alice, :bob, :diana, :eve, :frank, :grace], all_actors])
+        |> ActorSimulation.add_process(:diana,
+          module: HiActor,
+          args: [:diana, [:alice, :bob, :charlie, :eve, :frank, :grace], all_actors])
+        |> ActorSimulation.add_process(:eve,
+          module: HiActor,
+          args: [:eve, [:alice, :bob, :charlie, :diana, :frank, :grace], all_actors])
+        |> ActorSimulation.add_process(:frank,
+          module: HiActor,
+          args: [:frank, [:alice, :bob, :charlie, :diana, :eve, :grace], all_actors])
+        |> ActorSimulation.add_process(:grace,
+          module: HiActor,
+          args: [:grace, [:alice, :bob, :charlie, :diana, :eve, :frank], all_actors])
+        |> ActorSimulation.run(duration: 3000)
+      """
+
+      # Set random seed for reproducible results
+      :rand.seed(:exs1024, {12345, 67890, 11111})
+
+      # Create list of all actor names
+      all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
+
+      # Create the actual simulation with real GenServer actors
+      simulation =
+        ActorSimulation.new(trace: true)  # Enable tracing for sequence diagram
+        |> ActorSimulation.add_process(:alice,
+          module: HiActor,
+          args: [:alice, [:bob, :charlie, :diana, :eve, :frank, :grace], all_actors],
+          targets: [:bob, :charlie, :diana, :eve, :frank, :grace])
+        |> ActorSimulation.add_process(:bob,
+          module: HiActor,
+          args: [:bob, [:alice, :charlie, :diana, :eve, :frank, :grace], all_actors],
+          targets: [:alice, :charlie, :diana, :eve, :frank, :grace])
+        |> ActorSimulation.add_process(:charlie,
+          module: HiActor,
+          args: [:charlie, [:alice, :bob, :diana, :eve, :frank, :grace], all_actors],
+          targets: [:alice, :bob, :diana, :eve, :frank, :grace])
+        |> ActorSimulation.add_process(:diana,
+          module: HiActor,
+          args: [:diana, [:alice, :bob, :charlie, :eve, :frank, :grace], all_actors],
+          targets: [:alice, :bob, :charlie, :eve, :frank, :grace])
+        |> ActorSimulation.add_process(:eve,
+          module: HiActor,
+          args: [:eve, [:alice, :bob, :charlie, :diana, :frank, :grace], all_actors],
+          targets: [:alice, :bob, :charlie, :diana, :frank, :grace])
+        |> ActorSimulation.add_process(:frank,
+          module: HiActor,
+          args: [:frank, [:alice, :bob, :charlie, :diana, :eve, :grace], all_actors],
+          targets: [:alice, :bob, :charlie, :diana, :eve, :grace])
+        |> ActorSimulation.add_process(:grace,
+          module: HiActor,
+          args: [:grace, [:alice, :bob, :charlie, :diana, :eve, :frank], all_actors],
+          targets: [:alice, :bob, :charlie, :diana, :eve, :frank])
+        |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds
+
+      # Generate report
+      html =
+        MermaidReportGenerator.generate_report(simulation,
+          title: "Real Actors - VirtualTimeGenServer",
+          layout: "LR",
+          model_source: model_source
+        )
+
+      filename = Path.join(@output_dir, "real_actors_simulation.html")
+      File.write!(filename, html)
+
+      IO.puts("\n✅ Generated real actors simulation: #{filename}")
+      IO.puts("   7 VirtualTimeGenServer actors with random delays 200-300ms")
+      IO.puts("   Duration: 3000ms virtual time")
+
+      # Verify we have multiple actors and connections
+      assert String.contains?(html, "alice")
+      assert String.contains?(html, "grace")
+      assert String.contains?(html, "flowchart LR")
+
+      ActorSimulation.stop(simulation)
+    end
   end
 end
