@@ -62,7 +62,7 @@ cp test/output/dining_*.html doc/examples/reports/
 - **Pipeline Processing** - Multi-stage data processing with forwarding
 - **Pub-Sub System** - Publisher broadcasting to multiple subscribers
 - **Load-Balanced Workers** - Work distribution with result collection
-- **Early Termination** - Simulations that stop when goals are achieved
+- **Custom Termination Condition** - Simulations that stop when goals are achieved
 - **Multiple Layouts** - TB, LR, RL, BT directional layouts
 
 Features:

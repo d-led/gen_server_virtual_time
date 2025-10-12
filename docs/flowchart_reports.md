@@ -237,7 +237,7 @@ Examples include:
 - Pipeline processing
 - Pub-sub systems
 - Load-balanced workers
-- Early termination scenarios
+- Custom termination scenarios
 - Multiple layout directions
 
 ## Comparison with Sequence Diagrams

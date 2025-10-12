@@ -280,38 +280,6 @@ defmodule ActorSimulation do
     simulation.trace
   end
 
-  @doc """
-  Formats the trace as a PlantUML sequence diagram.
-
-  ## Example
-
-      simulation = ActorSimulation.new(trace: true)
-        |> add_actor(:client, send_pattern: {:periodic, 100, :ping}, targets: [:server])
-        |> add_actor(:server)
-        |> run(duration: 200)
-
-      plantuml = ActorSimulation.trace_to_plantuml(simulation)
-      File.write!("sequence.puml", plantuml)
-  """
-  def trace_to_plantuml(simulation) do
-    lines = ["@startuml", ""]
-
-    message_lines =
-      Enum.map(simulation.trace, fn event ->
-        arrow =
-          case event.type do
-            :call -> "->>"
-            :cast -> "->>"
-            :send -> "->"
-          end
-
-        msg = inspect(event.message)
-        "#{event.from} #{arrow} #{event.to}: #{msg}"
-      end)
-
-    (lines ++ message_lines ++ ["", "@enduml"])
-    |> Enum.join("\n")
-  end
 
   @doc """
   Formats the trace as a Mermaid sequence diagram with enhanced styling.

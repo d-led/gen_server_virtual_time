@@ -198,12 +198,7 @@ defmodule DocumentationTest do
         |> ActorSimulation.add_actor(:server)
         |> ActorSimulation.run(duration: 200)
 
-      plantuml = ActorSimulation.trace_to_plantuml(simulation)
 
-      assert String.contains?(plantuml, "@startuml")
-      assert String.contains?(plantuml, "@enduml")
-      assert String.contains?(plantuml, "client")
-      assert String.contains?(plantuml, "server")
 
       ActorSimulation.stop(simulation)
     end

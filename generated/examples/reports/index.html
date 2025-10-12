@@ -127,10 +127,6 @@
       background: #ffe3e3;
       color: #dc3545;
     }
-    .badge.plantuml {
-      background: #e3f2fd;
-      color: #1976d2;
-    }
     .report-card a {
       display: inline-block;
       padding: 10px 20px;
@@ -225,7 +221,7 @@
         <div class="label">Example Reports</div>
       </div>
       <div class="stat">
-        <div class="number">3</div>
+        <div class="number">2</div>
         <div class="label">Diagram Types</div>
       </div>
       <div class="stat">
@@ -265,7 +261,7 @@
 
       <div class="report-card">
         <span class="badge flowchart">Flowchart</span>
-        <h3>⚡ Early Termination</h3>
+        <h3>⚡ Custom Termination Condition</h3>
         <p>Simulation that stops when goal is achieved, showing exact termination point.</p>
         <a href="early_termination_report.html" target="_blank">View Report →</a>
       </div>
@@ -323,28 +319,6 @@
     </div>
   </div>
 
-  <div class="section">
-    <h2>📐 PlantUML Diagrams</h2>
-    <p>
-      Traditional PlantUML sequence diagrams rendered via plantuml.com server.
-      These provide an alternative visualization format.
-    </p>
-    <div class="report-grid">
-      <div class="report-card">
-        <span class="badge plantuml">PlantUML</span>
-        <h3>Alice and Bob</h3>
-        <p>Simple two-actor conversation.</p>
-        <a href="plantuml_simple.html" target="_blank">View Diagram →</a>
-      </div>
-
-      <div class="report-card">
-        <span class="badge plantuml">PlantUML</span>
-        <h3>Pub-Sub Pattern</h3>
-        <p>One publisher broadcasting to multiple subscribers.</p>
-        <a href="plantuml_pubsub.html" target="_blank">View Diagram →</a>
-      </div>
-    </div>
-  </div>
 
   <div class="section">
     <h2>🍴 Dining Philosophers Examples</h2>
@@ -376,8 +350,8 @@
 
       <div class="report-card">
         <span class="badge sequence">Sequence</span>
-        <h3>⚡ Early Termination Example</h3>
-        <p>Stops when goal achieved - shows exact termination indicator!</p>
+        <h3>⚡ Custom Termination Condition</h3>
+        <p>Demonstrates terminate_when: stops when all philosophers have eaten at least once!</p>
         <a href="dining_philosophers_condition_terminated.html" target="_blank">View Diagram →</a>
       </div>
     </div>
@@ -403,7 +377,7 @@
         <p>Support for TB, LR, RL, and BT flowchart directions</p>
       </div>
       <div class="feature">
-        <h4>⚡ Early Termination</h4>
+        <h4>⚡ Custom Termination Condition</h4>
         <p>Visual indicators when simulations stop upon achieving goals</p>
       </div>
       <div class="feature">

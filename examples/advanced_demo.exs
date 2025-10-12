@@ -150,12 +150,6 @@ Enum.each(Enum.take(trace, 6), fn event ->
   IO.puts("   t=#{event.timestamp}ms: #{event.from} → #{event.to} [#{event.type}] #{inspect(event.message)}")
 end)
 
-# Generate PlantUML diagram
-plantuml = ActorSimulation.trace_to_plantuml(simulation)
-IO.puts("")
-IO.puts("Generated PlantUML sequence diagram:")
-IO.puts(plantuml)
-
 IO.puts("")
 
 # Generate Mermaid diagram

@@ -90,8 +90,8 @@ defmodule TerminationIndicatorTest do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 3,
-          think_time: 100,
-          eat_time: 50,
+          think_time: 500,
+          eat_time: 100,
           trace: true
         )
         |> ActorSimulation.run(
@@ -99,15 +99,39 @@ defmodule TerminationIndicatorTest do
           terminate_when: fn sim ->
             stats = ActorSimulation.collect_current_stats(sim)
 
-            Enum.all?(0..2, fn i ->
-              name = :"philosopher_#{i}"
+            # Debug: print sent counts
+            sent_counts =
+              Enum.map(0..2, fn i ->
+                name = :"philosopher_#{i}"
+                count = stats.actors[name][:sent_count] || 0
+                {name, count}
+              end)
 
-              case stats.actors[name] do
-                nil -> false
-                # 3 meals * 2 fork ops
-                actor_stats -> actor_stats.sent_count >= 6
-              end
-            end)
+            # Check if all 3 philosophers have mumbled "I'm full!" 
+            # Message flow for one complete eating cycle:
+            # 1. {:start_hungry...} first time: [mumble hungry, request first fork] = 2
+            # 2. {:fork_granted, first_fork}: [request second fork] = 1
+            # 3. {:fork_granted, second_fork}: [mumble full, release first, release second] = 3
+            # Total = 6 messages for first complete eating cycle
+            all_fed =
+              Enum.all?(0..2, fn i ->
+                name = :"philosopher_#{i}"
+
+                case stats.actors[name] do
+                  nil ->
+                    false
+
+                  actor_stats ->
+                    # sent_count >= 6 means they've completed first meal with "I'm full!" said
+                    actor_stats.sent_count >= 6
+                end
+              end)
+
+            if all_fed do
+              IO.puts("\n🎉 All fed! Sent counts: #{inspect(sent_counts)}")
+            end
+
+            all_fed
           end
         )
 
@@ -142,8 +166,8 @@ defmodule TerminationIndicatorTest do
       <body>
         <h1>🍴 3 Philosophers - Condition-Based Termination</h1>
         <div class="info">
-          <strong>✅ Termination Condition Met!</strong><br>
-          Simulation stopped at <strong>#{simulation.actual_duration}ms</strong> when all philosophers had eaten enough.<br>
+          <strong>✅ Custom Termination Condition Met!</strong><br>
+          Simulation stopped at <strong>#{simulation.actual_duration}ms</strong> when all philosophers had eaten at least once.<br>
           Look for the <strong>⚡ Terminated</strong> note at the bottom of the diagram!
         </div>
         <div class="mermaid">

@@ -165,8 +165,6 @@ defmodule ActorSimulation.PonyGenerator do
   defp generate_actor_file(name, definition, enable_callbacks) do
     actor_name = actor_class_name(name)
 
-    callback_use = ""
-
     callback_field =
       if enable_callbacks do
         """

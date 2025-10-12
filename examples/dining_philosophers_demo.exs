@@ -118,7 +118,6 @@ mermaid = ActorSimulation.trace_to_mermaid(simulation,
   timestamps: true
 )
 
-plantuml = ActorSimulation.trace_to_plantuml(simulation)
 
 IO.puts("\n📁 Generated Diagrams:")
 IO.puts("   • test/output/dining_philosophers.html (Mermaid)")

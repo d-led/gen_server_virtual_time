@@ -208,13 +208,7 @@ defmodule ProcessInLoopTest do
         )
         |> ActorSimulation.run(duration: 200)
 
-      plantuml = ActorSimulation.trace_to_plantuml(simulation)
 
-      assert String.contains?(plantuml, "@startuml")
-      assert String.contains?(plantuml, "@enduml")
-      assert String.contains?(plantuml, "client")
-      assert String.contains?(plantuml, "server")
-      assert String.contains?(plantuml, "->")
 
       ActorSimulation.stop(simulation)
     end
