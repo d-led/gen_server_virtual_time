@@ -25,16 +25,17 @@ jobs:
 
     - name: Install Pony toolchain (Ubuntu)
       run: |
-        sudo apt-get update
-        # Download and install ponyup with retry
-        for i in {1..3}; do
-          curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh && break || sleep 5
-        done
-        sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
+        sudo apt-get update && sudo apt-get install -y curl build-essential
+        # Download pre-built ponyup binary from Cloudsmith (more reliable than init script)
+        curl -L https://dl.cloudsmith.io/public/ponylang/releases/raw/versions/latest/ponyup-x86-64-unknown-linux.tar.gz -o ponyup.tgz
+        mkdir -p $HOME/.local/share/ponyup/bin/
+        mkdir -p /tmp/ponyup
+        tar xzf ponyup.tgz -C /tmp/ponyup
+        mv /tmp/ponyup/*/bin/* $HOME/.local/share/ponyup/bin/
+        echo "x86_64-linux-ubuntu22.04" > $HOME/.local/share/ponyup/.platform
         export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
-        # Verify installation
-        which ponyup || (echo "ponyup not found in PATH" && exit 1)
+        ponyup default "x86_64-linux-ubuntu22.04"
         ponyup --version
 
     - name: Update Pony compiler and Corral
@@ -98,16 +99,17 @@ jobs:
 
     - name: Install Pony toolchain
       run: |
-        sudo apt-get update
-        # Download and install ponyup with retry
-        for i in {1..3}; do
-          curl -o ponyup-init.sh https://raw.githubusercontent.com/ponylang/ponyup/latest-release/ponyup-init.sh && break || sleep 5
-        done
-        sh ponyup-init.sh --prefix=$HOME/.local/share/ponyup
+        sudo apt-get update && sudo apt-get install -y curl build-essential
+        # Download pre-built ponyup binary from Cloudsmith (more reliable than init script)
+        curl -L https://dl.cloudsmith.io/public/ponylang/releases/raw/versions/latest/ponyup-x86-64-unknown-linux.tar.gz -o ponyup.tgz
+        mkdir -p $HOME/.local/share/ponyup/bin/
+        mkdir -p /tmp/ponyup
+        tar xzf ponyup.tgz -C /tmp/ponyup
+        mv /tmp/ponyup/*/bin/* $HOME/.local/share/ponyup/bin/
+        echo "x86_64-linux-ubuntu22.04" > $HOME/.local/share/ponyup/.platform
         export PATH="$HOME/.local/share/ponyup/bin:$PATH"
         echo "$HOME/.local/share/ponyup/bin" >> $GITHUB_PATH
-        # Verify installation
-        which ponyup || (echo "ponyup not found in PATH" && exit 1)
+        ponyup default "x86_64-linux-ubuntu22.04"
         ponyup --version
 
     - name: Update Pony compiler
