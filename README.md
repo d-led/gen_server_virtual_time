@@ -283,13 +283,13 @@ Similar to hardware-in-the-loop testing, but for processes.
 # OMNeT++ network simulations
 mix run examples/omnetpp_demo.exs
 cd examples/omnetpp_pubsub
-cat PubSubNetwork.ned  # View generated network topology
-cat Publisher.cc       # View C++ implementation
+# View the generated network topology in PubSubNetwork.ned
+# View the C++ implementation in Publisher.cc
 
 # CAF actor systems with callbacks
 mix run examples/caf_demo.exs
 cd examples/caf_pubsub
-cat publisher_callbacks_impl.cpp  # Your custom code goes here!
+# Edit publisher_callbacks_impl.cpp to add your custom code
 ```
 
 ## Documentation

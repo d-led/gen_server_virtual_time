@@ -139,8 +139,7 @@ mix run scripts/validate_omnetpp_output.exs
 
 # Validate specific project
 cd examples/omnetpp_pubsub
-cat CMakeLists.txt
-cat PubSubNetwork.ned
+# Check CMakeLists.txt and PubSubNetwork.ned to validate the output
 ```
 
 ### Run Both

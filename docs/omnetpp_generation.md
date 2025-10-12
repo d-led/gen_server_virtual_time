@@ -187,8 +187,8 @@ mix run examples/omnetpp_demo.exs
 # Explore generated code
 cd examples/omnetpp_pubsub
 ls -la  # See all generated files
-cat PubSubNetwork.ned  # View network topology
-cat Publisher.cc  # View C++ implementation
+# View the network topology in PubSubNetwork.ned
+# View the C++ implementation in Publisher.cc
 ```
 
 ## Why Use OMNeT++ Generation?

@@ -206,4 +206,216 @@ defmodule VirtualTimeGenServerTest do
       GenServer.stop(server3)
     end
   end
+
+  describe "Local virtual clock injection (isolated simulations)" do
+    test "server can be started with a specific clock without affecting global setting" do
+      # Create two separate clocks for isolated simulations
+      {:ok, clock1} = VirtualClock.start_link()
+      {:ok, clock2} = VirtualClock.start_link()
+
+      # No global clock set - use real time by default
+      VirtualTimeGenServer.use_real_time()
+
+      # Start servers with explicit clocks
+      {:ok, server1} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock1)
+      {:ok, server2} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock2)
+
+      # Advance clock1 independently
+      VirtualClock.advance(clock1, 500)
+      assert TickerServer.get_count(server1) == 5
+      assert TickerServer.get_count(server2) == 0
+
+      # Advance clock2 independently
+      VirtualClock.advance(clock2, 300)
+      assert TickerServer.get_count(server1) == 5
+      assert TickerServer.get_count(server2) == 3
+
+      GenServer.stop(server1)
+      GenServer.stop(server2)
+    end
+
+    test "local clock injection overrides global clock setting" do
+      # Set a global clock
+      {:ok, global_clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.set_virtual_clock(global_clock)
+
+      # But start a server with a different local clock
+      {:ok, local_clock} = VirtualClock.start_link()
+      {:ok, local_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: local_clock)
+
+      # Also start a server using the global clock (no local override)
+      {:ok, global_server} = TickerServer.start_link(100)
+
+      # Advance only the local clock
+      VirtualClock.advance(local_clock, 300)
+      assert TickerServer.get_count(local_server) == 3
+      assert TickerServer.get_count(global_server) == 0
+
+      # Advance only the global clock
+      VirtualClock.advance(global_clock, 500)
+      assert TickerServer.get_count(local_server) == 3
+      assert TickerServer.get_count(global_server) == 5
+
+      GenServer.stop(local_server)
+      GenServer.stop(global_server)
+    end
+
+    test "multiple isolated simulations can run concurrently" do
+      # Simulation 1: Fast-paced trading system
+      {:ok, trading_clock} = VirtualClock.start_link()
+      {:ok, trade_processor} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 10, virtual_clock: trading_clock)
+
+      # Simulation 2: Slow periodic backup system
+      {:ok, backup_clock} = VirtualClock.start_link()
+      {:ok, backup_scheduler} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 1000, virtual_clock: backup_clock)
+
+      # Advance trading simulation by 100ms (10 trades)
+      VirtualClock.advance(trading_clock, 100)
+      assert TickerServer.get_count(trade_processor) == 10
+
+      # Backup system hasn't moved
+      assert TickerServer.get_count(backup_scheduler) == 0
+
+      # Advance backup simulation by 5 seconds (5 backups)
+      VirtualClock.advance(backup_clock, 5000)
+      assert TickerServer.get_count(backup_scheduler) == 5
+
+      # Trading simulation hasn't moved further
+      assert TickerServer.get_count(trade_processor) == 10
+
+      GenServer.stop(trade_processor)
+      GenServer.stop(backup_scheduler)
+    end
+
+    test "child processes inherit parent's local clock" do
+      {:ok, parent_clock} = VirtualClock.start_link()
+
+      # Start parent with local clock
+      parent = spawn(fn ->
+        # Simulate VirtualTimeGenServer.start_link setting local clock
+        Process.put(:virtual_clock, parent_clock)
+        Process.put(:time_backend, VirtualTimeBackend)
+
+        # Start child that should inherit the clock
+        {:ok, child_server} = TickerServer.start_link(100)
+
+        receive do
+          {:advance_and_check, from} ->
+            VirtualClock.advance(parent_clock, 300)
+            count = TickerServer.get_count(child_server)
+            send(from, {:count, count})
+            GenServer.stop(child_server)
+        end
+      end)
+
+      send(parent, {:advance_and_check, self()})
+
+      assert_receive {:count, 3}, 1000
+    end
+
+    test "local clock with real_time: true option should use real time backend" do
+      # Start server with explicit real time (no virtual clock)
+      {:ok, server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 50, real_time: true)
+
+      # Even if global clock is set, server should use real time
+      {:ok, clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      # Sleep for real time
+      start_time = System.monotonic_time(:millisecond)
+      Process.sleep(150)
+      count = TickerServer.get_count(server)
+      elapsed = System.monotonic_time(:millisecond) - start_time
+
+      # Should have real ticks, not virtual
+      assert elapsed >= 100
+      assert count >= 2
+
+      GenServer.stop(server)
+    end
+  end
+
+  describe "Documentation examples for global vs local clocks" do
+    test "GLOBAL CLOCK: All actors in one coordinated simulation" do
+      # This is the current/default approach - good for actor systems
+      # where all components must work together in lockstep
+
+      {:ok, clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      # Start multiple actors that interact
+      {:ok, producer} = TickerServer.start_link(100)
+      {:ok, consumer1} = TickerServer.start_link(100)
+      {:ok, consumer2} = TickerServer.start_link(200)
+
+      # Advance time once - ALL actors move forward together
+      VirtualClock.advance(clock, 1000)
+
+      # All actors progressed in the same coordinated timeframe
+      assert TickerServer.get_count(producer) == 10
+      assert TickerServer.get_count(consumer1) == 10
+      assert TickerServer.get_count(consumer2) == 5
+
+      # This is essential for testing distributed systems where
+      # timing relationships matter (e.g., request/response patterns)
+
+      GenServer.stop(producer)
+      GenServer.stop(consumer1)
+      GenServer.stop(consumer2)
+    end
+
+    test "LOCAL CLOCK: Multiple independent simulations" do
+      # Use local clocks when you need isolation between simulations
+      # or when testing components that shouldn't interact
+
+      # Simulation A: Payment processing system
+      {:ok, payment_clock} = VirtualClock.start_link()
+      {:ok, payment_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: payment_clock)
+
+      # Simulation B: Analytics aggregation system  
+      {:ok, analytics_clock} = VirtualClock.start_link()
+      {:ok, analytics_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 500, virtual_clock: analytics_clock)
+
+      # Test payment system at high speed
+      VirtualClock.advance(payment_clock, 1000)
+      assert TickerServer.get_count(payment_server) == 10
+
+      # Test analytics at different time scale (completely independent)
+      VirtualClock.advance(analytics_clock, 2000)
+      assert TickerServer.get_count(analytics_server) == 4
+
+      # Each simulation has its own timeline - useful for:
+      # - Testing components in isolation
+      # - Running multiple test scenarios in parallel
+      # - Mixing virtual and real time in the same test process
+
+      GenServer.stop(payment_server)
+      GenServer.stop(analytics_server)
+    end
+
+    test "MIXED MODE: Some actors use virtual time, others use real time" do
+      # This is useful when testing integration with external systems
+      # that operate on real time (databases, external APIs, etc.)
+
+      {:ok, clock} = VirtualClock.start_link()
+
+      # Virtual time for business logic
+      {:ok, virtual_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 100, virtual_clock: clock)
+
+      # Real time for external integration (e.g., database connection pool)
+      {:ok, real_server} = VirtualTimeGenServer.start_link(__MODULE__.TickerServer, 50, real_time: true)
+
+      # Advance virtual time - only affects virtual_server
+      VirtualClock.advance(clock, 500)
+      assert TickerServer.get_count(virtual_server) == 5
+
+      # Real server continues on real time
+      Process.sleep(150)
+      real_count = TickerServer.get_count(real_server)
+      assert real_count >= 2
+
+      GenServer.stop(virtual_server)
+      GenServer.stop(real_server)
+    end
+  end
 end

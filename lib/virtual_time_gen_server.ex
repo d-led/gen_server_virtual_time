@@ -115,7 +115,7 @@ defmodule VirtualTimeGenServer do
         end
       end
 
-  ## Testing with Virtual Time
+  ## Testing with Virtual Time - Global Clock (Coordinated Simulation)
 
       test "server ticks correctly" do
         {:ok, clock} = VirtualClock.start_link()
@@ -129,6 +129,41 @@ defmodule VirtualTimeGenServer do
         # Server will have ticked 5 times
         assert get_count(server) == 5
       end
+
+  ## Testing with Virtual Time - Local Clock (Isolated Simulation)
+
+      test "isolated simulation with local clock" do
+        {:ok, clock} = VirtualClock.start_link()
+
+        # Pass clock directly to this specific server
+        {:ok, server} = VirtualTimeGenServer.start_link(MyTimedServer, :ok, virtual_clock: clock)
+
+        # Advance only this server's timeline
+        VirtualClock.advance(clock, 5000)
+
+        assert get_count(server) == 5
+      end
+
+  ## Clock Configuration Options
+
+  The virtual clock can be configured in three ways (in priority order):
+
+  1. **Local Clock Injection** - Pass `virtual_clock: clock_pid` to `start_link/3`:
+     - Highest priority, overrides global settings
+     - Useful for isolated simulations or testing components independently
+     - Each server can have its own timeline
+
+  2. **Global Clock** - Use `set_virtual_clock/1`:
+     - Inherited by all child processes
+     - Essential for coordinated actor systems where timing relationships matter
+     - All actors share the same timeline
+
+  3. **Real Time** - Pass `real_time: true` or use `use_real_time/0`:
+     - Default behavior, uses `Process.send_after/3`
+     - For production or integration tests with external systems
+
+  See the "Development Documentation" for a detailed explanation of when to use
+  global vs local clocks.
   """
 
   @doc """
@@ -196,16 +231,21 @@ defmodule VirtualTimeGenServer do
 
   # Custom start_link that propagates virtual clock to child process
   def start_link(module, init_arg, opts \\ []) do
-    virtual_clock = Process.get(:virtual_clock)
-    time_backend = Process.get(:time_backend, RealTimeBackend)
+    # Extract time-related options from opts
+    {virtual_clock, opts} = Keyword.pop(opts, :virtual_clock)
+    {real_time, opts} = Keyword.pop(opts, :real_time, false)
+
+    # Determine which clock and backend to use
+    # Priority: local options > global Process dictionary
+    {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
     # Use a wrapper to inject virtual clock into spawned process
     init_fun = fn ->
-      if virtual_clock do
-        Process.put(:virtual_clock, virtual_clock)
+      if final_clock do
+        Process.put(:virtual_clock, final_clock)
       end
 
-      Process.put(:time_backend, time_backend)
+      Process.put(:time_backend, final_backend)
 
       case module.init(init_arg) do
         {:ok, state} -> {:ok, {module, state}}
@@ -221,15 +261,19 @@ defmodule VirtualTimeGenServer do
   end
 
   def start(module, init_arg, opts \\ []) do
-    virtual_clock = Process.get(:virtual_clock)
-    time_backend = Process.get(:time_backend, RealTimeBackend)
+    # Extract time-related options from opts
+    {virtual_clock, opts} = Keyword.pop(opts, :virtual_clock)
+    {real_time, opts} = Keyword.pop(opts, :real_time, false)
+
+    # Determine which clock and backend to use
+    {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
     init_fun = fn ->
-      if virtual_clock do
-        Process.put(:virtual_clock, virtual_clock)
+      if final_clock do
+        Process.put(:virtual_clock, final_clock)
       end
 
-      Process.put(:time_backend, time_backend)
+      Process.put(:time_backend, final_backend)
 
       case module.init(init_arg) do
         {:ok, state} -> {:ok, {module, state}}
@@ -241,6 +285,25 @@ defmodule VirtualTimeGenServer do
     end
 
     GenServer.start(VirtualTimeGenServer.Wrapper, {init_fun, module}, opts)
+  end
+
+  # Private helper to determine time configuration
+  # Priority: explicit local options > global Process dictionary
+  defp determine_time_config(nil, false) do
+    # No local options - use global settings
+    global_clock = Process.get(:virtual_clock)
+    global_backend = Process.get(:time_backend, RealTimeBackend)
+    {global_clock, global_backend}
+  end
+
+  defp determine_time_config(nil, true) do
+    # Explicit real_time: true - ignore global settings
+    {nil, RealTimeBackend}
+  end
+
+  defp determine_time_config(local_clock, _) when is_pid(local_clock) do
+    # Explicit local clock provided - use it regardless of global settings
+    {local_clock, VirtualTimeBackend}
   end
 
   defdelegate call(server, request, timeout \\ 5000), to: GenServer
