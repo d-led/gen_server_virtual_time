@@ -16,7 +16,7 @@ defmodule DiagramGenerationTest do
   Open the generated HTML files in a browser to see the diagrams!
   """
 
-  @output_dir "doc/examples/reports"
+  @output_dir "test/output"
 
   setup_all do
     File.mkdir_p!(@output_dir)

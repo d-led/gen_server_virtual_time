@@ -58,8 +58,8 @@ defmodule ActorSimulation.VlingoGenerator do
     files =
       []
       |> add_actor_files(actors, group_id, package_path, enable_callbacks)
-      |> add_main_file(actors, project_name, group_id, package_path)
-      |> add_test_files(actors, group_id, package_path)
+      |> add_main_file(actors, project_name, group_id, package_path, enable_callbacks)
+      |> add_test_files(actors, group_id, package_path, enable_callbacks)
       |> add_pom_file(project_name, group_id, vlingo_version)
       |> add_ci_pipeline(project_name)
       |> add_readme(project_name)
@@ -124,19 +124,19 @@ defmodule ActorSimulation.VlingoGenerator do
     end)
   end
 
-  defp add_main_file(files, actors, project_name, group_id, package_path) do
-    content = generate_main(actors, project_name, group_id)
+  defp add_main_file(files, actors, project_name, group_id, package_path, enable_callbacks) do
+    content = generate_main(actors, project_name, group_id, enable_callbacks)
     main_file = "src/main/java/#{package_path}/Main.java"
     [{main_file, content} | files]
   end
 
-  defp add_test_files(files, actors, group_id, package_path) do
+  defp add_test_files(files, actors, group_id, package_path, enable_callbacks) do
     simulated = GeneratorUtils.simulated_actors(actors)
 
     test_files =
       Enum.flat_map(simulated, fn {name, definition} ->
         class_name = GeneratorUtils.to_pascal_case(name)
-        test_content = generate_test_class(name, definition, group_id)
+        test_content = generate_test_class(name, definition, group_id, enable_callbacks)
         test_file = "src/test/java/#{package_path}/#{class_name}ActorTest.java"
         [{test_file, test_content}]
       end)
@@ -475,19 +475,32 @@ defmodule ActorSimulation.VlingoGenerator do
     """
   end
 
-  defp generate_main(actors, project_name, group_id) do
+  defp generate_main(actors, project_name, group_id, enable_callbacks) do
     simulated = GeneratorUtils.simulated_actors(actors)
 
     spawn_code =
-      Enum.map_join(simulated, "\n", fn {name, _def} ->
+      Enum.map_join(simulated, "\n", fn {name, definition} ->
         snake_name = GeneratorUtils.to_camel_case(name)
         class_name = GeneratorUtils.to_pascal_case(name)
+
+        # Determine parameters based on constructor needs
+        params =
+          cond do
+            enable_callbacks && length(definition.targets) > 0 ->
+              "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
+            enable_callbacks ->
+              "(#{class_name}Callbacks) null"
+            length(definition.targets) > 0 ->
+              "new java.util.ArrayList<>()"
+            true ->
+              ""
+          end
 
         """
         #{class_name}Protocol #{snake_name} = world.actorFor(
               #{class_name}Protocol.class,
               Definition.has(#{class_name}Actor.class,
-                Definition.parameters(null, null))
+                Definition.parameters(#{params}))
             );
         """
       end)
@@ -528,9 +541,22 @@ defmodule ActorSimulation.VlingoGenerator do
     """
   end
 
-  defp generate_test_class(name, definition, group_id) do
+  defp generate_test_class(name, definition, group_id, enable_callbacks) do
     class_name = GeneratorUtils.to_pascal_case(name)
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
+
+    # Determine test parameters based on what the constructor expects
+    test_params =
+      cond do
+        enable_callbacks && length(definition.targets) > 0 ->
+          "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
+        enable_callbacks ->
+          "(#{class_name}Callbacks) null"
+        length(definition.targets) > 0 ->
+          "new java.util.ArrayList<>()"
+        true ->
+          ""
+      end
 
     # Generate test methods for each message
     message_tests =
@@ -602,7 +628,7 @@ defmodule ActorSimulation.VlingoGenerator do
         actor = world.actorFor(
           #{class_name}Protocol.class,
           Definition.has(#{class_name}Actor.class,
-            Definition.parameters(null, null))
+            Definition.parameters(#{test_params}))
         );
       }
 

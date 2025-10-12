@@ -214,7 +214,7 @@ jobs:
         run: |
           mix run scripts/generate_omnetpp_examples.exs
           # Check that at least one file was generated
-          if [ ! -f "examples/omnetpp_pubsub/PubSub.ned" ]; then
+          if [ ! -f "examples/omnetpp_pubsub/PubSubNetwork.ned" ]; then
             echo "ERROR: OMNeT++ generator did not create expected files"
             exit 1
           fi

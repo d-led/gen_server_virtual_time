@@ -46,14 +46,15 @@ jobs:
         run: mix deps.get
 
       - name: Run tests (generates diagrams)
-        run: mix test
+        run: mix test --only diagram_generation
 
       - name: Upload diagram artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sequence-diagrams
-          path: test/output/
+          path: test/output/*.html
           retention-days: 7
+          if-no-files-found: error
 
   deploy:
     name: Deploy to GitHub Pages

@@ -23,7 +23,7 @@ public class LoadBalancerActorTest {
     actor = world.actorFor(
       LoadBalancerProtocol.class,
       Definition.has(LoadBalancerActor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((LoadBalancerCallbacks) null, new java.util.ArrayList<>()))
     );
   }
 

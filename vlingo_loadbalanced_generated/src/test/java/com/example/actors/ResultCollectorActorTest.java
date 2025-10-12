@@ -23,7 +23,7 @@ public class ResultCollectorActorTest {
     actor = world.actorFor(
       ResultCollectorProtocol.class,
       Definition.has(ResultCollectorActor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((ResultCollectorCallbacks) null))
     );
   }
 

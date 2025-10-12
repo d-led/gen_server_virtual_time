@@ -1,0 +1,5 @@
+com/example/actors/LoadBalancerActorTest.class
+com/example/actors/Worker1ActorTest.class
+com/example/actors/Worker3ActorTest.class
+com/example/actors/ResultCollectorActorTest.class
+com/example/actors/Worker2ActorTest.class

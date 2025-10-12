@@ -20,31 +20,31 @@ public class Main {
 LoadBalancerProtocol loadBalancer = world.actorFor(
       LoadBalancerProtocol.class,
       Definition.has(LoadBalancerActor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((LoadBalancerCallbacks) null, new java.util.ArrayList<>()))
     );
 
 Worker1Protocol worker1 = world.actorFor(
       Worker1Protocol.class,
       Definition.has(Worker1Actor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((Worker1Callbacks) null, new java.util.ArrayList<>()))
     );
 
 Worker2Protocol worker2 = world.actorFor(
       Worker2Protocol.class,
       Definition.has(Worker2Actor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((Worker2Callbacks) null, new java.util.ArrayList<>()))
     );
 
 Worker3Protocol worker3 = world.actorFor(
       Worker3Protocol.class,
       Definition.has(Worker3Actor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((Worker3Callbacks) null, new java.util.ArrayList<>()))
     );
 
 ResultCollectorProtocol resultCollector = world.actorFor(
       ResultCollectorProtocol.class,
       Definition.has(ResultCollectorActor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((ResultCollectorCallbacks) null))
     );
 
 

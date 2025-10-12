@@ -23,7 +23,7 @@ public class Worker2ActorTest {
     actor = world.actorFor(
       Worker2Protocol.class,
       Definition.has(Worker2Actor.class,
-        Definition.parameters(null, null))
+        Definition.parameters((Worker2Callbacks) null, new java.util.ArrayList<>()))
     );
   }
 
