@@ -246,8 +246,8 @@ defmodule ActorSimulation.VlingoGenerator do
         ""
       end
 
-    # Schedule setup
-    schedule_setup = generate_schedule_setup(definition)
+    # Note: Scheduling removed as Scheduled interface is not available in VLINGO XOOM 1.11.1
+    # _schedule_setup = generate_schedule_setup(definition)
 
     # Message methods
     method_impls =
