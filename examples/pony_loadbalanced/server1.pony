@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "server1_callbacks"
-
 
 actor Server1
   let _env: Env

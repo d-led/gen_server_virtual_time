@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "stage2_callbacks"
-
 
 actor Stage2
   let _env: Env

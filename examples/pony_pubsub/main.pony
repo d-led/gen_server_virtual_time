@@ -1,12 +1,6 @@
 // Generated from ActorSimulation DSL
 // Main entry point for pubsub_actors
 
-use "console_logger"
-use "publisher"
-use "subscriber1"
-use "subscriber2"
-use "subscriber3"
-
 actor Main
   new create(env: Env) =>
     """

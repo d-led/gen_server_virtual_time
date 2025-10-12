@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "load_balancer_callbacks"
-
 
 actor LoadBalancer
   let _env: Env

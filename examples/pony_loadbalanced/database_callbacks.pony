@@ -3,8 +3,6 @@
 //
 // Implement this trait to add custom behavior!
 
-use "console_logger"
-
 trait DatabaseCallbacks
   fun ref on_message()
 

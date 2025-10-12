@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "sink_callbacks"
-
 
 actor Sink
   let _env: Env

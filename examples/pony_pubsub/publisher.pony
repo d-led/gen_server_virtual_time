@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "publisher_callbacks"
-
 
 actor Publisher
   let _env: Env

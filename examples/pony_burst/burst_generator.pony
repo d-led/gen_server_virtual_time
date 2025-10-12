@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "burst_generator_callbacks"
-
 
 actor BurstGenerator
   let _env: Env

@@ -165,14 +165,7 @@ defmodule ActorSimulation.PonyGenerator do
   defp generate_actor_file(name, definition, enable_callbacks) do
     actor_name = actor_class_name(name)
 
-    callback_use =
-      if enable_callbacks do
-        """
-        use \"#{actor_snake_case(name)}_callbacks\"
-        """
-      else
-        ""
-      end
+    callback_use = ""
 
     callback_field =
       if enable_callbacks do
@@ -201,8 +194,6 @@ defmodule ActorSimulation.PonyGenerator do
 
     use \"collections\"
     use \"time\"
-    use \"console_logger\"
-    #{callback_use}
 
     actor #{actor_name}
       let _env: Env
@@ -236,7 +227,7 @@ defmodule ActorSimulation.PonyGenerator do
         """
 
       {:rate, per_second, message} ->
-        interval_ns = trunc((1000.0 / per_second) * 1_000_000)
+        interval_ns = trunc(1000.0 / per_second * 1_000_000)
         msg_name = message_name(message)
 
         """
@@ -419,8 +410,6 @@ defmodule ActorSimulation.PonyGenerator do
     //
     // Implement this trait to add custom behavior!
 
-    use \"console_logger\"
-
     trait #{actor_name}Callbacks
     #{methods_str}
 
@@ -447,19 +436,11 @@ defmodule ActorSimulation.PonyGenerator do
       |> Enum.filter(fn {_name, info} -> info.type == :simulated end)
       |> Enum.map(fn {name, info} -> {name, info.definition} end)
 
-    uses =
-      Enum.map(simulated_actors, fn {name, _def} ->
-        "use \"#{actor_snake_case(name)}\""
-      end)
-
     spawn_code = generate_spawn_code(simulated_actors)
 
     """
     // Generated from ActorSimulation DSL
     // Main entry point for #{project_name}
-
-    use \"console_logger\"
-    #{Enum.join(uses, "\n")}
 
     actor Main
       new create(env: Env) =>

@@ -3,9 +3,6 @@
 
 use "collections"
 use "time"
-use "console_logger"
-use "processor_callbacks"
-
 
 actor Processor
   let _env: Env

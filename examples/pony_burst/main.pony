@@ -1,10 +1,6 @@
 // Generated from ActorSimulation DSL
 // Main entry point for burst_actors
 
-use "console_logger"
-use "processor"
-use "burst_generator"
-
 actor Main
   new create(env: Env) =>
     """

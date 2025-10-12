@@ -1,13 +1,6 @@
 // Generated from ActorSimulation DSL
 // Main entry point for pipeline_actors
 
-use "console_logger"
-use "source"
-use "stage1"
-use "stage2"
-use "stage3"
-use "sink"
-
 actor Main
   new create(env: Env) =>
     """

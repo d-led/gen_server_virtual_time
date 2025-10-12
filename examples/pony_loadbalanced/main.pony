@@ -1,13 +1,6 @@
 // Generated from ActorSimulation DSL
 // Main entry point for loadbalanced_actors
 
-use "console_logger"
-use "load_balancer"
-use "server1"
-use "server2"
-use "server3"
-use "database"
-
 actor Main
   new create(env: Env) =>
     """
