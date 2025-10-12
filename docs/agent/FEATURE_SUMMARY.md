@@ -1,5 +1,7 @@
 # Feature Summary - GenServerVirtualTime v0.2.0
 
+⚠️ **HISTORICAL SNAPSHOT** - This document is from an earlier development session. See `/CHANGELOG.md` for current v0.2.0 features.
+
 ## 🎉 New Features Implemented
 
 ### 1. Process-in-the-Loop ✨
@@ -122,7 +124,7 @@ Added 11 new tests covering:
 - PlantUML sequence diagram generation
 - Timestamp tracking in virtual time
 
-**Total Tests: 37 (all passing ✅)**
+**Total Tests**: ~~37~~ **189** (all passing ✅) - Updated count from v0.2.0 final
 
 ## API Additions
 

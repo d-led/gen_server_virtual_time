@@ -4,7 +4,8 @@ Test time-based GenServers instantly. Simulate actor systems with virtual time. 
 
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
-[![Tests](https://img.shields.io/badge/tests-63%20passing-brightgreen)]()
+[![CI](https://github.com/d-led/gen_server_virtual_time/workflows/CI/badge.svg)](https://github.com/d-led/gen_server_virtual_time/actions)
+[![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
 
 > **🎬 [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/examples/)** • 
 > **📊 [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/examples/reports/)** (NEW!)

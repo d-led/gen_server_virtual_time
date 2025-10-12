@@ -7,7 +7,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-10-12
+
 ### Added
+
+#### Code Generators
+- **CAF (C++ Actor Framework) Generator** - Generate production-ready C++ actor code
+  - Full actor implementation with message passing
+  - CMake build system with Conan dependency management
+  - GitHub Actions CI/CD pipeline included
+  - Callback-based architecture for custom behavior
+  - Comprehensive test generation
+  - Examples: pipeline, pubsub, burst, loadbalanced
+
+- **Pony Generator** - Generate code for the Pony actor language
+  - Type-safe actor implementations with capabilities
+  - Corral package management integration
+  - GitHub Actions CI/CD pipeline
+  - Callback trait system for extensibility
+  - Unit test generation
+  - Examples: pipeline, pubsub, burst, loadbalanced
+
+- **Phony (Go) Generator** - Generate Go actor code using the Phony library
+  - Lightweight actor implementation
+  - Go modules and dependency management
+  - GitHub Actions CI/CD pipeline
+  - Interface-based callback system
+  - Test generation with actor validation
+  - Examples: pipeline, pubsub, burst, loadbalanced
+
+- **Vlingo Generator** - Generate Java actor code using Vlingo/Platform
+  - Protocol-based actor interfaces
+  - Maven build system (pom.xml)
+  - Callback-based extensibility
+  - JUnit test generation
+  - GitHub Actions CI/CD pipeline
+  - Example: loadbalanced system
+
+- **Generator Utilities Module** - Common utilities for all code generators
+  - File writing with directory creation
+  - Indentation helpers
+  - Callback template generation
+  - Shared code generation patterns
+
+- **Mermaid Report Generator** - Dedicated module for Mermaid diagram generation
+  - Flowchart-style actor interaction reports
+  - Message flow visualization
+  - Statistics integration
+  - HTML export with embedded diagrams
+
+#### Enhanced GenServer Support
+- **`handle_continue/2` Support** - Full support for GenServer continuation callbacks
+  - Virtual time-aware continue handling
+  - Proper sequencing with other callbacks
+  - Test coverage for continue patterns
+
+- **Call Timeout Support** - Proper handling of GenServer call timeouts
+  - Virtual time-based timeout simulation
+  - Timeout error propagation
+  - Test coverage for timeout scenarios
+
+- **Complete GenServer Callbacks** - All standard GenServer callbacks now supported
+  - `init/1`, `handle_call/3`, `handle_cast/2`, `handle_info/2`
+  - `handle_continue/2`, `terminate/2`, `code_change/3`
+  - `format_status/1` and `format_status/2`
+  - Full compatibility with standard GenServer behavior
+
+#### Testing & Quality
+- **Extensive Generator Tests** - Comprehensive test suites for all generators
+  - Output validation for each generator
+  - Deterministic generation tests
+  - Build system verification
+  - Example generation scripts
+
+- **GenServer Feature Tests** - New test files for GenServer capabilities
+  - `genserver_callbacks_test.exs` - All callback types
+  - `genserver_call_timeout_test.exs` - Timeout handling
+  - `handle_continue_test.exs` - Continue callback patterns
+  - `ridiculous_time_test.exs` - Extreme time scale testing
+
+- **Simulation Testing** - Enhanced simulation test coverage
+  - `simulation_timing_test.exs` - Timing accuracy verification
+  - `termination_indicator_test.exs` - Termination condition testing
+  - `show_me_code_examples_test.exs` - Documentation example validation
+
+#### Examples & Documentation
+- **Single-File Generator Examples** - Quick-start examples for each generator
+  - `single_file_caf.exs` - CAF generation demo
+  - `single_file_pony.exs` - Pony generation demo
+  - `single_file_phony.exs` - Phony generation demo
+  - `single_file_omnetpp.exs` - OMNeT++ generation demo
+
+- **Multiple Example Projects** - 16 complete example projects generated
+  - 4 CAF examples (pipeline, pubsub, burst, loadbalanced)
+  - 4 Pony examples (pipeline, pubsub, burst, loadbalanced)
+  - 4 Phony examples (pipeline, pubsub, burst, loadbalanced)
+  - 4 OMNeT++ examples (pipeline, pubsub, burst, loadbalanced)
+
+- **Generator Documentation** - Comprehensive documentation for all generators
+  - `docs/caf_generator.md` - CAF generator guide
+  - `docs/pony_generator.md` - Pony generator guide
+  - `docs/phony_generator.md` - Phony generator guide
+  - `docs/vlingo_generator.md` - Vlingo generator guide
+  - `docs/generators.md` - Overview of all generators
+
+- **Mix Task for Pre-commit** - `mix precommit` task for code quality checks
+  - Format, compile, test, dialyzer, credo
+  - Automated quality gate for development
+
+#### Features from Previous Unreleased
 - **Termination Conditions** - Simulations can now terminate based on actor state rather than fixed time
   - New `terminate_when` option for `ActorSimulation.run/2`
   - New `collect_current_stats/1` function for checking state during simulation
@@ -30,7 +138,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Diagram Generation in Tests** - Auto-generate viewable HTML files
   - Self-contained HTML with CDN-based Mermaid.js
   - PlantUML diagrams via PlantUML server
-  - Index page to browse all diagrams
   - Stored in `test/output/` for visual progress tracking
 
 ### Changed
@@ -38,6 +145,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Quick start examples come first
   - API reference moved after practical examples
   - All examples tested in `test/documentation_test.exs`
+  - Added comprehensive generator documentation
+
+- **README** - Significantly restructured and expanded
+  - Better organization of features
+  - Code generator section added
+  - More practical examples upfront
+  - Clearer getting started guide
+
+- **CI/CD Pipeline** - Enhanced GitHub Actions workflows
+  - Added Pony validation workflow
+  - Added Phony validation workflow
+  - Optimized Dialyzer caching
+  - Better error handling and retries
+
+- **License** - Updated to include full MIT license text
+
+### Fixed
+- **Dialyzer Warnings** - Resolved type specification issues
+- **Flaky Tests** - Fixed non-deterministic test failures
+- **Generator Output** - Cleaned up trailing whitespace in generated code
+- **Pony CI** - Improved PATH handling and added retries for reliability
+- **Phony Generator** - Updated to latest version and optimized imports
+- **Vlingo Generator** - Fixed various generation issues
 
 ## [0.1.0] - 2025-10-11
 
@@ -64,5 +194,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ~6,000 virtual events processed per real second
 - Deterministic, reproducible test results
 
-[Unreleased]: https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/d-led/gen_server_virtual_time/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/d-led/gen_server_virtual_time/releases/tag/v0.1.0
