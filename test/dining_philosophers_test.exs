@@ -104,7 +104,9 @@ defmodule DiningPhilosophersTest do
       File.mkdir_p!("generated/examples")
       File.write!("generated/examples/dining_philosophers_2.html", html)
 
-      IO.puts("\n🍴 Generated 2 Philosophers diagram: generated/examples/dining_philosophers_2.html")
+      IO.puts(
+        "\n🍴 Generated 2 Philosophers diagram: generated/examples/dining_philosophers_2.html"
+      )
 
       # Verify content
       assert String.contains?(mermaid, "philosopher_0")
@@ -139,7 +141,9 @@ defmodule DiningPhilosophersTest do
       File.mkdir_p!("generated/examples")
       File.write!("generated/examples/dining_philosophers_3.html", html)
 
-      IO.puts("\n🍴 Generated 3 Philosophers diagram: generated/examples/dining_philosophers_3.html")
+      IO.puts(
+        "\n🍴 Generated 3 Philosophers diagram: generated/examples/dining_philosophers_3.html"
+      )
 
       # Verify content
       assert String.contains?(mermaid, "philosopher_")
@@ -174,7 +178,9 @@ defmodule DiningPhilosophersTest do
       File.mkdir_p!("generated/examples")
       File.write!("generated/examples/dining_philosophers_5.html", html)
 
-      IO.puts("\n🍴 Generated 5 Philosophers diagram: generated/examples/dining_philosophers_5.html")
+      IO.puts(
+        "\n🍴 Generated 5 Philosophers diagram: generated/examples/dining_philosophers_5.html"
+      )
 
       # Verify we have all 5 philosophers and forks
       assert String.contains?(mermaid, "philosopher_0")
