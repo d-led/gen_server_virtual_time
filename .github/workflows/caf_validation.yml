@@ -33,9 +33,7 @@ jobs:
         fi
 
     - name: Install Conan
-      uses: conan-io/setup-conan@v2
-      with:
-        version: latest
+      uses: conan-io/setup-conan@v1
 
     - name: Configure Conan profile
       run: |
@@ -108,9 +106,7 @@ jobs:
         sudo apt-get install -y build-essential cmake
 
     - name: Install Conan
-      uses: conan-io/setup-conan@v2
-      with:
-        version: latest
+      uses: conan-io/setup-conan@v1
 
     - name: Configure Conan profile
       run: |
