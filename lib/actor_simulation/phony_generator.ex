@@ -148,11 +148,11 @@ defmodule ActorSimulation.PhonyGenerator do
 
     timer_setup = generate_timer_setup(definition)
     message_handlers = generate_message_handlers(name, definition, enable_callbacks)
-    
+
     # Determine which imports are needed
     needs_time = definition.send_pattern != nil
     needs_fmt = enable_callbacks && definition.send_pattern != nil
-    
+
     imports = ["\"github.com/Arceliar/phony\""]
     imports = if needs_fmt, do: ["\"fmt\"" | imports], else: imports
     imports = if needs_time, do: ["\"time\"" | imports], else: imports
