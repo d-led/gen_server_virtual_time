@@ -203,7 +203,7 @@ defmodule DocumentationTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "Mermaid generation" do
+    test "Mermaid generation with enhanced features" do
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:client,

@@ -213,7 +213,7 @@ defmodule ProcessInLoopTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "generates Mermaid sequence diagram" do
+    test "generates Mermaid sequence diagram with enhanced features" do
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:alice,

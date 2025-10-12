@@ -383,11 +383,13 @@ defmodule ActorSimulation.PonyGenerator do
     impl_methods =
       Enum.map(messages, fn msg ->
         msg_name = message_name(msg)
+        # If actor has send_pattern, it's the sender (publisher)
+        action = if definition.send_pattern, do: "Sending", else: "Received"
 
         """
           fun ref on_#{msg_name}() =>
             // TODO: Implement custom behavior for #{msg}
-            _logger.log("#{actor_name}: Received #{msg} message")
+            _logger.log("#{actor_name}: #{action} #{msg} message")
         """
       end)
 

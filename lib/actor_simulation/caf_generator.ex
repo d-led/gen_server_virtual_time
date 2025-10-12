@@ -388,12 +388,14 @@ defmodule ActorSimulation.CAFGenerator do
     methods =
       Enum.map(messages, fn msg ->
         msg_name = message_name(msg)
+        # If actor has send_pattern, it's the sender (publisher)
+        action = if definition.send_pattern, do: "Sending", else: "Received"
 
         """
         void #{class_name}::on_#{msg_name}() {
           // TODO: Implement custom behavior for #{msg}
-          // This is called when the actor receives a #{msg} message
-          std::cout << "#{name}: Received #{msg} message" << std::endl;
+          // This is called when the actor #{String.downcase(action)}s a #{msg} message
+          std::cout << "#{name}: #{action} #{msg} message" << std::endl;
         }
         """
       end)

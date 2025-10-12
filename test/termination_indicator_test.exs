@@ -164,5 +164,84 @@ defmodule TerminationIndicatorTest do
 
       ActorSimulation.stop(simulation)
     end
+
+    test "3 dining philosophers - all fed successfully" do
+      simulation =
+        DiningPhilosophers.create_simulation(
+          num_philosophers: 3,
+          think_time: 100,
+          eat_time: 50,
+          trace: true
+        )
+        |> ActorSimulation.run(duration: 3000)
+
+      # Verify all 3 philosophers ate (said "I'm full!")
+      trace = simulation.trace
+
+      philosophers_who_ate =
+        Enum.filter(0..2, fn i ->
+          name = :"philosopher_#{i}"
+
+          Enum.any?(trace, fn event ->
+            event.from == name and event.to == name and
+              event.message == {:mumble, "I'm full!"}
+          end)
+        end)
+
+      assert length(philosophers_who_ate) == 3,
+             "Expected all 3 philosophers to eat, but only #{inspect(philosophers_who_ate)} ate"
+
+      mermaid =
+        ActorSimulation.trace_to_mermaid(simulation,
+          enhanced: true,
+          timestamps: true,
+          show_termination: false
+        )
+
+      # Save to file for visual verification
+      File.mkdir_p!("generated/examples")
+
+      html = """
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>3 Dining Philosophers - Condition Terminated</title>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+        <style>
+          body { font-family: system-ui; max-width: 1600px; margin: 40px auto; padding: 20px; }
+          .mermaid { background: white; padding: 40px; border-radius: 8px; }
+          .info { background: #d1fae5; padding: 20px; border-left: 4px solid #10b981; margin-bottom: 20px; border-radius: 4px; }
+        </style>
+      </head>
+      <body>
+        <h1>🍴 3 Philosophers - All Fed Successfully</h1>
+        <div class="info">
+          <strong>✅ Success!</strong><br>
+          All 3 philosophers successfully ate at least once during the simulation.<br>
+          Look for each philosopher's <strong>"I'm full!"</strong> message in the diagram below!
+        </div>
+        <div class="mermaid">
+      #{mermaid}
+        </div>
+        <script>
+          mermaid.initialize({ startOnLoad: true, theme: 'default',
+            sequence: { mirrorActors: true, messageMargin: 35 }
+          });
+        </script>
+      </body>
+      </html>
+      """
+
+      File.write!("generated/examples/dining_philosophers_3_condition_terminated.html", html)
+
+      IO.puts(
+        "\n✅ Generated 3-philosopher condition-terminated diagram: generated/examples/dining_philosophers_3_condition_terminated.html"
+      )
+
+      IO.puts("   All 3 philosophers successfully ate - check the diagram!")
+
+      ActorSimulation.stop(simulation)
+    end
   end
 end
