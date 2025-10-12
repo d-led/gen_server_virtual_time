@@ -793,19 +793,19 @@ defmodule ActorSimulation.MermaidReportGenerator do
     else
       # Add styling to legend nodes to match the main diagram
       legend_styles = []
-      
+
       legend_styles = if Map.get(actor_types, :source) do
         legend_styles ++ ["style legend_source fill:#e8f5e9,stroke:#388e3c"]
       else
         legend_styles
       end
-      
+
       legend_styles = if Map.get(actor_types, :processor) do
         legend_styles ++ ["style legend_processor fill:#e8f5e9,stroke:#388e3c"]
       else
         legend_styles
       end
-      
+
       legend_styles = if Map.get(actor_types, :sink) do
         legend_styles ++ ["style legend_sink fill:#e8f5e9,stroke:#388e3c"]
       else
@@ -813,16 +813,17 @@ defmodule ActorSimulation.MermaidReportGenerator do
       end
 
       mermaid_legend = """
-      flowchart LR
+      flowchart TD
           #{Enum.join(legend_nodes, "\n    ")}
           #{Enum.join(legend_styles, "\n    ")}
       """
 
       """
+      <hr style="margin: 30px 0 20px 0; border: none; border-top: 1px solid #e9ecef;">
       <div style="margin-top: 20px;">
         <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
         <div style="display: flex; justify-content: center; overflow-x: auto;">
-          <div class="mermaid" style="min-width: auto; max-height: 120px;">
+          <div class="mermaid" style="min-width: auto; height: auto; overflow: visible;">
       #{mermaid_legend}
           </div>
         </div>
