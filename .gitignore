@@ -8,7 +8,34 @@
 /deps/
 
 # Where third-party dependencies like ExDoc output generated docs.
-/doc/
+# Ignore ExDoc generated files but keep examples for GitHub Pages
+/doc/*.html
+/doc/*.epub
+/doc/dist/
+/doc/ActorSimulation*.html
+/doc/DiningPhilosophers.html
+/doc/GenServerVirtualTime*.html
+/doc/Mix.*.html
+/doc/RealTimeBackend.html
+/doc/TimeBackend.html
+/doc/VirtualClock.html
+/doc/VirtualTimeBackend.html
+/doc/VirtualTimeGenServer.html
+/doc/api-reference.html
+/doc/caf_generator.html
+/doc/generators.html
+/doc/implementation_summary.html
+/doc/omnetpp_generator.html
+/doc/phony_generator.html
+/doc/pony_generator.html
+/doc/readme.html
+/doc/search.html
+/doc/vlingo_generator.html
+/doc/404.html
+
+# But DO track GitHub Pages examples
+!/doc/examples/
+!/doc/index.html
 
 # Ignore .fetch files in case you like to edit your project deps locally.
 /.fetch

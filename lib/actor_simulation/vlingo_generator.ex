@@ -760,9 +760,10 @@ defmodule ActorSimulation.VlingoGenerator do
 
   defp format_constructor_params(callback_param, target_param) do
     # Remove leading commas and trim
-    params = (callback_param <> target_param)
-    |> String.replace(~r/^,\s*/, "")
-    |> String.trim()
+    params =
+      (callback_param <> target_param)
+      |> String.replace(~r/^,\s*/, "")
+      |> String.trim()
 
     params
   end

@@ -23,7 +23,7 @@ defmodule ActorSimulation do
       IO.inspect(stats)
   """
 
-  alias ActorSimulation.{Actor, Definition, Stats}
+  alias ActorSimulation.{Actor, Definition, Stats, MermaidReportGenerator}
 
   defstruct [
     :clock,
@@ -238,19 +238,23 @@ defmodule ActorSimulation do
     end_time = System.monotonic_time(:millisecond)
     real_elapsed = end_time - start_time
 
-    # Collect statistics and trace
-    stats = collect_stats(simulation)
-    trace = if simulation.trace_enabled, do: collect_trace(), else: []
-
     # Mark if terminated early due to condition
     terminated_early = terminate_when != nil && actual_duration < duration
 
-    # Return enhanced simulation state with timing information
-    %{simulation | stats: stats, trace: trace, running: false}
+    # Update simulation with timing info before collecting stats
+    # (stats need actual_duration for rate calculations)
+    simulation_with_timing = simulation
     |> Map.put(:actual_duration, actual_duration)
     |> Map.put(:max_duration, duration)
     |> Map.put(:terminated_early, terminated_early)
     |> Map.put(:real_time_elapsed, real_elapsed)
+
+    # Collect statistics and trace (now that actual_duration is set)
+    stats = collect_stats(simulation_with_timing)
+    trace = if simulation.trace_enabled, do: collect_trace(), else: []
+
+    # Return enhanced simulation state with timing information
+    %{simulation_with_timing | stats: stats, trace: trace, running: false}
   end
 
   @doc """
@@ -433,6 +437,63 @@ defmodule ActorSimulation do
   end
 
   @doc """
+  Generates a Mermaid flowchart report showing actor topology and statistics.
+
+  This creates a visual report with:
+  - Actor topology as a flowchart
+  - Statistics embedded in nodes (message counts, rates)
+  - Activity-based styling (color coding by traffic)
+  - Complete HTML page with stats table
+
+  ## Options
+
+  - `:title` - Report title (default: "Simulation Report")
+  - `:show_stats_on_nodes` - Show stats on nodes (default: true)
+  - `:show_message_labels` - Show message types on edges (default: true)
+  - `:layout` - Direction: "TB", "LR", "RL", "BT" (default: "TB")
+  - `:style_by_activity` - Color by activity level (default: true)
+
+  ## Example
+
+      simulation = ActorSimulation.new()
+        |> add_actor(:producer, send_pattern: {:periodic, 100, :data}, targets: [:consumer])
+        |> add_actor(:consumer)
+        |> run(duration: 1000)
+
+      html = ActorSimulation.generate_flowchart_report(simulation,
+        title: "My System",
+        layout: "LR")
+
+      File.write!("report.html", html)
+
+  Based on [Mermaid Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html)
+  """
+  def generate_flowchart_report(simulation, opts \\ []) do
+    MermaidReportGenerator.generate_report(simulation, opts)
+  end
+
+  @doc """
+  Writes a flowchart report directly to a file.
+
+  Same options as `generate_flowchart_report/2`.
+
+  ## Example
+
+      simulation = ActorSimulation.new()
+        |> add_actor(:source, send_pattern: {:periodic, 100, :msg}, targets: [:sink])
+        |> add_actor(:sink)
+        |> run(duration: 500)
+
+      {:ok, path} = ActorSimulation.write_flowchart_report(
+        simulation,
+        "my_report.html",
+        title: "Production System")
+  """
+  def write_flowchart_report(simulation, filename, opts \\ []) do
+    MermaidReportGenerator.write_report(simulation, filename, opts)
+  end
+
+  @doc """
   Stops the simulation and cleans up resources.
   """
   def stop(simulation) do
@@ -481,7 +542,10 @@ defmodule ActorSimulation do
   end
 
   defp collect_stats(simulation) do
-    Enum.reduce(simulation.actors, simulation.stats, fn {name, actor_info}, stats ->
+    # Get the actual duration that was simulated
+    actual_duration = Map.get(simulation, :actual_duration, 0)
+    
+    stats = Enum.reduce(simulation.actors, simulation.stats, fn {name, actor_info}, stats ->
       case actor_info.type do
         :simulated ->
           actor_stats = Actor.get_stats(actor_info.pid)
@@ -498,6 +562,9 @@ defmodule ActorSimulation do
           })
       end
     end)
+    
+    # Set the time range for rate calculations
+    %{stats | start_time: 0, end_time: actual_duration}
   end
 
   defp collect_trace do
