@@ -108,16 +108,34 @@ VG.write_to_directory(files, "vlingo_output/")
 # cd vlingo_output && mvn test
 ```
 
-**Pony & Phony (Go):**
+**Pony (Capabilities-Secure Actors):**
 
 ```elixir
-alias ActorSimulation.{PonyGenerator, PhonyGenerator}
+alias ActorSimulation.PonyGenerator, as: PG
 
-# Pony: Capabilities-secure actors
-{:ok, files} = PonyGenerator.generate(simulation, project_name: "pubsub")
+# Generate Pony actor system
+{:ok, files} = PG.generate(simulation, 
+  project_name: "pubsub",
+  enable_callbacks: true)
+PG.write_to_directory(files, "pony_output/")
 
-# Phony: Go actors with zero-allocation messaging
-{:ok, files} = PhonyGenerator.generate(simulation, project_name: "pubsub")
+# Then build and test:
+# cd pony_output && make test
+```
+
+**Phony (Go Actors):**
+
+```elixir
+alias ActorSimulation.PhonyGenerator, as: PHG
+
+# Generate Go actor system with Phony
+{:ok, files} = PHG.generate(simulation,
+  project_name: "pubsub",
+  enable_callbacks: true)
+PHG.write_to_directory(files, "phony_output/")
+
+# Then build and test:
+# cd phony_output && go test ./...
 ```
 
 Customize WITHOUT touching generated code:
