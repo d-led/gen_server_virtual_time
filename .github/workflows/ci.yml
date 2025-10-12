@@ -252,7 +252,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sequence-diagrams
-          path: test/output/*.html
+          path: generated/examples/*.html
       
       - name: Upload documentation
         uses: actions/upload-artifact@v4
