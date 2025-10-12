@@ -41,19 +41,19 @@ end
 ### Simulate message-passing systems
 
 ```elixir
-alias ActorSimulation, as: Sim
+import ActorSimulation
 
 # Pipeline: producer → consumer
-simulation = Sim.new(trace: true)
-|> Sim.add_actor(:producer, 
+simulation = new(trace: true)
+|> add_actor(:producer, 
     send_pattern: {:rate, 100, :data},  # 100 msgs/sec
     targets: [:consumer])
-|> Sim.add_actor(:consumer,
+|> add_actor(:consumer,
     on_receive: fn :data, s -> {:ok, %{s | count: s.count + 1}} end,
     initial_state: %{count: 0})
-|> Sim.run(duration: 10_000)  # 10s virtual in milliseconds
+|> run(duration: 10_000)  # 10s virtual in milliseconds
 
-stats = Sim.get_stats(simulation)
+stats = get_stats(simulation)
 # producer sent ~1000, consumer received ~1000
 ```
 
@@ -62,47 +62,40 @@ stats = Sim.get_stats(simulation)
 **OMNeT++ Network Simulations:**
 
 ```elixir
-alias ActorSimulation, as: Sim
-alias ActorSimulation.OMNeTPPGenerator, as: OG
-
-simulation = Sim.new()
-|> Sim.add_actor(:publisher, 
+simulation = ActorSimulation.new()
+|> ActorSimulation.add_actor(:publisher, 
     send_pattern: {:periodic, 100, :event},
     targets: [:sub1, :sub2, :sub3])
-|> Sim.add_actor(:sub1)
-|> Sim.add_actor(:sub2)
-|> Sim.add_actor(:sub3)
+|> ActorSimulation.add_actor(:sub1)
+|> ActorSimulation.add_actor(:sub2)
+|> ActorSimulation.add_actor(:sub3)
 
 # Generate complete OMNeT++ C++ project
-{:ok, files} = OG.generate(simulation, 
+{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation, 
   network_name: "PubSub", 
   sim_time_limit: 10)
-OG.write_to_directory(files, "omnetpp_output/")
+ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_output/")
 ```
 
 **C++ Actor Framework (CAF) with Callbacks:**
 
 ```elixir
-alias ActorSimulation.CAFGenerator, as: CG
-
 # Generate CAF project with callback interfaces
-{:ok, files} = CG.generate(simulation,
+{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
   project_name: "PubSubActors",
   enable_callbacks: true)
-CG.write_to_directory(files, "caf_output/")
+ActorSimulation.CAFGenerator.write_to_directory(files, "caf_output/")
 ```
 
 **VLINGO XOOM Actors (Java):**
 
 ```elixir
-alias ActorSimulation.VlingoGenerator, as: VG
-
 # Generate type-safe Java actor system
-{:ok, files} = VG.generate(simulation,
+{:ok, files} = ActorSimulation.VlingoGenerator.generate(simulation,
   project_name: "pubsub-actors",
   group_id: "com.example",
   enable_callbacks: true)
-VG.write_to_directory(files, "vlingo_output/")
+ActorSimulation.VlingoGenerator.write_to_directory(files, "vlingo_output/")
 
 # Then build and test with Maven:
 # cd vlingo_output && mvn test
@@ -111,13 +104,11 @@ VG.write_to_directory(files, "vlingo_output/")
 **Pony (Capabilities-Secure Actors):**
 
 ```elixir
-alias ActorSimulation.PonyGenerator, as: PG
-
 # Generate Pony actor system
-{:ok, files} = PG.generate(simulation, 
+{:ok, files} = ActorSimulation.PonyGenerator.generate(simulation, 
   project_name: "pubsub",
   enable_callbacks: true)
-PG.write_to_directory(files, "pony_output/")
+ActorSimulation.PonyGenerator.write_to_directory(files, "pony_output/")
 
 # Then build and test:
 # cd pony_output && make test
@@ -126,13 +117,11 @@ PG.write_to_directory(files, "pony_output/")
 **Phony (Go Actors):**
 
 ```elixir
-alias ActorSimulation.PhonyGenerator, as: PHG
-
 # Generate Go actor system with Phony
-{:ok, files} = PHG.generate(simulation,
+{:ok, files} = ActorSimulation.PhonyGenerator.generate(simulation,
   project_name: "pubsub",
   enable_callbacks: true)
-PHG.write_to_directory(files, "phony_output/")
+ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_output/")
 
 # Then build and test:
 # cd phony_output && go test ./...
@@ -159,20 +148,49 @@ public void onEvent() {
 ### Visualize with sequence diagrams
 
 ```elixir
-alias ActorSimulation, as: Sim
-
-simulation = Sim.new(trace: true)
-|> Sim.add_actor(:client, 
+simulation = ActorSimulation.new(trace: true)
+|> ActorSimulation.add_actor(:client, 
     send_pattern: {:periodic, 100, :ping},
     targets: [:server])
-|> Sim.add_actor(:server,
+|> ActorSimulation.add_actor(:server,
     on_match: [{:ping, fn s -> {:reply, :pong, s} end}])
-|> Sim.run(duration: 1000)
+|> ActorSimulation.run(duration: 1000)
 
-# Generate Mermaid diagram
-mermaid = Sim.trace_to_mermaid(simulation, enhanced: true)
-File.write!("diagram.html", Sim.wrap_mermaid_html(mermaid))
+# Generate Mermaid sequence diagram
+mermaid = ActorSimulation.trace_to_mermaid(simulation, enhanced: true)
+File.write!("diagram.html", ActorSimulation.wrap_mermaid_html(mermaid))
 # Open in browser to see message flows!
+```
+
+### Generate flowchart reports with statistics
+
+```elixir
+simulation = ActorSimulation.new()
+|> ActorSimulation.add_actor(:producer,
+    send_pattern: {:rate, 100, :data},
+    targets: [:stage1, :stage2])
+|> ActorSimulation.add_actor(:stage1,
+    on_receive: fn msg, s -> {:send, [{:sink, msg}], s} end)
+|> ActorSimulation.add_actor(:stage2,
+    on_receive: fn msg, s -> {:send, [{:sink, msg}], s} end)
+|> ActorSimulation.add_actor(:sink)
+|> ActorSimulation.run(duration: 5000)
+
+# Generate flowchart with embedded statistics
+html = ActorSimulation.generate_flowchart_report(simulation,
+  title: "Pipeline System",
+  layout: "TB",           # Top-to-bottom (or "LR", "RL", "BT")
+  show_stats_on_nodes: true,
+  style_by_activity: true  # Color-code by message activity
+)
+
+File.write!("report.html", html)
+# Open in browser to see:
+# • Actor topology as Mermaid flowchart
+# • Message counts and rates on nodes
+# • Activity-based color coding
+# • Detailed statistics table
+# • Virtual time speedup metrics
 ```
 
 ## Installation
@@ -231,15 +249,15 @@ use VirtualTimeGenServer
 VirtualTimeGenServer.set_virtual_clock(clock)
 VirtualTimeGenServer.send_after(pid, msg, delay)
 
-# Actor Simulation (use aliases!)
-alias ActorSimulation, as: Sim
+# Actor Simulation (import for clean DSL)
+import ActorSimulation
 
-Sim.new(trace: true)
-|> Sim.add_actor(name, opts)
-|> Sim.add_process(name, module: M, args: args)  # Real GenServer!
-|> Sim.run(duration: ms)
-|> Sim.get_stats()
-|> Sim.trace_to_mermaid()
+new(trace: true)
+|> add_actor(name, opts)
+|> add_process(name, module: M, args: args)  # Real GenServer!
+|> run(duration: ms)
+|> get_stats()
+|> trace_to_mermaid()
 ```
 
 ### Send Patterns
@@ -273,46 +291,40 @@ end
 ### Request-Response Pattern
 
 ```elixir
-alias ActorSimulation, as: Sim
-
-Sim.new()
-|> Sim.add_actor(:client,
+ActorSimulation.new()
+|> ActorSimulation.add_actor(:client,
     send_pattern: {:periodic, 100, :get_data},
     targets: [:server])
-|> Sim.add_actor(:server,
+|> ActorSimulation.add_actor(:server,
     on_match: [
       {:get_data, fn s -> {:reply, {:data, 42}, s} end},
       {:save, fn s -> {:reply, :saved, %{s | saved: true}} end}
     ])
-|> Sim.run(duration: 1000)
+|> ActorSimulation.run(duration: 1000)
 ```
 
 ### Pipeline Architecture
 
 ```elixir
-alias ActorSimulation, as: Sim
-
 forward = fn msg, s -> {:send, [{s.next, msg}], s} end
 
-Sim.new()
-|> Sim.add_actor(:input, 
+ActorSimulation.new()
+|> ActorSimulation.add_actor(:input, 
     send_pattern: {:rate, 50, :data},
     targets: [:stage1])
-|> Sim.add_actor(:stage1,
+|> ActorSimulation.add_actor(:stage1,
     on_receive: forward,
     initial_state: %{next: :stage2})
-|> Sim.add_actor(:stage2,
+|> ActorSimulation.add_actor(:stage2,
     on_receive: forward,
     initial_state: %{next: :output})
-|> Sim.add_actor(:output)
-|> Sim.run(duration: 10_000)
+|> ActorSimulation.add_actor(:output)
+|> ActorSimulation.run(duration: 10_000)
 ```
 
 ### Process-in-the-Loop (Mix Real & Simulated)
 
 ```elixir
-alias ActorSimulation, as: Sim
-
 defmodule MyRealServer do
   use VirtualTimeGenServer
   
@@ -322,13 +334,13 @@ defmodule MyRealServer do
 end
 
 # Test real GenServer alongside simulated actors
-Sim.new()
-|> Sim.add_process(:real_server,           # ← Real GenServer
+ActorSimulation.new()
+|> ActorSimulation.add_process(:real_server,           # ← Real GenServer
     module: MyRealServer, args: nil)
-|> Sim.add_actor(:client,                  # ← Simulated actor
+|> ActorSimulation.add_actor(:client,                  # ← Simulated actor
     send_pattern: {:periodic, 100, {:call, :get}},
     targets: [:real_server])
-|> Sim.run(duration: 1000)
+|> ActorSimulation.run(duration: 1000)
 ```
 
 Similar to hardware-in-the-loop testing, but for processes.
