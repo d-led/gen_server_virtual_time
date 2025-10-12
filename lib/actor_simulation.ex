@@ -243,11 +243,12 @@ defmodule ActorSimulation do
 
     # Update simulation with timing info before collecting stats
     # (stats need actual_duration for rate calculations)
-    simulation_with_timing = simulation
-    |> Map.put(:actual_duration, actual_duration)
-    |> Map.put(:max_duration, duration)
-    |> Map.put(:terminated_early, terminated_early)
-    |> Map.put(:real_time_elapsed, real_elapsed)
+    simulation_with_timing =
+      simulation
+      |> Map.put(:actual_duration, actual_duration)
+      |> Map.put(:max_duration, duration)
+      |> Map.put(:terminated_early, terminated_early)
+      |> Map.put(:real_time_elapsed, real_elapsed)
 
     # Collect statistics and trace (now that actual_duration is set)
     stats = collect_stats(simulation_with_timing)
@@ -544,25 +545,26 @@ defmodule ActorSimulation do
   defp collect_stats(simulation) do
     # Get the actual duration that was simulated
     actual_duration = Map.get(simulation, :actual_duration, 0)
-    
-    stats = Enum.reduce(simulation.actors, simulation.stats, fn {name, actor_info}, stats ->
-      case actor_info.type do
-        :simulated ->
-          actor_stats = Actor.get_stats(actor_info.pid)
-          Stats.add_actor_stats(stats, name, actor_stats)
 
-        :real_process ->
-          # For real processes, we can't easily get stats unless they implement a stats protocol
-          # For now, add empty stats
-          Stats.add_actor_stats(stats, name, %{
-            sent_count: 0,
-            received_count: 0,
-            sent_messages: [],
-            received_messages: []
-          })
-      end
-    end)
-    
+    stats =
+      Enum.reduce(simulation.actors, simulation.stats, fn {name, actor_info}, stats ->
+        case actor_info.type do
+          :simulated ->
+            actor_stats = Actor.get_stats(actor_info.pid)
+            Stats.add_actor_stats(stats, name, actor_stats)
+
+          :real_process ->
+            # For real processes, we can't easily get stats unless they implement a stats protocol
+            # For now, add empty stats
+            Stats.add_actor_stats(stats, name, %{
+              sent_count: 0,
+              received_count: 0,
+              sent_messages: [],
+              received_messages: []
+            })
+        end
+      end)
+
     # Set the time range for rate calculations
     %{stats | start_time: 0, end_time: actual_duration}
   end

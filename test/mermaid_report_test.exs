@@ -268,6 +268,5 @@ defmodule MermaidReportTest do
 
       ActorSimulation.stop(simulation)
     end
-
   end
 end

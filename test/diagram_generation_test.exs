@@ -219,7 +219,6 @@ defmodule DiagramGenerationTest do
     end
   end
 
-
   # Helper functions
 
   defp generate_mermaid_html(mermaid_code, title) do
