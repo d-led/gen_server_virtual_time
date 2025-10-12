@@ -72,7 +72,19 @@ jobs:
       working-directory: examples/${{ matrix.example }}/build
       shell: bash
       run: |
-        timeout 5 ./*_test --success || true
+        # Cross-platform timeout: use GNU timeout on Linux, gtimeout on macOS (via coreutils), or fallback
+        if command -v timeout &> /dev/null; then
+          timeout 5 ./*_test --success || true
+        elif command -v gtimeout &> /dev/null; then
+          gtimeout 5 ./*_test --success || true
+        else
+          # Fallback: run in background with kill after timeout
+          ./*_test --success & 
+          PID=$!
+          sleep 5
+          kill $PID 2>/dev/null || true
+          wait $PID 2>/dev/null || true
+        fi
 
   regenerate-and-validate:
     runs-on: ubuntu-latest

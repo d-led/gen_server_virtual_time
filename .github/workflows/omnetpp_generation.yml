@@ -3,6 +3,11 @@ name: OMNeT++ Code Generation Tests
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'lib/actor_simulation/omnetpp_generator.ex'
+      - 'examples/omnetpp_*/**'
+      - 'scripts/generate_omnetpp_examples.exs'
+      - '.github/workflows/omnetpp_generation.yml'
   pull_request:
     branches: [ main ]
 
@@ -281,10 +286,22 @@ jobs:
 
     - name: Run simulation
       working-directory: examples/${{ matrix.example }}/build
+      shell: bash
       run: |
         source ~/omnetpp-6.0.3/setenv
-        # Run short simulation
-        timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
+        # Run short simulation with cross-platform timeout
+        if command -v timeout &> /dev/null; then
+          timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
+        elif command -v gtimeout &> /dev/null; then
+          gtimeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
+        else
+          # Fallback: run in background with kill after timeout
+          ./${{ matrix.example }} -u Cmdenv -c General & 
+          PID=$!
+          sleep 10
+          kill $PID 2>/dev/null || true
+          wait $PID 2>/dev/null || true
+        fi
 
   regenerate-and-compile:
     name: Regenerate & Compile All OMNeT++ Examples

@@ -3,6 +3,11 @@ name: Phony (Go) Code Validation
 on:
   push:
     branches: [ main, develop ]
+    paths:
+      - 'lib/actor_simulation/phony_generator.ex'
+      - 'examples/phony_*/**'
+      - 'scripts/generate_phony_examples.exs'
+      - '.github/workflows/phony_validation.yml'
   pull_request:
     branches: [ main ]
 
@@ -45,7 +50,19 @@ jobs:
       shell: bash
       run: |
         go build -o app .
-        timeout 5 ./app || true
+        # Cross-platform timeout: use GNU timeout on Linux, gtimeout on macOS (via coreutils), or fallback
+        if command -v timeout &> /dev/null; then
+          timeout 5 ./app || true
+        elif command -v gtimeout &> /dev/null; then
+          gtimeout 5 ./app || true
+        else
+          # Fallback: run in background with kill after timeout
+          ./app & 
+          PID=$!
+          sleep 5
+          kill $PID 2>/dev/null || true
+          wait $PID 2>/dev/null || true
+        fi
 
   regenerate-and-validate:
     runs-on: ubuntu-latest

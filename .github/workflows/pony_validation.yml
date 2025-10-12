@@ -70,9 +70,21 @@ jobs:
 
     - name: Run application (with timeout)
       working-directory: examples/${{ matrix.example }}
-      run: |
-        timeout 5 ./${{ matrix.example }} || true
       shell: bash
+      run: |
+        # Cross-platform timeout: use GNU timeout on Linux, gtimeout on macOS (via coreutils), or fallback
+        if command -v timeout &> /dev/null; then
+          timeout 5 ./${{ matrix.example }} || true
+        elif command -v gtimeout &> /dev/null; then
+          gtimeout 5 ./${{ matrix.example }} || true
+        else
+          # Fallback: run in background with kill after timeout
+          ./${{ matrix.example }} & 
+          PID=$!
+          sleep 5
+          kill $PID 2>/dev/null || true
+          wait $PID 2>/dev/null || true
+        fi
 
   regenerate-and-validate:
     runs-on: ubuntu-latest
