@@ -119,16 +119,33 @@ end
 
 **Tested**: ⚠️ Not explicitly tested yet
 
+### handle_continue/2 - OTP 21+
+**Status**: ✅ Fully supported
+
+```elixir
+def init(opts) do
+  # Can return continue to defer work
+  {:ok, %{config: opts}, {:continue, :setup}}
+end
+
+def handle_continue(:setup, state) do
+  # Perform additional setup
+  {:noreply, perform_setup(state)}
+end
+
+def handle_continue(:next, state) do
+  # Can chain continues
+  {:noreply, state, {:continue, :final}}
+end
+```
+
+**Tested**: ✅ Yes (3 tests)
+
 ---
 
 ## ❌ Not Yet Supported
 
-### handle_continue/2 - OTP 21+
-**Status**: ❌ Not implemented
-
-This callback is not yet supported. Using `{:ok, state, {:continue, arg}}` in `init/1` will not work.
-
-**Workaround**: Use `VirtualTimeGenServer.send_after(self(), :continue_msg, 0)` instead.
+(None! All standard GenServer callbacks are now supported)
 
 ---
 

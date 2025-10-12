@@ -6,6 +6,7 @@ defmodule VirtualTimeGenServer.Wrapper do
     case init_fun.() do
       {:ok, {^module, state}} -> {:ok, {module, state}}
       {:ok, {^module, state}, timeout} -> {:ok, {module, state}, timeout}
+      {:ok, {^module, state}, {:continue, arg}} -> {:ok, {module, state}, {:continue, arg}}
       other -> other
     end
   end
@@ -32,8 +33,30 @@ defmodule VirtualTimeGenServer.Wrapper do
   def handle_info(msg, {module, state}) do
     case module.handle_info(msg, state) do
       {:noreply, new_state} -> {:noreply, {module, new_state}}
+      {:noreply, new_state, {:continue, arg}} -> {:noreply, {module, new_state}, {:continue, arg}}
       {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
       {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
+    end
+  end
+
+  def handle_continue(arg, {module, state}) do
+    if function_exported?(module, :handle_continue, 2) do
+      case module.handle_continue(arg, state) do
+        {:noreply, new_state} ->
+          {:noreply, {module, new_state}}
+
+        {:noreply, new_state, {:continue, next_arg}} ->
+          {:noreply, {module, new_state}, {:continue, next_arg}}
+
+        {:noreply, new_state, timeout} ->
+          {:noreply, {module, new_state}, timeout}
+
+        {:stop, reason, new_state} ->
+          {:stop, reason, {module, new_state}}
+      end
+    else
+      # Module doesn't implement handle_continue, just continue with no-op
+      {:noreply, {module, state}}
     end
   end
 
@@ -186,6 +209,7 @@ defmodule VirtualTimeGenServer do
 
       case module.init(init_arg) do
         {:ok, state} -> {:ok, {module, state}}
+        {:ok, state, {:continue, arg}} -> {:ok, {module, state}, {:continue, arg}}
         {:ok, state, timeout} -> {:ok, {module, state}, timeout}
         :ignore -> :ignore
         {:stop, reason} -> {:stop, reason}
@@ -209,6 +233,7 @@ defmodule VirtualTimeGenServer do
 
       case module.init(init_arg) do
         {:ok, state} -> {:ok, {module, state}}
+        {:ok, state, {:continue, arg}} -> {:ok, {module, state}, {:continue, arg}}
         {:ok, state, timeout} -> {:ok, {module, state}, timeout}
         :ignore -> :ignore
         {:stop, reason} -> {:stop, reason}

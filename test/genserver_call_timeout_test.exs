@@ -1,0 +1,107 @@
+defmodule GenServerCallTimeoutTest do
+  use ExUnit.Case, async: false
+
+  defmodule SlowServer do
+    use VirtualTimeGenServer
+
+    def start_link(opts \\ []) do
+      VirtualTimeGenServer.start_link(__MODULE__, opts, [])
+    end
+
+    def init(_opts) do
+      {:ok, %{}}
+    end
+
+    def handle_call(:slow_operation, _from, state) do
+      # Simulate slow operation by delaying reply
+      VirtualTimeGenServer.send_after(self(), {:reply_delayed, :result}, 2000)
+      {:noreply, state}
+    end
+
+    def handle_call(:instant_operation, _from, state) do
+      {:reply, :instant_result, state}
+    end
+
+    def handle_info({:reply_delayed, result}, state) do
+      # This won't work - we already lost the from reference
+      {:noreply, Map.put(state, :delayed_result, result)}
+    end
+  end
+
+  describe "GenServer.call timeout (current limitation)" do
+    test "timeout uses real time (not virtual time yet)" do
+      {:ok, clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      {:ok, server} = SlowServer.start_link()
+
+      # This timeout is in REAL time, not virtual time
+      # So it will timeout in 100ms real time even if we advance virtual time
+      assert_raise RuntimeError, fn ->
+        try do
+          GenServer.call(server, :slow_operation, 100)
+        catch
+          :exit, {:timeout, _} -> raise RuntimeError, "Timeout as expected"
+        end
+      end
+
+      GenServer.stop(clock)
+    end
+
+    test "instant operations work fine" do
+      {:ok, clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      {:ok, server} = SlowServer.start_link()
+
+      result = GenServer.call(server, :instant_operation, 5000)
+      assert result == :instant_result
+
+      GenServer.stop(clock)
+    end
+  end
+
+  describe "Workaround for timeout scenarios" do
+    defmodule AsyncServer do
+      use VirtualTimeGenServer
+
+      def start_link do
+        VirtualTimeGenServer.start_link(__MODULE__, nil, [])
+      end
+
+      def init(_) do
+        {:ok, %{pending_ops: %{}}}
+      end
+
+      def handle_cast({:start_slow_op, caller}, state) do
+        # Schedule result delivery
+        VirtualTimeGenServer.send_after(self(), {:complete_op, caller}, 2000)
+        {:noreply, state}
+      end
+
+      def handle_info({:complete_op, caller}, state) do
+        # Send result back to caller
+        send(caller, {:op_result, :success})
+        {:noreply, state}
+      end
+    end
+
+    test "use async pattern for virtual time delays" do
+      {:ok, clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      {:ok, server} = AsyncServer.start_link()
+
+      # Start async operation
+      GenServer.cast(server, {:start_slow_op, self()})
+
+      # Advance virtual time
+      VirtualClock.advance(clock, 2000)
+
+      # Receive result
+      assert_receive {:op_result, :success}, 100
+
+      GenServer.stop(clock)
+    end
+  end
+end

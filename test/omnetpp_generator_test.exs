@@ -196,7 +196,7 @@ defmodule OMNeTPPGeneratorTest do
   describe "write_to_directory/2" do
     setup do
       # Use a temporary directory
-      temp_dir = Path.join([System.tmp_dir!(), "omnetpp_test_#{:rand.uniform(1000000)}"])
+      temp_dir = Path.join([System.tmp_dir!(), "omnetpp_test_#{:rand.uniform(1_000_000)}"])
       on_exit(fn -> File.rm_rf(temp_dir) end)
       {:ok, temp_dir: temp_dir}
     end

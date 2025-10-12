@@ -401,4 +401,3 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     |> Enum.join("")
   end
 end
-

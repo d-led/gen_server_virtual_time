@@ -259,6 +259,7 @@ defmodule ActorSimulation.CAFGenerator do
     handlers =
       Enum.map(messages, fn msg ->
         msg_name = message_name(msg)
+
         callback_call =
           if enable_callbacks do
             """
@@ -272,7 +273,7 @@ defmodule ActorSimulation.CAFGenerator do
 
         """
             [=](caf::atom_value msg) {
-    #{callback_call}      send_to_targets();
+        #{callback_call}      send_to_targets();
               schedule_next_send();
             }
         """
@@ -547,6 +548,7 @@ defmodule ActorSimulation.CAFGenerator do
     actors
     |> Enum.map(fn {name, _def} ->
       actor_name = actor_snake_case(name)
+
       "  auto #{actor_name} = system.spawn<#{actor_name}_actor>(std::vector<actor>{});\n  REQUIRE(#{actor_name} != nullptr);"
     end)
     |> Enum.join("\n  \n")
@@ -614,7 +616,7 @@ defmodule ActorSimulation.CAFGenerator do
     # Enable testing
     enable_testing()
     add_test(NAME #{project_name}_test COMMAND #{project_name}_test)
-    
+
     # Generate JUnit XML report for CI
     add_test(
       NAME #{project_name}_test_junit
@@ -839,4 +841,3 @@ defmodule ActorSimulation.CAFGenerator do
     "caf::atom(\"msg\")"
   end
 end
-

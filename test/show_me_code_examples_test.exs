@@ -29,12 +29,15 @@ defmodule ShowMeCodeExamplesTest do
       VirtualTimeGenServer.set_virtual_clock(clock)
 
       {:ok, server} = MyServer.start_link(%{count: 0})
-      VirtualClock.advance(clock, 10_000)  # 10s virtual, fast real
+      # 10s virtual, fast real
+      VirtualClock.advance(clock, 10_000)
 
-      Process.sleep(20)  # Let messages process
+      # Let messages process
+      Process.sleep(20)
 
       count = GenServer.call(server, :get_count)
-      assert count >= 9  # Should have ~10 work items
+      # Should have ~10 work items
+      assert count >= 9
 
       GenServer.stop(clock)
     end
@@ -42,14 +45,19 @@ defmodule ShowMeCodeExamplesTest do
     test "Actor DSL with aliases works" do
       alias ActorSimulation, as: Sim
 
-      simulation = Sim.new()
-      |> Sim.add_actor(:producer,
-          send_pattern: {:rate, 50, :data},  # 50/sec
-          targets: [:consumer])
-      |> Sim.add_actor(:consumer,
+      simulation =
+        Sim.new()
+        |> Sim.add_actor(:producer,
+          # 50/sec
+          send_pattern: {:rate, 50, :data},
+          targets: [:consumer]
+        )
+        |> Sim.add_actor(:consumer,
           on_receive: fn :data, s -> {:ok, %{s | count: s.count + 1}} end,
-          initial_state: %{count: 0})
-      |> Sim.run(duration: 5_000)  # 5 seconds
+          initial_state: %{count: 0}
+        )
+        # 5 seconds
+        |> Sim.run(duration: 5_000)
 
       stats = Sim.get_stats(simulation)
 
@@ -64,15 +72,17 @@ defmodule ShowMeCodeExamplesTest do
       alias ActorSimulation, as: S
 
       # Ultra-concise pub-sub
-      sim = S.new()
-      |> S.add_actor(:pub, send_pattern: {:periodic, 100, :event}, targets: [:sub1, :sub2])
-      |> S.add_actor(:sub1)
-      |> S.add_actor(:sub2)
-      |> S.run(duration: 500)
+      sim =
+        S.new()
+        |> S.add_actor(:pub, send_pattern: {:periodic, 100, :event}, targets: [:sub1, :sub2])
+        |> S.add_actor(:sub1)
+        |> S.add_actor(:sub2)
+        |> S.run(duration: 500)
 
       stats = S.get_stats(sim)
 
-      assert stats.actors[:pub].sent_count == 10  # 5 ticks * 2 targets
+      # 5 ticks * 2 targets
+      assert stats.actors[:pub].sent_count == 10
       assert stats.actors[:sub1].received_count == 5
       assert stats.actors[:sub2].received_count == 5
 

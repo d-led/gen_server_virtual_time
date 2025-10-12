@@ -25,12 +25,17 @@ defmodule SimulationTimingTest do
 
       # Real time info
       assert simulation.real_time_elapsed > 0
-      assert simulation.real_time_elapsed < simulation.actual_duration  # Real time << virtual time
+      # Real time << virtual time
+      assert simulation.real_time_elapsed < simulation.actual_duration
 
       IO.puts("\n📊 Timing Comparison:")
       IO.puts("  Virtual time elapsed: #{simulation.actual_duration}ms")
       IO.puts("  Real time elapsed: #{simulation.real_time_elapsed}ms")
-      IO.puts("  Speedup: #{Float.round(simulation.actual_duration / simulation.real_time_elapsed, 1)}x")
+
+      IO.puts(
+        "  Speedup: #{Float.round(simulation.actual_duration / simulation.real_time_elapsed, 1)}x"
+      )
+
       IO.puts("  Max virtual time: #{simulation.max_duration}ms")
       IO.puts("  Terminated early: #{simulation.terminated_early}")
 

@@ -162,7 +162,8 @@ defmodule GenServerCallbacksTest do
 
       # Advance past all events
       VirtualClock.advance(clock, 500)
-      Process.sleep(50)  # Give time for all messages to process
+      # Give time for all messages to process
+      Process.sleep(50)
 
       state = TestServer.get_state(server)
       # All 3 should have triggered

@@ -2,10 +2,13 @@ defmodule RidiculousTimeTest do
   use ExUnit.Case, async: false
 
   describe "Absurdly long simulations" do
+    @tag :ridiculous
     test "quarterly reports for 3 years completes in milliseconds" do
       # Actor sends quarterly reports (every 3 months)
-      three_months_ms = 90 * 24 * 60 * 60 * 1000  # ~7,776,000 ms
-      three_years_ms = 3 * 365 * 24 * 60 * 60 * 1000  # ~94,608,000 ms
+      # ~7,776,000 ms
+      three_months_ms = 90 * 24 * 60 * 60 * 1000
+      # ~94,608,000 ms
+      three_years_ms = 3 * 365 * 24 * 60 * 60 * 1000
 
       IO.puts("\n🤯 Simulating 3 YEARS of quarterly reports...")
       IO.puts("   Quarter interval: #{three_months_ms}ms (#{div(three_months_ms, 1000)} seconds)")
@@ -35,10 +38,10 @@ defmodule RidiculousTimeTest do
       expected_reports = 12
 
       assert stats.actors[:quarterly_reporter].sent_count == expected_reports,
-        "Should send #{expected_reports} quarterly reports in 3 years"
+             "Should send #{expected_reports} quarterly reports in 3 years"
 
       assert stats.actors[:manager].received_count == expected_reports,
-        "Manager should receive all #{expected_reports} reports"
+             "Manager should receive all #{expected_reports} reports"
 
       # The ridiculous part: 3 YEARS simulated in seconds!
       assert elapsed < 10_000, "3 years should simulate in under 10 seconds!"
@@ -55,9 +58,12 @@ defmodule RidiculousTimeTest do
       ActorSimulation.stop(simulation)
     end
 
+    @tag :ridiculous
     test "monthly heartbeat for a decade runs instantly" do
-      one_month_ms = 30 * 24 * 60 * 60 * 1000  # ~2,592,000 ms
-      one_decade_ms = 10 * 365 * 24 * 60 * 60 * 1000  # ~315,360,000 ms
+      # ~2,592,000 ms
+      one_month_ms = 30 * 24 * 60 * 60 * 1000
+      # ~315,360,000 ms
+      one_decade_ms = 10 * 365 * 24 * 60 * 60 * 1000
 
       IO.puts("\n🎂 Simulating a DECADE of monthly heartbeats...")
 
@@ -93,9 +99,13 @@ defmodule RidiculousTimeTest do
       ActorSimulation.stop(simulation)
     end
 
+    @tag :ridiculous
+    @tag :slow
     test "daily backup for a century (because why not)" do
-      one_day_ms = 24 * 60 * 60 * 1000  # 86,400,000 ms
-      one_century_ms = 100 * 365 * 24 * 60 * 60 * 1000  # ~3,153,600,000 ms
+      # 86,400,000 ms
+      one_day_ms = 24 * 60 * 60 * 1000
+      # ~3,153,600,000 ms
+      one_century_ms = 100 * 365 * 24 * 60 * 60 * 1000
 
       IO.puts("\n👴 Simulating a CENTURY of daily backups...")
       IO.puts("   (This is ridiculous, but proves a point!)\n")

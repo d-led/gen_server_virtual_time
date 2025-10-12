@@ -228,6 +228,7 @@ defmodule ActorSimulationTest do
   end
 
   describe "Performance - simulating long durations" do
+    @tag :slow
     test "simulates long durations much faster than real time" do
       start_time = System.monotonic_time(:millisecond)
 
