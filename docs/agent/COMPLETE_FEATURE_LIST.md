@@ -95,7 +95,6 @@ or run `mix test` to see actual test count (189 tests as of v0.2.0).
 
 ### 10. Diagram Generation
 
-
 #### Mermaid (Enhanced) ⭐ NEW
 
 - ✅ `trace_to_mermaid/2` with options

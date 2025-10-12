@@ -1,14 +1,19 @@
 # Binary Naming & CI Caching Implementation
 
-⚠️ **HISTORICAL SNAPSHOT** - Development session documenting implementation of consistent binary naming and CI caching infrastructure.
+⚠️ **HISTORICAL SNAPSHOT** - Development session documenting implementation of
+consistent binary naming and CI caching infrastructure.
 
 ## Summary
-Implemented consistent binary naming pattern `{example}.{framework}.{os}` across all generators and added comprehensive CI caching to speed up builds.
+
+Implemented consistent binary naming pattern `{example}.{framework}.{os}` across
+all generators and added comprehensive CI caching to speed up builds.
 
 ## Changes Made
 
 ### 1. Binary Naming Pattern
+
 All generated examples now produce binaries with consistent naming:
+
 - **Phony**: `pubsub_actors.phony.darwin`
 - **Pony**: `pubsub_actors.pony.darwin`
 - **CAF**: `PubSubActors.caf.darwin`
@@ -17,20 +22,24 @@ All generated examples now produce binaries with consistent naming:
 ### 2. Generators Updated
 
 #### Phony (Go)
+
 - Makefile uses OS detection for binary naming
 - CI workflow uses `cache: true` in `setup-go` action
 
 #### Pony
+
 - Makefile uses `$(DIR_NAME)` to handle ponyc naming
 - CI workflow caches Corral packages (`~/.corral`, `_corral`)
 
 #### CAF (C++)
+
 - CMake uses `set_target_properties` for binary naming
 - Version updated: 0.18.7 → 1.0.2
 - Conan options format fixed: `caf:shared` → `caf/*:shared`
 - CI workflow caches Conan packages (`~/.conan2`)
 
 #### OMNeT++
+
 - CMake uses `set_target_properties` for binary naming
 - CI workflow uses `opp_env` for installation
 - Caches OMNeT++ installation (`~/.opp_env`, `~/.cache/opp_env`)
@@ -38,14 +47,18 @@ All generated examples now produce binaries with consistent naming:
 ### 3. Test Scripts
 
 **Created:**
+
 - `scripts/test_phony_demo.sh` - Test Phony/Go examples
 - `scripts/test_omnetpp_demo.sh` - Test OMNeT++ examples
 
 **Updated:**
+
 - `scripts/test_pony_demo.sh` - Uses Makefile and new binary naming
-- `scripts/test_caf_demo.sh` - Adds `-DCMAKE_BUILD_TYPE=Release` and `-s build_type=Release`
+- `scripts/test_caf_demo.sh` - Adds `-DCMAKE_BUILD_TYPE=Release` and
+  `-s build_type=Release`
 
 All scripts now:
+
 - Use the new binary naming pattern
 - Detect OS automatically
 - Extract project names from config files
@@ -87,10 +100,9 @@ All CI workflows now include caching to dramatically speed up builds:
 
 ## Test Status
 
-✅ **Phony (Go)**: Working, ~2s build
-✅ **Pony**: Working, ~5s build  
-⏳ **CAF (C++)**: Working, 10-15 min first build (cached after)
-❓ **OMNeT++**: Script created, requires OMNeT++ installation
+✅ **Phony (Go)**: Working, ~2s build ✅ **Pony**: Working, ~5s build  
+⏳ **CAF (C++)**: Working, 10-15 min first build (cached after) ❓ **OMNeT++**:
+Script created, requires OMNeT++ installation
 
 ## Testing
 
@@ -109,6 +121,7 @@ scripts/test_omnetpp_demo.sh
 ## Backwards Compatibility
 
 All changes are backwards compatible:
+
 - Old examples continue to work
 - New examples use new naming
 - No breaking API changes
@@ -117,15 +130,18 @@ All changes are backwards compatible:
 ## Files Changed
 
 **Core:**
+
 - 6 generator files (caf, pony, phony, omnetpp, vlingo, main)
 - 1 test file updated
 - .gitignore expanded
 
 **Scripts:**
+
 - 2 new test scripts
 - 2 updated test scripts
 
 **Examples:**
+
 - All regenerated with new Makefiles/CMakeLists
 - CI workflows updated with caching
 
@@ -135,4 +151,3 @@ All changes are backwards compatible:
 2. Test OMNeT++ demo (requires installation)
 3. Consider pre-built CAF binaries to avoid Conan build times
 4. Document caching behavior in README
-

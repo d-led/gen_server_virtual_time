@@ -4,7 +4,8 @@ Documentation for developers working on the GenServerVirtualTime library.
 
 ## Versioning & Publishing
 
-- **[VERSIONING.md](VERSIONING.md)** - Complete guide to version management, release workflow, and publishing
+- **[VERSIONING.md](VERSIONING.md)** - Complete guide to version management,
+  release workflow, and publishing
 - **[PUBLISHING.md](PUBLISHING.md)** - Additional publishing instructions
 
 ## Virtual Clock Configuration: Global vs Local
@@ -218,6 +219,7 @@ git tag v0.x.x
 git push && git push --tags
 ```
 
-The GitHub Actions workflow will automatically publish to Hex.pm when you push a tag.
+The GitHub Actions workflow will automatically publish to Hex.pm when you push a
+tag.
 
 See [VERSIONING.md](VERSIONING.md) for complete details.

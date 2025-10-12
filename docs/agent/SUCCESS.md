@@ -69,7 +69,6 @@ Status: ✅ PRODUCTION READY
 6. `dining_philosophers_3.html` - 3 philosophers 🍴
 7. `dining_philosophers_5.html` - 5 philosophers 🍴
 
-
 **Plus**: `index.html` - Browseable gallery
 
 ---

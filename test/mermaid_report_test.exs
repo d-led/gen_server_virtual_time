@@ -641,6 +641,7 @@ defmodule MermaidReportTest do
       # Function to randomly select a target (excluding self)
       random_target = fn sender, targets ->
         available_targets = Enum.reject(targets, fn target -> target == sender end)
+
         if length(available_targets) > 0 do
           Enum.random(available_targets)
         else
@@ -654,19 +655,22 @@ defmodule MermaidReportTest do
           :hi ->
             # Randomly choose target and send :hi back
             target = random_target.(state.name, state.all_actors)
+
             if target do
               {:send, [{target, :hi}], state}
             else
               {:ok, state}
             end
+
           _ ->
             {:ok, state}
         end
       end
 
       # Create the actual simulation with tracing enabled
+      # Enable tracing for sequence diagram
       simulation =
-        ActorSimulation.new(trace: true)  # Enable tracing for sequence diagram
+        ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:alice,
           send_pattern: {:periodic, 200, :hi},
           targets: [:bob, :charlie, :diana, :eve, :frank, :grace],
@@ -709,7 +713,8 @@ defmodule MermaidReportTest do
           on_receive: random_hi_handler,
           initial_state: %{name: :grace, all_actors: all_actors}
         )
-        |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds to get many interactions
+        # Run for 3 seconds to get many interactions
+        |> ActorSimulation.run(duration: 3000)
 
       # Generate sequence diagram using the existing diagram generation test
       html =
@@ -814,37 +819,46 @@ defmodule MermaidReportTest do
       all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
 
       # Create the actual simulation with real GenServer actors
+      # Enable tracing for sequence diagram
       simulation =
-        ActorSimulation.new(trace: true)  # Enable tracing for sequence diagram
+        ActorSimulation.new(trace: true)
         |> ActorSimulation.add_process(:alice,
           module: HiActor,
           args: [:alice, [:bob, :charlie, :diana, :eve, :frank, :grace], all_actors],
-          targets: [:bob, :charlie, :diana, :eve, :frank, :grace])
+          targets: [:bob, :charlie, :diana, :eve, :frank, :grace]
+        )
         |> ActorSimulation.add_process(:bob,
           module: HiActor,
           args: [:bob, [:alice, :charlie, :diana, :eve, :frank, :grace], all_actors],
-          targets: [:alice, :charlie, :diana, :eve, :frank, :grace])
+          targets: [:alice, :charlie, :diana, :eve, :frank, :grace]
+        )
         |> ActorSimulation.add_process(:charlie,
           module: HiActor,
           args: [:charlie, [:alice, :bob, :diana, :eve, :frank, :grace], all_actors],
-          targets: [:alice, :bob, :diana, :eve, :frank, :grace])
+          targets: [:alice, :bob, :diana, :eve, :frank, :grace]
+        )
         |> ActorSimulation.add_process(:diana,
           module: HiActor,
           args: [:diana, [:alice, :bob, :charlie, :eve, :frank, :grace], all_actors],
-          targets: [:alice, :bob, :charlie, :eve, :frank, :grace])
+          targets: [:alice, :bob, :charlie, :eve, :frank, :grace]
+        )
         |> ActorSimulation.add_process(:eve,
           module: HiActor,
           args: [:eve, [:alice, :bob, :charlie, :diana, :frank, :grace], all_actors],
-          targets: [:alice, :bob, :charlie, :diana, :frank, :grace])
+          targets: [:alice, :bob, :charlie, :diana, :frank, :grace]
+        )
         |> ActorSimulation.add_process(:frank,
           module: HiActor,
           args: [:frank, [:alice, :bob, :charlie, :diana, :eve, :grace], all_actors],
-          targets: [:alice, :bob, :charlie, :diana, :eve, :grace])
+          targets: [:alice, :bob, :charlie, :diana, :eve, :grace]
+        )
         |> ActorSimulation.add_process(:grace,
           module: HiActor,
           args: [:grace, [:alice, :bob, :charlie, :diana, :eve, :frank], all_actors],
-          targets: [:alice, :bob, :charlie, :diana, :eve, :frank])
-        |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds
+          targets: [:alice, :bob, :charlie, :diana, :eve, :frank]
+        )
+        # Run for 3 seconds
+        |> ActorSimulation.run(duration: 3000)
 
       # Generate report
       html =

@@ -226,9 +226,12 @@ defmodule ActorSimulation.CAFGenerator do
     # Only initialize targets_ if actor has targets
     has_targets = length(definition.targets) > 0
     targets_init = if has_targets, do: ", targets_(targets)", else: ""
-    
+
     # Suppress warning for unused targets parameter when not needed
-    unused_targets_suppress = if !has_targets, do: "  (void)targets; // Unused but required for API consistency\n", else: ""
+    unused_targets_suppress =
+      if !has_targets,
+        do: "  (void)targets; // Unused but required for API consistency\n",
+        else: ""
 
     behavior_handlers = generate_behavior_handlers(name, definition, enable_callbacks)
     schedule_impl = generate_schedule_impl(definition)
@@ -280,6 +283,7 @@ defmodule ActorSimulation.CAFGenerator do
 
         # CAF 1.0: Use atom constant in handler signature
         atom_name = get_atom_name_from_message(msg)
+
         """
             [=](#{atom_name}_atom) {
         #{callback_call}      send_to_targets();
@@ -476,7 +480,7 @@ defmodule ActorSimulation.CAFGenerator do
       // Keep system alive - wait for user input to exit
       std::cout << "Actor system started. Press Ctrl+C to exit." << std::endl;
       std::cout << "Press Enter to stop..." << std::endl;
-      
+
       // Keep the system running
       std::string line;
       std::getline(std::cin, line);
@@ -500,13 +504,13 @@ defmodule ActorSimulation.CAFGenerator do
     spawn_statements_pass2 =
       Enum.map(actors, fn {name, def} ->
         actor_name = actor_snake_case(name)
-        
+
         if length(def.targets) > 0 do
-          target_refs = 
+          target_refs =
             def.targets
             |> Enum.map(&actor_snake_case/1)
             |> Enum.join(", ")
-          
+
           "  // Re-spawn #{actor_name} with proper targets\n  #{actor_name} = system.spawn<#{actor_name}_actor>(std::vector<actor>{#{target_refs}});"
         else
           ""
@@ -670,7 +674,7 @@ defmodule ActorSimulation.CAFGenerator do
       test_actors.cpp
     #{Enum.join(sources |> Enum.filter(&(&1 != "  main.cpp")), "\n")}
     )
-    
+
     add_executable(#{project_name}_test ${TEST_SOURCES})
     target_link_libraries(#{project_name}_test
       PRIVATE
@@ -929,9 +933,10 @@ defmodule ActorSimulation.CAFGenerator do
       |> Enum.uniq()
       |> Enum.sort()
 
-    atom_defs = Enum.map(all_atoms, fn atom_str ->
-      "  CAF_ADD_ATOM(ActorSimulation, #{atom_str}_atom)"
-    end)
+    atom_defs =
+      Enum.map(all_atoms, fn atom_str ->
+        "  CAF_ADD_ATOM(ActorSimulation, #{atom_str}_atom)"
+      end)
 
     """
     // Generated from ActorSimulation DSL
@@ -958,13 +963,23 @@ defmodule ActorSimulation.CAFGenerator do
     atoms = MapSet.put(atoms, "msg")
 
     # Add atoms from send_pattern
-    atoms = case definition.send_pattern do
-      {:periodic, _interval, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
-      {:rate, _rate, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
-      {:burst, _count, _interval, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
-      {:self_message, _delay, msg} when is_atom(msg) -> MapSet.put(atoms, Atom.to_string(msg))
-      _ -> atoms
-    end
+    atoms =
+      case definition.send_pattern do
+        {:periodic, _interval, msg} when is_atom(msg) ->
+          MapSet.put(atoms, Atom.to_string(msg))
+
+        {:rate, _rate, msg} when is_atom(msg) ->
+          MapSet.put(atoms, Atom.to_string(msg))
+
+        {:burst, _count, _interval, msg} when is_atom(msg) ->
+          MapSet.put(atoms, Atom.to_string(msg))
+
+        {:self_message, _delay, msg} when is_atom(msg) ->
+          MapSet.put(atoms, Atom.to_string(msg))
+
+        _ ->
+          atoms
+      end
 
     MapSet.to_list(atoms)
   end

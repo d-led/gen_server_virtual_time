@@ -51,7 +51,6 @@ Every push to `main` automatically publishes:
 - **Timeline with Timestamps** - Virtual time progression
 - **Dining Philosophers (2, 3, 5)** - Concurrency visualization
 
-
 - **Alice and Bob** - Simple conversation
 - **Pub-Sub Pattern** - One-to-many broadcast
 
@@ -149,7 +148,7 @@ open http://localhost:8000
 1. Open browser console (F12) to check for errors
 2. Verify CDN is accessible
    (https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js)
-4. Try regenerating: `mix test --force`
+3. Try regenerating: `mix test --force`
 
 ### Workflow Never Triggers
 
@@ -237,8 +236,8 @@ on:
 4. **Artifact Download:** Don't want to wait for Pages? Download artifacts
    directly from any workflow run.
 
-5. **Mermaid Format:** Generate Mermaid diagrams that render client-side
-   better for your use case.
+5. **Mermaid Format:** Generate Mermaid diagrams that render client-side better
+   for your use case.
 
 ## 📚 Next Steps
 

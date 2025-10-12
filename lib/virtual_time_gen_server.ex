@@ -101,10 +101,19 @@ defmodule VirtualTimeGenServer.Wrapper do
   defp track_received_message(message, _type) do
     # Skip internal messages
     case message do
-      :get_stats -> :ok
-      :__vtgs_get_stats__ -> :ok
-      {:start_sending, _, _} -> :ok
-      :send_random_message -> :ok  # Skip internal scheduled messages
+      :get_stats ->
+        :ok
+
+      :__vtgs_get_stats__ ->
+        :ok
+
+      {:start_sending, _, _} ->
+        :ok
+
+      # Skip internal scheduled messages
+      :send_random_message ->
+        :ok
+
       _ ->
         # Only track if stats are enabled (in simulations)
         if Process.get(:__vtgs_stats_enabled__) do
@@ -371,6 +380,7 @@ defmodule VirtualTimeGenServer do
     if Process.get(:__vtgs_stats_enabled__) do
       track_sent_message(request, :call)
     end
+
     GenServer.call(server, request, timeout)
   end
 
@@ -385,6 +395,7 @@ defmodule VirtualTimeGenServer do
     if Process.get(:__vtgs_stats_enabled__) do
       track_sent_message(request, :cast)
     end
+
     GenServer.cast(server, request)
   end
 
@@ -394,9 +405,15 @@ defmodule VirtualTimeGenServer do
   defp track_sent_message(message, _type) do
     # Skip internal messages
     case message do
-      :get_stats -> :ok
-      :__vtgs_get_stats__ -> :ok
-      {:start_sending, _, _} -> :ok
+      :get_stats ->
+        :ok
+
+      :__vtgs_get_stats__ ->
+        :ok
+
+      {:start_sending, _, _} ->
+        :ok
+
       _ ->
         stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
         new_stats = %{stats | sent_count: stats.sent_count + 1}
@@ -415,6 +432,7 @@ defmodule VirtualTimeGenServer do
   # Internal API for ActorSimulation to get process stats
   def get_process_stats do
     stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+
     %{
       sent_count: stats.sent_count,
       received_count: stats.received_count,

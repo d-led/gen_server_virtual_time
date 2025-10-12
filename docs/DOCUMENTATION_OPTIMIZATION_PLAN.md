@@ -4,7 +4,8 @@
 
 ### Issues Identified
 
-1. **Duplicate Generator Docs** - Each framework has two files with similar content:
+1. **Duplicate Generator Docs** - Each framework has two files with similar
+   content:
    - `caf_generator.md` vs `caf_generation.md`
    - `omnetpp_generator.md` vs `omnetpp_generation.md`
    - (Pony and Phony only have one each)
@@ -28,6 +29,7 @@
 ### A. Main Documentation (`docs/`)
 
 **Keep these user-facing docs:**
+
 - `index.md` - Main entry point (update to guide users)
 - `generators.md` - Quick start guide (already good)
 - `implementation_summary.md` - Technical overview
@@ -36,6 +38,7 @@
 - `local_clock_injection_feature.md` - Feature documentation
 
 **Generator-specific (one per framework):**
+
 - `omnetpp_generator.md` - Comprehensive OMNeT++ guide
 - `caf_generator.md` - Comprehensive CAF guide
 - `pony_generator.md` - Comprehensive Pony guide
@@ -43,18 +46,21 @@
 - `vlingo_generator.md` - Comprehensive VLINGO guide
 
 **Move to docs/agent:**
+
 - `MISSION_ACCOMPLISHED.md` → `docs/agent/`
 - `WORK_COMPLETE.md` → `docs/agent/`
 - `session_complete.md` → `docs/agent/`
 - `generators_ready.md` → `docs/agent/`
 
 **Delete duplicates:**
+
 - `caf_generation.md` (merge into `caf_generator.md`)
 - `omnetpp_generation.md` (merge into `omnetpp_generator.md`)
 
 ### B. Development Documentation (`docs/development/`)
 
 **Current structure is good:**
+
 - `README.md` - Development overview
 - `VERSIONING.md` - Comprehensive versioning guide (✅ just updated)
 - `PUBLISHING.md` - Publishing instructions
@@ -106,6 +112,7 @@ Instead of many small "COMPLETE/SUMMARY" files, organize by topic:
    - TRUNK_BASED_DEVELOPMENT.md
 
 **Keep these specific files:**
+
 - README.md (explains agent folder purpose)
 - VERIFICATION_RESULTS.md (accuracy audit)
 - DSL_IMPACT_ANALYSIS.md (specific analysis)
@@ -125,25 +132,26 @@ Instead of many small "COMPLETE/SUMMARY" files, organize by topic:
 ## Implementation Priority
 
 ### Phase 1: Quick Wins (Do Now)
+
 1. ✅ Move status docs to docs/agent
 2. ✅ Delete generator duplicates (merge first)
 3. ✅ Update index.md with clear navigation
 
 ### Phase 2: Agent Consolidation (Optional)
+
 1. Consolidate similar agent files by topic
 2. Update agent/README.md with new structure
 3. Keep originals in git history
 
 ### Phase 3: Polish (Future)
+
 1. Add diagrams to main docs
 2. Create quick reference cards
 3. Video tutorials linking
 
 ## Proposed File Count
 
-**Before:** 55+ markdown files
-**After Phase 1:** ~40 files (26% reduction)
+**Before:** 55+ markdown files **After Phase 1:** ~40 files (26% reduction)
 **After Phase 2:** ~25 files (55% reduction)
 
 Quality over quantity - make every doc count!
-

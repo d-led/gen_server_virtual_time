@@ -186,8 +186,8 @@ ActorSimulation.stop/1                      # Cleanup
 ✅ Process-in-the-Loop (inject real GenServers) ✅ Pattern matching for
 responses (declarative) ✅ Sync and async communication ({:call, msg}, {:cast,
 msg}) ✅ Message tracing with timestamps ✅ Sequence diagram generation
-(Mermaid) ✅ Documentation leads with "Show Me The Code" ✅ All
-documented examples are tested ✅ Concise, useful doctests
+(Mermaid) ✅ Documentation leads with "Show Me The Code" ✅ All documented
+examples are tested ✅ Concise, useful doctests
 
 ### 🚀 Usage Example
 
@@ -217,10 +217,9 @@ File.write!("sequence.mmd", mermaid)
 ### 🏆 Success Metrics
 
 ✅ 63/63 tests passing ✅ 100x+ speed improvement over real time ✅ Zero flaky
-tests (deterministic) ✅ Mermaid support ✅
-Process-in-the-Loop working ✅ Pattern matching implemented ✅ Sync/async
-communication ✅ Message tracing with diagrams ✅ Documentation examples all
-tested ✅ Concise doctests throughout
+tests (deterministic) ✅ Mermaid support ✅ Process-in-the-Loop working ✅
+Pattern matching implemented ✅ Sync/async communication ✅ Message tracing with
+diagrams ✅ Documentation examples all tested ✅ Concise doctests throughout
 
 ## Conclusion
 

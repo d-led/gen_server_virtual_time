@@ -281,7 +281,6 @@ defmodule ActorSimulation do
     simulation.trace
   end
 
-
   @doc """
   Formats the trace as a Mermaid sequence diagram with enhanced styling.
 

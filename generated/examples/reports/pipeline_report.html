@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Pipeline Processing</title>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
@@ -210,33 +210,36 @@ flowchart TB
     source(["source<br/>
 📤 Sent: 10<br/>
 📥 Recv: 0"])
+    sink["sink<br/>
+📤 Sent: 0<br/>
+📥 Recv: 10"]
     stage1("stage1<br/>
 📤 Sent: 10<br/>
 📥 Recv: 10")
     stage2("stage2<br/>
 📤 Sent: 10<br/>
 📥 Recv: 10")
-    sink["sink<br/>
-📤 Sent: 0<br/>
-📥 Recv: 10"]
     source -->|:request<br/>every 100ms| stage1
     stage1 -->|forwarded<br/>message| stage2
     stage2 -->|forwarded<br/>message| sink
     style source fill:#e8f5e9,stroke:#388e3c
+    style sink fill:#e8f5e9,stroke:#388e3c
     style stage1 fill:#e8f5e9,stroke:#388e3c
     style stage2 fill:#e8f5e9,stroke:#388e3c
-    style sink fill:#e8f5e9,stroke:#388e3c
       </div>
     </div>
 
-    <div style="margin-top: 30px;">
-  <h3 style="color: #495057; font-size: 1em; margin-bottom: 15px;">Node Legend</h3>
-  <div class="diagram-container">
-    <div class="mermaid">
+    <div style="margin-top: 20px;">
+  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
+  <div style="display: flex; justify-content: center; overflow-x: auto;">
+    <div class="mermaid" style="min-width: auto; max-height: 120px;">
 flowchart LR
     legend_source(["Source<br/>(sends only)"])
-    legend_processor("Processor<br/>(send & receive"))
+    legend_processor("Processor<br/>(send & receive)")
     legend_sink["Sink<br/>(receives only)"]
+    style legend_source fill:#e8f5e9,stroke:#388e3c
+    style legend_processor fill:#e8f5e9,stroke:#388e3c
+    style legend_sink fill:#e8f5e9,stroke:#388e3c
 
     </div>
   </div>
@@ -268,6 +271,15 @@ flowchart LR
 </tr>
 
 <tr>
+  <td><strong>sink</strong></td>
+  <td class="metric">0</td>
+  <td class="metric">10</td>
+  <td class="metric">0.0 msg/s</td>
+  <td class="metric">10.0 msg/s</td>
+  <td><span class="badge low">10 total</span></td>
+</tr>
+
+<tr>
   <td><strong>stage1</strong></td>
   <td class="metric">10</td>
   <td class="metric">10</td>
@@ -283,15 +295,6 @@ flowchart LR
   <td class="metric">10.0 msg/s</td>
   <td class="metric">10.0 msg/s</td>
   <td><span class="badge ">20 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>sink</strong></td>
-  <td class="metric">0</td>
-  <td class="metric">10</td>
-  <td class="metric">0.0 msg/s</td>
-  <td class="metric">10.0 msg/s</td>
-  <td><span class="badge low">10 total</span></td>
 </tr>
 
     </tbody>

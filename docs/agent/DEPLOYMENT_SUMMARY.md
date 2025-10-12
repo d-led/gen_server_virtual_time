@@ -70,7 +70,6 @@ Your beautiful sequence diagrams:
 - Timeline with timestamps
 - Dining philosophers (2, 3, and 5 philosophers)
 
-
 - Alice and Bob conversation
 - Pub-sub pattern
 

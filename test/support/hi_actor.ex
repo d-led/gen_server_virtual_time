@@ -30,6 +30,7 @@ defmodule HiActor do
   def init(args) do
     # Convert args to state map
     [name, targets, all_actors] = args
+
     state = %__MODULE__{
       name: name,
       targets: targets,
@@ -67,6 +68,7 @@ defmodule HiActor do
         nil ->
           # Target not found, just continue
           :ok
+
         target_pid ->
           VirtualTimeGenServer.cast(target_pid, {:hi, state.name})
       end
@@ -88,6 +90,7 @@ defmodule HiActor do
         nil ->
           # Target not found, just continue
           :ok
+
         target_pid ->
           VirtualTimeGenServer.cast(target_pid, {:hi, state.name})
       end
@@ -100,7 +103,8 @@ defmodule HiActor do
 
   defp schedule_random_message do
     # Random delay between 200-300ms
-    delay = :rand.uniform(101) + 200  # 200-300ms
+    # 200-300ms
+    delay = :rand.uniform(101) + 200
 
     VirtualTimeGenServer.send_after(self(), :send_random_message, delay)
   end

@@ -208,8 +208,6 @@ defmodule ProcessInLoopTest do
         )
         |> ActorSimulation.run(duration: 200)
 
-
-
       ActorSimulation.stop(simulation)
     end
 

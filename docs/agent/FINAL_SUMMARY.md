@@ -77,7 +77,6 @@ All diagrams are viewable HTML files in `test/output/`:
 - `dining_philosophers_3.html` (7.8K) - 3 philosophers 🍴
 - `dining_philosophers_5.html` (11K) - 5 philosophers 🍴
 
-
 **Index:**
 
 - `index.html` (4.2K) - Browse all diagrams
