@@ -34,6 +34,8 @@ jobs:
 
     - name: Install Conan
       uses: conan-io/setup-conan@v2
+      with:
+        version: latest
 
     - name: Configure Conan profile
       run: |
@@ -107,6 +109,8 @@ jobs:
 
     - name: Install Conan
       uses: conan-io/setup-conan@v2
+      with:
+        version: latest
 
     - name: Configure Conan profile
       run: |
