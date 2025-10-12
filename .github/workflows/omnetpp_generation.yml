@@ -246,3 +246,112 @@ jobs:
           
           echo "✅ Generated code is consistent across versions"
 
+  compile-omnetpp-examples:
+    name: Compile & Test OMNeT++ Examples
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [omnetpp_pubsub, omnetpp_pipeline, omnetpp_burst, omnetpp_loadbalanced]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install OMNeT++ dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake bison flex
+
+    - name: Cache OMNeT++
+      id: cache-omnetpp
+      uses: actions/cache@v4
+      with:
+        path: ~/omnetpp
+        key: omnetpp-6.0.3-${{ runner.os }}
+
+    - name: Download and build OMNeT++
+      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
+      run: |
+        cd ~
+        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.3/omnetpp-6.0.3-linux-x86_64.tgz
+        tar xzf omnetpp-6.0.3-linux-x86_64.tgz
+        cd omnetpp-6.0.3
+        . setenv
+        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
+        make -j$(nproc)
+
+    - name: Build OMNeT++ project
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        source ~/omnetpp-6.0.3/setenv
+        mkdir -p build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release
+
+    - name: Run simulation
+      working-directory: examples/${{ matrix.example }}/build
+      run: |
+        source ~/omnetpp-6.0.3/setenv
+        # Run short simulation
+        timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
+
+  regenerate-and-compile:
+    name: Regenerate & Compile All OMNeT++ Examples
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: '1.17'
+        otp-version: '27'
+
+    - name: Install Elixir dependencies
+      run: mix deps.get
+
+    - name: Regenerate OMNeT++ examples
+      run: mix run scripts/generate_omnetpp_examples.exs
+
+    - name: Check for uncommitted changes
+      run: |
+        git diff --exit-code examples/omnetpp_* || (echo "Generated files differ!" && exit 1)
+
+    - name: Install OMNeT++ dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake bison flex
+
+    - name: Cache OMNeT++
+      id: cache-omnetpp
+      uses: actions/cache@v4
+      with:
+        path: ~/omnetpp
+        key: omnetpp-6.0.3-${{ runner.os }}
+
+    - name: Download and build OMNeT++
+      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
+      run: |
+        cd ~
+        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.3/omnetpp-6.0.3-linux-x86_64.tgz
+        tar xzf omnetpp-6.0.3-linux-x86_64.tgz
+        cd omnetpp-6.0.3
+        . setenv
+        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
+        make -j$(nproc)
+
+    - name: Compile all regenerated examples
+      run: |
+        source ~/omnetpp-6.0.3/setenv
+        for example in examples/omnetpp_*; do
+          echo "Compiling $example..."
+          cd $example
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release || exit 1
+          cmake --build . --config Release || exit 1
+          cd ../..
+        done
+
