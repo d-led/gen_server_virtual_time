@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Removed
+
+- **PlantUML Support** - Removed PlantUML diagram generation due to external server dependency issues
+  - Removed `ActorSimulation.trace_to_plantuml/1` function
+  - Removed PlantUML HTML generation tests and files
+  - Removed PlantUML links from reports index
+  - Kept only Mermaid diagrams which work entirely client-side
+
 ## [0.2.1-rc.0] - 2025-10-12
 
 ### Added
