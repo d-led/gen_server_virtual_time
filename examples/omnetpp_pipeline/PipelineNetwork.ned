@@ -7,6 +7,12 @@ simple Source {
 }
 
 
+simple Sink {
+    gates:
+        input in;
+}
+
+
 simple Stage1 {
     gates:
         input in;
@@ -28,19 +34,13 @@ simple Stage3 {
 }
 
 
-simple Sink {
-    gates:
-        input in;
-}
-
-
 network PipelineNetwork {
     submodules:
         source: Source;
+        sink: Sink;
         stage1: Stage1;
         stage2: Stage2;
         stage3: Stage3;
-        sink: Sink;
     connections:
         source.out[0] --> stage1.in;
         stage1.out[0] --> stage2.in;

@@ -5,7 +5,6 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -17,68 +16,42 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install OMNeT++ dependencies (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake bison flex
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-    - name: Install OMNeT++ dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install bison flex cmake
-
-    - name: Cache OMNeT++
-      id: cache-omnetpp
+    - name: Cache OMNeT++ installation
       uses: actions/cache@v3
       with:
-        path: ~/omnetpp-6.2.0
-        key: omnetpp-6.2.0-${{ runner.os }}
+        path: |
+          ~/.opp_env
+          ~/.cache/opp_env
+        key: ${{ runner.os }}-omnetpp-6.2.0-${{ hashFiles('**/omnetpp.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-omnetpp-6.2.0-
+          ${{ runner.os }}-omnetpp-
 
-    - name: Download and build OMNeT++ (Linux)
-      if: runner.os == 'Linux' && steps.cache-omnetpp.outputs.cache-hit != 'true'
+    - name: Install OMNeT++ via opp_env
       run: |
-        cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2/omnetpp-6.2-linux-x86_64.tgz
-        tar xzf omnetpp-6.2-linux-x86_64.tgz
-        cd omnetpp-6.2
-        . setenv
-        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
-        make -j$(nproc)
-        # Move to expected directory name
-        cd ~
-        mv omnetpp-6.2 omnetpp-6.2.0
-
-    - name: Download and build OMNeT++ (macOS)
-      if: runner.os == 'macOS' && steps.cache-omnetpp.outputs.cache-hit != 'true'
-      run: |
-        cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2/omnetpp-6.2-macos-x86_64.tgz
-        tar xzf omnetpp-6.2-macos-x86_64.tgz
-        cd omnetpp-6.2
-        . setenv
-        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
-        make -j$(sysctl -n hw.ncpu)
-        # Move to expected directory name
-        cd ~
-        mv omnetpp-6.2 omnetpp-6.2.0
+        pip install opp-env
+        opp_env init
+        opp_env install omnetpp-6.2.0
+      shell: bash
 
     - name: Configure
       run: |
-        source ~/omnetpp-6.2.0/setenv
         mkdir -p build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
+        cmake ..
 
     - name: Build
       run: |
-        source ~/omnetpp-6.2.0/setenv
         cd build
-        cmake --build . --config Release
+        cmake --build .
 
     - name: Run Demo Simulation
       run: |
-        source ~/omnetpp-6.2.0/setenv
         cd build
         # Determine binary name: {project}.omnetpp.{os}
         OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -86,17 +59,5 @@ jobs:
         BINARY="${PROJECT_NAME}.omnetpp.${OS_NAME}"
         # Run simulation with config from omnetpp.ini
         if [ -f "../omnetpp.ini" ]; then
-          # Run short simulation with timeout
-          if command -v timeout &> /dev/null; then
-            timeout 10 ./"${BINARY}" -u Cmdenv -c General -n .. || true
-          elif command -v gtimeout &> /dev/null; then
-            gtimeout 10 ./"${BINARY}" -u Cmdenv -c General -n .. || true
-          else
-            # Fallback: run in background with kill after timeout
-            ./"${BINARY}" -u Cmdenv -c General -n .. & 
-            PID=$!
-            sleep 10
-            kill $PID 2>/dev/null || true
-            wait $PID 2>/dev/null || true
-          fi
+          ./"${BINARY}" -u Cmdenv -c General -n ..
         fi
