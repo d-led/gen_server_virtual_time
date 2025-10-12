@@ -92,14 +92,49 @@ alias ActorSimulation.CAFGenerator, as: CG
 CG.write_to_directory(files, "caf_output/")
 ```
 
+**VLINGO XOOM Actors (Java):**
+
+```elixir
+alias ActorSimulation.VlingoGenerator, as: VG
+
+# Generate type-safe Java actor system
+{:ok, files} = VG.generate(simulation,
+  project_name: "pubsub-actors",
+  group_id: "com.example",
+  enable_callbacks: true)
+VG.write_to_directory(files, "vlingo_output/")
+
+# Then build and test with Maven:
+# cd vlingo_output && mvn test
+```
+
+**Pony & Phony (Go):**
+
+```elixir
+alias ActorSimulation.{PonyGenerator, PhonyGenerator}
+
+# Pony: Capabilities-secure actors
+{:ok, files} = PonyGenerator.generate(simulation, project_name: "pubsub")
+
+# Phony: Go actors with zero-allocation messaging
+{:ok, files} = PhonyGenerator.generate(simulation, project_name: "pubsub")
+```
+
 Customize WITHOUT touching generated code:
 
 ```cpp
-// publisher_callbacks_impl.cpp (YOUR CODE HERE!)
+// CAF: publisher_callbacks_impl.cpp
 void publisher_callbacks::on_event() {
   log_to_database();
   send_metrics();
-  // Add any custom behavior!
+}
+```
+
+```java
+// VLINGO: PublisherCallbacksImpl.java
+public void onEvent() {
+  logger.info("Publishing event");
+  metrics.increment("events.published");
 }
 ```
 
@@ -158,8 +193,11 @@ end
 **Code Generation** - Export to production
 - **OMNeT++**: Industry-standard network simulation in C++
 - **CAF**: Production actor systems with callback interfaces
-- **Tests included**: Catch2 tests with CI pipelines
-- **Fast prototyping**: 10-100x faster in Elixir, then scale in C++
+- **Pony**: Capabilities-secure, data-race free actors
+- **Phony**: Pony-inspired Go actor library
+- **VLINGO XOOM**: Type-safe Java actors with scheduling
+- **Tests included**: Catch2, PonyTest, Go tests, JUnit 5 with CI pipelines
+- **Fast prototyping**: 10-100x faster in Elixir, then scale in production
 
 ## Quick API Reference
 
@@ -284,18 +322,33 @@ Similar to hardware-in-the-loop testing, but for processes.
 mix run examples/omnetpp_demo.exs
 cd examples/omnetpp_pubsub
 # View the generated network topology in PubSubNetwork.ned
-# View the C++ implementation in Publisher.cc
 
-# CAF actor systems with callbacks
+# CAF actor systems (C++)
 mix run examples/caf_demo.exs
 cd examples/caf_pubsub
 # Edit publisher_callbacks_impl.cpp to add your custom code
+
+# VLINGO XOOM Actors (Java)
+mix run scripts/generate_vlingo_sample.exs
+cd vlingo_loadbalanced_generated
+mvn test  # Run JUnit 5 tests
+
+# Pony (capabilities-secure)
+mix run examples/pony_demo.exs
+cd pony_loadbalanced_generated
+
+# Phony (Go)
+mix run examples/phony_demo.exs
+cd phony_burst_generated
 ```
 
 ## Documentation
 
 - [OMNeT++ Code Generation](docs/omnetpp_generation.md) - Export to OMNeT++ C++
 - [CAF Code Generation](docs/caf_generation.md) - Export to CAF with callbacks
+- [Pony Generator](docs/pony_generator.md) - Capabilities-secure actors
+- [Phony Generator](docs/phony_generator.md) - Go actor systems
+- [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors (NEW!)
 - [API Documentation](https://hexdocs.pm/gen_server_virtual_time) - Complete API reference
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute
 - [Development Docs](docs/development/) - Development notes

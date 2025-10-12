@@ -150,3 +150,125 @@ jobs:
         with:
           name: documentation
           path: doc/
+  
+  generated-vlingo:
+    name: Test Generated VLINGO XOOM Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.16'
+          otp-version: '26'
+      
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+      
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      
+      - name: Generate VLINGO sample project
+        run: mix run scripts/generate_vlingo_sample.exs
+      
+      - name: Build VLINGO generated code
+        working-directory: vlingo_loadbalanced_generated
+        run: mvn clean compile
+      
+      - name: Run VLINGO tests
+        working-directory: vlingo_loadbalanced_generated
+        run: mvn test
+      
+      - name: Upload VLINGO test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vlingo-test-results
+          path: vlingo_loadbalanced_generated/target/surefire-reports/*.xml
+  
+  validate-generators:
+    name: Validate All Generator Scripts
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.16'
+          otp-version: '26'
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Run OMNeT++ generator script
+        run: |
+          mix run scripts/generate_omnetpp_examples.exs
+          # Check that at least one file was generated
+          if [ ! -f "examples/omnetpp_pubsub/PubSub.ned" ]; then
+            echo "ERROR: OMNeT++ generator did not create expected files"
+            exit 1
+          fi
+          echo "✓ OMNeT++ generator: OK"
+      
+      - name: Run CAF generator script
+        run: |
+          mix run scripts/generate_caf_examples.exs
+          # Check that at least one file was generated
+          if [ ! -f "examples/caf_pubsub/main.cpp" ]; then
+            echo "ERROR: CAF generator did not create expected files"
+            exit 1
+          fi
+          echo "✓ CAF generator: OK"
+      
+      - name: Run Pony generator script
+        run: |
+          mix run scripts/generate_pony_examples.exs
+          # Check that at least one file was generated
+          if [ ! -f "pony_loadbalanced_generated/main.pony" ]; then
+            echo "ERROR: Pony generator did not create expected files"
+            exit 1
+          fi
+          echo "✓ Pony generator: OK"
+      
+      - name: Run Phony generator script
+        run: |
+          mix run scripts/generate_phony_examples.exs
+          # Check that at least one file was generated
+          if [ ! -f "phony_burst_generated/main.go" ]; then
+            echo "ERROR: Phony generator did not create expected files"
+            exit 1
+          fi
+          echo "✓ Phony generator: OK"
+      
+      - name: Run VLINGO generator script
+        run: |
+          mix run scripts/generate_vlingo_sample.exs
+          # Check that at least one file was generated
+          if [ ! -f "vlingo_loadbalanced_generated/pom.xml" ]; then
+            echo "ERROR: VLINGO generator did not create expected files"
+            exit 1
+          fi
+          echo "✓ VLINGO generator: OK"
+      
+      - name: Summary
+        run: |
+          echo "================================================"
+          echo "✅ All 5 generator scripts executed successfully"
+          echo "================================================"
+          echo "Generators validated:"
+          echo "  ✓ OMNeT++ (C++ network simulation)"
+          echo "  ✓ CAF (C++ actors)"
+          echo "  ✓ Pony (capabilities-secure actors)"
+          echo "  ✓ Phony (Go actors)"
+          echo "  ✓ VLINGO XOOM (Java actors)"
+          echo "================================================"

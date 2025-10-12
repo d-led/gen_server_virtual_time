@@ -1,0 +1,19 @@
+// Generated from ActorSimulation DSL
+// Default callback implementation for: worker2
+//
+// CUSTOMIZE THIS CLASS to add your own behavior!
+
+package com.example.actors;
+
+/**
+ * Default implementation of Worker2Callbacks.
+ * Modify this class to add custom behavior.
+ */
+public class Worker2CallbacksImpl implements Worker2Callbacks {
+  @Override
+  public void onProcessTask() {
+    // TODO: Implement custom behavior for process_task
+    System.out.println("Worker2: process_task");
+  }
+
+}
