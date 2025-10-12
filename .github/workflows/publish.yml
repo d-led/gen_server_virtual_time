@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - 'v*.*.*'
+      - 'v*.*.*-rc.*'
+      - 'v*.*.*-beta.*'
+      - 'v*.*.*-alpha.*'
 
 env:
   MIX_ENV: prod
@@ -57,6 +60,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref, '-rc.') || contains(github.ref, '-beta.') || contains(github.ref, '-alpha.') }}
           files: |
             CHANGELOG.md
         env:
