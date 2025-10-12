@@ -49,5 +49,5 @@ defmodule GenServerVirtualTime do
   @doc """
   Returns the version of the library.
   """
-  def version, do: "0.1.0"
+  def version, do: Mix.Project.config()[:version]
 end

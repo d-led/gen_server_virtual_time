@@ -132,12 +132,15 @@ jobs:
         # Ensure PATH includes pony tools
         export PATH="$HOME/.local/share/ponyup/bin:$HOME/.local/share/ponyup/ponyc/release/bin:$HOME/.local/share/ponyup/corral/release/bin:$PATH"
         for example in examples/pony_*; do
-          echo "Validating $example..."
-          cd $example
-          corral fetch || true
-          ponyc . || exit 1
-          ponyc test || exit 1
-          ./test --sequential || exit 1
-          cd ../..
+          if [ -d "$example" ]; then
+            echo "Validating $example..."
+            (
+              cd "$example" || exit 1
+              corral fetch || true
+              ponyc . || exit 1
+              ponyc test || exit 1
+              ./test --sequential || exit 1
+            ) || exit 1
+          fi
         done
 

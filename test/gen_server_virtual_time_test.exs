@@ -4,6 +4,7 @@ defmodule GenServerVirtualTimeTest do
 
   test "returns version" do
     assert is_binary(GenServerVirtualTime.version())
-    assert GenServerVirtualTime.version() == "0.1.0"
+    # Version should match mix.exs
+    assert GenServerVirtualTime.version() == Mix.Project.config()[:version]
   end
 end

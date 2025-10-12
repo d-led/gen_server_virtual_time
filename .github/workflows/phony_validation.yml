@@ -3,11 +3,6 @@ name: Phony (Go) Code Validation
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'lib/actor_simulation/phony_generator.ex'
-      - 'examples/phony_*/**'
-      - 'scripts/generate_phony_examples.exs'
-      - '.github/workflows/phony_validation.yml'
   pull_request:
     branches: [ main ]
 
@@ -84,11 +79,14 @@ jobs:
     - name: Validate all regenerated examples
       run: |
         for example in examples/phony_*; do
-          echo "Validating $example..."
-          cd $example
-          go mod download || exit 1
-          go build -v ./... || exit 1
-          go test -v ./... || exit 1
-          cd ../..
+          if [ -d "$example" ]; then
+            echo "Validating $example..."
+            (
+              cd "$example" || exit 1
+              go mod download || exit 1
+              go build -v ./... || exit 1
+              go test -v ./... || exit 1
+            ) || exit 1
+          fi
         done
 

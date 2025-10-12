@@ -565,12 +565,15 @@ defmodule ActorSimulation.PonyGenerator do
   end
 
   defp generate_corral(project_name) do
+    # Use the library version for generated projects
+    version = GenServerVirtualTime.version()
+
     """
     {
       "info": {
         "name": "#{project_name}",
         "description": "Generated from ActorSimulation DSL",
-        "version": "0.1.0",
+        "version": "#{version}",
         "license": "MIT"
       },
       "deps": []

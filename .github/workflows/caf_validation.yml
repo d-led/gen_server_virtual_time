@@ -34,7 +34,12 @@ jobs:
 
     - name: Install Conan
       run: |
-        pip3 install conan
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          pip3 install conan
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          pip3 install --user conan
+          echo "$HOME/Library/Python/3.11/bin" >> $GITHUB_PATH
+        fi
         conan --version
 
     - name: Configure Conan profile
@@ -103,14 +108,17 @@ jobs:
     - name: Validate all regenerated examples
       run: |
         for example in examples/caf_*; do
-          echo "Validating $example..."
-          cd $example
-          mkdir -p build
-          cd build
-          conan install .. --build=missing -s build_type=Release || exit 1
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake || exit 1
-          cmake --build . --config Release || exit 1
-          ctest -C Release --output-on-failure || exit 1
-          cd ../..
+          if [ -d "$example" ]; then
+            echo "Validating $example..."
+            (
+              cd "$example" || exit 1
+              mkdir -p build
+              cd build || exit 1
+              conan install .. --build=missing -s build_type=Release || exit 1
+              cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake || exit 1
+              cmake --build . --config Release || exit 1
+              ctest -C Release --output-on-failure || exit 1
+            ) || exit 1
+          fi
         done
 

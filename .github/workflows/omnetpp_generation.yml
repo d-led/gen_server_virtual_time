@@ -3,18 +3,8 @@ name: OMNeT++ Code Generation Tests
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'lib/actor_simulation/**'
-      - 'scripts/generate_omnetpp_examples.exs'
-      - 'scripts/validate_omnetpp_output.exs'
-      - 'examples/omnetpp_demo.exs'
-      - '.github/workflows/omnetpp_generation.yml'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'lib/actor_simulation/**'
-      - 'scripts/**'
-      - 'examples/omnetpp_*.exs'
 
 jobs:
   test-generation:
@@ -346,12 +336,15 @@ jobs:
       run: |
         source ~/omnetpp-6.0.3/setenv
         for example in examples/omnetpp_*; do
-          echo "Compiling $example..."
-          cd $example
-          mkdir -p build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release || exit 1
-          cmake --build . --config Release || exit 1
-          cd ../..
+          if [ -d "$example" ]; then
+            echo "Compiling $example..."
+            (
+              cd "$example" || exit 1
+              mkdir -p build
+              cd build || exit 1
+              cmake .. -DCMAKE_BUILD_TYPE=Release || exit 1
+              cmake --build . --config Release || exit 1
+            ) || exit 1
+          fi
         done
 

@@ -225,7 +225,7 @@ File.write!("report.html", html)
 ```elixir
 def deps do
   [
-    {:gen_server_virtual_time, "~> 0.1.0"}
+    {:gen_server_virtual_time, "~> 0.2.1-rc.0"}
   ]
 end
 ```

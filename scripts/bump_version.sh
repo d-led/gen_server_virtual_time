@@ -70,6 +70,23 @@ echo "New version: $NEW_VERSION"
 sed -i.bak "s/@version \"$CURRENT_VERSION\"/@version \"$NEW_VERSION\"/" $MIX_FILE
 rm -f $MIX_FILE.bak
 
+# Update README.md dependency example
+sed -i.bak "s/{:gen_server_virtual_time, \"~> [^\"]*\"}/{:gen_server_virtual_time, \"~> $NEW_VERSION\"}/" README.md
+rm -f README.md.bak
+
+# Update generated examples index pages (if they exist)
+if [ -f "generated/examples/index.html" ]; then
+  sed -i.bak "s/{:gen_server_virtual_time, \"~> [^\"]*\"}/{:gen_server_virtual_time, \"~> $NEW_VERSION\"}/" generated/examples/index.html
+  rm -f generated/examples/index.html.bak
+  echo "  - generated/examples/index.html"
+fi
+
+if [ -f "generated/examples/reports/index.html" ]; then
+  sed -i.bak "s/{:gen_server_virtual_time, \"~> [^\"]*\"}/{:gen_server_virtual_time, \"~> $NEW_VERSION\"}/" generated/examples/reports/index.html
+  rm -f generated/examples/reports/index.html.bak
+  echo "  - generated/examples/reports/index.html"
+fi
+
 # Update CHANGELOG.md header
 TODAY=$(date +%Y-%m-%d)
 if grep -q "^## \[Unreleased\]" $CHANGELOG; then
@@ -86,12 +103,25 @@ fi
 echo ""
 echo "✅ Version bumped from $CURRENT_VERSION to $NEW_VERSION"
 echo ""
+echo "Files updated:"
+echo "  - mix.exs (@version)"
+echo "  - README.md (dependency example)"
+echo "  - CHANGELOG.md (new version header)"
+# The index files will be listed above if they were updated
+echo ""
+echo "Note: The following will be automatically updated:"
+echo "  - lib/gen_server_virtual_time.ex (reads from mix.exs at compile time)"
+echo "  - test/gen_server_virtual_time_test.exs (compares against mix.exs)"
+echo "  - lib/actor_simulation/pony_generator.ex (uses library version)"
+echo "  - Generated files (will be regenerated with new version)"
+echo ""
 echo "Next steps:"
 echo "  1. Review changes: git diff"
 echo "  2. Update CHANGELOG.md with release notes"
-echo "  3. Commit: git add -A && git commit -m \"Release v$NEW_VERSION\""
-echo "  4. Tag: git tag v$NEW_VERSION"
-echo "  5. Push: git push && git push --tags"
+echo "  3. Regenerate examples: mix test"
+echo "  4. Commit: git add -A && git commit -m \"Release v$NEW_VERSION\""
+echo "  5. Tag: git tag v$NEW_VERSION"
+echo "  6. Push: git push && git push --tags"
 echo ""
 if [[ $NEW_VERSION =~ -rc\. ]]; then
   echo "📦 This is a pre-release (RC). It will be marked as 'prerelease' on GitHub."

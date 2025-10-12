@@ -2,7 +2,7 @@
   "info": {
     "name": "burst_actors",
     "description": "Generated from ActorSimulation DSL",
-    "version": "0.1.0",
+    "version": "0.2.1-rc.0",
     "license": "MIT"
   },
   "deps": []
