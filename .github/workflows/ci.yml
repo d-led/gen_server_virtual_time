@@ -11,6 +11,11 @@ jobs:
     name: Test (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    
     strategy:
       matrix:
         elixir: ['1.14', '1.15', '1.16']
@@ -71,14 +76,76 @@ jobs:
           check_name: 'Test Report (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})'
           detailed_summary: true
           include_passed: true
+  
+  slow-tests:
+    name: Slow Tests & Demos
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    
+    env:
+      MIX_ENV: test
+      CI: true
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.16'
+          otp-version: '26'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-slow-tests-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-slow-tests-
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Compile
+        run: mix compile
       
       - name: Run slow tests
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: mix test --only slow --slowest 5
+        run: |
+          mix test --only slow \
+            --formatter JUnitFormatter \
+            --formatter ExUnit.CLIFormatter \
+            --slowest 10
+      
+      - name: Upload slow test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: slow-test-results
+          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
+      
+      - name: Publish slow test report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
+          check_name: 'Slow Test Report'
+          detailed_summary: true
+          include_passed: true
   
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
     
     steps:
       - name: Checkout code
@@ -221,11 +288,11 @@ jobs:
         run: mix run scripts/generate_vlingo_sample.exs
       
       - name: Build VLINGO generated code
-        working-directory: vlingo_loadbalanced_generated
+        working-directory: generated/vlingo_loadbalanced
         run: mvn clean compile
       
       - name: Run VLINGO tests
-        working-directory: vlingo_loadbalanced_generated
+        working-directory: generated/vlingo_loadbalanced
         run: mvn test
       
       - name: Upload VLINGO test results
@@ -233,7 +300,7 @@ jobs:
         if: always()
         with:
           name: vlingo-test-results
-          path: vlingo_loadbalanced_generated/target/surefire-reports/*.xml
+          path: generated/vlingo_loadbalanced/target/surefire-reports/*.xml
   
   validate-generators:
     name: Validate All Generator Scripts
@@ -276,7 +343,7 @@ jobs:
         run: |
           mix run scripts/generate_pony_examples.exs
           # Check that at least one file was generated
-          if [ ! -f "pony_loadbalanced_generated/main.pony" ]; then
+          if [ ! -f "generated/pony_loadbalanced/main.pony" ]; then
             echo "ERROR: Pony generator did not create expected files"
             exit 1
           fi
@@ -286,7 +353,7 @@ jobs:
         run: |
           mix run scripts/generate_phony_examples.exs
           # Check that at least one file was generated
-          if [ ! -f "phony_burst_generated/main.go" ]; then
+          if [ ! -f "generated/phony_burst/main.go" ]; then
             echo "ERROR: Phony generator did not create expected files"
             exit 1
           fi
@@ -296,7 +363,7 @@ jobs:
         run: |
           mix run scripts/generate_vlingo_sample.exs
           # Check that at least one file was generated
-          if [ ! -f "vlingo_loadbalanced_generated/pom.xml" ]; then
+          if [ ! -f "generated/vlingo_loadbalanced/pom.xml" ]; then
             echo "ERROR: VLINGO generator did not create expected files"
             exit 1
           fi

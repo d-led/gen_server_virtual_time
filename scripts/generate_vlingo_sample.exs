@@ -30,7 +30,7 @@ simulation =
     targets: []
   )
 
-IO.puts("Generating VLINGO XOOM Actors project: vlingo_loadbalanced_generated...")
+IO.puts("Generating VLINGO XOOM Actors project: generated/vlingo_loadbalanced...")
 
 {:ok, files} =
   VlingoGenerator.generate(simulation,

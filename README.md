@@ -1,6 +1,8 @@
 # GenServerVirtualTime
 
-Test time-based GenServers instantly. Simulate actor systems with virtual time. Model, simulate, analyze actor systems and generate boilerplate in various Actor Model implementations: in Java, Pony, Go and C++.
+Test time-based GenServers instantly. Simulate actor systems with virtual time.
+Model, simulate, analyze actor systems and generate boilerplate in various Actor
+Model implementations: in Java, Pony, Go and C++.
 
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
