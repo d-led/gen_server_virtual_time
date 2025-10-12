@@ -118,8 +118,11 @@ defmodule VlingoGeneratorTest do
 
       assert actor =~ "package com.example;"
       assert actor =~ "import io.vlingo.xoom.actors.Actor;"
-      assert actor =~ "import io.vlingo.xoom.actors.Scheduled;"
-      assert actor =~ "public class GeneratorActor extends Actor implements GeneratorProtocol"
+      assert actor =~ "import io.vlingo.xoom.common.Scheduled;"
+
+      assert actor =~
+               "public class GeneratorActor extends Actor implements GeneratorProtocol, Scheduled<Object>"
+
       assert actor =~ "scheduler().schedule"
     end
 

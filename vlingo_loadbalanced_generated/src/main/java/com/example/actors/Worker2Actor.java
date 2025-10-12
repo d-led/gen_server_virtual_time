@@ -4,6 +4,7 @@
 package com.example.actors;
 
 import io.vlingo.xoom.actors.Actor;
+import io.vlingo.xoom.common.Scheduled;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -11,18 +12,25 @@ import java.util.ArrayList;
  * Actor implementation for Worker2.
  * This actor implements the Worker2Protocol interface.
  */
-public class Worker2Actor extends Actor implements Worker2Protocol {
+public class Worker2Actor extends Actor implements Worker2Protocol, Scheduled<Object> {
   private final Worker2Callbacks callbacks;
   private final List<Worker2Protocol> targets;
-
-  private int sendCount = 0;
 
   /**
    * Constructor for Worker2Actor.
    */
+  @SuppressWarnings("unchecked")
   public Worker2Actor(Worker2Callbacks callbacks, List<Worker2Protocol> targets) {
     this.callbacks = (callbacks != null) ? callbacks : new Worker2CallbacksImpl();
     this.targets = (targets != null) ? targets : new ArrayList<>();
+
+    // Schedule periodic message sending
+    scheduler().schedule(
+      selfAs(Scheduled.class),
+      null,
+      200L,
+      200L
+    );
   }
 
   @Override
@@ -32,8 +40,13 @@ public class Worker2Actor extends Actor implements Worker2Protocol {
     for (var target : targets) {
       target.processTask();
     }
-    sendCount++;
 
+  }
+
+
+  @Override
+  public void intervalSignal(io.vlingo.xoom.common.Scheduled<Object> scheduled, Object data) {
+    processTask();
   }
 
 

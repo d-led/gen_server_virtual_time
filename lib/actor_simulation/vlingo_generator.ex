@@ -173,14 +173,8 @@ defmodule ActorSimulation.VlingoGenerator do
         "  void process();"
       end
 
-    # Check if this actor uses scheduling
-    scheduled_extends =
-      case definition.send_pattern do
-        {:periodic, _, _} -> " extends io.vlingo.xoom.actors.Scheduled<Object>"
-        {:rate, _, _} -> " extends io.vlingo.xoom.actors.Scheduled<Object>"
-        {:burst, _, _, _} -> " extends io.vlingo.xoom.actors.Scheduled<Object>"
-        _ -> ""
-      end
+    # Protocol interfaces should NOT extend Scheduled - that causes issues with VLINGO's proxy generator
+    # The Actor implementation will implement Scheduled directly
 
     """
     // Generated from ActorSimulation DSL
@@ -192,111 +186,112 @@ defmodule ActorSimulation.VlingoGenerator do
      * Protocol interface for #{class_name} actor.
      * This interface defines the messages that can be sent to this actor.
      */
-    public interface #{class_name}Protocol#{scheduled_extends} {
+    public interface #{class_name}Protocol {
     #{methods}
     }
     """
+  end
+
+  defp generate_callback_code(enable_callbacks, class_name) do
+    if enable_callbacks do
+      field = """
+        private final #{class_name}Callbacks callbacks;
+      """
+
+      param = ", #{class_name}Callbacks callbacks"
+
+      init = """
+          this.callbacks = (callbacks != null) ? callbacks : new #{class_name}CallbacksImpl();
+      """
+
+      {field, param, init}
+    else
+      {"", "", ""}
+    end
+  end
+
+  defp generate_target_code(targets, class_name) do
+    if length(targets) > 0 do
+      field = """
+        private final List<#{class_name}Protocol> targets;
+      """
+
+      param = ", List<#{class_name}Protocol> targets"
+
+      init = """
+          this.targets = (targets != null) ? targets : new ArrayList<>();
+      """
+
+      {field, param, init}
+    else
+      {"", "", ""}
+    end
+  end
+
+  defp generate_method_implementations(messages, definition, enable_callbacks) do
+    if length(messages) > 0 do
+      Enum.map_join(messages, "\n\n", fn msg ->
+        generate_message_method(msg, definition, enable_callbacks)
+      end)
+    else
+      """
+        @Override
+        public void process() {
+          logger().info(getClass().getSimpleName() + " processing...");
+          // Send to targets
+          sendToTargets();
+        }
+
+        private void sendToTargets() {
+          // No targets defined
+        }
+      """
+    end
+  end
+
+  defp generate_imports_and_implements(definition) do
+    has_targets = length(definition.targets) > 0
+
+    list_import =
+      if has_targets, do: "import java.util.List;\nimport java.util.ArrayList;", else: ""
+
+    {scheduled_import, scheduled_implements} =
+      case definition.send_pattern do
+        {:periodic, _, _} ->
+          {"import io.vlingo.xoom.common.Scheduled;", ", Scheduled<Object>"}
+
+        {:rate, _, _} ->
+          {"import io.vlingo.xoom.common.Scheduled;", ", Scheduled<Object>"}
+
+        {:burst, _, _, _} ->
+          {"import io.vlingo.xoom.common.Scheduled;", ", Scheduled<Object>"}
+
+        {:self_message, _, _} ->
+          {"import io.vlingo.xoom.common.Scheduled;", ", Scheduled<Object>"}
+
+        _ ->
+          {"", ""}
+      end
+
+    {list_import, scheduled_import, scheduled_implements}
   end
 
   defp generate_actor_implementation(name, definition, group_id, enable_callbacks) do
     class_name = GeneratorUtils.to_pascal_case(name)
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
 
-    # Fields
-    callback_field =
-      if enable_callbacks do
-        """
-          private final #{class_name}Callbacks callbacks;
-        """
-      else
-        ""
-      end
+    {callback_field, callback_param, callback_init} =
+      generate_callback_code(enable_callbacks, class_name)
 
-    target_field =
-      if length(definition.targets) > 0 do
-        """
-          private final List<#{class_name}Protocol> targets;
-        """
-      else
-        ""
-      end
+    {target_field, target_param, target_init} =
+      generate_target_code(definition.targets, class_name)
 
-    # Constructor parameters
-    callback_param =
-      if enable_callbacks do
-        ", #{class_name}Callbacks callbacks"
-      else
-        ""
-      end
-
-    target_param =
-      if length(definition.targets) > 0 do
-        ", List<#{class_name}Protocol> targets"
-      else
-        ""
-      end
-
-    # Constructor initialization
-    callback_init =
-      if enable_callbacks do
-        """
-            this.callbacks = (callbacks != null) ? callbacks : new #{class_name}CallbacksImpl();
-        """
-      else
-        ""
-      end
-
-    target_init =
-      if length(definition.targets) > 0 do
-        """
-            this.targets = (targets != null) ? targets : new ArrayList<>();
-        """
-      else
-        ""
-      end
-
-    # Self-message scheduling
     self_message_init = generate_self_message_init(definition, class_name)
-
-    # Message methods
-    method_impls =
-      if length(messages) > 0 do
-        Enum.map_join(messages, "\n\n", fn msg ->
-          generate_message_method(msg, definition, enable_callbacks)
-        end)
-      else
-        """
-          @Override
-          public void process() {
-            logger().info(getClass().getSimpleName() + " processing...");
-            // Send to targets
-            sendToTargets();
-          }
-
-          private void sendToTargets() {
-            // No targets defined
-          }
-        """
-      end
-
-    # Add intervalSignal method for scheduled actors
+    method_impls = generate_method_implementations(messages, definition, enable_callbacks)
     interval_signal_method = generate_interval_signal_method(definition, messages)
 
-    list_import =
-      if length(definition.targets) > 0 do
-        "import java.util.List;\nimport java.util.ArrayList;"
-      else
-        ""
-      end
-
-    scheduled_import =
-      case definition.send_pattern do
-        {:periodic, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
-        {:rate, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
-        {:burst, _, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
-        {:self_message, _, _} -> "import io.vlingo.xoom.actors.Scheduled;"
-        _ -> ""
-      end
+    {list_import, scheduled_import, scheduled_implements} =
+      generate_imports_and_implements(definition)
 
     """
     // Generated from ActorSimulation DSL
@@ -312,13 +307,12 @@ defmodule ActorSimulation.VlingoGenerator do
      * Actor implementation for #{class_name}.
      * This actor implements the #{class_name}Protocol interface.
      */
-    public class #{class_name}Actor extends Actor implements #{class_name}Protocol {
+    public class #{class_name}Actor extends Actor implements #{class_name}Protocol#{scheduled_implements} {
     #{callback_field}#{target_field}
-      private int sendCount = 0;
-
       /**
        * Constructor for #{class_name}Actor.
        */
+      @SuppressWarnings("unchecked")
       public #{class_name}Actor(#{format_constructor_params(callback_param, target_param)}) {
     #{callback_init}#{target_init}#{self_message_init}  }
 
@@ -333,14 +327,14 @@ defmodule ActorSimulation.VlingoGenerator do
     """
   end
 
-  defp generate_self_message_init(definition, class_name) do
+  defp generate_self_message_init(definition, _class_name) do
     case definition.send_pattern do
       {:self_message, delay_ms, _message} ->
         """
 
             // Schedule one-shot self-message
             scheduler().scheduleOnce(
-              selfAs(#{class_name}Protocol.class),
+              selfAs(Scheduled.class),
               null,
               0L,
               #{delay_ms}L
@@ -352,7 +346,7 @@ defmodule ActorSimulation.VlingoGenerator do
 
             // Schedule periodic message sending
             scheduler().schedule(
-              selfAs(#{class_name}Protocol.class),
+              selfAs(Scheduled.class),
               null,
               #{interval_ms}L,
               #{interval_ms}L
@@ -366,7 +360,7 @@ defmodule ActorSimulation.VlingoGenerator do
 
             // Schedule rate-based message sending
             scheduler().schedule(
-              selfAs(#{class_name}Protocol.class),
+              selfAs(Scheduled.class),
               null,
               #{interval_ms}L,
               #{interval_ms}L
@@ -378,7 +372,7 @@ defmodule ActorSimulation.VlingoGenerator do
 
             // Schedule burst message sending
             scheduler().schedule(
-              selfAs(#{class_name}Protocol.class),
+              selfAs(Scheduled.class),
               null,
               #{interval_ms}L,
               #{interval_ms}L
@@ -399,7 +393,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
           @Override
-          public void intervalSignal(io.vlingo.xoom.actors.Scheduled<Object> scheduled, Object data) {
+          public void intervalSignal(io.vlingo.xoom.common.Scheduled<Object> scheduled, Object data) {
             #{msg_name}();
           }
         """
@@ -411,7 +405,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
           @Override
-          public void intervalSignal(io.vlingo.xoom.actors.Scheduled<Object> scheduled, Object data) {
+          public void intervalSignal(io.vlingo.xoom.common.Scheduled<Object> scheduled, Object data) {
             #{msg_name}();
           }
         """
@@ -423,7 +417,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
           @Override
-          public void intervalSignal(io.vlingo.xoom.actors.Scheduled<Object> scheduled, Object data) {
+          public void intervalSignal(io.vlingo.xoom.common.Scheduled<Object> scheduled, Object data) {
             #{msg_name}();
           }
         """
@@ -455,7 +449,6 @@ defmodule ActorSimulation.VlingoGenerator do
             for (var target : targets) {
               target.#{msg_name}();
             }
-            sendCount++;
         """
       else
         ""
@@ -782,8 +775,10 @@ defmodule ActorSimulation.VlingoGenerator do
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.11.0</version>
             <configuration>
-              <source>11</source>
-              <target>11</target>
+              <release>11</release>
+              <compilerArgs>
+                <arg>-Xlint:unchecked</arg>
+              </compilerArgs>
             </configuration>
           </plugin>
 

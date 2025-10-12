@@ -171,6 +171,7 @@ defmodule DiningPhilosophersTest do
       html = generate_dining_philosophers_html(mermaid, 5, "Classic Table")
 
       # Write to output
+      File.mkdir_p!("test/output")
       File.write!("test/output/dining_philosophers_5.html", html)
 
       IO.puts("\n🍴 Generated 5 Philosophers diagram: test/output/dining_philosophers_5.html")

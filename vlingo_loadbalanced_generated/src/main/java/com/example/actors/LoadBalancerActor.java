@@ -4,6 +4,7 @@
 package com.example.actors;
 
 import io.vlingo.xoom.actors.Actor;
+import io.vlingo.xoom.common.Scheduled;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -11,18 +12,25 @@ import java.util.ArrayList;
  * Actor implementation for LoadBalancer.
  * This actor implements the LoadBalancerProtocol interface.
  */
-public class LoadBalancerActor extends Actor implements LoadBalancerProtocol {
+public class LoadBalancerActor extends Actor implements LoadBalancerProtocol, Scheduled<Object> {
   private final LoadBalancerCallbacks callbacks;
   private final List<LoadBalancerProtocol> targets;
-
-  private int sendCount = 0;
 
   /**
    * Constructor for LoadBalancerActor.
    */
+  @SuppressWarnings("unchecked")
   public LoadBalancerActor(LoadBalancerCallbacks callbacks, List<LoadBalancerProtocol> targets) {
     this.callbacks = (callbacks != null) ? callbacks : new LoadBalancerCallbacksImpl();
     this.targets = (targets != null) ? targets : new ArrayList<>();
+
+    // Schedule periodic message sending
+    scheduler().schedule(
+      selfAs(Scheduled.class),
+      null,
+      50L,
+      50L
+    );
   }
 
   @Override
@@ -32,8 +40,13 @@ public class LoadBalancerActor extends Actor implements LoadBalancerProtocol {
     for (var target : targets) {
       target.distributeWork();
     }
-    sendCount++;
 
+  }
+
+
+  @Override
+  public void intervalSignal(io.vlingo.xoom.common.Scheduled<Object> scheduled, Object data) {
+    distributeWork();
   }
 
 
