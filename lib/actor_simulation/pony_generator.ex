@@ -73,7 +73,39 @@ defmodule ActorSimulation.PonyGenerator do
 
   # Private functions
 
+  defp generate_console_logger do
+    """
+    // Generated from ActorSimulation DSL
+    // Thread-safe console logger actor
+    //
+    // Based on best practices from Pony actor systems
+    // See: https://github.com/d-led/DDDwithActorsPony/blob/master/Receiver.pony
+
+    actor ConsoleLogger
+      \"\"\"
+      Thread-safe console logger that uses env.out for output.
+      All logging goes through this actor to avoid race conditions.
+      \"\"\"
+
+      let _out: OutStream
+
+      new create(out: OutStream) =>
+        _out = out
+
+      be log(msg: String) =>
+        \"\"\"
+        Log a message to console.
+        This is thread-safe as it's processed sequentially by the actor.
+        \"\"\"
+        _out.print(msg)
+    """
+  end
+
   defp add_actor_files(files, actors, enable_callbacks) do
+    # Add console logger first
+    logger_file = generate_console_logger()
+    files = [{"console_logger.pony", logger_file} | files]
+
     Enum.reduce(actors, files, fn {name, actor_info}, acc ->
       case actor_info.type do
         :simulated ->
@@ -85,7 +117,7 @@ defmodule ActorSimulation.PonyGenerator do
 
           new_files =
             if enable_callbacks do
-              callback_trait = generate_callback_trait(name, definition)
+              callback_trait = generate_callback_trait(name, definition, enable_callbacks)
               new_files ++ [{"#{actor_name}_callbacks.pony", callback_trait}]
             else
               new_files
@@ -154,7 +186,7 @@ defmodule ActorSimulation.PonyGenerator do
     callback_init =
       if enable_callbacks do
         """
-            _callbacks = recover #{actor_class_name(name)}CallbacksImpl end
+            _callbacks = #{actor_class_name(name)}CallbacksImpl(logger)
         """
       else
         ""
@@ -169,16 +201,19 @@ defmodule ActorSimulation.PonyGenerator do
 
     use \"collections\"
     use \"time\"
+    use \"console_logger\"
     #{callback_use}
 
     actor #{actor_name}
       let _env: Env
       let _timers: Timers = Timers
       let _targets: Array[#{actor_class_name(name)}] = Array[#{actor_class_name(name)}]
+      let logger: ConsoleLogger
     #{callback_field}
 
-      new create(env: Env, targets: Array[#{actor_class_name(name)}] val = recover Array[#{actor_class_name(name)}] end) =>
+      new create(env: Env, logger': ConsoleLogger, targets: Array[#{actor_class_name(name)}] val = recover Array[#{actor_class_name(name)}] end) =>
         _env = env
+        logger = logger'
         _targets.append(targets)
     #{callback_init}#{timer_code}
 
@@ -339,7 +374,7 @@ defmodule ActorSimulation.PonyGenerator do
     end
   end
 
-  defp generate_callback_trait(name, definition) do
+  defp generate_callback_trait(name, definition, _enable_callbacks) do
     actor_name = actor_class_name(name)
     messages = extract_messages_from_pattern(definition.send_pattern)
 
@@ -363,7 +398,7 @@ defmodule ActorSimulation.PonyGenerator do
         """
           fun ref on_#{msg_name}() =>
             // TODO: Implement custom behavior for #{msg}
-            None
+            _logger.log("#{actor_name}: Received #{msg} message")
         """
       end)
 
@@ -374,7 +409,7 @@ defmodule ActorSimulation.PonyGenerator do
         """
           fun ref on_message() =>
             // TODO: Implement custom behavior
-            None
+            _logger.log("#{actor_name}: Processing message")
         """
       end
 
@@ -383,6 +418,8 @@ defmodule ActorSimulation.PonyGenerator do
     // Callback trait for: #{name}
     //
     // Implement this trait to add custom behavior!
+
+    use \"console_logger\"
 
     trait #{actor_name}Callbacks
     #{methods_str}
@@ -394,6 +431,11 @@ defmodule ActorSimulation.PonyGenerator do
       CUSTOMIZE THIS CLASS to add your own behavior!
       The generated actor code will call these methods.
       \"\"\"
+
+      let _logger: ConsoleLogger
+
+      new create(logger: ConsoleLogger) =>
+        _logger = logger
 
     #{impl_methods_str}
     """
@@ -416,6 +458,7 @@ defmodule ActorSimulation.PonyGenerator do
     // Generated from ActorSimulation DSL
     // Main entry point for #{project_name}
 
+    use \"console_logger\"
     #{Enum.join(uses, "\n")}
 
     actor Main
@@ -423,6 +466,9 @@ defmodule ActorSimulation.PonyGenerator do
         \"\"\"
         Start the actor system.
         \"\"\"
+
+        // Create thread-safe console logger
+        let logger = ConsoleLogger(env.out)
 
         // Spawn all actors
     #{spawn_code}
@@ -436,7 +482,7 @@ defmodule ActorSimulation.PonyGenerator do
     |> Enum.map_join("\n", fn {name, _def} ->
       actor_name = actor_snake_case(name)
       class_name = actor_class_name(name)
-      "    let #{actor_name} = #{class_name}(env)"
+      "    let #{actor_name} = #{class_name}(env, logger)"
     end)
   end
 
@@ -458,6 +504,7 @@ defmodule ActorSimulation.PonyGenerator do
     // PonyTest tests for #{project_name}
 
     use \"ponytest\"
+    use \"../console_logger\"
     #{Enum.join(uses, "\n")}
 
     actor Main is TestList
@@ -495,7 +542,8 @@ defmodule ActorSimulation.PonyGenerator do
             fun apply(h: TestHelper) =>
               h.long_test(2_000_000_000)  // 2 second timeout
               // Actor creation test
-              let _actor = #{class_name}(h.env)
+              let logger = ConsoleLogger(h.env.out)
+              let _actor = #{class_name}(h.env, logger)
               h.complete(true)
           """
         end)

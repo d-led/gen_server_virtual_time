@@ -9,5 +9,6 @@
 
 void sink_callbacks::on_message() {
   // TODO: Implement custom behavior
+  std::cout << "sink: Processing message" << std::endl;
 }
 

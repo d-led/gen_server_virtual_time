@@ -23,7 +23,7 @@ set(SOURCES
 add_executable(BurstActors ${SOURCES})
 
 # Link CAF libraries
-target_link_libraries(BurstActors 
+target_link_libraries(BurstActors
   PRIVATE
     CAF::core
     CAF::io
@@ -38,7 +38,7 @@ endif()
 
 # Test executable
 add_executable(BurstActors_test test_actors.cpp)
-target_link_libraries(BurstActors_test 
+target_link_libraries(BurstActors_test
   PRIVATE
     CAF::core
     CAF::io

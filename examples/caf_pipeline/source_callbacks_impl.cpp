@@ -10,5 +10,6 @@
 void source_callbacks::on_data() {
   // TODO: Implement custom behavior for data
   // This is called when the actor receives a data message
+  std::cout << "source: Received data message" << std::endl;
 }
 

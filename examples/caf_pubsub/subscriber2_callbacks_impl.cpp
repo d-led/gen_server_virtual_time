@@ -9,5 +9,6 @@
 
 void subscriber2_callbacks::on_message() {
   // TODO: Implement custom behavior
+  std::cout << "subscriber2: Processing message" << std::endl;
 }
 

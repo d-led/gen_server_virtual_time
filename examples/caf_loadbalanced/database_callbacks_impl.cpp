@@ -9,5 +9,6 @@
 
 void database_callbacks::on_message() {
   // TODO: Implement custom behavior
+  std::cout << "database: Processing message" << std::endl;
 }
 

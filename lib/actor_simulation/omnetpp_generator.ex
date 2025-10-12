@@ -274,32 +274,36 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       nil ->
         "        // No send pattern\n"
 
-      {:self_message, _delay_ms, _message} ->
+      {:self_message, _delay_ms, message} ->
         target_count = length(definition.targets)
+        msg_name = message_name(message)
 
         """
                 // One-shot self-message - send to targets but don't reschedule
+                EV << getName() << ": Processing #{msg_name} message\\n";
                 for (int i = 0; i < #{target_count}; i++) {
                     cMessage *outMsg = new cMessage("msg");
                     send(outMsg, "out", i);
                     sendCount++;
                 }
-                EV << "Self-message timeout triggered\\n";
+                EV << getName() << ": Sent " << #{target_count} << " messages\\n";
                 // Do not reschedule (one-shot)
         """
 
-      {:burst, _count, _interval, _message} ->
+      {:burst, _count, _interval, message} ->
         target_count = length(definition.targets)
         interval = pattern_to_interval(definition.send_pattern)
+        msg_name = message_name(message)
 
         """
                 // Send messages
+                EV << getName() << ": Processing #{msg_name} message\\n";
                 for (int i = 0; i < #{target_count}; i++) {
                     cMessage *outMsg = new cMessage("msg");
                     send(outMsg, "out", i);
                     sendCount++;
                 }
-
+                EV << getName() << ": Sent " << #{target_count} << " messages\\n";
 
                 // Reschedule
                 scheduleAt(simTime() + #{interval}, msg);
@@ -311,12 +315,13 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
         """
                 // Send messages
+                EV << getName() << ": Processing message\\n";
                 for (int i = 0; i < #{target_count}; i++) {
                     cMessage *outMsg = new cMessage("msg");
                     send(outMsg, "out", i);
                     sendCount++;
                 }
-
+                EV << getName() << ": Sent " << #{target_count} << " messages\\n";
 
                 // Reschedule
                 scheduleAt(simTime() + #{interval}, msg);
@@ -405,6 +410,16 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     # Random seed
     seed-set = 0
     """
+  end
+
+  defp message_name(msg) when is_atom(msg) do
+    Atom.to_string(msg)
+  end
+
+  defp message_name(msg) when is_binary(msg), do: msg
+
+  defp message_name(msg) do
+    inspect(msg) |> String.replace(~r/[^a-z0-9_]/, "_")
   end
 
   defp camelize(atom) when is_atom(atom) do

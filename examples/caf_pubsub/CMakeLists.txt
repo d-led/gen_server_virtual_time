@@ -27,7 +27,7 @@ set(SOURCES
 add_executable(PubSubActors ${SOURCES})
 
 # Link CAF libraries
-target_link_libraries(PubSubActors 
+target_link_libraries(PubSubActors
   PRIVATE
     CAF::core
     CAF::io
@@ -42,7 +42,7 @@ endif()
 
 # Test executable
 add_executable(PubSubActors_test test_actors.cpp)
-target_link_libraries(PubSubActors_test 
+target_link_libraries(PubSubActors_test
   PRIVATE
     CAF::core
     CAF::io

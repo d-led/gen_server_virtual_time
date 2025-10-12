@@ -29,7 +29,7 @@ set(SOURCES
 add_executable(LoadBalancedActors ${SOURCES})
 
 # Link CAF libraries
-target_link_libraries(LoadBalancedActors 
+target_link_libraries(LoadBalancedActors
   PRIVATE
     CAF::core
     CAF::io
@@ -44,7 +44,7 @@ endif()
 
 # Test executable
 add_executable(LoadBalancedActors_test test_actors.cpp)
-target_link_libraries(LoadBalancedActors_test 
+target_link_libraries(LoadBalancedActors_test
   PRIVATE
     CAF::core
     CAF::io

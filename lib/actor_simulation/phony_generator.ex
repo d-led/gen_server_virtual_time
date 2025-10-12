@@ -204,7 +204,7 @@ defmodule ActorSimulation.PhonyGenerator do
         """
         func (c *Default#{type_name}Callbacks) On#{msg_name}() {
         \t// TODO: Implement custom behavior for #{msg}
-        \tfmt.Println("#{type_name}: #{msg}")
+        \tfmt.Printf("#{type_name}: Received #{msg} message\\n")
         }
         """
       end)

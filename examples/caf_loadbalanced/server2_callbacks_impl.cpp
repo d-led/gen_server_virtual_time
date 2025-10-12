@@ -9,5 +9,6 @@
 
 void server2_callbacks::on_message() {
   // TODO: Implement custom behavior
+  std::cout << "server2: Processing message" << std::endl;
 }
 

@@ -15,6 +15,26 @@ Model implementations: in Java, Pony, Go and C++.
 > [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/examples/reports/)**
 > (NEW!)
 
+## 🚀 Code Generators
+
+Generate production-ready actor system implementations from high-level DSL:
+
+| Generator   | Language | Framework                                               | Output                                       |
+| ----------- | -------- | ------------------------------------------------------- | -------------------------------------------- |
+| **CAF**     | C++      | [C++ Actor Framework](https://www.actor-framework.org/) | Typed actors, CMake build, Conan deps, tests |
+| **Phony**   | Go       | [Phony](https://github.com/Arceliar/phony)              | Zero-alloc actors, Go modules, tests         |
+| **Pony**    | Pony     | [Pony Language](https://www.ponylang.io/)               | Type-safe actors, Corral deps, PonyTest      |
+| **VLINGO**  | Java     | [VLINGO XOOM](https://docs.vlingo.io/)                  | Protocol actors, Maven, JUnit 5              |
+| **OMNeT++** | C++      | [OMNeT++](https://omnetpp.org/)                         | Discrete-event simulation, NED files, CMake  |
+
+All generators include:
+
+- ✅ Complete build configuration (CMake/Maven/Go modules/Corral)
+- ✅ CI/CD pipeline definitions (GitHub Actions)
+- ✅ Callback interfaces for custom behavior
+- ✅ Comprehensive test suites
+- ✅ Production-ready project structure
+
 ## Show Me The Code
 
 ### Test 100 seconds of behavior in milliseconds

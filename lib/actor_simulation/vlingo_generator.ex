@@ -507,7 +507,7 @@ defmodule ActorSimulation.VlingoGenerator do
             @Override
             public void on#{msg_name}() {
               // TODO: Implement custom behavior for #{msg}
-              System.out.println("#{class_name}: #{msg}");
+              System.out.println("#{class_name}: Received #{msg} message");
             }
           """
         end)
@@ -516,7 +516,7 @@ defmodule ActorSimulation.VlingoGenerator do
           @Override
           public void onProcess() {
             // TODO: Implement custom behavior
-            System.out.println("#{class_name}: processing");
+            System.out.println("#{class_name}: Processing message");
           }
         """
       end

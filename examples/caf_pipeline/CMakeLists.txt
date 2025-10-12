@@ -29,7 +29,7 @@ set(SOURCES
 add_executable(PipelineActors ${SOURCES})
 
 # Link CAF libraries
-target_link_libraries(PipelineActors 
+target_link_libraries(PipelineActors
   PRIVATE
     CAF::core
     CAF::io
@@ -44,7 +44,7 @@ endif()
 
 # Test executable
 add_executable(PipelineActors_test test_actors.cpp)
-target_link_libraries(PipelineActors_test 
+target_link_libraries(PipelineActors_test
   PRIVATE
     CAF::core
     CAF::io

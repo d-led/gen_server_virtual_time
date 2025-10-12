@@ -21,7 +21,7 @@ type DefaultSourceCallbacks struct{}
 
 func (c *DefaultSourceCallbacks) OnData() {
 	// TODO: Implement custom behavior for data
-	fmt.Println("Source: data")
+	fmt.Printf("Source: Received data message\n")
 }
 
 

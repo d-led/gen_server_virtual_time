@@ -9,5 +9,6 @@
 
 void stage1_callbacks::on_message() {
   // TODO: Implement custom behavior
+  std::cout << "stage1: Processing message" << std::endl;
 }
 

@@ -9,5 +9,6 @@
 
 void processor_callbacks::on_message() {
   // TODO: Implement custom behavior
+  std::cout << "processor: Processing message" << std::endl;
 }
 

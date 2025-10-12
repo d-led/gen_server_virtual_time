@@ -21,7 +21,7 @@ int caf_main(actor_system& system) {
 
   // Keep system alive
   std::cout << "Actor system started. Press Ctrl+C to exit." << std::endl;
-  
+
   return 0;
 }
 

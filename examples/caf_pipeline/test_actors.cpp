@@ -14,14 +14,14 @@ using namespace caf;
 TEST_CASE("Actor system can be initialized", "[system]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   REQUIRE(system.scheduler().num_workers() > 0);
 }
 
 TEST_CASE("source_actor can be created", "[source]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   auto actor = system.spawn<source_actor>(std::vector<caf::actor>{});
   REQUIRE(actor != nullptr);
 }
@@ -30,7 +30,7 @@ TEST_CASE("source_actor can be created", "[source]") {
 TEST_CASE("stage1_actor can be created", "[stage1]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   auto actor = system.spawn<stage1_actor>(std::vector<caf::actor>{});
   REQUIRE(actor != nullptr);
 }
@@ -39,7 +39,7 @@ TEST_CASE("stage1_actor can be created", "[stage1]") {
 TEST_CASE("stage2_actor can be created", "[stage2]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   auto actor = system.spawn<stage2_actor>(std::vector<caf::actor>{});
   REQUIRE(actor != nullptr);
 }
@@ -48,7 +48,7 @@ TEST_CASE("stage2_actor can be created", "[stage2]") {
 TEST_CASE("stage3_actor can be created", "[stage3]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   auto actor = system.spawn<stage3_actor>(std::vector<caf::actor>{});
   REQUIRE(actor != nullptr);
 }
@@ -57,7 +57,7 @@ TEST_CASE("stage3_actor can be created", "[stage3]") {
 TEST_CASE("sink_actor can be created", "[sink]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   auto actor = system.spawn<sink_actor>(std::vector<caf::actor>{});
   REQUIRE(actor != nullptr);
 }
@@ -66,7 +66,7 @@ TEST_CASE("sink_actor can be created", "[sink]") {
 TEST_CASE("All actors can be spawned", "[actors]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   auto source = system.spawn<source_actor>(std::vector<actor>{});
   REQUIRE(source != nullptr);
   
@@ -81,7 +81,7 @@ TEST_CASE("All actors can be spawned", "[actors]") {
   
   auto sink = system.spawn<sink_actor>(std::vector<actor>{});
   REQUIRE(sink != nullptr);
-  
+
   // All actors spawned successfully
   SUCCEED("All actors created");
 }
@@ -89,7 +89,7 @@ TEST_CASE("All actors can be spawned", "[actors]") {
 TEST_CASE("Actors can communicate", "[communication]") {
   actor_system_config cfg;
   actor_system system{cfg};
-  
+
   // Spawn actors
   auto source = system.spawn<source_actor>(std::vector<actor>{});
   REQUIRE(source != nullptr);
@@ -105,7 +105,7 @@ TEST_CASE("Actors can communicate", "[communication]") {
   
   auto sink = system.spawn<sink_actor>(std::vector<actor>{});
   REQUIRE(sink != nullptr);
-  
+
   // Actors are alive
   SUCCEED("Communication test placeholder");
 }

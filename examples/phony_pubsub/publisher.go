@@ -21,7 +21,7 @@ type DefaultPublisherCallbacks struct{}
 
 func (c *DefaultPublisherCallbacks) OnEvent() {
 	// TODO: Implement custom behavior for event
-	fmt.Println("Publisher: event")
+	fmt.Printf("Publisher: Received event message\n")
 }
 
 

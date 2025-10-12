@@ -45,14 +45,17 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
 
-      - name: Run tests (generates diagrams)
+      - name: Run diagram generation tests
         run: mix test --only diagram_generation
+      
+      - name: Run flowchart report tests  
+        run: mix test test/mermaid_report_test.exs
 
-      - name: Upload diagram artifacts
+      - name: Upload all examples artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sequence-diagrams
-          path: test/output/*.html
+          name: examples-site
+          path: doc/examples
           retention-days: 7
           if-no-files-found: error
 
@@ -69,11 +72,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-      - name: Download diagram artifacts
+      - name: Download examples site
         uses: actions/download-artifact@v4
         with:
-          name: sequence-diagrams
-          path: public
+          name: examples-site
+          path: public/examples
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

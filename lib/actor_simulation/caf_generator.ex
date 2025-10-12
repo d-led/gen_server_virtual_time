@@ -393,6 +393,7 @@ defmodule ActorSimulation.CAFGenerator do
         void #{class_name}::on_#{msg_name}() {
           // TODO: Implement custom behavior for #{msg}
           // This is called when the actor receives a #{msg} message
+          std::cout << "#{name}: Received #{msg} message" << std::endl;
         }
         """
       end)
@@ -404,6 +405,7 @@ defmodule ActorSimulation.CAFGenerator do
         """
         void #{class_name}::on_message() {
           // TODO: Implement custom behavior
+          std::cout << "#{name}: Processing message" << std::endl;
         }
         """
       end
