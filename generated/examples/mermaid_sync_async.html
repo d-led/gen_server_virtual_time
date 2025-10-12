@@ -99,10 +99,10 @@ sequenceDiagram
     activate responder
     requester->>responder: :get_data
     deactivate responder
-    notifier-->>listener: :notify
     activate responder
     requester->>responder: :get_data
     deactivate responder
+    notifier-->>listener: :notify
     </div>
   </div>
 
@@ -116,10 +116,10 @@ sequenceDiagram
     activate responder
     requester->>responder: :get_data
     deactivate responder
-    notifier-->>listener: :notify
     activate responder
     requester->>responder: :get_data
-    deactivate responder</pre>
+    deactivate responder
+    notifier-->>listener: :notify</pre>
   </div>
 
   <div class="source-links">

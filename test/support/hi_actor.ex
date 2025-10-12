@@ -43,7 +43,7 @@ defmodule HiActor do
     # IO.puts("HiActor #{name} init: backend=#{inspect(backend)}, clock=#{inspect(clock)}")
 
     # Set random seed for reproducible results
-    :rand.seed(:exs1024, {12345, 67890, 11111})
+    :rand.seed(:exs1024, {12_345, 67_890, 11_111})
 
     # Schedule the first random message
     schedule_random_message()

@@ -554,7 +554,7 @@ defmodule MermaidReportTest do
       # Using fixed random seed for reproducible results
 
       # Set random seed for reproducibility
-      :rand.seed(:exs1024, {12345, 67890, 11111})
+      :rand.seed(:exs1024, {12_345, 67_890, 11_111})
 
       # Create list of all actor names for random selection
       all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
@@ -633,7 +633,7 @@ defmodule MermaidReportTest do
       """
 
       # Set random seed for reproducible results
-      :rand.seed(:exs1024, {12345, 67890, 11111})
+      :rand.seed(:exs1024, {12_345, 67_890, 11_111})
 
       # Create list of all actor names for random selection
       all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
@@ -813,7 +813,7 @@ defmodule MermaidReportTest do
       """
 
       # Set random seed for reproducible results
-      :rand.seed(:exs1024, {12345, 67890, 11111})
+      :rand.seed(:exs1024, {12_345, 67_890, 11_111})
 
       # Create list of all actor names
       all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]

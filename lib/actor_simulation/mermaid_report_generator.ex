@@ -707,128 +707,104 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   defp generate_dynamic_legend(actors, stats) do
-    # Determine which actor types are actually present
-    # Use the same logic as node_shape to ensure consistency
-    actor_types =
-      Enum.reduce(actors, %{}, fn {name, actor_info}, acc ->
-        case actor_info.type do
-          :simulated ->
-            # For simulated actors, use same logic as node_shape
-            definition = actor_info.definition
-            targets = definition.targets || []
-            has_targets = length(targets) > 0
-            can_receive = definition.on_receive != nil || definition.on_match != []
-            can_send = definition.send_pattern != nil || (can_receive && has_targets)
+    actor_types = collect_actor_types(actors, stats)
 
-            cond do
-              # Source actors (only send): stadium shape (oval)
-              can_send && !can_receive ->
-                Map.put(acc, :source, true)
+    legend_nodes = build_legend_nodes(actor_types)
 
-              # Sink actors (only receive, no targets): rectangle
-              can_receive && !has_targets ->
-                Map.put(acc, :sink, true)
-
-              # Processing actors (can both send and receive): rounded rectangle
-              can_send && can_receive && has_targets ->
-                Map.put(acc, :processor, true)
-
-              # Passive actors: regular rectangle (treated as sink for legend)
-              true ->
-                Map.put(acc, :sink, true)
-            end
-
-          :real_process ->
-            # For real processes, determine type from stats and targets
-            targets = actor_info.targets || []
-            actor_stats = get_actor_stats(stats, name)
-
-            has_targets = length(targets) > 0
-            has_stats = actor_stats != nil
-            sent_count = if has_stats, do: actor_stats.sent_count, else: 0
-            received_count = if has_stats, do: actor_stats.received_count, else: 0
-
-            # Determine node type based on behavior
-            is_sink = !has_targets
-            is_source = has_targets && !is_sink && sent_count > 0 && received_count == 0
-            is_processor = has_targets && !is_sink && !is_source
-
-            cond do
-              is_source -> Map.put(acc, :source, true)
-              is_sink -> Map.put(acc, :sink, true)
-              is_processor -> Map.put(acc, :processor, true)
-              # Default to processor
-              true -> Map.put(acc, :processor, true)
-            end
-        end
-      end)
-
-    # Generate Mermaid legend diagram with actual node shapes
-    legend_nodes = []
-
-    legend_nodes =
-      if Map.get(actor_types, :source) do
-        legend_nodes ++ ["legend_source([\"Source<br/>(sends only)\"])"]
-      else
-        legend_nodes
-      end
-
-     legend_nodes =
-       if Map.get(actor_types, :processor) do
-         legend_nodes ++ ["legend_processor(\"Processor<br/>(send & receive)\")"]
-       else
-         legend_nodes
-       end
-
-    legend_nodes =
-      if Map.get(actor_types, :sink) do
-        legend_nodes ++ ["legend_sink[\"Sink<br/>(receives only)\"]"]
-      else
-        legend_nodes
-      end
-
-    # If no legend items, return empty string
     if Enum.empty?(legend_nodes) do
       ""
     else
-      # Add styling to legend nodes to match the main diagram
-      legend_styles = []
+      legend_styles = build_legend_styles(actor_types)
+      render_legend_html(legend_nodes, legend_styles)
+    end
+  end
 
-      legend_styles = if Map.get(actor_types, :source) do
-        legend_styles ++ ["style legend_source fill:#e8f5e9,stroke:#388e3c"]
-      else
-        legend_styles
-      end
+  defp collect_actor_types(actors, stats) do
+    Enum.reduce(actors, %{}, fn {name, actor_info}, acc ->
+      actor_type = determine_actor_type(actor_info, name, stats)
+      Map.put(acc, actor_type, true)
+    end)
+  end
 
-      legend_styles = if Map.get(actor_types, :processor) do
-        legend_styles ++ ["style legend_processor fill:#e8f5e9,stroke:#388e3c"]
-      else
-        legend_styles
-      end
+  defp determine_actor_type(actor_info, name, stats) do
+    case actor_info.type do
+      :simulated -> determine_simulated_actor_type(actor_info.definition)
+      :real_process -> determine_real_process_actor_type(actor_info, name, stats)
+    end
+  end
 
-      legend_styles = if Map.get(actor_types, :sink) do
-        legend_styles ++ ["style legend_sink fill:#e8f5e9,stroke:#388e3c"]
-      else
-        legend_styles
-      end
+  defp determine_simulated_actor_type(definition) do
+    targets = definition.targets || []
+    has_targets = length(targets) > 0
+    can_receive = definition.on_receive != nil || definition.on_match != []
+    can_send = definition.send_pattern != nil || (can_receive && has_targets)
 
-      mermaid_legend = """
-      flowchart TD
-          #{Enum.join(legend_nodes, "\n    ")}
-          #{Enum.join(legend_styles, "\n    ")}
-      """
+    cond do
+      can_send && !can_receive -> :source
+      can_receive && !has_targets -> :sink
+      can_send && can_receive && has_targets -> :processor
+      true -> :sink
+    end
+  end
 
-      """
-      <hr style="margin: 30px 0 20px 0; border: none; border-top: 1px solid #e9ecef;">
-      <div style="margin-top: 20px;">
-        <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
-        <div style="display: flex; justify-content: center; overflow-x: auto;">
-          <div class="mermaid" style="min-width: auto; height: auto; overflow: visible;">
-      #{mermaid_legend}
-          </div>
+  defp determine_real_process_actor_type(actor_info, name, stats) do
+    targets = actor_info.targets || []
+    actor_stats = get_actor_stats(stats, name)
+
+    has_targets = length(targets) > 0
+    has_stats = actor_stats != nil
+    sent_count = if has_stats, do: actor_stats.sent_count, else: 0
+    received_count = if has_stats, do: actor_stats.received_count, else: 0
+
+    is_sink = !has_targets
+    is_source = has_targets && !is_sink && sent_count > 0 && received_count == 0
+
+    cond do
+      is_source -> :source
+      is_sink -> :sink
+      true -> :processor
+    end
+  end
+
+  defp build_legend_nodes(actor_types) do
+    []
+    |> add_legend_node_if(actor_types, :source, "legend_source([\"Source<br/>(sends only)\"])")
+    |> add_legend_node_if(actor_types, :processor, "legend_processor(\"Processor<br/>(send & receive)\")")
+    |> add_legend_node_if(actor_types, :sink, "legend_sink[\"Sink<br/>(receives only)\"]")
+  end
+
+  defp add_legend_node_if(nodes, actor_types, type, node_def) do
+    if Map.get(actor_types, type), do: nodes ++ [node_def], else: nodes
+  end
+
+  defp build_legend_styles(actor_types) do
+    []
+    |> add_legend_style_if(actor_types, :source, "style legend_source fill:#e8f5e9,stroke:#388e3c")
+    |> add_legend_style_if(actor_types, :processor, "style legend_processor fill:#e8f5e9,stroke:#388e3c")
+    |> add_legend_style_if(actor_types, :sink, "style legend_sink fill:#e8f5e9,stroke:#388e3c")
+  end
+
+  defp add_legend_style_if(styles, actor_types, type, style_def) do
+    if Map.get(actor_types, type), do: styles ++ [style_def], else: styles
+  end
+
+  defp render_legend_html(legend_nodes, legend_styles) do
+    mermaid_legend = """
+    flowchart TD
+        #{Enum.join(legend_nodes, "\n    ")}
+        #{Enum.join(legend_styles, "\n    ")}
+    """
+
+    """
+    <hr style="margin: 30px 0 20px 0; border: none; border-top: 1px solid #e9ecef;">
+    <div style="margin-top: 20px;">
+      <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
+      <div style="display: flex; justify-content: flex-start; overflow-x: auto;">
+        <div class="mermaid" style="min-width: auto; height: auto; overflow: visible; font-size: 24px; transform: scale(1.5); transform-origin: left top;">
+    #{mermaid_legend}
         </div>
       </div>
-      """
-    end
+    </div>
+    """
   end
 end

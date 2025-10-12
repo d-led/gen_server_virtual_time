@@ -229,9 +229,9 @@ defmodule ActorSimulation.CAFGenerator do
 
     # Suppress warning for unused targets parameter when not needed
     unused_targets_suppress =
-      if !has_targets,
-        do: "  (void)targets; // Unused but required for API consistency\n",
-        else: ""
+      if has_targets,
+        do: "",
+        else: "  (void)targets; // Unused but required for API consistency\n"
 
     behavior_handlers = generate_behavior_handlers(name, definition, enable_callbacks)
     schedule_impl = generate_schedule_impl(definition)
@@ -506,10 +506,7 @@ defmodule ActorSimulation.CAFGenerator do
         actor_name = actor_snake_case(name)
 
         if length(def.targets) > 0 do
-          target_refs =
-            def.targets
-            |> Enum.map(&actor_snake_case/1)
-            |> Enum.join(", ")
+          target_refs = Enum.map_join(def.targets, ", ", &actor_snake_case/1)
 
           "  // Re-spawn #{actor_name} with proper targets\n  #{actor_name} = system.spawn<#{actor_name}_actor>(std::vector<actor>{#{target_refs}});"
         else

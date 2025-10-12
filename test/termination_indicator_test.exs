@@ -172,21 +172,39 @@ defmodule TerminationIndicatorTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "3 dining philosophers - all fed successfully" do
+    test "5 dining philosophers - all fed successfully" do
       simulation =
         DiningPhilosophers.create_simulation(
-          num_philosophers: 3,
-          think_time: 100,
-          eat_time: 50,
+          num_philosophers: 5,
+          think_time: 20,
+          eat_time: 10,
           trace: true
         )
-        |> ActorSimulation.run(duration: 3000)
+        |> ActorSimulation.run(
+          max_duration: 30_000,
+          terminate_when: fn sim ->
+            # Check if all philosophers have eaten by looking for "I'm full!" messages
+            trace = sim.trace
 
-      # Verify all 3 philosophers ate (said "I'm full!")
+            philosophers_who_ate =
+              Enum.filter(0..4, fn i ->
+                name = :"philosopher_#{i}"
+
+                Enum.any?(trace, fn event ->
+                  event.from == name and event.to == name and
+                    event.message == {:mumble, "I'm full!"}
+                end)
+              end)
+
+            length(philosophers_who_ate) == 5
+          end
+        )
+
+      # Verify all 5 philosophers ate (said "I'm full!")
       trace = simulation.trace
 
       philosophers_who_ate =
-        Enum.filter(0..2, fn i ->
+        Enum.filter(0..4, fn i ->
           name = :"philosopher_#{i}"
 
           Enum.any?(trace, fn event ->
@@ -195,8 +213,8 @@ defmodule TerminationIndicatorTest do
           end)
         end)
 
-      assert length(philosophers_who_ate) == 3,
-             "Expected all 3 philosophers to eat, but only #{inspect(philosophers_who_ate)} ate"
+      assert length(philosophers_who_ate) == 5,
+             "Expected all 5 philosophers to eat, but only #{inspect(philosophers_who_ate)} ate"
 
       mermaid =
         ActorSimulation.trace_to_mermaid(simulation,
@@ -213,19 +231,19 @@ defmodule TerminationIndicatorTest do
       <html>
       <head>
         <meta charset="utf-8">
-        <title>3 Dining Philosophers - Condition Terminated</title>
+        <title>5 Dining Philosophers - All Fed Successfully</title>
         <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
         <style>
-          body { font-family: system-ui; max-width: 1600px; margin: 40px auto; padding: 20px; }
+          body { font-family: system-ui; max-width: 1800px; margin: 40px auto; padding: 20px; }
           .mermaid { background: white; padding: 40px; border-radius: 8px; }
           .info { background: #d1fae5; padding: 20px; border-left: 4px solid #10b981; margin-bottom: 20px; border-radius: 4px; }
         </style>
       </head>
       <body>
-        <h1>🍴 3 Philosophers - All Fed Successfully</h1>
+        <h1>🍴 5 Philosophers - All Fed Successfully (Classic Case)</h1>
         <div class="info">
           <strong>✅ Success!</strong><br>
-          All 3 philosophers successfully ate at least once during the simulation.<br>
+          All 5 philosophers successfully ate at least once during the simulation.<br>
           Look for each philosopher's <strong>"I'm full!"</strong> message in the diagram below!
         </div>
         <div class="mermaid">
@@ -247,13 +265,13 @@ defmodule TerminationIndicatorTest do
       </html>
       """
 
-      File.write!("generated/examples/dining_philosophers_3_condition_terminated.html", html)
+      File.write!("generated/examples/dining_philosophers_5_all_fed.html", html)
 
       IO.puts(
-        "\n✅ Generated 3-philosopher condition-terminated diagram: generated/examples/dining_philosophers_3_condition_terminated.html"
+        "\n✅ Generated 5-philosopher diagram: generated/examples/dining_philosophers_5_all_fed.html"
       )
 
-      IO.puts("   All 3 philosophers successfully ate - check the diagram!")
+      IO.puts("   All 5 philosophers successfully ate - check the diagram!")
 
       ActorSimulation.stop(simulation)
     end
