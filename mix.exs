@@ -104,7 +104,8 @@ defmodule GenServerVirtualTime.MixProject do
         "docs/generators.md": [title: "Code Generators"],
         "docs/omnetpp_generator.md": [title: "OMNeT++ Generator"],
         "docs/caf_generator.md": [title: "CAF Generator"],
-        "docs/pony_generator.md": [title: "Pony Generator"]
+        "docs/pony_generator.md": [title: "Pony Generator"],
+        "docs/phony_generator.md": [title: "Phony (Go) Generator"]
       ],
       groups_for_modules: [
         Core: [
