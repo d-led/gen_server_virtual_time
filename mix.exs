@@ -98,15 +98,11 @@ defmodule GenServerVirtualTime.MixProject do
       source_url: @source_url,
       extras: [
         "README.md",
-        "CHANGELOG.md",
-        "CONTRIBUTING.md",
-        "docs/README.md": [title: "Documentation Index"],
         "docs/generators.md": [title: "Code Generators Overview"],
         "docs/omnetpp_generator.md": [title: "OMNeT++ Generator"],
         "docs/caf_generator.md": [title: "CAF Generator"],
         "docs/pony_generator.md": [title: "Pony Generator"],
         "docs/phony_generator.md": [title: "Phony (Go) Generator"],
-        "docs/four_generators_complete.md": [title: "Generators Complete"],
         "docs/implementation_summary.md": [title: "Implementation Summary"]
       ],
       groups_for_modules: [
