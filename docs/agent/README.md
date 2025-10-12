@@ -27,11 +27,31 @@ specific development sessions.
 
 ## File Organization
 
-- `*_COMPLETE.md` - Feature completion markers (historical)
-- `*_STATUS.md` - Status snapshots during development (historical)
-- `*_SUMMARY.md` - Development session summaries (historical)
+### Project Milestones
+- `*_COMPLETE.md` - Feature completion markers
+- `MISSION_ACCOMPLISHED.md` - Four generators milestone
+- `WORK_COMPLETE.md` - Generator completion status
+- `generators_ready.md` - Five generators release readiness
+- `session_complete.md` - Three generators session
+
+### Development Sessions
+- `*_SUMMARY.md` - Session summaries
+- `*_STATUS.md` - Status snapshots
+- `BINARY_NAMING_CI_CACHING.md` - Binary naming & caching implementation
+- `DEMO_BUILD_STATUS.md` - Demo build status
+
+### Infrastructure & Setup
 - `*_SETUP.md` - Setup and configuration logs
-- Technical documents (e.g., `GENSERVER_*.md`, `OMNETPP_*.md`, `CAF_*.md`)
+- `CI_SETUP_COMPLETE.md` - CI infrastructure
+- `DEPLOYMENT_SUMMARY.md` - Deployment setup
+
+### Technical Documentation
+- `GENSERVER_*.md` - GenServer callback features
+- `OMNETPP_*.md` - OMNeT++ generator details
+- `CAF_*.md` - CAF generator details
+- `DSL_*.md` - DSL analysis and status
+
+### Verification
 - `VERIFICATION_RESULTS.md` - ✅ Accuracy verification (current)
 
 These files are not required for using the library but may be useful for:

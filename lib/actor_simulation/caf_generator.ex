@@ -55,6 +55,7 @@ defmodule ActorSimulation.CAFGenerator do
 
     files =
       []
+      |> add_atoms_header(actors)
       |> add_actor_files(actors, enable_callbacks)
       |> add_main_file(actors, project_name)
       |> add_test_files(actors, project_name)
@@ -76,6 +77,11 @@ defmodule ActorSimulation.CAFGenerator do
   end
 
   # Private functions
+
+  defp add_atoms_header(files, actors) do
+    content = generate_atoms_header(actors)
+    [{"atoms.hpp", content} | files]
+  end
 
   defp add_actor_files(files, actors, enable_callbacks) do
     Enum.reduce(actors, files, fn {name, actor_info}, acc ->
@@ -178,9 +184,6 @@ defmodule ActorSimulation.CAFGenerator do
         ""
       end
 
-    # CAF 1.0: Define atom constants
-    atom_defs = generate_atom_definitions(definition)
-
     """
     // Generated from ActorSimulation DSL
     // Actor: #{name}
@@ -190,8 +193,8 @@ defmodule ActorSimulation.CAFGenerator do
     #include <caf/all.hpp>
     #include <chrono>
     #include <vector>
+    #include "atoms.hpp"
     #{callback_include}
-    #{atom_defs}
     class #{class_name} : public caf::event_based_actor {
       public:
         #{class_name}(caf::actor_config& cfg, const std::vector<caf::actor>& targets);
@@ -337,7 +340,7 @@ defmodule ActorSimulation.CAFGenerator do
       """
         for (auto& target : targets_) {
           // CAF 1.0: Use mail API instead of send
-          mail(msg_atom::value).send(target);
+          mail(msg_atom_v).send(target);
           send_count_++;
         }
       """
@@ -877,7 +880,36 @@ defmodule ActorSimulation.CAFGenerator do
     inspect(msg) |> String.replace(~r/[^a-z0-9_]/, "_")
   end
 
-  # CAF 1.0: Generate atom constant definitions
+  # CAF 1.0: Generate shared atoms header that all actors include
+  defp generate_atoms_header(actors) do
+    # Collect all unique atoms from all actors
+    all_atoms =
+      actors
+      |> Enum.filter(fn {_name, info} -> info.type == :simulated end)
+      |> Enum.flat_map(fn {_name, info} ->
+        collect_atoms_from_definition(info.definition)
+      end)
+      |> Enum.uniq()
+      |> Enum.sort()
+
+    atom_defs = Enum.map(all_atoms, fn atom_str ->
+      "CAF_ADD_ATOM(ActorSimulation, #{atom_str}_atom)"
+    end)
+
+    """
+    // Generated from ActorSimulation DSL
+    // Shared atom definitions for all actors
+
+    #pragma once
+
+    #include <caf/type_id.hpp>
+
+    // Atom definitions
+    #{Enum.join(atom_defs, "\n")}
+    """
+  end
+
+  # CAF 1.0: Generate atom definitions using CAF_ADD_ATOM macro
   defp generate_atom_definitions(definition) do
     atoms = collect_atoms_from_definition(definition)
     
@@ -885,10 +917,10 @@ defmodule ActorSimulation.CAFGenerator do
       ""
     else
       atom_lines = Enum.map(atoms, fn atom_str ->
-        "using #{atom_str}_atom = caf::atom_constant<caf::atom(\"#{atom_str}\")>;"
+        "CAF_ADD_ATOM(ActorSimulation, #{atom_str}_atom)"
       end)
       
-      "\n// Atom constants for this actor\n" <> Enum.join(atom_lines, "\n") <> "\n"
+      "\n// Atom definitions for this actor\n" <> Enum.join(atom_lines, "\n") <> "\n"
     end
   end
 
@@ -924,14 +956,14 @@ defmodule ActorSimulation.CAFGenerator do
   end
 
   defp message_to_atom(msg) when is_atom(msg) do
-    "#{msg}_atom::value"
+    "#{msg}_atom_v"
   end
 
   defp message_to_atom(msg) when is_binary(msg) do
-    "#{msg}_atom::value"
+    "#{msg}_atom_v"
   end
 
   defp message_to_atom(_msg) do
-    "msg_atom::value"
+    "msg_atom_v"
   end
 end

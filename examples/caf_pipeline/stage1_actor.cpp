@@ -13,7 +13,7 @@ caf::behavior stage1_actor::make_behavior() {
   schedule_next_send();
 
   return {
-    [=](caf::atom_value msg) {
+    [=](event_atom) {
       // Default message handler
       send_to_targets();
       schedule_next_send();
@@ -27,7 +27,8 @@ void stage1_actor::schedule_next_send() {
 
 void stage1_actor::send_to_targets() {
   for (auto& target : targets_) {
-    send(target, caf::atom("msg"));
+    // CAF 1.0: Use mail API instead of send
+    mail(msg_atom_v).send(target);
     send_count_++;
   }
 }

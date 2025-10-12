@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "stage1_callbacks.hpp"
-
 
 class stage1_actor : public caf::event_based_actor {
   public:

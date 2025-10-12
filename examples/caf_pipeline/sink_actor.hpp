@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "sink_callbacks.hpp"
-
 
 class sink_actor : public caf::event_based_actor {
   public:

@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "burst_generator_callbacks.hpp"
-
 
 class burst_generator_actor : public caf::event_based_actor {
   public:

@@ -150,7 +150,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
     # Sanitize label for Mermaid
     safe_label = label |> String.replace("\"", "&quot;")
 
-    "#{name}#{shape_start}\"#{safe_label}\"#{shape_end}"
+    "#{name}#{shape_start}#{safe_label}#{shape_end}"
   end
 
   defp generate_process_node(name, actor_info, stats, show_stats) do
@@ -174,10 +174,10 @@ defmodule ActorSimulation.MermaidReportGenerator do
 
     # Choose shape to match legend
     {left_shape, right_shape} = cond do
-      is_source -> {"([", "])"}  # Stadium shape (oval) for source
-      is_sink -> {">", "]"}      # Asymmetric shape (L-shape) for sink
-      is_processor -> {"(", ")"} # Rounded rectangle for processor
-      true -> {"[", "]"}         # Regular rectangle for unknown
+      is_source -> {"([\"", "\"])"}  # Stadium shape (oval) for source
+      is_sink -> {">\"", "\"]"}      # Asymmetric shape (L-shape) for sink
+      is_processor -> {"(\"", "\")"} # Rounded rectangle for processor
+      true -> {"[\"", "\"]"}         # Regular rectangle for unknown
     end
 
     # Build label with stats
@@ -191,7 +191,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
     end
 
     safe_label = label |> String.replace("\"", "&quot;")
-    "#{name}#{left_shape}\"#{safe_label}\"#{right_shape}"
+    "#{name}#{left_shape}#{safe_label}#{right_shape}"
   end
 
   defp node_shape(definition) do
@@ -199,12 +199,12 @@ defmodule ActorSimulation.MermaidReportGenerator do
       # Source actors (only send): stadium shape (oval) - matches legend
       definition.send_pattern != nil && definition.on_receive == nil &&
           definition.on_match == [] ->
-        {"([", "])"}
+        {"([\"", "\"])"}
 
       # Sink actors (only receive): asymmetric shape (L-shape) - matches legend
       definition.send_pattern == nil &&
           (definition.on_receive != nil || definition.on_match != []) ->
-        {">", "]"}
+        {">\"", "\"]"}
 
       # Processing actors (send and receive): rounded rectangle - matches legend
       definition.send_pattern != nil &&

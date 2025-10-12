@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "publisher_callbacks.hpp"
-
 
 class publisher_actor : public caf::event_based_actor {
   public:

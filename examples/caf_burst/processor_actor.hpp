@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "processor_callbacks.hpp"
-
 
 class processor_actor : public caf::event_based_actor {
   public:

@@ -13,7 +13,7 @@ caf::behavior burst_generator_actor::make_behavior() {
   schedule_next_send();
 
   return {
-    [=](caf::atom_value msg) {
+    [=](batch_atom) {
   callbacks_->on_batch();
       send_to_targets();
       schedule_next_send();
@@ -23,13 +23,14 @@ caf::behavior burst_generator_actor::make_behavior() {
 
 void burst_generator_actor::schedule_next_send() {
   for (int i = 0; i < 10; i++) {
-    delayed_send(this, std::chrono::milliseconds(1000), caf::atom("batch"));
+    delayed_send(this, std::chrono::milliseconds(1000), batch_atom_v);
   }
 }
 
 void burst_generator_actor::send_to_targets() {
   for (auto& target : targets_) {
-    send(target, caf::atom("msg"));
+    // CAF 1.0: Use mail API instead of send
+    mail(msg_atom_v).send(target);
     send_count_++;
   }
 }

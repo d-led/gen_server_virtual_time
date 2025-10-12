@@ -2,81 +2,74 @@
 
 Welcome to the `gen_server_virtual_time` documentation!
 
-## Core Concepts
+## 🚀 Getting Started
 
-- [Main README](../README.md) - Project overview and quick start
-- [CHANGELOG](../CHANGELOG.md) - Version history and changes
+- **[Main README](../README.md)** - Project overview and installation
+- **[Quick Start](generators.md)** - Generate code in 5 minutes with single-file scripts
 
-## Code Generators
+## 📚 Core Documentation
 
-Transform ActorSimulation DSL into production code across multiple languages:
+### Virtual Time System
 
-- **[Generators Overview](generators.md)** - Quick start with single-file
-  scripts
+- **[Virtual Clock Design](virtual_clock_design.md)** - Architecture and design decisions
+- **[Local Clock Injection](local_clock_injection_feature.md)** - Isolated time control
+- **[Implementation Summary](implementation_summary.md)** - Technical deep dive
+
+### Code Generators
+
+Transform ActorSimulation DSL into production code across five languages:
+
 - **[OMNeT++ Generator](omnetpp_generator.md)** - Network simulations (C++)
-- **[CAF Generator](caf_generator.md)** - Production actor systems with
-  callbacks (C++)
+- **[CAF Generator](caf_generator.md)** - Production actors with callbacks (C++)
 - **[Pony Generator](pony_generator.md)** - Capabilities-secure actors (Pony)
 - **[Phony Generator](phony_generator.md)** - Zero-allocation actors (Go)
+- **[VLINGO Generator](vlingo_generator.md)** - Type-safe actors (Java)
 
-### Status & Summary
+### Visualization
 
-- **[Generators Ready](generators_ready.md)** - Complete status, ready for
-  release!
-- **[Implementation Details](implementation_summary.md)** - Technical details
+- **[Flowchart Reports](flowchart_reports.md)** - Interactive Mermaid diagrams
 
-## Examples
+## 💻 Examples
 
-All examples are in the [`examples/`](../examples/) directory:
+All examples are in the [`examples/`](../examples/) directory.
 
-### Single-File Scripts
+### Single-File Scripts (No Installation Required!)
 
-Use these with `Mix.install` - no setup required!
+Generate complete projects with just `Mix.install`:
 
-- [`single_file_omnetpp.exs`](../examples/single_file_omnetpp.exs)
-- [`single_file_caf.exs`](../examples/single_file_caf.exs)
-- [`single_file_pony.exs`](../examples/single_file_pony.exs)
-- [`single_file_phony.exs`](../examples/single_file_phony.exs)
+```bash
+elixir examples/single_file_omnetpp.exs  # OMNeT++ project
+elixir examples/single_file_caf.exs      # CAF project
+elixir examples/single_file_pony.exs     # Pony project
+elixir examples/single_file_phony.exs    # Go project
+```
 
-### Generated Projects
+### Pre-Generated Projects
 
-Complete, buildable projects:
+16+ complete, buildable projects ready to explore:
+- **4 OMNeT++ projects** - Network simulations (C++)
+- **4 CAF projects** - Actor systems with Catch2 tests (C++)
+- **4 Pony projects** - Data-race-free actors (Pony)
+- **4 Phony projects** - Zero-allocation actors (Go)
 
-**OMNeT++ (C++):**
+See [`examples/`](../examples/) directory for all projects.
 
-- [`omnetpp_pubsub/`](../examples/omnetpp_pubsub/)
-- [`omnetpp_pipeline/`](../examples/omnetpp_pipeline/)
-- [`omnetpp_burst/`](../examples/omnetpp_burst/)
-- [`omnetpp_loadbalanced/`](../examples/omnetpp_loadbalanced/)
+## 🛠️ Development
 
-**CAF (C++):**
+### For Contributors
 
-- [`caf_pubsub/`](../examples/caf_pubsub/)
-- [`caf_pipeline/`](../examples/caf_pipeline/)
-- [`caf_burst/`](../examples/caf_burst/)
-- [`caf_loadbalanced/`](../examples/caf_loadbalanced/)
+- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute
+- **[Development Docs](development/README.md)** - Setup and workflows
+- **[Versioning Guide](development/VERSIONING.md)** - Release process
+- **[Scripts README](../scripts/README.md)** - Automation tools
 
-**Pony:**
+### Historical Records
 
-- [`pony_pubsub/`](../examples/pony_pubsub/)
-- [`pony_pipeline/`](../examples/pony_pipeline/)
-- [`pony_burst/`](../examples/pony_burst/)
-- [`pony_loadbalanced/`](../examples/pony_loadbalanced/)
+- **[Agent Logs](agent/README.md)** - AI-assisted development history
 
-**Phony (Go):**
+## 🔗 Links
 
-- [`phony_pubsub/`](../examples/phony_pubsub/)
-- [`phony_pipeline/`](../examples/phony_pipeline/)
-- [`phony_burst/`](../examples/phony_burst/)
-- [`phony_loadbalanced/`](../examples/phony_loadbalanced/)
-
-## Development
-
-- [Contributing](../CONTRIBUTING.md) - How to contribute
-- [Scripts](../scripts/README.md) - Automation scripts
-
-## Quick Links
-
-- [Hex Package](https://hex.pm/packages/gen_server_virtual_time)
-- [GitHub Repository](https://github.com/yourusername/gen_server_virtual_time)
-- [Online Documentation](https://hexdocs.pm/gen_server_virtual_time)
+- **[Hex Package](https://hex.pm/packages/gen_server_virtual_time)** - Published package
+- **[GitHub](https://github.com/yourusername/gen_server_virtual_time)** - Source code
+- **[HexDocs](https://hexdocs.pm/gen_server_virtual_time)** - API documentation
+- **[Changelog](../CHANGELOG.md)** - Version history

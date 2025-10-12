@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "subscriber2_callbacks.hpp"
-
 
 class subscriber2_actor : public caf::event_based_actor {
   public:

@@ -2,10 +2,10 @@
 
 Documentation for developers working on the GenServerVirtualTime library.
 
-## Publishing
+## Versioning & Publishing
 
-See [PUBLISHING.md](PUBLISHING.md) for instructions on releasing new versions to
-Hex.pm.
+- **[VERSIONING.md](VERSIONING.md)** - Complete guide to version management, release workflow, and publishing
+- **[PUBLISHING.md](PUBLISHING.md)** - Additional publishing instructions
 
 ## Virtual Clock Configuration: Global vs Local
 
@@ -202,15 +202,22 @@ See [CONTRIBUTING.md](../../CONTRIBUTING.md) in the root directory.
 
 ## Release Process
 
-1. Update version in `mix.exs`
-2. Update `CHANGELOG.md`
-3. Run tests: `mix test`
-4. Run quality checks: `mix precommit`
-5. Generate docs: `mix docs`
-6. Commit changes
-7. Create git tag: `git tag v0.x.x`
-8. Push tag: `git push origin v0.x.x`
-9. Publish to Hex: `mix hex.publish`
-10. Publish docs: `mix hex.publish docs`
+Use the `bump_version.sh` script to manage versions:
 
-See [PUBLISHING.md](PUBLISHING.md) for detailed instructions.
+```bash
+# Bump version (patch, minor, major, rc, or release)
+./scripts/bump_version.sh patch
+
+# Run quality checks
+mix precommit
+
+# Commit, tag, and push
+git add -A
+git commit -m "Release v0.x.x"
+git tag v0.x.x
+git push && git push --tags
+```
+
+The GitHub Actions workflow will automatically publish to Hex.pm when you push a tag.
+
+See [VERSIONING.md](VERSIONING.md) for complete details.

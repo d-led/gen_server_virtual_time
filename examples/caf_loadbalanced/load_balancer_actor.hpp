@@ -6,8 +6,8 @@
 #include <caf/all.hpp>
 #include <chrono>
 #include <vector>
+#include "atoms.hpp"
 #include "load_balancer_callbacks.hpp"
-
 
 class load_balancer_actor : public caf::event_based_actor {
   public:

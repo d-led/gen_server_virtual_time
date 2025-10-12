@@ -224,11 +224,20 @@ defmodule CAFGeneratorTest do
       {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "timer_actor.cpp" end)
+      {_name, header} = Enum.find(files, fn {name, _} -> name == "timer_actor.hpp" end)
+      {_name, atoms} = Enum.find(files, fn {name, _} -> name == "atoms.hpp" end)
 
-      # Should use delayed_send to self
+      # CAF 1.0: Check for shared atoms header
+      assert header =~ "#include \"atoms.hpp\""
+      assert atoms =~ "CAF_ADD_ATOM(ActorSimulation, timeout_atom)"
+      assert atoms =~ "CAF_ADD_ATOM(ActorSimulation, event_atom)"
+      assert atoms =~ "CAF_ADD_ATOM(ActorSimulation, msg_atom)"
+      
+      # Should use delayed_send to self with CAF 1.0 atom API  
       assert source =~ "delayed_send(this, std::chrono::milliseconds(500)"
       assert source =~ "// Send message to self after delay (one-shot)"
-      assert source =~ "caf::atom(\"timeout\")"
+      assert source =~ "timeout_atom_v"
+      assert source =~ "[=](timeout_atom)"
     end
   end
 

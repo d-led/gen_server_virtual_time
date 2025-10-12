@@ -1,5 +1,7 @@
 # Demo Build & Run Status
 
+⚠️ **HISTORICAL SNAPSHOT** - Status of demo builds and test scripts at a specific point in development. May be outdated.
+
 ## Binary Naming Pattern
 All generators now use: `{example}.{framework}.{os}`
 
@@ -98,3 +100,4 @@ error: no member named 'atom' in namespace 'caf'
 - CAF 1.0 example: `using hello_atom = atom_constant<atom("hello")>;`
 - New send syntax: `mail(hello_atom::value).send(target)`
 - Handler syntax: `[](hello_atom) { ... }`
+

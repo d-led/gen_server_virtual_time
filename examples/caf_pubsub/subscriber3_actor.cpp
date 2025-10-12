@@ -13,7 +13,7 @@ caf::behavior subscriber3_actor::make_behavior() {
   schedule_next_send();
 
   return {
-    [=](caf::atom_value msg) {
+    [=](event_atom) {
       // Default message handler
       send_to_targets();
       schedule_next_send();

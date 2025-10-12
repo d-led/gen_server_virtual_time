@@ -13,7 +13,7 @@ caf::behavior source_actor::make_behavior() {
   schedule_next_send();
 
   return {
-    [=](caf::atom_value msg) {
+    [=](data_atom) {
   callbacks_->on_data();
       send_to_targets();
       schedule_next_send();
@@ -22,12 +22,13 @@ caf::behavior source_actor::make_behavior() {
 }
 
 void source_actor::schedule_next_send() {
-  delayed_send(this, std::chrono::milliseconds(20), caf::atom("data"));
+  delayed_send(this, std::chrono::milliseconds(20), data_atom_v);
 }
 
 void source_actor::send_to_targets() {
   for (auto& target : targets_) {
-    send(target, caf::atom("msg"));
+    // CAF 1.0: Use mail API instead of send
+    mail(msg_atom_v).send(target);
     send_count_++;
   }
 }
