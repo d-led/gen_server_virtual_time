@@ -119,8 +119,14 @@ defmodule GenServerVirtualTime.MixProject do
           ActorSimulation,
           ActorSimulation.Actor,
           ActorSimulation.Definition,
-          ActorSimulation.Stats,
-          ActorSimulation.OMNeTPPGenerator
+          ActorSimulation.Stats
+        ],
+        "Code Generators": [
+          ActorSimulation.GeneratorUtils,
+          ActorSimulation.OMNeTPPGenerator,
+          ActorSimulation.CAFGenerator,
+          ActorSimulation.PonyGenerator,
+          ActorSimulation.PhonyGenerator
         ]
       ]
     ]
