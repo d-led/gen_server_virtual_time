@@ -43,8 +43,12 @@ if ponyc .; then
   echo "🚀 Running ${EXAMPLE} for 3 seconds..."
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   
-  # Run in background and kill after 3 seconds
-  timeout 3s ./"$(basename "$EXAMPLE_DIR")" || true
+  # Run in background and kill after 3 seconds (works on both macOS and Linux)
+  ./"$(basename "$EXAMPLE_DIR")" &
+  PID=$!
+  sleep 3
+  kill $PID 2>/dev/null || true
+  wait $PID 2>/dev/null || true
   
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
