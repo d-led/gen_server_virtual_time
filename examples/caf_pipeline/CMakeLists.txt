@@ -58,8 +58,22 @@ else()
   target_compile_options(PipelineActors PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Test executable
-add_executable(PipelineActors_test test_actors.cpp)
+# Test executable (needs actor sources)
+set(TEST_SOURCES
+  test_actors.cpp
+  source_actor.cpp
+  source_callbacks_impl.cpp
+  stage1_actor.cpp
+  stage1_callbacks_impl.cpp
+  stage2_actor.cpp
+  stage2_callbacks_impl.cpp
+  stage3_actor.cpp
+  stage3_callbacks_impl.cpp
+  sink_actor.cpp
+  sink_callbacks_impl.cpp
+)
+
+add_executable(PipelineActors_test ${TEST_SOURCES})
 target_link_libraries(PipelineActors_test
   PRIVATE
     CAF::core

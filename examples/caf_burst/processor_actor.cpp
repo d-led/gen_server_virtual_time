@@ -5,7 +5,8 @@
 #include <iostream>
 
 processor_actor::processor_actor(caf::actor_config& cfg, const std::vector<caf::actor>& targets)
-  : caf::event_based_actor(cfg), targets_(targets) {
+  : caf::event_based_actor(cfg) {
+  (void)targets; // Unused but required for API consistency
   callbacks_ = std::make_shared<processor_callbacks>();
 }
 

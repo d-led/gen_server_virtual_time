@@ -5,7 +5,8 @@
 #include <iostream>
 
 subscriber2_actor::subscriber2_actor(caf::actor_config& cfg, const std::vector<caf::actor>& targets)
-  : caf::event_based_actor(cfg), targets_(targets) {
+  : caf::event_based_actor(cfg) {
+  (void)targets; // Unused but required for API consistency
   callbacks_ = std::make_shared<subscriber2_callbacks>();
 }
 

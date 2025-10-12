@@ -22,7 +22,8 @@ caf::behavior source_actor::make_behavior() {
 }
 
 void source_actor::schedule_next_send() {
-  delayed_send(this, std::chrono::milliseconds(20), data_atom_v);
+  // CAF 1.0: Use mail API instead of deprecated delayed_send
+  mail(data_atom_v).delay(std::chrono::milliseconds(20)).send(this);
 }
 
 void source_actor::send_to_targets() {

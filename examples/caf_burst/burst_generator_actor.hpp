@@ -20,6 +20,6 @@ class burst_generator_actor : public caf::event_based_actor {
     void send_to_targets();
     std::shared_ptr<burst_generator_callbacks> callbacks_;
     std::vector<caf::actor> targets_;
-
     int send_count_ = 0;
+
 };

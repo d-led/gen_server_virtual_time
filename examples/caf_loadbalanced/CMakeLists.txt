@@ -58,8 +58,22 @@ else()
   target_compile_options(LoadBalancedActors PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Test executable
-add_executable(LoadBalancedActors_test test_actors.cpp)
+# Test executable (needs actor sources)
+set(TEST_SOURCES
+  test_actors.cpp
+  load_balancer_actor.cpp
+  load_balancer_callbacks_impl.cpp
+  server1_actor.cpp
+  server1_callbacks_impl.cpp
+  server2_actor.cpp
+  server2_callbacks_impl.cpp
+  server3_actor.cpp
+  server3_callbacks_impl.cpp
+  database_actor.cpp
+  database_callbacks_impl.cpp
+)
+
+add_executable(LoadBalancedActors_test ${TEST_SOURCES})
 target_link_libraries(LoadBalancedActors_test
   PRIVATE
     CAF::core

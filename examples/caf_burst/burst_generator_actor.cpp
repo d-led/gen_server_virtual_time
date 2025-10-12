@@ -22,8 +22,9 @@ caf::behavior burst_generator_actor::make_behavior() {
 }
 
 void burst_generator_actor::schedule_next_send() {
+  // CAF 1.0: Use mail API instead of deprecated delayed_send
   for (int i = 0; i < 10; i++) {
-    delayed_send(this, std::chrono::milliseconds(1000), batch_atom_v);
+    mail(batch_atom_v).delay(std::chrono::milliseconds(1000)).send(this);
   }
 }
 

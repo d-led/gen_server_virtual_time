@@ -96,8 +96,10 @@ defmodule CAFGeneratorTest do
       {_name, source} = Enum.find(files, fn {name, _} -> name == "generator_actor.cpp" end)
 
       assert source =~ "make_behavior()"
-      assert source =~ "delayed_send"
-      assert source =~ "std::chrono::milliseconds(100)"
+      # CAF 1.0: Check for mail API instead of deprecated delayed_send
+      assert source =~ "mail("
+      assert source =~ ".delay(std::chrono::milliseconds(100))"
+      assert source =~ ".send(this)"
     end
 
     test "generates main.cpp with actor system setup" do
@@ -227,15 +229,17 @@ defmodule CAFGeneratorTest do
       {_name, header} = Enum.find(files, fn {name, _} -> name == "timer_actor.hpp" end)
       {_name, atoms} = Enum.find(files, fn {name, _} -> name == "atoms.hpp" end)
 
-      # CAF 1.0: Check for shared atoms header
+      # CAF 1.0: Check for shared atoms header with type ID block
       assert header =~ "#include \"atoms.hpp\""
+      assert atoms =~ "CAF_BEGIN_TYPE_ID_BLOCK(ActorSimulation"
       assert atoms =~ "CAF_ADD_ATOM(ActorSimulation, timeout_atom)"
       assert atoms =~ "CAF_ADD_ATOM(ActorSimulation, event_atom)"
       assert atoms =~ "CAF_ADD_ATOM(ActorSimulation, msg_atom)"
-      
-      # Should use delayed_send to self with CAF 1.0 atom API  
-      assert source =~ "delayed_send(this, std::chrono::milliseconds(500)"
-      assert source =~ "// Send message to self after delay (one-shot)"
+      assert atoms =~ "CAF_END_TYPE_ID_BLOCK(ActorSimulation)"
+
+      # CAF 1.0: Should use mail API instead of deprecated delayed_send
+      assert source =~ "mail(timeout_atom_v).delay(std::chrono::milliseconds(500)).send(this)"
+      assert source =~ "// CAF 1.0: Send message to self after delay (one-shot)"
       assert source =~ "timeout_atom_v"
       assert source =~ "[=](timeout_atom)"
     end

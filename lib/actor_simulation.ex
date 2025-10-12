@@ -150,10 +150,10 @@ defmodule ActorSimulation do
 
     # Start the real GenServer with virtual time
     VirtualTimeGenServer.set_virtual_clock(simulation.clock)
-    
+
     # Enable stats tracking before starting the process
     VirtualTimeGenServer.enable_stats_tracking()
-    
+
     {:ok, pid} = VirtualTimeGenServer.start_link(module, args, name: name)
 
     actors =

@@ -52,8 +52,16 @@ else()
   target_compile_options(BurstActors PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Test executable
-add_executable(BurstActors_test test_actors.cpp)
+# Test executable (needs actor sources)
+set(TEST_SOURCES
+  test_actors.cpp
+  processor_actor.cpp
+  processor_callbacks_impl.cpp
+  burst_generator_actor.cpp
+  burst_generator_callbacks_impl.cpp
+)
+
+add_executable(BurstActors_test ${TEST_SOURCES})
 target_link_libraries(BurstActors_test
   PRIVATE
     CAF::core

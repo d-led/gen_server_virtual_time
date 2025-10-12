@@ -20,5 +20,4 @@ class processor_actor : public caf::event_based_actor {
     void send_to_targets();
     std::shared_ptr<processor_callbacks> callbacks_;
 
-    int send_count_ = 0;
 };

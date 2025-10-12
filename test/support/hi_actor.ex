@@ -35,18 +35,18 @@ defmodule HiActor do
       targets: targets,
       all_actors: all_actors
     }
-    
+
     # Debug: Check time backend
     # backend = VirtualTimeGenServer.get_time_backend()
     # clock = Process.get(:virtual_clock)
     # IO.puts("HiActor #{name} init: backend=#{inspect(backend)}, clock=#{inspect(clock)}")
-    
+
     # Set random seed for reproducible results
     :rand.seed(:exs1024, {12345, 67890, 11111})
-    
+
     # Schedule the first random message
     schedule_random_message()
-    
+
     {:ok, state}
   end
 
@@ -79,10 +79,10 @@ defmodule HiActor do
   def handle_info(:send_random_message, state) do
     # Choose a random target from available targets (stats tracked automatically)
     available_targets = state.targets
-    
+
     if length(available_targets) > 0 do
       target = Enum.random(available_targets)
-      
+
       # Send :hi message to random target
       case Process.whereis(target) do
         nil ->
@@ -92,7 +92,7 @@ defmodule HiActor do
           VirtualTimeGenServer.cast(target_pid, {:hi, state.name})
       end
     end
-    
+
     # Schedule the next random message
     schedule_random_message()
     {:noreply, state}
@@ -101,7 +101,7 @@ defmodule HiActor do
   defp schedule_random_message do
     # Random delay between 200-300ms
     delay = :rand.uniform(101) + 200  # 200-300ms
-    
+
     VirtualTimeGenServer.send_after(self(), :send_random_message, delay)
   end
 end

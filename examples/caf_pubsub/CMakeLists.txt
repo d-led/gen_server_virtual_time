@@ -56,8 +56,20 @@ else()
   target_compile_options(PubSubActors PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Test executable
-add_executable(PubSubActors_test test_actors.cpp)
+# Test executable (needs actor sources)
+set(TEST_SOURCES
+  test_actors.cpp
+  publisher_actor.cpp
+  publisher_callbacks_impl.cpp
+  subscriber1_actor.cpp
+  subscriber1_callbacks_impl.cpp
+  subscriber2_actor.cpp
+  subscriber2_callbacks_impl.cpp
+  subscriber3_actor.cpp
+  subscriber3_callbacks_impl.cpp
+)
+
+add_executable(PubSubActors_test ${TEST_SOURCES})
 target_link_libraries(PubSubActors_test
   PRIVATE
     CAF::core

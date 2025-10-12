@@ -72,12 +72,20 @@ if cmake --build . ; then
   cd build
   BINARY="${PROJECT_NAME}.caf.${OS_NAME}"
   
-  echo "🚀 Running ${EXAMPLE}..."
+  echo "🚀 Running ${EXAMPLE} for 3 seconds..."
   echo "   Binary: ${BINARY}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  ./"${BINARY}"
+  
+  # Run in background and kill after 3 seconds (works on both macOS and Linux)
+  ./"${BINARY}" &
+  PID=$!
+  sleep 3
+  kill $PID 2>/dev/null || true
+  wait $PID 2>/dev/null || true
+  
+  echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "✅ Demo completed successfully!"
+  echo "✅ Demo ran successfully! (stopped after 3s)"
 else
   echo "❌ Build failed"
   exit 1

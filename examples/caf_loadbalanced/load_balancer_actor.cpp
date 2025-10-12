@@ -22,7 +22,8 @@ caf::behavior load_balancer_actor::make_behavior() {
 }
 
 void load_balancer_actor::schedule_next_send() {
-  delayed_send(this, std::chrono::milliseconds(10), request_atom_v);
+  // CAF 1.0: Use mail API instead of deprecated delayed_send
+  mail(request_atom_v).delay(std::chrono::milliseconds(10)).send(this);
 }
 
 void load_balancer_actor::send_to_targets() {

@@ -17,13 +17,13 @@ defmodule VirtualTimeGenServer.Wrapper do
       :__vtgs_get_stats__ ->
         stats = VirtualTimeGenServer.get_process_stats()
         {:reply, stats, {module, state}}
-      
+
       _ ->
         # Track incoming call only if stats tracking is enabled (in simulations)
         if Process.get(:__vtgs_stats_enabled__) do
           track_received_message(request, :call)
         end
-        
+
         case module.handle_call(request, from, state) do
           {:reply, reply, new_state} -> {:reply, reply, {module, new_state}}
           {:reply, reply, new_state, timeout} -> {:reply, reply, {module, new_state}, timeout}
@@ -40,7 +40,7 @@ defmodule VirtualTimeGenServer.Wrapper do
     if Process.get(:__vtgs_stats_enabled__) do
       track_received_message(request, :cast)
     end
-    
+
     case module.handle_cast(request, state) do
       {:noreply, new_state} -> {:noreply, {module, new_state}}
       {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
@@ -277,7 +277,7 @@ defmodule VirtualTimeGenServer do
 
     # Get stats tracking flag from parent process
     stats_enabled = Process.get(:__vtgs_stats_enabled__, false)
-    
+
     # Use a wrapper to inject virtual clock into spawned process
     init_fun = fn ->
       if final_clock do
@@ -285,7 +285,7 @@ defmodule VirtualTimeGenServer do
       end
 
       Process.put(:time_backend, final_backend)
-      
+
       # Propagate stats tracking to child process
       if stats_enabled do
         Process.put(:__vtgs_stats_enabled__, true)
@@ -322,7 +322,7 @@ defmodule VirtualTimeGenServer do
       end
 
       Process.put(:time_backend, final_backend)
-      
+
       # Propagate stats tracking to child process
       if stats_enabled do
         Process.put(:__vtgs_stats_enabled__, true)
@@ -362,7 +362,7 @@ defmodule VirtualTimeGenServer do
 
   @doc """
   Makes a synchronous call to a server.
-  
+
   When stats tracking is enabled (in simulations), this tracks the sent message.
   Otherwise, it's a direct passthrough to GenServer.call with zero overhead.
   """
@@ -376,7 +376,7 @@ defmodule VirtualTimeGenServer do
 
   @doc """
   Sends an asynchronous request to a server.
-  
+
   When stats tracking is enabled (in simulations), this tracks the sent message.
   Otherwise, it's a direct passthrough to GenServer.cast with zero overhead.
   """
