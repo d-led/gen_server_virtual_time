@@ -2,12 +2,17 @@ defmodule ActorSimulation.MermaidReportGenerator do
   @moduledoc """
   Generates Mermaid-based flowchart simulation reports with statistics.
 
-  This generator creates visual reports that show:
+  This generator creates standalone HTML reports with embedded diagrams that show:
   - Actor topology as a Mermaid flowchart
   - Message flow connections between actors
   - Statistics embedded in the diagram (message counts, rates)
   - Styled nodes based on actor activity
-  - Complete HTML reports with stats tables
+  - Complete simulation statistics and model source code
+  - Syntax-highlighted Elixir code for the simulation model
+
+  These reports can be embedded in your documentation, shared with stakeholders,
+  or used as standalone design documents. Perfect for visualizing distributed
+  system architectures and message passing patterns.
 
   Based on [Mermaid Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html)
 
@@ -50,6 +55,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
     show_message_labels = Keyword.get(opts, :show_message_labels, true)
     layout = Keyword.get(opts, :layout, "TB")
     style_by_activity = Keyword.get(opts, :style_by_activity, true)
+    model_source = Keyword.get(opts, :model_source)
 
     stats = simulation.stats
 
@@ -61,7 +67,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
         style_by_activity: style_by_activity
       })
 
-    generate_html(mermaid_code, simulation, title, stats)
+    generate_html(mermaid_code, simulation, title, stats, model_source)
   end
 
   @doc """
@@ -162,17 +168,17 @@ defmodule ActorSimulation.MermaidReportGenerator do
 
   defp node_shape(definition) do
     cond do
-      # Source actors (only send): stadium shape
+      # Source actors (only send): stadium shape (oval) - matches legend
       definition.send_pattern != nil && definition.on_receive == nil &&
           definition.on_match == [] ->
         {"([", "])"}
 
-      # Sink actors (only receive): asymmetric shape
+      # Sink actors (only receive): asymmetric shape (L-shape) - matches legend
       definition.send_pattern == nil &&
           (definition.on_receive != nil || definition.on_match != []) ->
         {">", "]"}
 
-      # Processing actors (send and receive): rounded rectangle
+      # Processing actors (send and receive): rounded rectangle - matches legend
       definition.send_pattern != nil &&
           (definition.on_receive != nil || definition.on_match != []) ->
         {"(", ")"}
@@ -268,10 +274,11 @@ defmodule ActorSimulation.MermaidReportGenerator do
     Map.get(stats.actors, actor_name)
   end
 
-  defp generate_html(mermaid_code, simulation, title, stats) do
+  defp generate_html(mermaid_code, simulation, title, stats, model_source \\ nil) do
     formatted_stats = Stats.format(stats)
     stats_table = generate_stats_table(formatted_stats)
     simulation_summary = generate_simulation_summary(simulation)
+    model_source_section = if model_source, do: generate_model_source_section(model_source), else: ""
 
     """
     <!DOCTYPE html>
@@ -280,6 +287,9 @@ defmodule ActorSimulation.MermaidReportGenerator do
       <meta charset="utf-8">
       <title>#{title}</title>
       <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -439,6 +449,38 @@ defmodule ActorSimulation.MermaidReportGenerator do
           color: #6c757d;
           font-size: 14px;
         }
+        .source-links {
+          margin-top: 20px;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          border: 1px solid #e9ecef;
+        }
+        .source-links h3 {
+          margin: 0 0 15px 0;
+          color: #2c3e50;
+          font-size: 1.1em;
+        }
+        .source-links a {
+          display: inline-block;
+          margin: 5px 10px 5px 0;
+          padding: 8px 16px;
+          background: #007bff;
+          color: white;
+          text-decoration: none;
+          border-radius: 4px;
+          font-size: 14px;
+          transition: background 0.2s;
+        }
+        .source-links a:hover {
+          background: #0056b3;
+        }
+        .source-links a.github {
+          background: #24292e;
+        }
+        .source-links a.github:hover {
+          background: #1a1e22;
+        }
       </style>
     </head>
     <body>
@@ -475,6 +517,16 @@ defmodule ActorSimulation.MermaidReportGenerator do
       </div>
 
       #{stats_table}
+
+      #{model_source_section}
+
+      <div class="source-links">
+        <h3>🔗 Source & Links</h3>
+        <a href="https://github.com/d-led/gen_server_virtual_time" target="_blank" class="github">📚 GitHub Repository</a>
+        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/lib/actor_simulation/mermaid_report_generator.ex" target="_blank" class="github">🧪 Report Generator</a>
+        <a href="https://hexdocs.pm/gen_server_virtual_time" target="_blank">📖 Documentation</a>
+        <a href="https://hex.pm/packages/gen_server_virtual_time" target="_blank">📦 Hex Package</a>
+      </div>
 
       <footer>
         Generated by
@@ -594,6 +646,18 @@ defmodule ActorSimulation.MermaidReportGenerator do
         Total messages: #{formatted_stats.total_messages} •
         Duration: #{formatted_stats.duration_ms}ms •
         Actors: #{map_size(formatted_stats.actors)}
+      </div>
+    </div>
+    """
+  end
+
+  defp generate_model_source_section(model_source) do
+    """
+    <div class="section">
+      <h2>💻 Model Source Code</h2>
+      <p>This is the Elixir code that defines the actor simulation model:</p>
+      <div class="code-block">
+        <pre><code class="language-elixir">#{model_source}</code></pre>
       </div>
     </div>
     """

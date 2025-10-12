@@ -21,7 +21,7 @@ type DefaultLoadBalancerCallbacks struct{}
 
 func (c *DefaultLoadBalancerCallbacks) OnRequest() {
 	// TODO: Implement custom behavior for request
-	fmt.Printf("LoadBalancer: Received request message\n")
+	fmt.Printf("LoadBalancer: Sending request message\n")
 }
 
 

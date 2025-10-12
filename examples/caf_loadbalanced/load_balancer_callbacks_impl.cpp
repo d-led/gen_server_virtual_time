@@ -9,7 +9,7 @@
 
 void load_balancer_callbacks::on_request() {
   // TODO: Implement custom behavior for request
-  // This is called when the actor receives a request message
-  std::cout << "load_balancer: Received request message" << std::endl;
+  // This is called when the actor sends a request message
+  std::cout << "load_balancer: Sending request message" << std::endl;
 }
 

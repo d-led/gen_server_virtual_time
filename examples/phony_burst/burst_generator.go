@@ -21,7 +21,7 @@ type DefaultBurstGeneratorCallbacks struct{}
 
 func (c *DefaultBurstGeneratorCallbacks) OnBatch() {
 	// TODO: Implement custom behavior for batch
-	fmt.Printf("BurstGenerator: Received batch message\n")
+	fmt.Printf("BurstGenerator: Sending batch message\n")
 }
 
 

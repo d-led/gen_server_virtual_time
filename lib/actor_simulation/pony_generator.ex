@@ -567,11 +567,22 @@ defmodule ActorSimulation.PonyGenerator do
     # Generated from ActorSimulation DSL
     # Makefile for #{project_name}
 
-    .PHONY: build test clean
+    # Binary naming: {example}.pony.{os}
+    UNAME_S := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+    ifeq ($(UNAME_S),darwin)
+        BINARY := #{project_name}.pony.darwin
+    else ifeq ($(UNAME_S),linux)
+        BINARY := #{project_name}.pony.linux
+    else
+        BINARY := #{project_name}.pony.exe
+    endif
+
+    .PHONY: build test clean run
 
     build:
     \tcorral fetch
     \tponyc .
+    \tmv #{project_name} $(BINARY)
 
     test:
     \tcorral fetch
@@ -579,11 +590,11 @@ defmodule ActorSimulation.PonyGenerator do
     \t./test
 
     clean:
-    \trm -rf #{project_name} test
+    \trm -rf $(BINARY) #{project_name}.pony.* #{project_name} test
     \trm -rf _corral .corral
 
     run: build
-    \t./#{project_name}
+    \t./$(BINARY)
     """
   end
 

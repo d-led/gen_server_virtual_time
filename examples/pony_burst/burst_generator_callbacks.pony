@@ -21,5 +21,5 @@ class BurstGeneratorCallbacksImpl is BurstGeneratorCallbacks
 
   fun ref on_batch() =>
     // TODO: Implement custom behavior for batch
-    _logger.log("BurstGenerator: Received batch message")
+    _logger.log("BurstGenerator: Sending batch message")
 

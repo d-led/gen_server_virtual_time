@@ -268,3 +268,22 @@ _build/test/lib/*/test-junit-report.xml
 # !test/output/README.md
 *.tar.gz
 *.tar
+
+# Generated binaries from example builds
+# Pattern: {example}.{framework}.{os} (e.g. pubsub.pony.darwin, burst.caf.linux)
+*.pony.darwin
+*.pony.linux
+*.phony.darwin
+*.phony.linux
+*.caf.darwin
+*.caf.linux
+*.omnetpp.darwin
+*.omnetpp.linux
+*.vlingo.darwin
+*.vlingo.linux
+# Windows binaries
+*.pony.exe
+*.phony.exe
+*.caf.exe
+*.omnetpp.exe
+*.vlingo.exe

@@ -47,6 +47,38 @@
       font-family: 'Monaco', 'Menlo', monospace;
       font-size: 14px;
     }
+    .source-links {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    .source-links h3 {
+      margin: 0 0 15px 0;
+      color: #2c3e50;
+      font-size: 1.1em;
+    }
+    .source-links a {
+      display: inline-block;
+      margin: 5px 10px 5px 0;
+      padding: 8px 16px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .source-links a:hover {
+      background: #0056b3;
+    }
+    .source-links a.github {
+      background: #24292e;
+    }
+    .source-links a.github:hover {
+      background: #1a1e22;
+    }
   </style>
 </head>
 <body>
@@ -78,6 +110,14 @@ sequenceDiagram
     Note over sender,receiver: t=200ms
     sender->>receiver: :tick
     Note over sender,receiver: t=300ms</pre>
+  </div>
+
+  <div class="source-links">
+    <h3>🔗 Source & Links</h3>
+    <a href="https://github.com/d-led/gen_server_virtual_time" target="_blank" class="github">📚 GitHub Repository</a>
+    <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/test/diagram_generation_test.exs" target="_blank" class="github">🧪 Test Source</a>
+    <a href="https://hexdocs.pm/gen_server_virtual_time" target="_blank">📖 Documentation</a>
+    <a href="https://hex.pm/packages/gen_server_virtual_time" target="_blank">📦 Hex Package</a>
   </div>
 
   <script>

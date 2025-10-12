@@ -21,5 +21,5 @@ class SourceCallbacksImpl is SourceCallbacks
 
   fun ref on_data() =>
     // TODO: Implement custom behavior for data
-    _logger.log("Source: Received data message")
+    _logger.log("Source: Sending data message")
 

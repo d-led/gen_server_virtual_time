@@ -9,7 +9,7 @@
 
 void burst_generator_callbacks::on_batch() {
   // TODO: Implement custom behavior for batch
-  // This is called when the actor receives a batch message
-  std::cout << "burst_generator: Received batch message" << std::endl;
+  // This is called when the actor sends a batch message
+  std::cout << "burst_generator: Sending batch message" << std::endl;
 }
 

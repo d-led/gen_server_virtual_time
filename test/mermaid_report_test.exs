@@ -58,7 +58,39 @@ defmodule MermaidReportTest do
     end
 
     test "generates pipeline report with statistics" do
-      # Create a more complex pipeline
+      # Model source code for documentation
+      model_source = """
+      # Create a more complex pipeline with forwarding logic
+      forward = fn msg, state ->
+        {:send, [{state.next, msg}], state}
+      end
+
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:source,
+          send_pattern: {:periodic, 100, :request},
+          targets: [:stage1]
+        )
+        |> ActorSimulation.add_actor(:stage1,
+          on_receive: forward,
+          initial_state: %{next: :stage2}
+        )
+        |> ActorSimulation.add_actor(:stage2,
+          on_receive: forward,
+          initial_state: %{next: :sink}
+        )
+        |> ActorSimulation.add_actor(:sink)
+        |> ActorSimulation.run(duration: 1000)
+
+      # Generate the report
+      html = MermaidReportGenerator.generate_report(simulation,
+        title: "Pipeline Processing",
+        show_stats_on_nodes: true,
+        model_source: model_source
+      )
+      """
+
+      # Create the actual simulation
       forward = fn msg, state ->
         {:send, [{state.next, msg}], state}
       end
@@ -83,7 +115,8 @@ defmodule MermaidReportTest do
       html =
         MermaidReportGenerator.generate_report(simulation,
           title: "Pipeline Processing",
-          show_stats_on_nodes: true
+          show_stats_on_nodes: true,
+          model_source: model_source
         )
 
       # Write to file for viewing
@@ -265,6 +298,117 @@ defmodule MermaidReportTest do
       assert File.exists?(filename)
       content = File.read!(filename)
       assert String.contains?(content, "Write Helper Test")
+
+      ActorSimulation.stop(simulation)
+    end
+
+    test "generates ring topology report with token passing" do
+      # Model source code for documentation
+      model_source = """
+      # Create a ring of 7 actors passing a token every 100ms
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:actor0,
+          send_pattern: {:periodic, 100, :token},
+          targets: [:actor1]
+        )
+        |> ActorSimulation.add_actor(:actor1,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor2, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor2,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor3, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor3,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor4, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor4,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor5, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor5,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor6, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor6,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor0, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.run(duration: 1500)
+
+      # Generate the report
+      html = MermaidReportGenerator.generate_report(simulation,
+        title: "Token Ring Network",
+        layout: "LR",
+        model_source: model_source
+      )
+      """
+
+      # Create the actual simulation
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:actor0,
+          send_pattern: {:periodic, 100, :token},
+          targets: [:actor1]
+        )
+        |> ActorSimulation.add_actor(:actor1,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor2, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor2,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor3, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor3,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor4, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor4,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor5, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor5,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor6, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:actor6,
+          on_match: [
+            {:token, fn state -> {:send, [{:actor0, :token}], state} end}
+          ]
+        )
+        |> ActorSimulation.run(duration: 1500)
+
+      # Generate report with model source
+      html =
+        MermaidReportGenerator.generate_report(simulation,
+          title: "Token Ring Network",
+          layout: "LR",
+          model_source: model_source
+        )
+
+      filename = Path.join(@output_dir, "ring_topology_report.html")
+      File.write!(filename, html)
+
+      IO.puts("\n✅ Generated ring topology report: #{filename}")
+      IO.puts("   Token passing ring with 7 actors, terminates at 1500ms virtual time")
+
+      # Verify ring topology
+      assert String.contains?(html, "flowchart LR")
+      assert String.contains?(html, "actor0")
+      assert String.contains?(html, "actor6")
 
       ActorSimulation.stop(simulation)
     end

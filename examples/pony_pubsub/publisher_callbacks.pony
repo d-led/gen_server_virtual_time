@@ -21,5 +21,5 @@ class PublisherCallbacksImpl is PublisherCallbacks
 
   fun ref on_event() =>
     // TODO: Implement custom behavior for event
-    _logger.log("Publisher: Received event message")
+    _logger.log("Publisher: Sending event message")
 

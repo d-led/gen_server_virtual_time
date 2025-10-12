@@ -502,12 +502,14 @@ defmodule ActorSimulation.VlingoGenerator do
       if length(messages) > 0 do
         Enum.map_join(messages, "\n\n", fn msg ->
           msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
+          # If actor has send_pattern, it's the sender (publisher)
+          action = if definition.send_pattern, do: "Sending", else: "Received"
 
           """
             @Override
             public void on#{msg_name}() {
               // TODO: Implement custom behavior for #{msg}
-              System.out.println("#{class_name}: Received #{msg} message");
+              System.out.println("#{class_name}: #{action} #{msg} message");
             }
           """
         end)

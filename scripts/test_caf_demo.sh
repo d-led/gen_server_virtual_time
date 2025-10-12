@@ -58,9 +58,19 @@ echo "  Building..."
 if cmake --build . ; then
   echo "✅ Build successful"
   echo ""
+  
+  # Determine binary name: {project}.caf.{os}
+  OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+  # Extract project name from CMakeLists.txt
+  cd ..
+  PROJECT_NAME=$(grep -o 'project([^)]*)' CMakeLists.txt | head -1 | sed 's/project(\([^ ]*\).*/\1/')
+  cd build
+  BINARY="${PROJECT_NAME}.caf.${OS_NAME}"
+  
   echo "🚀 Running ${EXAMPLE}..."
+  echo "   Binary: ${BINARY}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  ./$(basename "$EXAMPLE_DIR" | sed 's/_//')
+  ./"${BINARY}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "✅ Demo completed successfully!"
 else

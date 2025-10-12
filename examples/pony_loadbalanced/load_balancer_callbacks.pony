@@ -21,5 +21,5 @@ class LoadBalancerCallbacksImpl is LoadBalancerCallbacks
 
   fun ref on_request() =>
     // TODO: Implement custom behavior for request
-    _logger.log("LoadBalancer: Received request message")
+    _logger.log("LoadBalancer: Sending request message")
 

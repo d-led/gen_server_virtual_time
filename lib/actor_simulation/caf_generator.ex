@@ -394,7 +394,7 @@ defmodule ActorSimulation.CAFGenerator do
         """
         void #{class_name}::on_#{msg_name}() {
           // TODO: Implement custom behavior for #{msg}
-          // This is called when the actor #{String.downcase(action)}s a #{msg} message
+          // This is called when the actor #{if action == "Sending", do: "sends", else: "receives"} a #{msg} message
           std::cout << "#{name}: #{action} #{msg} message" << std::endl;
         }
         """
@@ -580,6 +580,17 @@ defmodule ActorSimulation.CAFGenerator do
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+    # Detect OS for binary naming: {example}.caf.{os}
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+      set(OS_SUFFIX "darwin")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+      set(OS_SUFFIX "linux")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+      set(OS_SUFFIX "exe")
+    else()
+      set(OS_SUFFIX "bin")
+    endif()
+
     # Find CAF
     find_package(CAF REQUIRED COMPONENTS core io)
 
@@ -593,6 +604,11 @@ defmodule ActorSimulation.CAFGenerator do
 
     # Create executable
     add_executable(#{project_name} ${SOURCES})
+
+    # Set output binary name: {example}.caf.{os}
+    set_target_properties(#{project_name} PROPERTIES
+      OUTPUT_NAME "#{project_name}.caf.${OS_SUFFIX}"
+    )
 
     # Link CAF libraries
     target_link_libraries(#{project_name}

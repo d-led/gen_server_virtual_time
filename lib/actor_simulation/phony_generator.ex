@@ -200,11 +200,13 @@ defmodule ActorSimulation.PhonyGenerator do
     impl_methods =
       Enum.map_join(messages, "\n\n", fn msg ->
         msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
+        # If actor has send_pattern, it's the sender (publisher)
+        action = if definition.send_pattern, do: "Sending", else: "Received"
 
         """
         func (c *Default#{type_name}Callbacks) On#{msg_name}() {
         \t// TODO: Implement custom behavior for #{msg}
-        \tfmt.Printf("#{type_name}: Received #{msg} message\\n")
+        \tfmt.Printf("#{type_name}: #{action} #{msg} message\\n")
         }
         """
       end)
@@ -407,19 +409,29 @@ defmodule ActorSimulation.PhonyGenerator do
     # Generated from ActorSimulation DSL
     # Makefile for #{project_name}
 
+    # Binary naming: {example}.phony.{os}
+    UNAME_S := $(shell uname -s | tr '[:upper:]' '[:lower:]')
+    ifeq ($(UNAME_S),darwin)
+        BINARY := #{project_name}.phony.darwin
+    else ifeq ($(UNAME_S),linux)
+        BINARY := #{project_name}.phony.linux
+    else
+        BINARY := #{project_name}.phony.exe
+    endif
+
     .PHONY: build test clean run
 
     build:
-    \tgo build -o #{project_name} .
+    \tgo build -o $(BINARY) .
 
     test:
     \tgo test -v ./...
 
     clean:
-    \trm -f #{project_name}
+    \trm -f $(BINARY) #{project_name}.phony.* #{project_name}
 
     run: build
-    \t./#{project_name}
+    \t./$(BINARY)
 
     deps:
     \tgo mod download

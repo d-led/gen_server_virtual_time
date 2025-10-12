@@ -362,6 +362,17 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+    # Detect OS for binary naming: {example}.omnetpp.{os}
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+      set(OS_SUFFIX "darwin")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+      set(OS_SUFFIX "linux")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+      set(OS_SUFFIX "exe")
+    else()
+      set(OS_SUFFIX "bin")
+    endif()
+
     # Find OMNeT++
     find_package(OMNeT++ REQUIRED)
 
@@ -372,6 +383,11 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
     # Create executable
     add_executable(#{network_name} ${SOURCES})
+
+    # Set output binary name: {example}.omnetpp.{os}
+    set_target_properties(#{network_name} PROPERTIES
+      OUTPUT_NAME "#{network_name}.omnetpp.${OS_SUFFIX}"
+    )
 
     # Link OMNeT++ libraries
     target_link_libraries(#{network_name}
