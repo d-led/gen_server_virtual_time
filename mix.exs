@@ -28,7 +28,9 @@ defmodule GenServerVirtualTime.MixProject do
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test
+        "coveralls.html": :test,
+        muzak: :test,
+        "exavier.test": :test
       ],
 
       # Test reporting (JUnit XML for CI)
@@ -36,6 +38,8 @@ defmodule GenServerVirtualTime.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       dialyzer: [
         plt_add_apps: [:mix],
+        plt_core_path: "priv/plts",
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
         ignore_warnings: ".dialyzer_ignore.exs"
       ]
     ]
@@ -66,7 +70,11 @@ defmodule GenServerVirtualTime.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
 
       # Testing (optional, for coverage reports)
-      {:excoveralls, "~> 0.18", only: :test, runtime: false}
+      {:excoveralls, "~> 0.18", only: :test, runtime: false},
+
+      # Mutation testing
+      {:muzak, "~> 1.1", only: :test, runtime: false},
+      {:exavier, "~> 0.3.0", only: :test, runtime: false}
     ]
   end
 
