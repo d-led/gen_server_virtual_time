@@ -25,6 +25,22 @@ defmodule DiagramGenerationTest do
 
   describe "Mermaid diagram generation" do
     test "generates viewable Mermaid HTML file" do
+      model_source = """
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_actor(:client,
+          send_pattern: {:periodic, 100, :request},
+          targets: [:server]
+        )
+        |> ActorSimulation.add_actor(:server,
+          on_match: [
+            {:request, fn state -> {:send, [{:client, :response}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:database)
+        |> ActorSimulation.run(duration: 300)
+      """
+
       # Create a simple simulation
       simulation =
         ActorSimulation.new(trace: true)
@@ -44,7 +60,7 @@ defmodule DiagramGenerationTest do
       mermaid = ActorSimulation.trace_to_mermaid(simulation)
 
       # Create self-contained HTML with Mermaid
-      html = generate_mermaid_html(mermaid, "Simple Request-Response")
+      html = generate_mermaid_html(mermaid, "Simple Request-Response", model_source: model_source)
 
       # Write to file
       filename = Path.join(@output_dir, "mermaid_simple.html")
@@ -61,6 +77,34 @@ defmodule DiagramGenerationTest do
     end
 
     test "generates complex Mermaid pipeline diagram" do
+      model_source = """
+      # Create a pipeline with message forwarding
+      forward = fn msg, state ->
+        {:send, [{state.next, msg}], state}
+      end
+
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_actor(:api,
+          send_pattern: {:periodic, 100, {:check_auth, :user123}},
+          targets: [:auth]
+        )
+        |> ActorSimulation.add_actor(:auth,
+          on_receive: forward,
+          initial_state: %{next: :database}
+        )
+        |> ActorSimulation.add_actor(:database,
+          on_receive: fn
+            {:check_auth, _user}, state ->
+              {:send, [{:api, {:auth_ok, :token456}}], state}
+
+            _, state ->
+              {:ok, state}
+          end
+        )
+        |> ActorSimulation.run(duration: 400)
+      """
+
       forward = fn msg, state ->
         {:send, [{state.next, msg}], state}
       end
@@ -87,7 +131,7 @@ defmodule DiagramGenerationTest do
         |> ActorSimulation.run(duration: 400)
 
       mermaid = ActorSimulation.trace_to_mermaid(simulation)
-      html = generate_mermaid_html(mermaid, "Authentication Pipeline")
+      html = generate_mermaid_html(mermaid, "Authentication Pipeline", model_source: model_source)
 
       filename = Path.join(@output_dir, "mermaid_pipeline.html")
       File.write!(filename, html)
@@ -98,6 +142,26 @@ defmodule DiagramGenerationTest do
     end
 
     test "generates Mermaid diagram with sync/async calls" do
+      model_source = """
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_actor(:requester,
+          send_pattern: {:periodic, 100, {:call, :get_data}},
+          targets: [:responder]
+        )
+        |> ActorSimulation.add_actor(:notifier,
+          send_pattern: {:periodic, 150, {:cast, :notify}},
+          targets: [:listener]
+        )
+        |> ActorSimulation.add_actor(:responder,
+          on_match: [
+            {:get_data, fn state -> {:reply, {:data, 42}, state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:listener)
+        |> ActorSimulation.run(duration: 300)
+      """
+
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:requester,
@@ -117,7 +181,9 @@ defmodule DiagramGenerationTest do
         |> ActorSimulation.run(duration: 300)
 
       mermaid = ActorSimulation.trace_to_mermaid(simulation)
-      html = generate_mermaid_html(mermaid, "Sync vs Async Communication")
+
+      html =
+        generate_mermaid_html(mermaid, "Sync vs Async Communication", model_source: model_source)
 
       filename = Path.join(@output_dir, "mermaid_sync_async.html")
       File.write!(filename, html)
@@ -134,6 +200,7 @@ defmodule DiagramGenerationTest do
     end
 
     test "generates Mermaid diagram with timestamps" do
+      model_source = """
       simulation =
         ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:sender,
@@ -145,7 +212,22 @@ defmodule DiagramGenerationTest do
 
       # Generate with timestamps enabled
       mermaid = ActorSimulation.trace_to_mermaid(simulation, timestamps: true)
-      html = generate_mermaid_html(mermaid, "Timeline with Timestamps")
+      """
+
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_actor(:sender,
+          send_pattern: {:periodic, 100, :tick},
+          targets: [:receiver]
+        )
+        |> ActorSimulation.add_actor(:receiver)
+        |> ActorSimulation.run(duration: 300)
+
+      # Generate with timestamps enabled
+      mermaid = ActorSimulation.trace_to_mermaid(simulation, timestamps: true)
+
+      html =
+        generate_mermaid_html(mermaid, "Timeline with Timestamps", model_source: model_source)
 
       filename = Path.join(@output_dir, "mermaid_with_timestamps.html")
       File.write!(filename, html)
@@ -162,7 +244,24 @@ defmodule DiagramGenerationTest do
 
   # Helper functions
 
-  defp generate_mermaid_html(mermaid_code, title) do
+  defp generate_mermaid_html(mermaid_code, title, opts) do
+    model_source = Keyword.get(opts, :model_source)
+
+    model_source_section =
+      if model_source do
+        """
+        <div class="section">
+          <h2>💻 Model Source Code</h2>
+          <p>This is the Elixir code that defines the actor simulation model:</p>
+          <div class="code-block">
+            <pre><code class="language-elixir">#{model_source}</code></pre>
+          </div>
+        </div>
+        """
+      else
+        ""
+      end
+
     """
     <!DOCTYPE html>
     <html>
@@ -170,6 +269,9 @@ defmodule DiagramGenerationTest do
       <meta charset="utf-8">
       <title>#{title} - Mermaid Diagram</title>
       <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -181,6 +283,24 @@ defmodule DiagramGenerationTest do
         h1 {
           color: #2c3e50;
           margin-bottom: 30px;
+        }
+        .section {
+          background: white;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          margin-bottom: 30px;
+        }
+        .section h2 {
+          color: #495057;
+          margin-top: 0;
+          margin-bottom: 20px;
+          border-bottom: 2px solid #e9ecef;
+          padding-bottom: 10px;
+        }
+        .section p {
+          color: #6c757d;
+          margin-bottom: 15px;
         }
         .diagram-container {
           background: white;
@@ -201,12 +321,18 @@ defmodule DiagramGenerationTest do
           border-radius: 4px;
         }
         .code-block {
-          background: #263238;
-          color: #aed581;
-          padding: 20px;
+          background: #f8f9fa;
+          padding: 0;
           border-radius: 4px;
-          margin-top: 30px;
-          overflow-x: auto;
+          overflow: hidden;
+        }
+        .code-block pre {
+          margin: 0;
+          padding: 20px;
+        }
+        .code-block code {
+          font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+          font-size: 14px;
         }
         pre {
           margin: 0;
@@ -261,10 +387,7 @@ defmodule DiagramGenerationTest do
         </div>
       </div>
 
-      <div class="code-block">
-        <strong>Source Code:</strong>
-        <pre>#{mermaid_code}</pre>
-      </div>
+      #{model_source_section}
 
       <div class="source-links">
         <h3>🔗 Source & Links</h3>

@@ -131,8 +131,8 @@ defmodule ActorSimulation.MermaidReportGenerator do
     definition = actor_info.definition
     actor_stats = get_actor_stats(stats, name)
 
-    # Choose node shape based on actor type
-    {shape_start, shape_end} = node_shape(definition)
+    # Choose node shape based on actor type (considering actual stats)
+    {shape_start, shape_end} = node_shape(definition, stats, name)
 
     # Build node label
     label =
@@ -202,24 +202,39 @@ defmodule ActorSimulation.MermaidReportGenerator do
     "#{name}#{left_shape}#{safe_label}#{right_shape}"
   end
 
-  defp node_shape(definition) do
+  defp node_shape(definition, stats, name) do
     targets = definition.targets || []
     has_targets = length(targets) > 0
-    can_receive = definition.on_receive != nil || definition.on_match != []
-    can_send = definition.send_pattern != nil || (can_receive && has_targets)
+    can_receive_by_def = definition.on_receive != nil || definition.on_match != []
+    can_send = definition.send_pattern != nil || (can_receive_by_def && has_targets)
+
+    # Check actual stats to determine if actor receives messages in practice
+    actor_stats = get_actor_stats(stats, name)
+    actually_receives = actor_stats != nil && actor_stats.received_count > 0
+    actually_sends = actor_stats != nil && actor_stats.sent_count > 0
+
+    # Use stats if available, otherwise fall back to definition
+    can_receive = can_receive_by_def || actually_receives
+
+    # Determine actor type based on actual behavior when possible
+    is_source = can_send && !can_receive && actually_sends && !actually_receives
+    is_sink = can_receive && !has_targets
+
+    is_processor =
+      (can_send && can_receive && has_targets) || (actually_sends && actually_receives)
 
     cond do
       # Source actors (only send): stadium shape (oval)
-      can_send && !can_receive ->
+      is_source ->
         {"([\"", "\"])"}
 
-      # Sink actors (only receive, no targets): rectangle
-      can_receive && !has_targets ->
-        {"[\"", "\"]"}
-
-      # Processing actors (can both send and receive): rounded rectangle
-      can_send && can_receive && has_targets ->
+      # Processing actors (both send and receive): rounded rectangle
+      is_processor ->
         {"(\"", "\")"}
+
+      # Sink actors (only receive, no targets): rectangle
+      is_sink ->
+        {"[\"", "\"]"}
 
       # Passive actors: regular rectangle
       true ->
@@ -715,7 +730,8 @@ defmodule ActorSimulation.MermaidReportGenerator do
       ""
     else
       legend_styles = build_legend_styles(actor_types)
-      render_legend_html(legend_nodes, legend_styles)
+      activity_legend = build_activity_legend(actors, stats)
+      render_legend_html(legend_nodes, legend_styles, activity_legend)
     end
   end
 
@@ -728,22 +744,48 @@ defmodule ActorSimulation.MermaidReportGenerator do
 
   defp determine_actor_type(actor_info, name, stats) do
     case actor_info.type do
-      :simulated -> determine_simulated_actor_type(actor_info.definition)
+      :simulated -> determine_simulated_actor_type(actor_info.definition, name, stats)
       :real_process -> determine_real_process_actor_type(actor_info, name, stats)
     end
   end
 
-  defp determine_simulated_actor_type(definition) do
+  defp determine_simulated_actor_type(definition, name, stats) do
     targets = definition.targets || []
     has_targets = length(targets) > 0
     can_receive = definition.on_receive != nil || definition.on_match != []
     can_send = definition.send_pattern != nil || (can_receive && has_targets)
 
+    # Check actual runtime behavior from stats to override static definition
+    actor_stats = get_actor_stats(stats, name)
+
+    actual_sent = if actor_stats, do: actor_stats.sent_count, else: 0
+    actual_received = if actor_stats, do: actor_stats.received_count, else: 0
+
     cond do
-      can_send && !can_receive -> :source
-      can_receive && !has_targets -> :sink
-      can_send && can_receive && has_targets -> :processor
-      true -> :sink
+      # If actor actually received messages, it's not a pure source
+      actual_sent > 0 && actual_received > 0 && has_targets ->
+        :processor
+
+      # If actor actually sent messages but received none, it's a source
+      actual_sent > 0 && actual_received == 0 ->
+        :source
+
+      # If actor only received messages, it's a sink
+      actual_received > 0 && actual_sent == 0 ->
+        :sink
+
+      # Fallback to static analysis if no stats available
+      can_send && !can_receive ->
+        :source
+
+      can_receive && !has_targets ->
+        :sink
+
+      can_send && can_receive && has_targets ->
+        :processor
+
+      true ->
+        :sink
     end
   end
 
@@ -769,7 +811,11 @@ defmodule ActorSimulation.MermaidReportGenerator do
   defp build_legend_nodes(actor_types) do
     []
     |> add_legend_node_if(actor_types, :source, "legend_source([\"Source<br/>(sends only)\"])")
-    |> add_legend_node_if(actor_types, :processor, "legend_processor(\"Processor<br/>(send & receive)\")")
+    |> add_legend_node_if(
+      actor_types,
+      :processor,
+      "legend_processor(\"Processor<br/>(send & receive)\")"
+    )
     |> add_legend_node_if(actor_types, :sink, "legend_sink[\"Sink<br/>(receives only)\"]")
   end
 
@@ -778,33 +824,136 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   defp build_legend_styles(actor_types) do
+    # Use neutral colors for legend shapes to avoid confusion
+    neutral_style = "fill:#ffffff,stroke:#666666,stroke-width:2px"
+
     []
-    |> add_legend_style_if(actor_types, :source, "style legend_source fill:#e8f5e9,stroke:#388e3c")
-    |> add_legend_style_if(actor_types, :processor, "style legend_processor fill:#e8f5e9,stroke:#388e3c")
-    |> add_legend_style_if(actor_types, :sink, "style legend_sink fill:#e8f5e9,stroke:#388e3c")
+    |> add_legend_style_if(
+      actor_types,
+      :source,
+      "style legend_source #{neutral_style}"
+    )
+    |> add_legend_style_if(
+      actor_types,
+      :processor,
+      "style legend_processor #{neutral_style}"
+    )
+    |> add_legend_style_if(actor_types, :sink, "style legend_sink #{neutral_style}")
   end
 
   defp add_legend_style_if(styles, actor_types, type, style_def) do
     if Map.get(actor_types, type), do: styles ++ [style_def], else: styles
   end
 
-  defp render_legend_html(legend_nodes, legend_styles) do
+  defp build_activity_legend(actors, stats) do
+    # Collect which activity levels are actually present in the diagram
+    activity_levels =
+      Enum.reduce(actors, MapSet.new(), fn {name, _actor_info}, acc ->
+        actor_stats = get_actor_stats(stats, name)
+
+        if actor_stats do
+          total_activity = actor_stats.sent_count + actor_stats.received_count
+          level = activity_level(total_activity)
+          MapSet.put(acc, level)
+        else
+          acc
+        end
+      end)
+
+    # Build legend items for each activity level present
+    activity_levels
+    |> Enum.sort_by(&activity_level_order/1)
+    |> Enum.map(&activity_level_description/1)
+  end
+
+  defp activity_level(total_activity) do
+    cond do
+      total_activity == 0 -> :inactive
+      total_activity < 10 -> :low
+      total_activity < 50 -> :medium
+      true -> :high
+    end
+  end
+
+  defp activity_level_order(level) do
+    case level do
+      :inactive -> 0
+      :low -> 1
+      :medium -> 2
+      :high -> 3
+    end
+  end
+
+  defp activity_level_description(level) do
+    case level do
+      :inactive ->
+        {"⚪ Inactive (0 msgs)", "fill:#f5f5f5,stroke:#9e9e9e"}
+
+      :low ->
+        {"🔵 Low Activity (<10 msgs)", "fill:#e3f2fd,stroke:#1976d2"}
+
+      :medium ->
+        {"🟢 Medium Activity (10-50 msgs)", "fill:#e8f5e9,stroke:#388e3c"}
+
+      :high ->
+        {"🟠 High Activity (>50 msgs)", "fill:#fff3e0,stroke:#f57c00,stroke-width:3px"}
+    end
+  end
+
+  defp render_legend_html(legend_nodes, legend_styles, activity_legend) do
     mermaid_legend = """
     flowchart TD
         #{Enum.join(legend_nodes, "\n    ")}
         #{Enum.join(legend_styles, "\n    ")}
     """
 
+    # Build activity legend nodes and styles
+    activity_nodes_and_styles =
+      if Enum.empty?(activity_legend) do
+        ""
+      else
+        activity_items =
+          activity_legend
+          |> Enum.with_index()
+          |> Enum.map(fn {{label, style}, idx} ->
+            node_name = "activity_#{idx}"
+            node_def = "#{node_name}[\"#{label}\"]"
+            style_def = "style #{node_name} #{style}"
+            {node_def, style_def}
+          end)
+
+        nodes = Enum.map(activity_items, fn {node, _} -> node end)
+        styles = Enum.map(activity_items, fn {_, style} -> style end)
+
+        activity_mermaid = """
+        flowchart LR
+            #{Enum.join(nodes, "\n    ")}
+            #{Enum.join(styles, "\n    ")}
+        """
+
+        """
+        <div style="margin-top: 20px;">
+          <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Node Colors (Activity Level)</h3>
+          <div>
+            <div class="mermaid">
+        #{activity_mermaid}
+            </div>
+          </div>
+        </div>
+        """
+      end
+
     """
     <hr style="margin: 30px 0 20px 0; border: none; border-top: 1px solid #e9ecef;">
     <div style="margin-top: 20px;">
-      <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
-      <div style="display: flex; justify-content: flex-start; overflow-x: auto;">
-        <div class="mermaid" style="min-width: auto; height: auto; overflow: visible; font-size: 24px; transform: scale(1.5); transform-origin: left top;">
+      <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Node Shapes (Actor Type)</h3>
+       <div>
+         <div class="mermaid">
     #{mermaid_legend}
         </div>
       </div>
     </div>
+    #{activity_nodes_and_styles}
     """
   end
 end

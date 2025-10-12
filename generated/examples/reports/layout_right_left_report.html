@@ -221,18 +221,30 @@ flowchart RL
 
     <hr style="margin: 30px 0 20px 0; border: none; border-top: 1px solid #e9ecef;">
 <div style="margin-top: 20px;">
-  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
-  <div style="display: flex; justify-content: flex-start; overflow-x: auto;">
-    <div class="mermaid" style="min-width: auto; height: auto; overflow: visible; font-size: 24px; transform: scale(1.5); transform-origin: left top;">
+  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Node Shapes (Actor Type)</h3>
+   <div>
+     <div class="mermaid">
 flowchart TD
     legend_source(["Source<br/>(sends only)"])
     legend_sink["Sink<br/>(receives only)"]
-    style legend_source fill:#e8f5e9,stroke:#388e3c
-    style legend_sink fill:#e8f5e9,stroke:#388e3c
+    style legend_source fill:#ffffff,stroke:#666666,stroke-width:2px
+    style legend_sink fill:#ffffff,stroke:#666666,stroke-width:2px
 
     </div>
   </div>
 </div>
+<div style="margin-top: 20px;">
+  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Node Colors (Activity Level)</h3>
+  <div>
+    <div class="mermaid">
+flowchart LR
+    activity_0["🔵 Low Activity (<10 msgs)"]
+    style activity_0 fill:#e3f2fd,stroke:#1976d2
+
+    </div>
+  </div>
+</div>
+
 
   </div>
 

@@ -207,27 +207,27 @@
     <div class="diagram-container">
       <div class="mermaid">
 flowchart TB
-    actor1(["actor1<br/>
+    actor1("actor1<br/>
 📤 Sent: 30<br/>
-📥 Recv: 44"])
-    actor2(["actor2<br/>
+📥 Recv: 44")
+    actor2("actor2<br/>
 📤 Sent: 48<br/>
-📥 Recv: 41"])
-    actor0(["actor0<br/>
+📥 Recv: 41")
+    actor0("actor0<br/>
 📤 Sent: 42<br/>
-📥 Recv: 42"])
-    actor3(["actor3<br/>
+📥 Recv: 42")
+    actor3("actor3<br/>
 📤 Sent: 60<br/>
-📥 Recv: 39"])
-    actor4(["actor4<br/>
+📥 Recv: 39")
+    actor4("actor4<br/>
 📤 Sent: 60<br/>
-📥 Recv: 39"])
-    actor5(["actor5<br/>
+📥 Recv: 39")
+    actor5("actor5<br/>
 📤 Sent: 24<br/>
-📥 Recv: 45"])
-    actor6(["actor6<br/>
+📥 Recv: 45")
+    actor6("actor6<br/>
 📤 Sent: 30<br/>
-📥 Recv: 44"])
+📥 Recv: 44")
     actor1 -->|:hi<br/>every 347ms| actor0
     actor1 -->|:hi<br/>every 347ms| actor2
     actor1 -->|:hi<br/>every 347ms| actor3
@@ -282,16 +282,28 @@ flowchart TB
 
     <hr style="margin: 30px 0 20px 0; border: none; border-top: 1px solid #e9ecef;">
 <div style="margin-top: 20px;">
-  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Legend</h3>
-  <div style="display: flex; justify-content: flex-start; overflow-x: auto;">
-    <div class="mermaid" style="min-width: auto; height: auto; overflow: visible; font-size: 24px; transform: scale(1.5); transform-origin: left top;">
+  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Node Shapes (Actor Type)</h3>
+   <div>
+     <div class="mermaid">
 flowchart TD
-    legend_source(["Source<br/>(sends only)"])
-    style legend_source fill:#e8f5e9,stroke:#388e3c
+    legend_processor("Processor<br/>(send & receive)")
+    style legend_processor fill:#ffffff,stroke:#666666,stroke-width:2px
 
     </div>
   </div>
 </div>
+<div style="margin-top: 20px;">
+  <h3 style="color: #495057; font-size: 0.9em; margin-bottom: 8px;">Node Colors (Activity Level)</h3>
+  <div>
+    <div class="mermaid">
+flowchart LR
+    activity_0["🟠 High Activity (>50 msgs)"]
+    style activity_0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+
+    </div>
+  </div>
+</div>
+
 
   </div>
 
