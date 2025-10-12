@@ -95,6 +95,9 @@ defmodule GenServerCallTimeoutTest do
       # Start async operation
       GenServer.cast(server, {:start_slow_op, self()})
 
+      # Small delay to ensure cast is processed before advancing
+      Process.sleep(10)
+
       # Advance virtual time
       VirtualClock.advance(clock, 2000)
 
