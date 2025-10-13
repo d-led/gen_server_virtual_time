@@ -20,8 +20,8 @@ find_package(OMNeT++ REQUIRED)
 
 # Source files
 set(SOURCES
-    Source.cc
     Sink.cc
+    Source.cc
     Stage1.cc
     Stage2.cc
     Stage3.cc

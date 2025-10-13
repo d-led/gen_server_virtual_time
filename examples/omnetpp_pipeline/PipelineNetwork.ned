@@ -1,15 +1,15 @@
 // Generated from ActorSimulation DSL
 
+simple Sink {
+    gates:
+        input in;
+}
+
+
 simple Source {
     gates:
         input in;
         output out[1];
-}
-
-
-simple Sink {
-    gates:
-        input in;
 }
 
 
@@ -36,8 +36,8 @@ simple Stage3 {
 
 network PipelineNetwork {
     submodules:
-        source: Source;
         sink: Sink;
+        source: Source;
         stage1: Stage1;
         stage2: Stage2;
         stage3: Stage3;

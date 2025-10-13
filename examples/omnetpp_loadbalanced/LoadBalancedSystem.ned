@@ -1,5 +1,11 @@
 // Generated from ActorSimulation DSL
 
+simple Database {
+    gates:
+        input in;
+}
+
+
 simple LoadBalancer {
     gates:
         input in;
@@ -28,19 +34,13 @@ simple Server3 {
 }
 
 
-simple Database {
-    gates:
-        input in;
-}
-
-
 network LoadBalancedSystem {
     submodules:
+        database: Database;
         load_balancer: LoadBalancer;
         server1: Server1;
         server2: Server2;
         server3: Server3;
-        database: Database;
     connections:
         load_balancer.out[0] --> server1.in;
         load_balancer.out[1] --> server2.in;

@@ -20,8 +20,8 @@ find_package(OMNeT++ REQUIRED)
 
 # Source files
 set(SOURCES
-    Processor.cc
     BurstGenerator.cc
+    Processor.cc
 )
 
 # Create executable

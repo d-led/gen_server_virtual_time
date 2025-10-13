@@ -20,11 +20,11 @@ find_package(OMNeT++ REQUIRED)
 
 # Source files
 set(SOURCES
+    Database.cc
     LoadBalancer.cc
     Server1.cc
     Server2.cc
     Server3.cc
-    Database.cc
 )
 
 # Create executable
