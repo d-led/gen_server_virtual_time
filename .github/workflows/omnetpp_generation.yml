@@ -257,8 +257,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          build-essential gcc g++ bison flex perl python3 python3-pip python3-venv \
-          libxml2-dev zlib1g-dev
+          build-essential gcc g++ bison flex perl python3 python3-pip python3-venv python3-dev \
+          libxml2-dev zlib1g-dev cmake
 
     - name: Cache OMNeT++
       id: cache-omnetpp
@@ -280,7 +280,7 @@ jobs:
         python3 -m venv .venv
         source .venv/bin/activate
         pip install --upgrade pip
-        pip install numpy scipy pandas matplotlib
+        pip install -r python/requirements.txt
         # Configure: command-line only, no GUI
         ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no MODE=release
         # Build
