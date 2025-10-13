@@ -203,6 +203,11 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   defp node_shape(definition, stats, name) do
+    capabilities = analyze_actor_capabilities(definition, stats, name)
+    select_shape_for_capabilities(capabilities)
+  end
+
+  defp analyze_actor_capabilities(definition, stats, name) do
     targets = definition.targets || []
     has_targets = length(targets) > 0
     can_receive_by_def = definition.on_receive != nil || definition.on_match != []
@@ -216,31 +221,17 @@ defmodule ActorSimulation.MermaidReportGenerator do
     # Use stats if available, otherwise fall back to definition
     can_receive = can_receive_by_def || actually_receives
 
-    # Determine actor type based on actual behavior when possible
-    is_source = can_send && !can_receive && actually_sends && !actually_receives
-    is_sink = can_receive && !has_targets
-
-    is_processor =
-      (can_send && can_receive && has_targets) || (actually_sends && actually_receives)
-
-    cond do
-      # Source actors (only send): stadium shape (oval)
-      is_source ->
-        {"([\"", "\"])"}
-
-      # Processing actors (both send and receive): rounded rectangle
-      is_processor ->
-        {"(\"", "\")"}
-
-      # Sink actors (only receive, no targets): rectangle
-      is_sink ->
-        {"[\"", "\"]"}
-
-      # Passive actors: regular rectangle
-      true ->
-        {"[\"", "\"]"}
-    end
+    %{
+      is_source: can_send && !can_receive && actually_sends && !actually_receives,
+      is_sink: can_receive && !has_targets,
+      is_processor: (can_send && can_receive && has_targets) || (actually_sends && actually_receives)
+    }
   end
+
+  defp select_shape_for_capabilities(%{is_source: true}), do: {"([\"", "\"])"}
+  defp select_shape_for_capabilities(%{is_processor: true}), do: {"(\"", "\")"}
+  defp select_shape_for_capabilities(%{is_sink: true}), do: {"[\"", "\"]"}
+  defp select_shape_for_capabilities(_), do: {"[\"", "\"]"}
 
   defp generate_real_process_edge_label(name, target, _actor_info, show_labels) do
     if show_labels do
@@ -750,42 +741,39 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   defp determine_simulated_actor_type(definition, name, stats) do
+    actor_stats = get_actor_stats(stats, name)
+
+    if actor_stats do
+      determine_type_from_runtime_stats(actor_stats, definition)
+    else
+      determine_type_from_definition(definition)
+    end
+  end
+
+  defp determine_type_from_runtime_stats(actor_stats, definition) do
+    actual_sent = actor_stats.sent_count
+    actual_received = actor_stats.received_count
+    has_targets = length(definition.targets || []) > 0
+
+    cond do
+      actual_sent > 0 && actual_received > 0 && has_targets -> :processor
+      actual_sent > 0 && actual_received == 0 -> :source
+      actual_received > 0 && actual_sent == 0 -> :sink
+      true -> determine_type_from_definition(definition)
+    end
+  end
+
+  defp determine_type_from_definition(definition) do
     targets = definition.targets || []
     has_targets = length(targets) > 0
     can_receive = definition.on_receive != nil || definition.on_match != []
     can_send = definition.send_pattern != nil || (can_receive && has_targets)
 
-    # Check actual runtime behavior from stats to override static definition
-    actor_stats = get_actor_stats(stats, name)
-
-    actual_sent = if actor_stats, do: actor_stats.sent_count, else: 0
-    actual_received = if actor_stats, do: actor_stats.received_count, else: 0
-
     cond do
-      # If actor actually received messages, it's not a pure source
-      actual_sent > 0 && actual_received > 0 && has_targets ->
-        :processor
-
-      # If actor actually sent messages but received none, it's a source
-      actual_sent > 0 && actual_received == 0 ->
-        :source
-
-      # If actor only received messages, it's a sink
-      actual_received > 0 && actual_sent == 0 ->
-        :sink
-
-      # Fallback to static analysis if no stats available
-      can_send && !can_receive ->
-        :source
-
-      can_receive && !has_targets ->
-        :sink
-
-      can_send && can_receive && has_targets ->
-        :processor
-
-      true ->
-        :sink
+      can_send && !can_receive -> :source
+      can_receive && !has_targets -> :sink
+      can_send && can_receive && has_targets -> :processor
+      true -> :sink
     end
   end
 
