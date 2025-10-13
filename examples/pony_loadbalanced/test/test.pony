@@ -1,13 +1,8 @@
 // Generated from ActorSimulation DSL
 // PonyTest tests for loadbalanced_actors
 
-use "ponytest"
-use "../console_logger"
-use "..load_balancer"
-use "..server1"
-use "..server2"
-use "..server3"
-use "..database"
+use "pony_test"
+use ".."  // Import parent package (all actor files and console_logger)
 
 actor Main is TestList
   new create(env: Env) => PonyTest(env, this)
@@ -41,7 +36,7 @@ class iso _TestLoadBalancer is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = LoadBalancer(h.env, logger)
+    let load_balancer = LoadBalancer(h.env, logger)
     h.complete(true)
 
 class iso _TestServer1 is UnitTest
@@ -53,7 +48,7 @@ class iso _TestServer1 is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = Server1(h.env, logger)
+    let server1 = Server1(h.env, logger)
     h.complete(true)
 
 class iso _TestServer2 is UnitTest
@@ -65,7 +60,7 @@ class iso _TestServer2 is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = Server2(h.env, logger)
+    let server2 = Server2(h.env, logger)
     h.complete(true)
 
 class iso _TestServer3 is UnitTest
@@ -77,7 +72,7 @@ class iso _TestServer3 is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = Server3(h.env, logger)
+    let server3 = Server3(h.env, logger)
     h.complete(true)
 
 class iso _TestDatabase is UnitTest
@@ -89,6 +84,6 @@ class iso _TestDatabase is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = Database(h.env, logger)
+    let database = Database(h.env, logger)
     h.complete(true)
 

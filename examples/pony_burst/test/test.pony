@@ -1,10 +1,8 @@
 // Generated from ActorSimulation DSL
 // PonyTest tests for burst_actors
 
-use "ponytest"
-use "../console_logger"
-use "..processor"
-use "..burst_generator"
+use "pony_test"
+use ".."  // Import parent package (all actor files and console_logger)
 
 actor Main is TestList
   new create(env: Env) => PonyTest(env, this)
@@ -35,7 +33,7 @@ class iso _TestProcessor is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = Processor(h.env, logger)
+    let processor = Processor(h.env, logger)
     h.complete(true)
 
 class iso _TestBurstGenerator is UnitTest
@@ -47,6 +45,6 @@ class iso _TestBurstGenerator is UnitTest
     h.long_test(2_000_000_000)  // 2 second timeout
     // Actor creation test
     let logger = ConsoleLogger(h.env.out)
-    let _actor = BurstGenerator(h.env, logger)
+    let burst_generator = BurstGenerator(h.env, logger)
     h.complete(true)
 

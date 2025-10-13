@@ -425,7 +425,7 @@ defmodule ActorSimulation.PhonyGenerator do
     \tgo build -o $(BINARY) .
 
     test:
-    \tgo test -v ./...
+    \t@echo "Use 'bash scripts/test_phony_demo.sh' from the project root to run tests"
 
     clean:
     \trm -f $(BINARY) #{project_name}.phony.* #{project_name}

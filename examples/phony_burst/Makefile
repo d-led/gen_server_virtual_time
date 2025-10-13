@@ -17,7 +17,7 @@ build:
 	go build -o $(BINARY) .
 
 test:
-	go test -v ./...
+	@echo "Use 'bash scripts/test_phony_demo.sh' from the project root to run tests"
 
 clean:
 	rm -f $(BINARY) burst_actors.phony.* burst_actors

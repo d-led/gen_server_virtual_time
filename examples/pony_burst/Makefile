@@ -21,12 +21,10 @@ build:
 	mv $(DIR_NAME) $(BINARY)
 
 test:
-	corral fetch
-	ponyc test
-	./test
+	@echo "Use 'bash scripts/test_pony_demo.sh' from the project root to run tests"
 
 clean:
-	rm -rf $(BINARY) burst_actors.pony.* $(DIR_NAME) test
+	rm -rf $(BINARY) burst_actors.pony.* $(DIR_NAME) test test1
 	rm -rf _corral .corral
 
 run: build

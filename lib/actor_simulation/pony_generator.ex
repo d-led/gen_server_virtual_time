@@ -473,20 +473,14 @@ defmodule ActorSimulation.PonyGenerator do
       |> Enum.filter(fn {_name, info} -> info.type == :simulated end)
       |> Enum.map(fn {name, info} -> {name, info.definition} end)
 
-    uses =
-      Enum.map(simulated_actors, fn {name, _def} ->
-        "use \"..#{actor_snake_case(name)}\""
-      end)
-
     test_classes = generate_test_classes(simulated_actors)
 
     """
     // Generated from ActorSimulation DSL
     // PonyTest tests for #{project_name}
 
-    use \"ponytest\"
-    use \"../console_logger\"
-    #{Enum.join(uses, "\n")}
+    use \"pony_test\"
+    use \"..\"  // Import parent package (all actor files and console_logger)
 
     actor Main is TestList
       new create(env: Env) => PonyTest(env, this)
@@ -512,6 +506,7 @@ defmodule ActorSimulation.PonyGenerator do
       actor_test_cases =
         Enum.map(actors, fn {name, _def} ->
           class_name = actor_class_name(name)
+          var_name = actor_snake_case(name)
 
           """
 
@@ -524,7 +519,7 @@ defmodule ActorSimulation.PonyGenerator do
               h.long_test(2_000_000_000)  // 2 second timeout
               // Actor creation test
               let logger = ConsoleLogger(h.env.out)
-              let _actor = #{class_name}(h.env, logger)
+              let #{var_name} = #{class_name}(h.env, logger)
               h.complete(true)
           """
         end)
@@ -587,12 +582,10 @@ defmodule ActorSimulation.PonyGenerator do
     \tmv $(DIR_NAME) $(BINARY)
 
     test:
-    \tcorral fetch
-    \tponyc test
-    \t./test
+    \t@echo "Use 'bash scripts/test_pony_demo.sh' from the project root to run tests"
 
     clean:
-    \trm -rf $(BINARY) #{project_name}.pony.* $(DIR_NAME) test
+    \trm -rf $(BINARY) #{project_name}.pony.* $(DIR_NAME) test test1
     \trm -rf _corral .corral
 
     run: build
