@@ -224,7 +224,8 @@ defmodule ActorSimulation.MermaidReportGenerator do
     %{
       is_source: can_send && !can_receive && actually_sends && !actually_receives,
       is_sink: can_receive && !has_targets,
-      is_processor: (can_send && can_receive && has_targets) || (actually_sends && actually_receives)
+      is_processor:
+        (can_send && can_receive && has_targets) || (actually_sends && actually_receives)
     }
   end
 

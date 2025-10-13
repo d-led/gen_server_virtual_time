@@ -253,32 +253,39 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+    - name: Install OMNeT++ dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential gcc g++ bison flex perl python3 \
+          libxml2-dev zlib1g-dev
 
-    - name: Cache OMNeT++ installation
+    - name: Cache OMNeT++
+      id: cache-omnetpp
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.opp_env
-          ~/.cache/opp_env
-        key: ${{ runner.os }}-omnetpp-6.2.0
-        restore-keys: |
-          ${{ runner.os }}-omnetpp-6.2.0-
-          ${{ runner.os }}-omnetpp-
+        path: ~/omnetpp-6.2
+        key: omnetpp-6.2.0-${{ runner.os }}-v1
 
-    - name: Install OMNeT++ via opp_env
+    - name: Download and build OMNeT++ 6.2
+      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
       run: |
-        pip install opp-env
-        opp_env init
-        opp_env install omnetpp-6.2.0
-      shell: bash
+        cd ~
+        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2/omnetpp-6.2-linux-x86_64.tgz
+        tar xzf omnetpp-6.2-linux-x86_64.tgz
+        cd omnetpp-6.2
+        export PATH=$HOME/omnetpp-6.2/bin:$PATH
+        . setenv
+        # Configure: command-line only, no GUI
+        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no MODE=release
+        # Build
+        make MODE=release -j$(nproc)
 
     - name: Build OMNeT++ project
       working-directory: examples/${{ matrix.example }}
       run: |
+        export PATH=$HOME/omnetpp-6.2/bin:$PATH
+        source ~/omnetpp-6.2/setenv
         mkdir -p build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -288,12 +295,10 @@ jobs:
       working-directory: examples/${{ matrix.example }}/build
       shell: bash
       run: |
-        # Determine binary name: {project}.omnetpp.linux
-        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
-        PROJECT_NAME=$(grep -o 'project([^)]*)' ../CMakeLists.txt | head -1 | sed 's/project(\([^ ]*\).*/\1/')
-        BINARY="${PROJECT_NAME}.omnetpp.${OS_NAME}"
+        export PATH=$HOME/omnetpp-6.2/bin:$PATH
+        source ~/omnetpp-6.2/setenv
         # Run short simulation with timeout
-        timeout 10 ./"${BINARY}" -u Cmdenv -c General -n .. || true
+        timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
 
   regenerate-and-compile:
     name: Regenerate & Compile All OMNeT++ Examples
@@ -319,31 +324,38 @@ jobs:
       run: |
         git diff --exit-code examples/omnetpp_* || (echo "Generated files differ!" && exit 1)
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+    - name: Install OMNeT++ dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential gcc g++ bison flex perl python3 \
+          libxml2-dev zlib1g-dev
 
-    - name: Cache OMNeT++ installation
+    - name: Cache OMNeT++
+      id: cache-omnetpp
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.opp_env
-          ~/.cache/opp_env
-        key: ${{ runner.os }}-omnetpp-6.2.0
-        restore-keys: |
-          ${{ runner.os }}-omnetpp-6.2.0-
-          ${{ runner.os }}-omnetpp-
+        path: ~/omnetpp-6.2
+        key: omnetpp-6.2.0-${{ runner.os }}-v1
 
-    - name: Install OMNeT++ via opp_env
+    - name: Download and build OMNeT++ 6.2
+      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
       run: |
-        pip install opp-env
-        opp_env init
-        opp_env install omnetpp-6.2.0
-      shell: bash
+        cd ~
+        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2/omnetpp-6.2-linux-x86_64.tgz
+        tar xzf omnetpp-6.2-linux-x86_64.tgz
+        cd omnetpp-6.2
+        export PATH=$HOME/omnetpp-6.2/bin:$PATH
+        . setenv
+        # Configure: command-line only, no GUI
+        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no MODE=release
+        # Build
+        make MODE=release -j$(nproc)
 
     - name: Compile all regenerated examples
       run: |
+        export PATH=$HOME/omnetpp-6.2/bin:$PATH
+        source ~/omnetpp-6.2/setenv
         for example in examples/omnetpp_*; do
           if [ -d "$example" ]; then
             echo "Compiling $example..."

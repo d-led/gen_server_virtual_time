@@ -216,62 +216,23 @@ defmodule TerminationIndicatorTest do
       assert length(philosophers_who_ate) == 5,
              "Expected all 5 philosophers to eat, but only #{inspect(philosophers_who_ate)} ate"
 
-      mermaid =
-        ActorSimulation.trace_to_mermaid(simulation,
-          enhanced: true,
-          timestamps: true,
-          show_termination: false
+      # Generate flowchart report instead of sequence diagram (too large for Mermaid)
+      File.mkdir_p!("generated/examples/reports")
+
+      html =
+        ActorSimulation.generate_flowchart_report(simulation,
+          title: "🍴 5 Dining Philosophers - All Fed Successfully",
+          layout: "TB",
+          show_stats_on_nodes: true
         )
 
-      # Save to file for visual verification
-      File.mkdir_p!("generated/examples")
-
-      html = """
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>5 Dining Philosophers - All Fed Successfully</title>
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-        <style>
-          body { font-family: system-ui; max-width: 1800px; margin: 40px auto; padding: 20px; }
-          .mermaid { background: white; padding: 40px; border-radius: 8px; }
-          .info { background: #d1fae5; padding: 20px; border-left: 4px solid #10b981; margin-bottom: 20px; border-radius: 4px; }
-        </style>
-      </head>
-      <body>
-        <h1>🍴 5 Philosophers - All Fed Successfully (Classic Case)</h1>
-        <div class="info">
-          <strong>✅ Success!</strong><br>
-          All 5 philosophers successfully ate at least once during the simulation.<br>
-          Look for each philosopher's <strong>"I'm full!"</strong> message in the diagram below!
-        </div>
-        <div class="mermaid">
-      #{mermaid}
-        </div>
-        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-          <h3 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 1.1em;">🔗 Source & Links</h3>
-          <a href="https://github.com/d-led/gen_server_virtual_time" target="_blank" style="display: inline-block; margin: 5px 10px 5px 0; padding: 8px 16px; background: #24292e; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; transition: background 0.2s;">📚 GitHub Repository</a>
-          <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/test/termination_indicator_test.exs" target="_blank" style="display: inline-block; margin: 5px 10px 5px 0; padding: 8px 16px; background: #24292e; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; transition: background 0.2s;">🧪 Test Source</a>
-          <a href="https://hexdocs.pm/gen_server_virtual_time" target="_blank" style="display: inline-block; margin: 5px 10px 5px 0; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; transition: background 0.2s;">📖 Documentation</a>
-          <a href="https://hex.pm/packages/gen_server_virtual_time" target="_blank" style="display: inline-block; margin: 5px 10px 5px 0; padding: 8px 16px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; font-size: 14px; transition: background 0.2s;">📦 Hex Package</a>
-        </div>
-        <script>
-          mermaid.initialize({ startOnLoad: true, theme: 'default',
-            sequence: { mirrorActors: true, messageMargin: 35 }
-          });
-        </script>
-      </body>
-      </html>
-      """
-
-      File.write!("generated/examples/dining_philosophers_5_all_fed.html", html)
+      File.write!("generated/examples/reports/dining_philosophers_5_all_fed.html", html)
 
       IO.puts(
-        "\n✅ Generated 5-philosopher diagram: generated/examples/dining_philosophers_5_all_fed.html"
+        "\n✅ Generated 5-philosopher flowchart report: generated/examples/reports/dining_philosophers_5_all_fed.html"
       )
 
-      IO.puts("   All 5 philosophers successfully ate - check the diagram!")
+      IO.puts("   All 5 philosophers successfully ate - check the flowchart report!")
 
       ActorSimulation.stop(simulation)
     end
