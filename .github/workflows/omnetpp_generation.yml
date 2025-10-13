@@ -271,8 +271,8 @@ jobs:
       if: steps.cache-omnetpp.outputs.cache-hit != 'true'
       run: |
         cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2/omnetpp-6.2-linux-x86_64.tgz
-        tar xzf omnetpp-6.2-linux-x86_64.tgz
+        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2.0/omnetpp-6.2.0-linux-x86_64.tgz
+        tar xzf omnetpp-6.2.0-linux-x86_64.tgz
         cd omnetpp-6.2
         export PATH=$HOME/omnetpp-6.2/bin:$PATH
         . setenv
@@ -342,8 +342,8 @@ jobs:
       if: steps.cache-omnetpp.outputs.cache-hit != 'true'
       run: |
         cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2/omnetpp-6.2-linux-x86_64.tgz
-        tar xzf omnetpp-6.2-linux-x86_64.tgz
+        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2.0/omnetpp-6.2.0-linux-x86_64.tgz
+        tar xzf omnetpp-6.2.0-linux-x86_64.tgz
         cd omnetpp-6.2
         export PATH=$HOME/omnetpp-6.2/bin:$PATH
         . setenv

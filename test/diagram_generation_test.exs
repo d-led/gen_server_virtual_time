@@ -23,38 +23,35 @@ defmodule DiagramGenerationTest do
     :ok
   end
 
+  # Helper to define simulation and generate source code from quoted expression
+  # This eliminates code duplication by defining the simulation once
+  defp simulation_with_source(quoted_code) do
+    simulation = Code.eval_quoted(quoted_code) |> elem(0)
+    source = "simulation =\n#{Macro.to_string(quoted_code)}"
+    {simulation, source}
+  end
+
   describe "Mermaid diagram generation" do
     test "generates viewable Mermaid HTML file" do
-      model_source = """
-      simulation =
-        ActorSimulation.new(trace: true)
-        |> ActorSimulation.add_actor(:client,
-          send_pattern: {:periodic, 100, :request},
-          targets: [:server]
-        )
-        |> ActorSimulation.add_actor(:server,
-          on_match: [
-            {:request, fn state -> {:send, [{:client, :response}], state} end}
-          ]
-        )
-        |> ActorSimulation.add_actor(:database)
-        |> ActorSimulation.run(duration: 300)
-      """
+      # Define simulation once using quoted expression
+      simulation_code =
+        quote do
+          ActorSimulation.new(trace: true)
+          |> ActorSimulation.add_actor(:client,
+            send_pattern: {:periodic, 100, :request},
+            targets: [:server]
+          )
+          |> ActorSimulation.add_actor(:server,
+            on_match: [
+              {:request, fn state -> {:send, [{:client, :response}], state} end}
+            ]
+          )
+          |> ActorSimulation.add_actor(:database)
+          |> ActorSimulation.run(duration: 300)
+        end
 
-      # Create a simple simulation
-      simulation =
-        ActorSimulation.new(trace: true)
-        |> ActorSimulation.add_actor(:client,
-          send_pattern: {:periodic, 100, :request},
-          targets: [:server]
-        )
-        |> ActorSimulation.add_actor(:server,
-          on_match: [
-            {:request, fn state -> {:send, [{:client, :response}], state} end}
-          ]
-        )
-        |> ActorSimulation.add_actor(:database)
-        |> ActorSimulation.run(duration: 300)
+      # Generate both simulation and source code from the same definition
+      {simulation, model_source} = simulation_with_source(simulation_code)
 
       # Generate Mermaid diagram
       mermaid = ActorSimulation.trace_to_mermaid(simulation)

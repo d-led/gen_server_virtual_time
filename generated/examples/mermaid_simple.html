@@ -133,19 +133,16 @@ sequenceDiagram
   <p>This is the Elixir code that defines the actor simulation model:</p>
   <div class="code-block">
     <pre><code class="language-elixir">simulation =
-  ActorSimulation.new(trace: true)
-  |> ActorSimulation.add_actor(:client,
-    send_pattern: {:periodic, 100, :request},
-    targets: [:server]
-  )
-  |> ActorSimulation.add_actor(:server,
-    on_match: [
-      {:request, fn state -> {:send, [{:client, :response}], state} end}
-    ]
-  )
-  |> ActorSimulation.add_actor(:database)
-  |> ActorSimulation.run(duration: 300)
-</code></pre>
+ActorSimulation.new(trace: true)
+|> ActorSimulation.add_actor(:client,
+  send_pattern: {:periodic, 100, :request},
+  targets: [:server]
+)
+|> ActorSimulation.add_actor(:server,
+  on_match: [request: fn state -> {:send, [client: :response], state} end]
+)
+|> ActorSimulation.add_actor(:database)
+|> ActorSimulation.run(duration: 300)</code></pre>
   </div>
 </div>
 
