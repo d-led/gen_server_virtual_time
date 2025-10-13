@@ -257,15 +257,15 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          build-essential gcc g++ bison flex perl python3 \
+          build-essential gcc g++ bison flex perl python3 python3-pip python3-venv \
           libxml2-dev zlib1g-dev
 
     - name: Cache OMNeT++
       id: cache-omnetpp
       uses: actions/cache@v4
       with:
-        path: ~/omnetpp-6.2
-        key: omnetpp-6.2.0-${{ runner.os }}-v1
+        path: ~/omnetpp-6.2.0
+        key: omnetpp-6.2.0-${{ runner.os }}-v2
 
     - name: Download and build OMNeT++ 6.2
       if: steps.cache-omnetpp.outputs.cache-hit != 'true'
@@ -273,9 +273,14 @@ jobs:
         cd ~
         wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2.0/omnetpp-6.2.0-linux-x86_64.tgz
         tar xzf omnetpp-6.2.0-linux-x86_64.tgz
-        cd omnetpp-6.2
-        export PATH=$HOME/omnetpp-6.2/bin:$PATH
+        cd omnetpp-6.2.0
+        export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
         . setenv
+        # Create virtual environment and install Python dependencies
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install --upgrade pip
+        pip install numpy scipy pandas matplotlib
         # Configure: command-line only, no GUI
         ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no MODE=release
         # Build
@@ -284,8 +289,9 @@ jobs:
     - name: Build OMNeT++ project
       working-directory: examples/${{ matrix.example }}
       run: |
-        export PATH=$HOME/omnetpp-6.2/bin:$PATH
-        source ~/omnetpp-6.2/setenv
+        export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
+        source ~/omnetpp-6.2.0/setenv
+        if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
         mkdir -p build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -295,8 +301,9 @@ jobs:
       working-directory: examples/${{ matrix.example }}/build
       shell: bash
       run: |
-        export PATH=$HOME/omnetpp-6.2/bin:$PATH
-        source ~/omnetpp-6.2/setenv
+        export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
+        source ~/omnetpp-6.2.0/setenv
+        if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
         # Run short simulation with timeout
         timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
 
