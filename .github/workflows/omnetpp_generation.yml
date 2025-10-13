@@ -243,6 +243,7 @@ jobs:
 
   compile-omnetpp-examples:
     name: Compile & Test OMNeT++ Examples
+    # Note: macOS builds are disabled due to system Python install restrictions with opp_env
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -252,33 +253,32 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install OMNeT++ dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake bison flex
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-    - name: Cache OMNeT++
-      id: cache-omnetpp
+    - name: Cache OMNeT++ installation
       uses: actions/cache@v4
       with:
-        path: ~/omnetpp
-        key: omnetpp-6.0.3-${{ runner.os }}
+        path: |
+          ~/.opp_env
+          ~/.cache/opp_env
+        key: ${{ runner.os }}-omnetpp-6.2.0
+        restore-keys: |
+          ${{ runner.os }}-omnetpp-6.2.0-
+          ${{ runner.os }}-omnetpp-
 
-    - name: Download and build OMNeT++
-      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
+    - name: Install OMNeT++ via opp_env
       run: |
-        cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.3/omnetpp-6.0.3-linux-x86_64.tgz
-        tar xzf omnetpp-6.0.3-linux-x86_64.tgz
-        cd omnetpp-6.0.3
-        . setenv
-        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
-        make -j$(nproc)
+        pip install opp-env
+        opp_env init
+        opp_env install omnetpp-6.2.0
+      shell: bash
 
     - name: Build OMNeT++ project
       working-directory: examples/${{ matrix.example }}
       run: |
-        source ~/omnetpp-6.0.3/setenv
         mkdir -p build
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release
@@ -288,23 +288,16 @@ jobs:
       working-directory: examples/${{ matrix.example }}/build
       shell: bash
       run: |
-        source ~/omnetpp-6.0.3/setenv
-        # Run short simulation with cross-platform timeout
-        if command -v timeout &> /dev/null; then
-          timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
-        elif command -v gtimeout &> /dev/null; then
-          gtimeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
-        else
-          # Fallback: run in background with kill after timeout
-          ./${{ matrix.example }} -u Cmdenv -c General & 
-          PID=$!
-          sleep 10
-          kill $PID 2>/dev/null || true
-          wait $PID 2>/dev/null || true
-        fi
+        # Determine binary name: {project}.omnetpp.linux
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep -o 'project([^)]*)' ../CMakeLists.txt | head -1 | sed 's/project(\([^ ]*\).*/\1/')
+        BINARY="${PROJECT_NAME}.omnetpp.${OS_NAME}"
+        # Run short simulation with timeout
+        timeout 10 ./"${BINARY}" -u Cmdenv -c General -n .. || true
 
   regenerate-and-compile:
     name: Regenerate & Compile All OMNeT++ Examples
+    # Note: macOS builds are disabled due to system Python install restrictions with opp_env
     runs-on: ubuntu-latest
     
     steps:
@@ -326,32 +319,31 @@ jobs:
       run: |
         git diff --exit-code examples/omnetpp_* || (echo "Generated files differ!" && exit 1)
 
-    - name: Install OMNeT++ dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake bison flex
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-    - name: Cache OMNeT++
-      id: cache-omnetpp
+    - name: Cache OMNeT++ installation
       uses: actions/cache@v4
       with:
-        path: ~/omnetpp
-        key: omnetpp-6.0.3-${{ runner.os }}
+        path: |
+          ~/.opp_env
+          ~/.cache/opp_env
+        key: ${{ runner.os }}-omnetpp-6.2.0
+        restore-keys: |
+          ${{ runner.os }}-omnetpp-6.2.0-
+          ${{ runner.os }}-omnetpp-
 
-    - name: Download and build OMNeT++
-      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
+    - name: Install OMNeT++ via opp_env
       run: |
-        cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.0.3/omnetpp-6.0.3-linux-x86_64.tgz
-        tar xzf omnetpp-6.0.3-linux-x86_64.tgz
-        cd omnetpp-6.0.3
-        . setenv
-        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no
-        make -j$(nproc)
+        pip install opp-env
+        opp_env init
+        opp_env install omnetpp-6.2.0
+      shell: bash
 
     - name: Compile all regenerated examples
       run: |
-        source ~/omnetpp-6.0.3/setenv
         for example in examples/omnetpp_*; do
           if [ -d "$example" ]; then
             echo "Compiling $example..."
