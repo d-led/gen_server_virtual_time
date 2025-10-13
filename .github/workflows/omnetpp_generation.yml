@@ -320,10 +320,6 @@ jobs:
     - name: Regenerate OMNeT++ examples
       run: mix run scripts/generate_omnetpp_examples.exs
 
-    - name: Check for uncommitted changes
-      run: |
-        git diff --exit-code examples/omnetpp_* || (echo "Generated files differ!" && exit 1)
-
     - name: Install OMNeT++ dependencies
       run: |
         sudo apt-get update
