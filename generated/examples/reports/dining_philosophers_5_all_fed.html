@@ -187,7 +187,7 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">1505<span class="unit">ms</span></div>
+      <div class="value">1509<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
@@ -208,60 +208,60 @@
       <div class="mermaid">
 flowchart TB
     philosopher_0("philosopher_0<br/>
-📤 Sent: 7731<br/>
-📥 Recv: 5366")
+📤 Sent: 8117<br/>
+📥 Recv: 5559")
     philosopher_4("philosopher_4<br/>
-📤 Sent: 4577<br/>
-📥 Recv: 3789")
+📤 Sent: 4555<br/>
+📥 Recv: 3778")
     fork_0("fork_0<br/>
-📤 Sent: 2260<br/>
-📥 Recv: 3771")
+📤 Sent: 2251<br/>
+📥 Recv: 3762")
     fork_4("fork_4<br/>
 📤 Sent: 3000<br/>
-📥 Recv: 4505")
+📥 Recv: 4504")
     philosopher_1("philosopher_1<br/>
-📤 Sent: 5739<br/>
-📥 Recv: 4370")
+📤 Sent: 5369<br/>
+📥 Recv: 4185")
     philosopher_2("philosopher_2<br/>
-📤 Sent: 5377<br/>
-📥 Recv: 4189")
+📤 Sent: 5353<br/>
+📥 Recv: 4177")
     philosopher_3("philosopher_3<br/>
-📤 Sent: 5697<br/>
-📥 Recv: 4349")
+📤 Sent: 5841<br/>
+📥 Recv: 4421")
     fork_1("fork_1<br/>
-📤 Sent: 2230<br/>
-📥 Recv: 3734")
+📤 Sent: 2225<br/>
+📥 Recv: 3742")
     fork_2("fork_2<br/>
 📤 Sent: 3000<br/>
-📥 Recv: 4505")
+📥 Recv: 4506")
     fork_3("fork_3<br/>
-📤 Sent: 1503<br/>
-📥 Recv: 2536")
+📤 Sent: 1519<br/>
+📥 Recv: 2596")
     philosopher_0 -->|#123;:start_hungry, :fork_0, :fork_1#125;<br/>every 20ms| philosopher_0
     philosopher_4 -->|#123;:start_hungry, :fork_4, :fork_0#125;<br/>every 20ms| philosopher_4
     philosopher_1 -->|#123;:start_hungry, :fork_2, :fork_1#125;<br/>every 20ms| philosopher_1
     philosopher_2 -->|#123;:start_hungry, :fork_2, :fork_3#125;<br/>every 20ms| philosopher_2
     philosopher_3 -->|#123;:start_hungry, :fork_4, :fork_3#125;<br/>every 20ms| philosopher_3
-    fork_0 -->|1483× #123;:fork_granted, :fork_0#125;<br/>+17 more| philosopher_0
-    fork_0 -->|732× #123;:fork_denied, :fork_0#125;<br/>+28 more| philosopher_4
-    fork_1 -->|882× #123;:fork_granted, :fork_1#125;<br/>+601 more| philosopher_0
-    fork_1 -->|622× #123;:fork_granted, :fork_1#125;<br/>+125 more| philosopher_1
-    fork_2 -->|753× #123;:fork_denied, :fork_2#125;<br/>+747 more| philosopher_1
-    fork_2 -->|758× #123;:fork_granted, :fork_2#125;<br/>+742 more| philosopher_2
-    fork_3 -->|430× #123;:fork_granted, :fork_3#125;<br/>+328 more| philosopher_2
-    fork_3 -->|603× #123;:fork_granted, :fork_3#125;<br/>+142 more| philosopher_3
-    fork_4 -->|755× #123;:fork_denied, :fork_4#125;<br/>+745 more| philosopher_3
-    fork_4 -->|760× #123;:fork_granted, :fork_4#125;<br/>+740 more| philosopher_4
-    philosopher_0 -->|1500× #123;:request_fork, :philosopher_0#125;<br/>+1483 more| fork_0
-    philosopher_0 -->|1483× #123;:request_fork, :philosopher_0#125;<br/>+882 more| fork_1
-    philosopher_1 -->|747× #123;:request_fork, :philosopher_1#125;<br/>+622 more| fork_1
-    philosopher_1 -->|1500× #123;:request_fork, :philosopher_1#125;<br/>+747 more| fork_2
-    philosopher_2 -->|1500× #123;:request_fork, :philosopher_2#125;<br/>+758 more| fork_2
-    philosopher_2 -->|758× #123;:request_fork, :philosopher_2#125;<br/>+430 more| fork_3
-    philosopher_3 -->|745× #123;:request_fork, :philosopher_3#125;<br/>+603 more| fork_3
-    philosopher_3 -->|1500× #123;:request_fork, :philosopher_3#125;<br/>+745 more| fork_4
-    philosopher_4 -->|760× #123;:request_fork, :philosopher_4#125;<br/>+28 more| fork_0
-    philosopher_4 -->|1500× #123;:request_fork, :philosopher_4#125;<br/>+760 more| fork_4
+    fork_0 -->|1485× #123;:fork_granted, :fork_0#125;<br/>+15 more| philosopher_0
+    fork_0 -->|725× #123;:fork_denied, :fork_0#125;<br/>+26 more| philosopher_4
+    fork_1 -->|1073× #123;:fork_granted, :fork_1#125;<br/>+412 more| philosopher_0
+    fork_1 -->|444× #123;:fork_granted, :fork_1#125;<br/>+296 more| philosopher_1
+    fork_2 -->|760× #123;:fork_denied, :fork_2#125;<br/>+740 more| philosopher_1
+    fork_2 -->|766× #123;:fork_granted, :fork_2#125;<br/>+734 more| philosopher_2
+    fork_3 -->|410× #123;:fork_granted, :fork_3#125;<br/>+356 more| philosopher_2
+    fork_3 -->|667× #123;:fork_granted, :fork_3#125;<br/>+86 more| philosopher_3
+    fork_4 -->|753× #123;:fork_granted, :fork_4#125;<br/>+747 more| philosopher_3
+    fork_4 -->|751× #123;:fork_granted, :fork_4#125;<br/>+749 more| philosopher_4
+    philosopher_0 -->|1500× #123;:request_fork, :philosopher_0#125;<br/>+1485 more| fork_0
+    philosopher_0 -->|1485× #123;:request_fork, :philosopher_0#125;<br/>+1073 more| fork_1
+    philosopher_1 -->|740× #123;:request_fork, :philosopher_1#125;<br/>+444 more| fork_1
+    philosopher_1 -->|1500× #123;:request_fork, :philosopher_1#125;<br/>+740 more| fork_2
+    philosopher_2 -->|1500× #123;:request_fork, :philosopher_2#125;<br/>+766 more| fork_2
+    philosopher_2 -->|766× #123;:request_fork, :philosopher_2#125;<br/>+410 more| fork_3
+    philosopher_3 -->|753× #123;:request_fork, :philosopher_3#125;<br/>+667 more| fork_3
+    philosopher_3 -->|1500× #123;:request_fork, :philosopher_3#125;<br/>+753 more| fork_4
+    philosopher_4 -->|751× #123;:request_fork, :philosopher_4#125;<br/>+26 more| fork_0
+    philosopher_4 -->|1500× #123;:request_fork, :philosopher_4#125;<br/>+751 more| fork_4
     style philosopher_0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style philosopher_4 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style fork_0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
@@ -320,92 +320,92 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>philosopher_0</strong></td>
-  <td class="metric">7731</td>
-  <td class="metric">5366</td>
-  <td class="metric">257.7 msg/s</td>
-  <td class="metric">178.87 msg/s</td>
-  <td><span class="badge high">13097 total</span></td>
+  <td class="metric">8117</td>
+  <td class="metric">5559</td>
+  <td class="metric">270.57 msg/s</td>
+  <td class="metric">185.3 msg/s</td>
+  <td><span class="badge high">13676 total</span></td>
 </tr>
 
 <tr>
   <td><strong>philosopher_4</strong></td>
-  <td class="metric">4577</td>
-  <td class="metric">3789</td>
-  <td class="metric">152.57 msg/s</td>
-  <td class="metric">126.3 msg/s</td>
-  <td><span class="badge high">8366 total</span></td>
+  <td class="metric">4555</td>
+  <td class="metric">3778</td>
+  <td class="metric">151.83 msg/s</td>
+  <td class="metric">125.93 msg/s</td>
+  <td><span class="badge high">8333 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_0</strong></td>
-  <td class="metric">2260</td>
-  <td class="metric">3771</td>
-  <td class="metric">75.33 msg/s</td>
-  <td class="metric">125.7 msg/s</td>
-  <td><span class="badge high">6031 total</span></td>
+  <td class="metric">2251</td>
+  <td class="metric">3762</td>
+  <td class="metric">75.03 msg/s</td>
+  <td class="metric">125.4 msg/s</td>
+  <td><span class="badge high">6013 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_4</strong></td>
   <td class="metric">3000</td>
-  <td class="metric">4505</td>
+  <td class="metric">4504</td>
   <td class="metric">100.0 msg/s</td>
-  <td class="metric">150.17 msg/s</td>
-  <td><span class="badge high">7505 total</span></td>
+  <td class="metric">150.13 msg/s</td>
+  <td><span class="badge high">7504 total</span></td>
 </tr>
 
 <tr>
   <td><strong>philosopher_1</strong></td>
-  <td class="metric">5739</td>
-  <td class="metric">4370</td>
-  <td class="metric">191.3 msg/s</td>
-  <td class="metric">145.67 msg/s</td>
-  <td><span class="badge high">10109 total</span></td>
+  <td class="metric">5369</td>
+  <td class="metric">4185</td>
+  <td class="metric">178.97 msg/s</td>
+  <td class="metric">139.5 msg/s</td>
+  <td><span class="badge high">9554 total</span></td>
 </tr>
 
 <tr>
   <td><strong>philosopher_2</strong></td>
-  <td class="metric">5377</td>
-  <td class="metric">4189</td>
-  <td class="metric">179.23 msg/s</td>
-  <td class="metric">139.63 msg/s</td>
-  <td><span class="badge high">9566 total</span></td>
+  <td class="metric">5353</td>
+  <td class="metric">4177</td>
+  <td class="metric">178.43 msg/s</td>
+  <td class="metric">139.23 msg/s</td>
+  <td><span class="badge high">9530 total</span></td>
 </tr>
 
 <tr>
   <td><strong>philosopher_3</strong></td>
-  <td class="metric">5697</td>
-  <td class="metric">4349</td>
-  <td class="metric">189.9 msg/s</td>
-  <td class="metric">144.97 msg/s</td>
-  <td><span class="badge high">10046 total</span></td>
+  <td class="metric">5841</td>
+  <td class="metric">4421</td>
+  <td class="metric">194.7 msg/s</td>
+  <td class="metric">147.37 msg/s</td>
+  <td><span class="badge high">10262 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_1</strong></td>
-  <td class="metric">2230</td>
-  <td class="metric">3734</td>
-  <td class="metric">74.33 msg/s</td>
-  <td class="metric">124.47 msg/s</td>
-  <td><span class="badge high">5964 total</span></td>
+  <td class="metric">2225</td>
+  <td class="metric">3742</td>
+  <td class="metric">74.17 msg/s</td>
+  <td class="metric">124.73 msg/s</td>
+  <td><span class="badge high">5967 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_2</strong></td>
   <td class="metric">3000</td>
-  <td class="metric">4505</td>
+  <td class="metric">4506</td>
   <td class="metric">100.0 msg/s</td>
-  <td class="metric">150.17 msg/s</td>
-  <td><span class="badge high">7505 total</span></td>
+  <td class="metric">150.2 msg/s</td>
+  <td><span class="badge high">7506 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_3</strong></td>
-  <td class="metric">1503</td>
-  <td class="metric">2536</td>
-  <td class="metric">50.1 msg/s</td>
-  <td class="metric">84.53 msg/s</td>
-  <td><span class="badge high">4039 total</span></td>
+  <td class="metric">1519</td>
+  <td class="metric">2596</td>
+  <td class="metric">50.63 msg/s</td>
+  <td class="metric">86.53 msg/s</td>
+  <td><span class="badge high">4115 total</span></td>
 </tr>
 
     </tbody>
@@ -413,7 +413,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 82228 •
+    Total messages: 82460 •
     Duration: 30000ms •
     Actors: 10
   </div>

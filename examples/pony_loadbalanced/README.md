@@ -53,11 +53,8 @@ ponyc .
 
 ```bash
 # Build and run tests
-make test
-
-# Or manually:
 ponyc test
-./test
+./test  # or ./test1 depending on directory name
 ```
 
 ## Customizing Behavior
@@ -79,7 +76,6 @@ The generated actor code will automatically call your callbacks.
 - `*_callbacks.pony` - Callback traits and implementations (EDIT IMPL CLASS!)
 - `test/test.pony` - PonyTest test suite
 - `corral.json` - Dependency configuration
-- `Makefile` - Build targets
 
 ## CI/CD
 

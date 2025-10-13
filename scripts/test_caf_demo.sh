@@ -64,6 +64,19 @@ if cmake --build . ; then
   echo "✅ Build successful"
   echo ""
   
+  # Run tests with ctest (matching CI behavior)
+  echo "🧪 Running tests with ctest..."
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  if ctest -C Release --output-on-failure; then
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "✅ All tests passed!"
+  else
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "❌ Tests failed"
+    exit 1
+  fi
+  echo ""
+  
   # Determine binary name: {project}.caf.{os}
   OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
   # Extract project name from CMakeLists.txt
@@ -72,20 +85,27 @@ if cmake --build . ; then
   cd build
   BINARY="${PROJECT_NAME}.caf.${OS_NAME}"
   
-  echo "🚀 Running ${EXAMPLE} for 3 seconds..."
+  # Determine demo runtime: 1s for burst examples (lots of output), 3s for others
+  if [[ "$EXAMPLE" == *"burst"* ]]; then
+    DEMO_TIME=1
+  else
+    DEMO_TIME=3
+  fi
+  
+  echo "🚀 Running ${EXAMPLE} for ${DEMO_TIME} second(s)..."
   echo "   Binary: ${BINARY}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   
-  # Run in background and kill after 3 seconds (works on both macOS and Linux)
+  # Run in background and kill after timeout (works on both macOS and Linux)
   ./"${BINARY}" &
   PID=$!
-  sleep 3
+  sleep $DEMO_TIME
   kill $PID 2>/dev/null || true
   wait $PID 2>/dev/null || true
   
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "✅ Demo ran successfully! (stopped after 3s)"
+  echo "✅ Demo ran successfully! (stopped after ${DEMO_TIME}s)"
 else
   echo "❌ Build failed"
   exit 1

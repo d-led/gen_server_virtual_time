@@ -30,7 +30,6 @@ defmodule PhonyGeneratorTest do
       assert "sender.go" in filenames
       assert "receiver.go" in filenames
       assert "go.mod" in filenames
-      assert "Makefile" in filenames
       assert ".github/workflows/ci.yml" in filenames
       assert "README.md" in filenames
     end
@@ -81,18 +80,6 @@ defmodule PhonyGeneratorTest do
       assert gomod =~ "github.com/Arceliar/phony"
     end
 
-    test "generates Makefile for building" do
-      simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
-
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test_actors")
-
-      {_name, makefile} = Enum.find(files, fn {name, _} -> name == "Makefile" end)
-
-      assert makefile =~ "go build"
-      assert makefile =~ "go test"
-      assert makefile =~ "clean"
-    end
-
     test "generates CI pipeline for Go" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
@@ -104,7 +91,6 @@ defmodule PhonyGeneratorTest do
       assert ci =~ "ubuntu-latest"
       assert ci =~ "actions/setup-go"
       assert ci =~ "go test"
-      assert ci =~ "make build"
       assert ci =~ "Run Demo Application"
     end
 

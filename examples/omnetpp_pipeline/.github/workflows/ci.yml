@@ -8,8 +8,10 @@ on:
 
 jobs:
   build:
-    # Note: macOS builds are disabled due to system Python install restrictions with opp_env
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v3

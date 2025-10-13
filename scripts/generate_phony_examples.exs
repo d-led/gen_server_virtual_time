@@ -71,7 +71,7 @@ defmodule PhonyExampleGenerator do
       # List key files
       go_count = Enum.count(files, fn {fname, _} -> String.ends_with?(fname, ".go") end)
       IO.puts("   - #{go_count} Go source files")
-      IO.puts("   - Makefile, go.mod, CI pipeline")
+      IO.puts("   - go.mod, CI pipeline")
       IO.puts("   - README.md with build instructions")
 
       {:ok, file_count, output_dir}
@@ -131,4 +131,3 @@ end
 
 # Run the generator
 PhonyExampleGenerator.run()
-

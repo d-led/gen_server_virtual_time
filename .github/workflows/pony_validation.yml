@@ -7,6 +7,7 @@ on:
       - 'lib/actor_simulation/pony_generator.ex'
       - 'examples/pony_*/**'
       - 'scripts/generate_pony_examples.exs'
+      - 'scripts/test_pony_demo.sh'
       - '.github/workflows/pony_validation.yml'
   pull_request:
     branches: [ main ]
@@ -48,41 +49,9 @@ jobs:
         echo "$HOME/.local/share/ponyup/ponyc/release/bin" >> $GITHUB_PATH
         echo "$HOME/.local/share/ponyup/corral/release/bin" >> $GITHUB_PATH
 
-    - name: Fetch dependencies
-      working-directory: examples/${{ matrix.example }}
-      run: |
-        corral fetch || true
+    - name: Make test script executable
+      run: chmod +x scripts/test_pony_demo.sh
 
-    - name: Build Pony project
-      working-directory: examples/${{ matrix.example }}
-      run: |
-        ponyc .
-
-    - name: Build Pony tests
-      working-directory: examples/${{ matrix.example }}
-      run: |
-        ponyc test
-
-    - name: Run PonyTest tests
-      working-directory: examples/${{ matrix.example }}
-      run: |
-        ./test --sequential
-
-    - name: Run application (with timeout)
-      working-directory: examples/${{ matrix.example }}
-      shell: bash
-      run: |
-        # Cross-platform timeout: use GNU timeout on Linux, gtimeout on macOS (via coreutils), or fallback
-        if command -v timeout &> /dev/null; then
-          timeout 5 ./${{ matrix.example }} || true
-        elif command -v gtimeout &> /dev/null; then
-          gtimeout 5 ./${{ matrix.example }} || true
-        else
-          # Fallback: run in background with kill after timeout
-          ./${{ matrix.example }} & 
-          PID=$!
-          sleep 5
-          kill $PID 2>/dev/null || true
-          wait $PID 2>/dev/null || true
-        fi
+    - name: Run Pony example with test script
+      run: ./scripts/test_pony_demo.sh ${{ matrix.example }}
 

@@ -7,6 +7,7 @@ on:
       - 'lib/actor_simulation/caf_generator.ex'
       - 'examples/caf_*/**'
       - 'scripts/generate_caf_examples.exs'
+      - 'scripts/test_caf_demo.sh'
       - '.github/workflows/caf_validation.yml'
   pull_request:
     branches: [ main ]
@@ -39,43 +40,9 @@ jobs:
       run: |
         conan profile detect --force
 
-    - name: Install dependencies with Conan
-      working-directory: examples/${{ matrix.example }}
-      run: |
-        mkdir -p build
-        cd build
-        conan install .. --build=missing -s build_type=Release
+    - name: Make test script executable
+      run: chmod +x scripts/test_caf_demo.sh
 
-    - name: Configure with CMake
-      working-directory: examples/${{ matrix.example }}/build
-      run: |
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
-
-    - name: Build
-      working-directory: examples/${{ matrix.example }}/build
-      run: |
-        cmake --build . --config Release
-
-    - name: Run tests
-      working-directory: examples/${{ matrix.example }}/build
-      run: |
-        ctest -C Release --output-on-failure
-
-    - name: Run application (with timeout)
-      working-directory: examples/${{ matrix.example }}/build
-      shell: bash
-      run: |
-        # Cross-platform timeout: use GNU timeout on Linux, gtimeout on macOS (via coreutils), or fallback
-        if command -v timeout &> /dev/null; then
-          timeout 5 ./*_test --success || true
-        elif command -v gtimeout &> /dev/null; then
-          gtimeout 5 ./*_test --success || true
-        else
-          # Fallback: run in background with kill after timeout
-          ./*_test --success & 
-          PID=$!
-          sleep 5
-          kill $PID 2>/dev/null || true
-          wait $PID 2>/dev/null || true
-        fi
+    - name: Run CAF example with test script
+      run: ./scripts/test_caf_demo.sh ${{ matrix.example }}
 

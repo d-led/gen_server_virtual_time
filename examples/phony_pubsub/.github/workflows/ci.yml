@@ -28,7 +28,15 @@ jobs:
       run: go mod download
 
     - name: Build
-      run: make build
+      run: |
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        if [ -f "go.mod" ]; then
+          PROJECT_NAME=$(grep -o 'module [^ ]*' go.mod | head -1 | awk '{print $2}' | xargs basename)
+        else
+          PROJECT_NAME="pubsub_actors"
+        fi
+        BINARY="${PROJECT_NAME}.phony.${OS_NAME}"
+        go build -o "$BINARY" .
 
     - name: Test
       run: go test -v ./...

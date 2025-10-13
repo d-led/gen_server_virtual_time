@@ -58,7 +58,6 @@ defmodule ActorSimulation.PhonyGenerator do
       |> add_main_file(actors, project_name)
       |> add_test_file(actors)
       |> add_go_mod(project_name, go_version)
-      |> add_makefile(project_name)
       |> add_ci_pipeline(project_name)
       |> add_readme(project_name)
 
@@ -101,11 +100,6 @@ defmodule ActorSimulation.PhonyGenerator do
   defp add_go_mod(files, project_name, go_version) do
     content = generate_go_mod(project_name, go_version)
     [{"go.mod", content} | files]
-  end
-
-  defp add_makefile(files, project_name) do
-    content = generate_makefile(project_name)
-    [{"Makefile", content} | files]
   end
 
   defp add_ci_pipeline(files, project_name) do
@@ -404,41 +398,6 @@ defmodule ActorSimulation.PhonyGenerator do
     """
   end
 
-  defp generate_makefile(project_name) do
-    """
-    # Generated from ActorSimulation DSL
-    # Makefile for #{project_name}
-
-    # Binary naming: {example}.phony.{os}
-    UNAME_S := $(shell uname -s | tr '[:upper:]' '[:lower:]')
-    ifeq ($(UNAME_S),darwin)
-        BINARY := #{project_name}.phony.darwin
-    else ifeq ($(UNAME_S),linux)
-        BINARY := #{project_name}.phony.linux
-    else
-        BINARY := #{project_name}.phony.exe
-    endif
-
-    .PHONY: build test clean run
-
-    build:
-    \tgo build -o $(BINARY) .
-
-    test:
-    \t@echo "Use 'bash scripts/test_phony_demo.sh' from the project root to run tests"
-
-    clean:
-    \trm -f $(BINARY) #{project_name}.phony.* #{project_name}
-
-    run: build
-    \t./$(BINARY)
-
-    deps:
-    \tgo mod download
-    \tgo mod tidy
-    """
-  end
-
   defp generate_ci_pipeline(project_name) do
     """
     name: CI
@@ -471,7 +430,15 @@ defmodule ActorSimulation.PhonyGenerator do
           run: go mod download
 
         - name: Build
-          run: make build
+          run: |
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            if [ -f "go.mod" ]; then
+              PROJECT_NAME=$(grep -o 'module [^ ]*' go.mod | head -1 | awk '{print $2}' | xargs basename)
+            else
+              PROJECT_NAME="#{project_name}"
+            fi
+            BINARY="${PROJECT_NAME}.phony.${OS_NAME}"
+            go build -o "$BINARY" .
 
         - name: Test
           run: go test -v ./...
@@ -536,9 +503,6 @@ defmodule ActorSimulation.PhonyGenerator do
     ```bash
     # Run tests
     go test -v ./...
-
-    # Or use Make
-    make test
     ```
 
     ## Customizing Behavior
@@ -558,7 +522,6 @@ defmodule ActorSimulation.PhonyGenerator do
     - `*.go` - Generated actor implementations
     - `actor_test.go` - Go test suite
     - `go.mod` - Module definition
-    - `Makefile` - Build targets
 
     ## CI/CD
 

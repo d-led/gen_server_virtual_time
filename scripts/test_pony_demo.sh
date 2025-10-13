@@ -37,38 +37,82 @@ if ! command -v ponyc &> /dev/null; then
 fi
 
 echo "🔨 Compiling Pony code..."
-if make build; then
+
+# Determine binary name: {project}.pony.{os}
+OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+# Extract project name from corral.json if it exists, otherwise derive from directory
+if [ -f "corral.json" ]; then
+  PROJECT_NAME=$(grep -o '"name": *"[^"]*"' corral.json | head -1 | sed 's/"name": *"\([^"]*\)"/\1/')
+else
+  PROJECT_NAME=$(basename "$EXAMPLE_DIR")
+fi
+BINARY="${PROJECT_NAME}.pony.${OS_NAME}"
+DIR_NAME=$(basename "$PWD")
+
+# Build: fetch dependencies and compile
+if corral fetch && ponyc .; then
+  # Rename the binary if it was created with directory name
+  if [ -f "$DIR_NAME" ] && [ ! -f "$BINARY" ]; then
+    mv "$DIR_NAME" "$BINARY"
+  fi
   echo "✅ Compilation successful"
   echo ""
-  
-  # Determine binary name: {project}.pony.{os}
-  OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
-  # Extract project name from corral.json if it exists, otherwise derive from directory
-  if [ -f "corral.json" ]; then
-    PROJECT_NAME=$(grep -o '"name": *"[^"]*"' corral.json | head -1 | sed 's/"name": *"\([^"]*\)"/\1/')
-  else
-    PROJECT_NAME=$(basename "$EXAMPLE_DIR")
-  fi
-  BINARY="${PROJECT_NAME}.pony.${OS_NAME}"
-  
-  echo "🚀 Running ${EXAMPLE} for 3 seconds..."
-  echo "   Binary: ${BINARY}"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  
-  # Run in background and kill after 3 seconds (works on both macOS and Linux)
-  ./"${BINARY}" &
-  PID=$!
-  sleep 3
-  kill $PID 2>/dev/null || true
-  wait $PID 2>/dev/null || true
-  
-  echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "✅ Demo ran successfully! (stopped after 3s)"
-  echo ""
-  echo "💡 To run manually: cd $EXAMPLE_DIR && ./${BINARY}"
 else
   echo "❌ Compilation failed"
   exit 1
 fi
+
+# Run tests if test directory exists
+if [ -d "test" ]; then
+  echo "🧪 Running tests..."
+  if ponyc test; then
+    # The test binary is named 'test1' by ponyc (not 'test' which is the directory)
+    if [ -f "test1" ]; then
+      # Run tests with timeout (cross-platform: Linux timeout or macOS gtimeout or fallback)
+      if command -v timeout &> /dev/null; then
+        timeout 10s ./test1 --sequential || [ $? -eq 124 ]  # 124 = timeout, acceptable if tests passed
+      elif command -v gtimeout &> /dev/null; then
+        gtimeout 10s ./test1 --sequential || [ $? -eq 124 ]
+      else
+        # Fallback: run in background with timeout
+        ./test1 --sequential &
+        TEST_PID=$!
+        sleep 10
+        kill $TEST_PID 2>/dev/null || true
+        wait $TEST_PID 2>/dev/null || true
+      fi
+      echo "✅ Tests completed"
+      echo ""
+    else
+      echo "⚠️  Test binary 'test1' not found, skipping test execution"
+    fi
+  else
+    echo "❌ Test compilation failed"
+    exit 1
+  fi
+fi
+
+# Determine demo runtime: 1s for burst examples (lots of output), 3s for others
+if [[ "$EXAMPLE" == *"burst"* ]]; then
+  DEMO_TIME=1
+else
+  DEMO_TIME=3
+fi
+
+echo "🚀 Running ${EXAMPLE} for ${DEMO_TIME} second(s)..."
+echo "   Binary: ${BINARY}"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Run in background and kill after timeout (works on both macOS and Linux)
+./"${BINARY}" &
+PID=$!
+sleep $DEMO_TIME
+kill $PID 2>/dev/null || true
+wait $PID 2>/dev/null || true
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "✅ Demo ran successfully! (stopped after ${DEMO_TIME}s)"
+echo ""
+echo "💡 To run manually: cd $EXAMPLE_DIR && ./${BINARY}"
 

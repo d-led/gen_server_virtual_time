@@ -41,9 +41,6 @@ go build -o pubsub_actors .
 ```bash
 # Run tests
 go test -v ./...
-
-# Or use Make
-make test
 ```
 
 ## Customizing Behavior
@@ -63,7 +60,6 @@ The generated actor code will automatically call your callbacks.
 - `*.go` - Generated actor implementations
 - `actor_test.go` - Go test suite
 - `go.mod` - Module definition
-- `Makefile` - Build targets
 
 ## CI/CD
 

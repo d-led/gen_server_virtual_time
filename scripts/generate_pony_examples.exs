@@ -71,7 +71,7 @@ defmodule PonyExampleGenerator do
       # List key files
       pony_count = Enum.count(files, fn {fname, _} -> String.ends_with?(fname, ".pony") end)
       IO.puts("   - #{pony_count} Pony source files")
-      IO.puts("   - Makefile, corral.json, CI pipeline")
+      IO.puts("   - corral.json, CI pipeline")
       IO.puts("   - README.md with build instructions")
 
       {:ok, file_count, output_dir}
@@ -131,4 +131,3 @@ end
 
 # Run the generator
 PonyExampleGenerator.run()
-

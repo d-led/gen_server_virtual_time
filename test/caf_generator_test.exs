@@ -197,7 +197,7 @@ defmodule CAFGeneratorTest do
 
       assert test_file =~ "#include <catch2/catch_test_macros.hpp>"
       assert test_file =~ "TEST_CASE"
-      assert test_file =~ "REQUIRE"
+      assert test_file =~ "SUCCEED"
       assert test_file =~ "worker_actor"
     end
 

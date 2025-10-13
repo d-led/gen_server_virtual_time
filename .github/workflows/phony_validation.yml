@@ -7,6 +7,7 @@ on:
       - 'lib/actor_simulation/phony_generator.ex'
       - 'examples/phony_*/**'
       - 'scripts/generate_phony_examples.exs'
+      - 'scripts/test_phony_demo.sh'
       - '.github/workflows/phony_validation.yml'
   pull_request:
     branches: [ main ]
@@ -30,37 +31,22 @@ jobs:
         go-version: ${{ matrix.go-version }}
         cache: false
 
-    - name: Download dependencies
+    - name: Make test script executable (Unix)
+      if: runner.os != 'Windows'
+      run: chmod +x scripts/test_phony_demo.sh
+
+    - name: Run Phony example with test script (Unix)
+      if: runner.os != 'Windows'
+      run: ./scripts/test_phony_demo.sh ${{ matrix.example }}
+
+    - name: Run Phony example (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
       working-directory: examples/${{ matrix.example }}
       run: |
         go mod download
-
-    - name: Build
-      working-directory: examples/${{ matrix.example }}
-      run: |
         go build -v ./...
-
-    - name: Test
-      working-directory: examples/${{ matrix.example }}
-      run: |
         go test -v ./...
-
-    - name: Run application (with timeout)
-      working-directory: examples/${{ matrix.example }}
-      shell: bash
-      run: |
-        go build -o app .
-        # Cross-platform timeout: use GNU timeout on Linux, gtimeout on macOS (via coreutils), or fallback
-        if command -v timeout &> /dev/null; then
-          timeout 5 ./app || true
-        elif command -v gtimeout &> /dev/null; then
-          gtimeout 5 ./app || true
-        else
-          # Fallback: run in background with kill after timeout
-          ./app & 
-          PID=$!
-          sleep 5
-          kill $PID 2>/dev/null || true
-          wait $PID 2>/dev/null || true
-        fi
+        go build -o app.exe .
+        timeout 5 ./app.exe || true
 

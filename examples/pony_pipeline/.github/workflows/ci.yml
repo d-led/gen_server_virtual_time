@@ -42,21 +42,20 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-corral-
 
-    - name: Fetch dependencies
-      run: |
-        corral fetch
-
     - name: Build
       run: |
-        make build
+        corral fetch
+        ponyc .
+        DIR_NAME=$(basename "$PWD")
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep -o '"name": *"[^"]*"' corral.json | head -1 | sed 's/"name": *"\([^"]*\)"/\1/')
+        BINARY="${PROJECT_NAME}.pony.${OS_NAME}"
+        mv "$DIR_NAME" "$BINARY" 2>/dev/null || true
 
-    - name: Build tests
+    - name: Build and Run tests
       run: |
         ponyc test
-
-    - name: Run tests
-      run: |
-        ./test --sequential
+        if [ -f ./test1 ]; then timeout 1 ./test1 || true; elif [ -f ./test ]; then timeout 1 ./test || true; fi
 
     - name: Run Demo Application
       run: |

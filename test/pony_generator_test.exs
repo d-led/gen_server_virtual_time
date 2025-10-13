@@ -30,7 +30,6 @@ defmodule PonyGeneratorTest do
       assert "sender.pony" in filenames
       assert "receiver.pony" in filenames
       assert "corral.json" in filenames
-      assert "Makefile" in filenames
       assert ".github/workflows/ci.yml" in filenames
       assert "README.md" in filenames
     end
@@ -101,18 +100,6 @@ defmodule PonyGeneratorTest do
       assert corral =~ "\"deps\""
     end
 
-    test "generates Makefile for building" do
-      simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
-
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test_actors")
-
-      {_name, makefile} = Enum.find(files, fn {name, _} -> name == "Makefile" end)
-
-      assert makefile =~ "ponyc"
-      assert makefile =~ "test"
-      assert makefile =~ "clean"
-    end
-
     test "generates CI pipeline for Pony" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
@@ -139,7 +126,7 @@ defmodule PonyGeneratorTest do
 
       {_name, test_file} = Enum.find(files, fn {name, _} -> name == "test/test.pony" end)
 
-      assert test_file =~ "use \"ponytest\""
+      assert test_file =~ "use \"pony_test\""
       assert test_file =~ "class iso _TestWorker is UnitTest"
       assert test_file =~ "fun name(): String => \"Worker actor\""
     end
