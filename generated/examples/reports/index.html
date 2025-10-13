@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GenServerVirtualTime - Example Reports & Diagrams</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-elixir.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -426,14 +429,14 @@
   <div class="section">
     <h2>🚀 Getting Started</h2>
     <p>Install GenServerVirtualTime from Hex:</p>
-    <pre style="background: #263238; color: #aed581; padding: 20px; border-radius: 8px; overflow-x: auto;"><code>def deps do
+    <pre style="background: #263238; color: #aed581; padding: 20px; border-radius: 8px; overflow-x: auto;"><code class="language-elixir">def deps do
   [
     {:gen_server_virtual_time, "~> 0.2.1-rc.0"}
   ]
 end</code></pre>
 
     <p style="margin-top: 20px;">Generate your own flowchart report:</p>
-    <pre style="background: #263238; color: #aed581; padding: 20px; border-radius: 8px; overflow-x: auto;"><code>simulation = ActorSimulation.new()
+    <pre style="background: #263238; color: #aed581; padding: 20px; border-radius: 8px; overflow-x: auto;"><code class="language-elixir">simulation = ActorSimulation.new()
 |> ActorSimulation.add_actor(:producer,
     send_pattern: {:rate, 100, :data},
     targets: [:consumer])

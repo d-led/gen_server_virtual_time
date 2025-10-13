@@ -139,6 +139,19 @@ defmodule MermaidReportTest do
     end
 
     test "generates pub-sub topology report" do
+      model_source = """
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:publisher,
+          send_pattern: {:rate, 10, :event},
+          targets: [:sub1, :sub2, :sub3]
+        )
+        |> ActorSimulation.add_actor(:sub1)
+        |> ActorSimulation.add_actor(:sub2)
+        |> ActorSimulation.add_actor(:sub3)
+        |> ActorSimulation.run(duration: 1000)
+      """
+
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:publisher,
@@ -153,7 +166,8 @@ defmodule MermaidReportTest do
       html =
         MermaidReportGenerator.generate_report(simulation,
           title: "Pub-Sub System",
-          layout: "TB"
+          layout: "TB",
+          model_source: model_source
         )
 
       filename = Path.join(@output_dir, "pubsub_report.html")
@@ -170,6 +184,32 @@ defmodule MermaidReportTest do
     end
 
     test "generates load-balanced system report" do
+      model_source = """
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:load_balancer,
+          send_pattern: {:burst, 3, 200, :work},
+          targets: [:worker1, :worker2, :worker3]
+        )
+        |> ActorSimulation.add_actor(:worker1,
+          on_match: [
+            {:work, fn state -> {:send, [{:result_collector, :result}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:worker2,
+          on_match: [
+            {:work, fn state -> {:send, [{:result_collector, :result}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:worker3,
+          on_match: [
+            {:work, fn state -> {:send, [{:result_collector, :result}], state} end}
+          ]
+        )
+        |> ActorSimulation.add_actor(:result_collector)
+        |> ActorSimulation.run(duration: 1000)
+      """
+
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:load_balancer,
@@ -198,7 +238,8 @@ defmodule MermaidReportTest do
         MermaidReportGenerator.generate_report(simulation,
           title: "Load-Balanced Workers",
           layout: "TB",
-          style_by_activity: true
+          style_by_activity: true,
+          model_source: model_source
         )
 
       filename = Path.join(@output_dir, "loadbalanced_report.html")
@@ -215,6 +256,24 @@ defmodule MermaidReportTest do
     end
 
     test "generates report with early termination indicator" do
+      model_source = """
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:sender,
+          send_pattern: {:periodic, 100, :msg},
+          targets: [:receiver]
+        )
+        |> ActorSimulation.add_actor(:receiver)
+        |> ActorSimulation.run(
+          max_duration: 10_000,
+          terminate_when: fn sim ->
+            stats = ActorSimulation.collect_current_stats(sim)
+            sender_stats = Map.get(stats.actors, :sender)
+            sender_stats && sender_stats.sent_count >= 10
+          end
+        )
+      """
+
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:sender,
@@ -233,7 +292,8 @@ defmodule MermaidReportTest do
 
       html =
         MermaidReportGenerator.generate_report(simulation,
-          title: "Early Termination Test"
+          title: "Early Termination Test",
+          model_source: model_source
         )
 
       filename = Path.join(@output_dir, "early_termination_report.html")
@@ -248,6 +308,17 @@ defmodule MermaidReportTest do
     end
 
     test "supports different layout directions" do
+      model_source = """
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:left,
+          send_pattern: {:periodic, 100, :msg},
+          targets: [:right]
+        )
+        |> ActorSimulation.add_actor(:right)
+        |> ActorSimulation.run(duration: 300)
+      """
+
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:left,
@@ -270,7 +341,8 @@ defmodule MermaidReportTest do
         html =
           MermaidReportGenerator.generate_report(simulation,
             layout: direction,
-            title: title
+            title: title,
+            model_source: model_source
           )
 
         filename = Path.join(@output_dir, "layout_#{name}_report.html")

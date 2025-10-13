@@ -292,7 +292,29 @@ flowchart LR
 </div>
 
 
-  
+  <div class="section">
+  <h2>💻 Model Source Code</h2>
+  <p>This is the Elixir code that defines the actor simulation model:</p>
+  <div class="code-block">
+    <pre><code class="language-elixir">simulation =
+  ActorSimulation.new()
+  |> ActorSimulation.add_actor(:sender,
+    send_pattern: {:periodic, 100, :msg},
+    targets: [:receiver]
+  )
+  |> ActorSimulation.add_actor(:receiver)
+  |> ActorSimulation.run(
+    max_duration: 10_000,
+    terminate_when: fn sim ->
+      stats = ActorSimulation.collect_current_stats(sim)
+      sender_stats = Map.get(stats.actors, :sender)
+      sender_stats && sender_stats.sent_count >= 10
+    end
+  )
+</code></pre>
+  </div>
+</div>
+
 
   <div class="source-links">
     <h3>🔗 Source & Links</h3>

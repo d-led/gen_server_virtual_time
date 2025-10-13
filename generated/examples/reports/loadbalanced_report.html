@@ -333,7 +333,37 @@ flowchart LR
 </div>
 
 
-  
+  <div class="section">
+  <h2>💻 Model Source Code</h2>
+  <p>This is the Elixir code that defines the actor simulation model:</p>
+  <div class="code-block">
+    <pre><code class="language-elixir">simulation =
+  ActorSimulation.new()
+  |> ActorSimulation.add_actor(:load_balancer,
+    send_pattern: {:burst, 3, 200, :work},
+    targets: [:worker1, :worker2, :worker3]
+  )
+  |> ActorSimulation.add_actor(:worker1,
+    on_match: [
+      {:work, fn state -> {:send, [{:result_collector, :result}], state} end}
+    ]
+  )
+  |> ActorSimulation.add_actor(:worker2,
+    on_match: [
+      {:work, fn state -> {:send, [{:result_collector, :result}], state} end}
+    ]
+  )
+  |> ActorSimulation.add_actor(:worker3,
+    on_match: [
+      {:work, fn state -> {:send, [{:result_collector, :result}], state} end}
+    ]
+  )
+  |> ActorSimulation.add_actor(:result_collector)
+  |> ActorSimulation.run(duration: 1000)
+</code></pre>
+  </div>
+</div>
+
 
   <div class="source-links">
     <h3>🔗 Source & Links</h3>

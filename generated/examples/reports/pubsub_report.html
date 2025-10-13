@@ -207,24 +207,24 @@
     <div class="diagram-container">
       <div class="mermaid">
 flowchart TB
-    publisher(["publisher<br/>
-📤 Sent: 30<br/>
-📥 Recv: 0"])
     sub1["sub1<br/>
 📤 Sent: 0<br/>
 📥 Recv: 10"]
     sub2["sub2<br/>
 📤 Sent: 0<br/>
 📥 Recv: 10"]
+    publisher(["publisher<br/>
+📤 Sent: 30<br/>
+📥 Recv: 0"])
     sub3["sub3<br/>
 📤 Sent: 0<br/>
 📥 Recv: 10"]
     publisher -->|:event<br/>10/s| sub1
     publisher -->|:event<br/>10/s| sub2
     publisher -->|:event<br/>10/s| sub3
-    style publisher fill:#e8f5e9,stroke:#388e3c
     style sub1 fill:#e8f5e9,stroke:#388e3c
     style sub2 fill:#e8f5e9,stroke:#388e3c
+    style publisher fill:#e8f5e9,stroke:#388e3c
     style sub3 fill:#e8f5e9,stroke:#388e3c
       </div>
     </div>
@@ -273,15 +273,6 @@ flowchart LR
     </thead>
     <tbody>
       <tr>
-  <td><strong>publisher</strong></td>
-  <td class="metric">30</td>
-  <td class="metric">0</td>
-  <td class="metric">30.0 msg/s</td>
-  <td class="metric">0.0 msg/s</td>
-  <td><span class="badge ">30 total</span></td>
-</tr>
-
-<tr>
   <td><strong>sub1</strong></td>
   <td class="metric">0</td>
   <td class="metric">10</td>
@@ -297,6 +288,15 @@ flowchart LR
   <td class="metric">0.0 msg/s</td>
   <td class="metric">10.0 msg/s</td>
   <td><span class="badge low">10 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>publisher</strong></td>
+  <td class="metric">30</td>
+  <td class="metric">0</td>
+  <td class="metric">30.0 msg/s</td>
+  <td class="metric">0.0 msg/s</td>
+  <td><span class="badge ">30 total</span></td>
 </tr>
 
 <tr>
@@ -320,7 +320,24 @@ flowchart LR
 </div>
 
 
-  
+  <div class="section">
+  <h2>💻 Model Source Code</h2>
+  <p>This is the Elixir code that defines the actor simulation model:</p>
+  <div class="code-block">
+    <pre><code class="language-elixir">simulation =
+  ActorSimulation.new()
+  |> ActorSimulation.add_actor(:publisher,
+    send_pattern: {:rate, 10, :event},
+    targets: [:sub1, :sub2, :sub3]
+  )
+  |> ActorSimulation.add_actor(:sub1)
+  |> ActorSimulation.add_actor(:sub2)
+  |> ActorSimulation.add_actor(:sub3)
+  |> ActorSimulation.run(duration: 1000)
+</code></pre>
+  </div>
+</div>
+
 
   <div class="source-links">
     <h3>🔗 Source & Links</h3>

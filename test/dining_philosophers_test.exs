@@ -247,6 +247,10 @@ defmodule DiningPhilosophersTest do
       <meta charset="utf-8">
       <title>#{full_title} - Dining Philosophers</title>
       <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-elixir.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-mermaid.min.js"></script>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -385,12 +389,19 @@ defmodule DiningPhilosophersTest do
           </div>
         </div>
 
-        <div class="code-block">
-          <strong>Generated Mermaid Code:</strong>
-          <pre>#{mermaid_code}</pre>
+        <div class="explanation" style="margin-top: 30px;">
+          <h3>Simulation Source Code</h3>
+          <pre><code class="language-elixir">simulation =
+    DiningPhilosophers.create_simulation(
+    num_philosophers: #{num_philosophers},
+    think_time: 150,
+    eat_time: 75,
+    trace: true
+    )
+    |> ActorSimulation.run(duration: 800)</code></pre>
         </div>
 
-        <div class="explanation" style="margin-top: 30px;">
+        <div class="explanation" style="margin-top: 20px;">
           <h3>What the Diagram Shows</h3>
           <ul>
             <li>Each philosopher sends synchronous <code>:request</code> messages to forks</li>

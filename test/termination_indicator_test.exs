@@ -129,6 +129,9 @@ defmodule TerminationIndicatorTest do
         <meta charset="utf-8">
         <title>Dining Philosophers - Condition Terminated</title>
         <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-elixir.min.js"></script>
         <style>
           body { font-family: system-ui; max-width: 1400px; margin: 40px auto; padding: 20px; }
           .mermaid { background: white; padding: 40px; border-radius: 8px; }
@@ -141,6 +144,17 @@ defmodule TerminationIndicatorTest do
           <strong>✅ Success!</strong><br>
           Both philosophers successfully ate at least once during the simulation.<br>
           Look for each philosopher's <strong>"I'm full!"</strong> message in the diagram below!
+        </div>
+        <div style="background: #fff3e0; padding: 20px; border-left: 4px solid #ff9800; margin-bottom: 20px; border-radius: 4px;">
+          <h3 style="margin-top: 0; color: #e65100;">Simulation Source Code</h3>
+          <pre><code class="language-elixir">simulation =
+      DiningPhilosophers.create_simulation(
+      num_philosophers: 2,
+      think_time: 150,
+      eat_time: 75,
+      trace: true
+      )
+      |> ActorSimulation.run(duration: 1000)</code></pre>
         </div>
         <div class="mermaid">
       #{mermaid}
@@ -219,11 +233,38 @@ defmodule TerminationIndicatorTest do
       # Generate flowchart report instead of sequence diagram (too large for Mermaid)
       File.mkdir_p!("generated/examples/reports")
 
+      model_source = """
+      simulation =
+        DiningPhilosophers.create_simulation(
+          num_philosophers: 5,
+          think_time: 20,
+          eat_time: 10,
+          trace: true
+        )
+        |> ActorSimulation.run(
+          max_duration: 30_000,
+          terminate_when: fn sim ->
+            # Check if all philosophers have eaten
+            trace = sim.trace
+            philosophers_who_ate =
+              Enum.filter(0..4, fn i ->
+                name = :"philosopher_\#{i}"
+                Enum.any?(trace, fn event ->
+                  event.from == name and event.to == name and
+                    event.message == {:mumble, "I'm full!"}
+                end)
+              end)
+            length(philosophers_who_ate) == 5
+          end
+        )
+      """
+
       html =
         ActorSimulation.generate_flowchart_report(simulation,
           title: "🍴 5 Dining Philosophers - All Fed Successfully",
           layout: "TB",
-          show_stats_on_nodes: true
+          show_stats_on_nodes: true,
+          model_source: model_source
         )
 
       File.write!("generated/examples/reports/dining_philosophers_5_all_fed.html", html)

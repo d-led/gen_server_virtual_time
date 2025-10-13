@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <title>3 Philosophers (Small Table) - Dining Philosophers</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-elixir.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-mermaid.min.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -141,94 +145,90 @@
 sequenceDiagram
     philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
     Note over philosopher_2,philosopher_2: t=200ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=200ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=200ms
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,philosopher_1: t=200ms
     philosopher_2->>philosopher_2: {:mumble, "I'm hungry!"}
     Note over philosopher_2,philosopher_2: t=200ms
-    philosopher_1->>philosopher_1: {:mumble, "I'm hungry!"}
-    Note over philosopher_1,philosopher_1: t=200ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=200ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=200ms
-    fork_2->>philosopher_2: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_2: t=200ms
-    fork_2->>philosopher_1: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_1: t=200ms
-    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=200ms
-    fork_0->>philosopher_2: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_2: t=200ms
-    philosopher_2->>philosopher_2: {:mumble, "I'm full!"}
-    Note over philosopher_2,philosopher_2: t=200ms
-    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=200ms
-    philosopher_2->>fork_0: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=200ms
     philosopher_0->>philosopher_0: {:mumble, "I'm hungry!"}
     Note over philosopher_0,philosopher_0: t=200ms
+    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
+    Note over philosopher_2,fork_2: t=200ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=200ms
+    philosopher_1->>philosopher_1: {:mumble, "I'm hungry!"}
+    Note over philosopher_1,philosopher_1: t=200ms
+    fork_2->>philosopher_2: {:fork_granted, :fork_2}
+    Note over fork_2,philosopher_2: t=200ms
+    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
+    Note over philosopher_1,fork_2: t=200ms
     fork_0->>philosopher_0: {:fork_granted, :fork_0}
     Note over fork_0,philosopher_0: t=200ms
+    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
+    Note over philosopher_2,fork_0: t=200ms
+    fork_2->>philosopher_1: {:fork_denied, :fork_2}
+    Note over fork_2,philosopher_1: t=200ms
     philosopher_0->>fork_1: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=200ms
+    fork_0->>philosopher_2: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_2: t=200ms
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=200ms
+    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
+    Note over philosopher_2,fork_2: t=200ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
     Note over philosopher_0,philosopher_0: t=200ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=200ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=200ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=400ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
     Note over philosopher_1,philosopher_1: t=400ms
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,philosopher_0: t=400ms
     philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
     Note over philosopher_2,philosopher_2: t=400ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=400ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=400ms
     philosopher_2->>fork_2: {:request_fork, :philosopher_2}
     Note over philosopher_2,fork_2: t=400ms
+    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
+    Note over philosopher_1,fork_2: t=400ms
     fork_0->>philosopher_0: {:fork_granted, :fork_0}
     Note over fork_0,philosopher_0: t=400ms
-    fork_2->>philosopher_1: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_1: t=400ms
-    fork_2->>philosopher_2: {:fork_denied, :fork_2}
+    fork_2->>philosopher_2: {:fork_granted, :fork_2}
     Note over fork_2,philosopher_2: t=400ms
+    fork_2->>philosopher_1: {:fork_denied, :fork_2}
+    Note over fork_2,philosopher_1: t=400ms
     philosopher_0->>fork_1: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=400ms
-    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=400ms
+    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
+    Note over philosopher_2,fork_0: t=400ms
+    fork_0->>philosopher_2: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_2: t=400ms
+    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
+    Note over philosopher_2,fork_2: t=400ms
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=400ms
-    fork_1->>philosopher_1: {:fork_denied, :fork_1}
-    Note over fork_1,philosopher_1: t=400ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
     Note over philosopher_0,philosopher_0: t=400ms
-    philosopher_1->>fork_2: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=400ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=400ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=400ms
     philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
     Note over philosopher_2,philosopher_2: t=600ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=600ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=600ms
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,philosopher_1: t=600ms
     philosopher_2->>fork_2: {:request_fork, :philosopher_2}
     Note over philosopher_2,fork_2: t=600ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=600ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=600ms
+    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
+    Note over philosopher_1,fork_2: t=600ms
     fork_2->>philosopher_2: {:fork_granted, :fork_2}
     Note over fork_2,philosopher_2: t=600ms
     fork_0->>philosopher_0: {:fork_granted, :fork_0}
@@ -241,273 +241,100 @@ sequenceDiagram
     Note over philosopher_0,fork_1: t=600ms
     fork_0->>philosopher_2: {:fork_denied, :fork_0}
     Note over fork_0,philosopher_2: t=600ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_0: t=600ms
     philosopher_2->>fork_2: {:release_fork, :philosopher_2}
     Note over philosopher_2,fork_2: t=600ms
+    fork_1->>philosopher_0: {:fork_granted, :fork_1}
+    Note over fork_1,philosopher_0: t=600ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
     Note over philosopher_0,philosopher_0: t=600ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=600ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=600ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=800ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
     Note over philosopher_1,philosopher_1: t=800ms
     philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
     Note over philosopher_2,philosopher_2: t=800ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=800ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=800ms
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_0,philosopher_0: t=800ms
     philosopher_2->>fork_2: {:request_fork, :philosopher_2}
     Note over philosopher_2,fork_2: t=800ms
+    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
+    Note over philosopher_1,fork_2: t=800ms
+    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
+    Note over philosopher_0,fork_0: t=800ms
+    fork_2->>philosopher_2: {:fork_granted, :fork_2}
+    Note over fork_2,philosopher_2: t=800ms
     fork_0->>philosopher_0: {:fork_granted, :fork_0}
     Note over fork_0,philosopher_0: t=800ms
-    fork_2->>philosopher_1: {:fork_granted, :fork_2}
+    fork_2->>philosopher_1: {:fork_denied, :fork_2}
     Note over fork_2,philosopher_1: t=800ms
-    fork_2->>philosopher_2: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_2: t=800ms
     philosopher_0->>fork_1: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=800ms
-    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=800ms
+    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
+    Note over philosopher_2,fork_0: t=800ms
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=800ms
-    fork_1->>philosopher_1: {:fork_denied, :fork_1}
-    Note over fork_1,philosopher_1: t=800ms
+    fork_0->>philosopher_2: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_2: t=800ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
     Note over philosopher_0,philosopher_0: t=800ms
-    philosopher_1->>fork_2: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=800ms
+    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
+    Note over philosopher_2,fork_2: t=800ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=800ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=800ms
-    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,philosopher_2: t=1000ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=1000ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=1000ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=1000ms
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
+    Note over philosopher_1,philosopher_1: t=1000ms
+    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
+    Note over philosopher_2,philosopher_2: t=1000ms
     philosopher_1->>fork_2: {:request_fork, :philosopher_1}
     Note over philosopher_1,fork_2: t=1000ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=1000ms
-    fork_2->>philosopher_2: {:fork_granted, :fork_2}
+    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
+    Note over philosopher_2,fork_2: t=1000ms
+    fork_2->>philosopher_1: {:fork_granted, :fork_2}
+    Note over fork_2,philosopher_1: t=1000ms
+    fork_2->>philosopher_2: {:fork_denied, :fork_2}
     Note over fork_2,philosopher_2: t=1000ms
     fork_0->>philosopher_0: {:fork_granted, :fork_0}
     Note over fork_0,philosopher_0: t=1000ms
-    fork_2->>philosopher_1: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_1: t=1000ms
-    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=1000ms
+    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
+    Note over philosopher_1,fork_1: t=1000ms
     philosopher_0->>fork_1: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=1000ms
-    fork_0->>philosopher_2: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_2: t=1000ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
+    fork_1->>philosopher_1: {:fork_granted, :fork_1}
+    Note over fork_1,philosopher_1: t=1000ms
+    fork_1->>philosopher_0: {:fork_denied, :fork_1}
     Note over fork_1,philosopher_0: t=1000ms
-    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=1000ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=1000ms
+    philosopher_1->>philosopher_1: {:mumble, "I'm full!"}
+    Note over philosopher_1,philosopher_1: t=1000ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=1000ms
-    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=1000ms
+    philosopher_1->>fork_2: {:release_fork, :philosopher_1}
+    Note over philosopher_1,fork_2: t=1000ms
+    philosopher_1->>fork_1: {:release_fork, :philosopher_1}
+    Note over philosopher_1,fork_1: t=1000ms
       </div>
     </div>
 
-    <div class="code-block">
-      <strong>Generated Mermaid Code:</strong>
-      <pre>sequenceDiagram
-    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,philosopher_2: t=200ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=200ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=200ms
-    philosopher_2->>philosopher_2: {:mumble, "I'm hungry!"}
-    Note over philosopher_2,philosopher_2: t=200ms
-    philosopher_1->>philosopher_1: {:mumble, "I'm hungry!"}
-    Note over philosopher_1,philosopher_1: t=200ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=200ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=200ms
-    fork_2->>philosopher_2: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_2: t=200ms
-    fork_2->>philosopher_1: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_1: t=200ms
-    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=200ms
-    fork_0->>philosopher_2: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_2: t=200ms
-    philosopher_2->>philosopher_2: {:mumble, "I'm full!"}
-    Note over philosopher_2,philosopher_2: t=200ms
-    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=200ms
-    philosopher_2->>fork_0: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=200ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm hungry!"}
-    Note over philosopher_0,philosopher_0: t=200ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=200ms
-    fork_0->>philosopher_0: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_0: t=200ms
-    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=200ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_0: t=200ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=200ms
-    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=200ms
-    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=200ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=400ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=400ms
-    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,philosopher_2: t=400ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=400ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=400ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=400ms
-    fork_0->>philosopher_0: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_0: t=400ms
-    fork_2->>philosopher_1: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_1: t=400ms
-    fork_2->>philosopher_2: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_2: t=400ms
-    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=400ms
-    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=400ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_0: t=400ms
-    fork_1->>philosopher_1: {:fork_denied, :fork_1}
-    Note over fork_1,philosopher_1: t=400ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=400ms
-    philosopher_1->>fork_2: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=400ms
-    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=400ms
-    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=400ms
-    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,philosopher_2: t=600ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=600ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=600ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=600ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=600ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=600ms
-    fork_2->>philosopher_2: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_2: t=600ms
-    fork_0->>philosopher_0: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_0: t=600ms
-    fork_2->>philosopher_1: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_1: t=600ms
-    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=600ms
-    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=600ms
-    fork_0->>philosopher_2: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_2: t=600ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_0: t=600ms
-    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=600ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=600ms
-    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=600ms
-    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=600ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=800ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=800ms
-    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,philosopher_2: t=800ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=800ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=800ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=800ms
-    fork_0->>philosopher_0: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_0: t=800ms
-    fork_2->>philosopher_1: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_1: t=800ms
-    fork_2->>philosopher_2: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_2: t=800ms
-    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=800ms
-    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=800ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_0: t=800ms
-    fork_1->>philosopher_1: {:fork_denied, :fork_1}
-    Note over fork_1,philosopher_1: t=800ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=800ms
-    philosopher_1->>fork_2: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=800ms
-    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=800ms
-    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=800ms
-    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
-    Note over philosopher_2,philosopher_2: t=1000ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
-    Note over philosopher_1,philosopher_1: t=1000ms
-    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_0,philosopher_0: t=1000ms
-    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=1000ms
-    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_2: t=1000ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=1000ms
-    fork_2->>philosopher_2: {:fork_granted, :fork_2}
-    Note over fork_2,philosopher_2: t=1000ms
-    fork_0->>philosopher_0: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_0: t=1000ms
-    fork_2->>philosopher_1: {:fork_denied, :fork_2}
-    Note over fork_2,philosopher_1: t=1000ms
-    philosopher_2->>fork_0: {:request_fork, :philosopher_2}
-    Note over philosopher_2,fork_0: t=1000ms
-    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=1000ms
-    fork_0->>philosopher_2: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_2: t=1000ms
-    fork_1->>philosopher_0: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_0: t=1000ms
-    philosopher_2->>fork_2: {:release_fork, :philosopher_2}
-    Note over philosopher_2,fork_2: t=1000ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=1000ms
-    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=1000ms
-    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=1000ms</pre>
+    <div class="explanation" style="margin-top: 30px;">
+      <h3>Simulation Source Code</h3>
+      <pre><code class="language-elixir">simulation =
+DiningPhilosophers.create_simulation(
+num_philosophers: 3,
+think_time: 150,
+eat_time: 75,
+trace: true
+)
+|> ActorSimulation.run(duration: 800)</code></pre>
     </div>
 
-    <div class="explanation" style="margin-top: 30px;">
+    <div class="explanation" style="margin-top: 20px;">
       <h3>What the Diagram Shows</h3>
       <ul>
         <li>Each philosopher sends synchronous <code>:request</code> messages to forks</li>
