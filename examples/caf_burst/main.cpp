@@ -19,7 +19,7 @@ int caf_main(actor_system& system) {
   // Keep system alive - wait for user input to exit
   std::cout << "Actor system started. Press Ctrl+C to exit." << std::endl;
   std::cout << "Press Enter to stop..." << std::endl;
-  
+
   // Keep the system running
   std::string line;
   std::getline(std::cin, line);
