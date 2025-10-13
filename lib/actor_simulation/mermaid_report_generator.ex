@@ -88,8 +88,8 @@ defmodule ActorSimulation.MermaidReportGenerator do
     # Add nodes with stats
     node_lines = generate_nodes(actors, stats, show_stats)
 
-    # Add edges (connections)
-    edge_lines = generate_edges(actors, show_labels)
+    # Add edges (connections) from both definitions and actual trace
+    edge_lines = generate_edges(actors, simulation.trace, show_labels)
 
     # Add styling based on activity
     style_lines =
@@ -238,32 +238,85 @@ defmodule ActorSimulation.MermaidReportGenerator do
     if show_labels do
       # For real processes, we can't easily determine the message type from the definition
       # but we can show a generic label indicating it's a real process message
-      "#{name} -->|:hi| #{target}"
+      label = escape_mermaid_label(":hi")
+      "#{name} -->|#{label}| #{target}"
     else
       "#{name} --> #{target}"
     end
   end
 
-  defp generate_edges(actors, show_labels) do
-    Enum.flat_map(actors, fn {name, actor_info} ->
-      case actor_info.type do
-        :simulated ->
-          definition = actor_info.definition
-          targets = definition.targets || []
+  defp generate_edges(actors, trace, show_labels) do
+    # Generate edges from actor definitions (static topology)
+    definition_edges =
+      Enum.flat_map(actors, fn {name, actor_info} ->
+        case actor_info.type do
+          :simulated ->
+            definition = actor_info.definition
+            targets = definition.targets || []
 
-          Enum.map(targets, fn target ->
-            generate_edge_label(name, target, definition, show_labels)
-          end)
+            Enum.map(targets, fn target ->
+              generate_edge_label(name, target, definition, show_labels)
+            end)
 
-        :real_process ->
-          # Handle real processes with targets
-          targets = actor_info.targets || []
+          :real_process ->
+            # Handle real processes with targets
+            targets = actor_info.targets || []
 
-          Enum.map(targets, fn target ->
-            generate_real_process_edge_label(name, target, actor_info, show_labels)
-          end)
+            Enum.map(targets, fn target ->
+              generate_real_process_edge_label(name, target, actor_info, show_labels)
+            end)
+        end
+      end)
+
+    # Generate edges from trace (dynamic interactions)
+    trace_edges = extract_edges_from_trace(trace, actors, show_labels)
+
+    # Merge and deduplicate
+    (definition_edges ++ trace_edges)
+    |> Enum.uniq()
+  end
+
+  # Extract edges from actual message trace
+  # This captures dynamic interactions not defined in static targets
+  defp extract_edges_from_trace(nil, _actors, _show_labels), do: []
+  defp extract_edges_from_trace([], _actors, _show_labels), do: []
+
+  defp extract_edges_from_trace(trace, actors, show_labels) do
+    trace
+    |> Enum.filter(fn event ->
+      # Only include edges between known actors (exclude self-loops if not meaningful)
+      event.from != event.to && Map.has_key?(actors, event.from) && Map.has_key?(actors, event.to)
+    end)
+    |> Enum.group_by(fn event -> {event.from, event.to} end)
+    |> Enum.map(fn {{from, to}, events} ->
+      # Get the most common message type for this edge
+      if show_labels do
+        message_label = extract_trace_message_label(events)
+        "#{from} -->|#{escape_mermaid_label(message_label)}| #{to}"
+      else
+        "#{from} --> #{to}"
       end
     end)
+  end
+
+  # Extract a representative label for an edge from trace events
+  defp extract_trace_message_label(events) do
+    # Count message types
+    message_counts =
+      events
+      |> Enum.map(fn event -> inspect(event.message) end)
+      |> Enum.frequencies()
+
+    # Find the most frequent message
+    {most_common_msg, count} = Enum.max_by(message_counts, fn {_msg, count} -> count end)
+
+    if length(events) > count do
+      # Multiple different messages on this edge
+      "#{count}× #{most_common_msg}<br/>+#{length(events) - count} more"
+    else
+      # Single message type
+      most_common_msg
+    end
   end
 
   defp generate_edge_label(name, target, definition, show_labels) do
@@ -271,13 +324,23 @@ defmodule ActorSimulation.MermaidReportGenerator do
       msg_label = get_message_label(definition)
 
       if msg_label do
-        "#{name} -->|#{msg_label}| #{target}"
+        # Escape special Mermaid characters in labels (curly braces, etc.)
+        escaped_label = escape_mermaid_label(msg_label)
+        "#{name} -->|#{escaped_label}| #{target}"
       else
         "#{name} --> #{target}"
       end
     else
       "#{name} --> #{target}"
     end
+  end
+
+  # Escape special characters in Mermaid edge labels
+  # Curly braces {} have special meaning in Mermaid and need to be escaped
+  defp escape_mermaid_label(label) do
+    label
+    |> String.replace("{", "#123;")
+    |> String.replace("}", "#125;")
   end
 
   defp get_message_label(definition) do
