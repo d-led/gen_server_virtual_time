@@ -208,70 +208,70 @@
       <div class="mermaid">
 flowchart TB
     philosopher_0("philosopher_0<br/>
-📤 Sent: 8079<br/>
-📥 Recv: 5540")
-    philosopher_1("philosopher_1<br/>
-📤 Sent: 5445<br/>
-📥 Recv: 4223")
-    philosopher_2("philosopher_2<br/>
-📤 Sent: 5679<br/>
-📥 Recv: 4340")
-    philosopher_3("philosopher_3<br/>
-📤 Sent: 5461<br/>
-📥 Recv: 4231")
+📤 Sent: 7731<br/>
+📥 Recv: 5366")
     philosopher_4("philosopher_4<br/>
-📤 Sent: 4547<br/>
-📥 Recv: 3774")
+📤 Sent: 4577<br/>
+📥 Recv: 3789")
     fork_0("fork_0<br/>
-📤 Sent: 2243<br/>
-📥 Recv: 3762")
-    fork_1("fork_1<br/>
-📤 Sent: 2244<br/>
-📥 Recv: 3761")
-    fork_2("fork_2<br/>
-📤 Sent: 3000<br/>
-📥 Recv: 4509")
-    fork_3("fork_3<br/>
-📤 Sent: 1520<br/>
-📥 Recv: 2569")
+📤 Sent: 2260<br/>
+📥 Recv: 3771")
     fork_4("fork_4<br/>
 📤 Sent: 3000<br/>
-📥 Recv: 4509")
+📥 Recv: 4505")
+    philosopher_1("philosopher_1<br/>
+📤 Sent: 5739<br/>
+📥 Recv: 4370")
+    philosopher_2("philosopher_2<br/>
+📤 Sent: 5377<br/>
+📥 Recv: 4189")
+    philosopher_3("philosopher_3<br/>
+📤 Sent: 5697<br/>
+📥 Recv: 4349")
+    fork_1("fork_1<br/>
+📤 Sent: 2230<br/>
+📥 Recv: 3734")
+    fork_2("fork_2<br/>
+📤 Sent: 3000<br/>
+📥 Recv: 4505")
+    fork_3("fork_3<br/>
+📤 Sent: 1503<br/>
+📥 Recv: 2536")
     philosopher_0 -->|#123;:start_hungry, :fork_0, :fork_1#125;<br/>every 20ms| philosopher_0
+    philosopher_4 -->|#123;:start_hungry, :fork_4, :fork_0#125;<br/>every 20ms| philosopher_4
     philosopher_1 -->|#123;:start_hungry, :fork_2, :fork_1#125;<br/>every 20ms| philosopher_1
     philosopher_2 -->|#123;:start_hungry, :fork_2, :fork_3#125;<br/>every 20ms| philosopher_2
     philosopher_3 -->|#123;:start_hungry, :fork_4, :fork_3#125;<br/>every 20ms| philosopher_3
-    philosopher_4 -->|#123;:start_hungry, :fork_4, :fork_0#125;<br/>every 20ms| philosopher_4
-    fork_0 -->|1489× #123;:fork_granted, :fork_0#125;<br/>+11 more| philosopher_0
-    fork_0 -->|713× #123;:fork_denied, :fork_0#125;<br/>+30 more| philosopher_4
-    fork_1 -->|1050× #123;:fork_granted, :fork_1#125;<br/>+439 more| philosopher_0
-    fork_1 -->|467× #123;:fork_granted, :fork_1#125;<br/>+288 more| philosopher_1
-    fork_2 -->|755× #123;:fork_granted, :fork_2#125;<br/>+745 more| philosopher_1
-    fork_2 -->|754× #123;:fork_granted, :fork_2#125;<br/>+746 more| philosopher_2
-    fork_3 -->|585× #123;:fork_granted, :fork_3#125;<br/>+169 more| philosopher_2
-    fork_3 -->|464× #123;:fork_granted, :fork_3#125;<br/>+302 more| philosopher_3
-    fork_4 -->|766× #123;:fork_granted, :fork_4#125;<br/>+734 more| philosopher_3
-    fork_4 -->|757× #123;:fork_denied, :fork_4#125;<br/>+743 more| philosopher_4
-    philosopher_0 -->|1500× #123;:request_fork, :philosopher_0#125;<br/>+1489 more| fork_0
-    philosopher_0 -->|1489× #123;:request_fork, :philosopher_0#125;<br/>+1050 more| fork_1
-    philosopher_1 -->|755× #123;:request_fork, :philosopher_1#125;<br/>+467 more| fork_1
-    philosopher_1 -->|1500× #123;:request_fork, :philosopher_1#125;<br/>+755 more| fork_2
-    philosopher_2 -->|1500× #123;:request_fork, :philosopher_2#125;<br/>+754 more| fork_2
-    philosopher_2 -->|754× #123;:request_fork, :philosopher_2#125;<br/>+585 more| fork_3
-    philosopher_3 -->|766× #123;:request_fork, :philosopher_3#125;<br/>+464 more| fork_3
-    philosopher_3 -->|1500× #123;:request_fork, :philosopher_3#125;<br/>+766 more| fork_4
-    philosopher_4 -->|743× #123;:request_fork, :philosopher_4#125;<br/>+30 more| fork_0
-    philosopher_4 -->|1500× #123;:request_fork, :philosopher_4#125;<br/>+743 more| fork_4
+    fork_0 -->|1483× #123;:fork_granted, :fork_0#125;<br/>+17 more| philosopher_0
+    fork_0 -->|732× #123;:fork_denied, :fork_0#125;<br/>+28 more| philosopher_4
+    fork_1 -->|882× #123;:fork_granted, :fork_1#125;<br/>+601 more| philosopher_0
+    fork_1 -->|622× #123;:fork_granted, :fork_1#125;<br/>+125 more| philosopher_1
+    fork_2 -->|753× #123;:fork_denied, :fork_2#125;<br/>+747 more| philosopher_1
+    fork_2 -->|758× #123;:fork_granted, :fork_2#125;<br/>+742 more| philosopher_2
+    fork_3 -->|430× #123;:fork_granted, :fork_3#125;<br/>+328 more| philosopher_2
+    fork_3 -->|603× #123;:fork_granted, :fork_3#125;<br/>+142 more| philosopher_3
+    fork_4 -->|755× #123;:fork_denied, :fork_4#125;<br/>+745 more| philosopher_3
+    fork_4 -->|760× #123;:fork_granted, :fork_4#125;<br/>+740 more| philosopher_4
+    philosopher_0 -->|1500× #123;:request_fork, :philosopher_0#125;<br/>+1483 more| fork_0
+    philosopher_0 -->|1483× #123;:request_fork, :philosopher_0#125;<br/>+882 more| fork_1
+    philosopher_1 -->|747× #123;:request_fork, :philosopher_1#125;<br/>+622 more| fork_1
+    philosopher_1 -->|1500× #123;:request_fork, :philosopher_1#125;<br/>+747 more| fork_2
+    philosopher_2 -->|1500× #123;:request_fork, :philosopher_2#125;<br/>+758 more| fork_2
+    philosopher_2 -->|758× #123;:request_fork, :philosopher_2#125;<br/>+430 more| fork_3
+    philosopher_3 -->|745× #123;:request_fork, :philosopher_3#125;<br/>+603 more| fork_3
+    philosopher_3 -->|1500× #123;:request_fork, :philosopher_3#125;<br/>+745 more| fork_4
+    philosopher_4 -->|760× #123;:request_fork, :philosopher_4#125;<br/>+28 more| fork_0
+    philosopher_4 -->|1500× #123;:request_fork, :philosopher_4#125;<br/>+760 more| fork_4
     style philosopher_0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style philosopher_4 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style fork_0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style fork_4 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style philosopher_1 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style philosopher_2 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style philosopher_3 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
-    style philosopher_4 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
-    style fork_0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style fork_1 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style fork_2 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style fork_3 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
-    style fork_4 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
       </div>
     </div>
 
@@ -320,92 +320,92 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>philosopher_0</strong></td>
-  <td class="metric">8079</td>
-  <td class="metric">5540</td>
-  <td class="metric">269.3 msg/s</td>
-  <td class="metric">184.67 msg/s</td>
-  <td><span class="badge high">13619 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>philosopher_1</strong></td>
-  <td class="metric">5445</td>
-  <td class="metric">4223</td>
-  <td class="metric">181.5 msg/s</td>
-  <td class="metric">140.77 msg/s</td>
-  <td><span class="badge high">9668 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>philosopher_2</strong></td>
-  <td class="metric">5679</td>
-  <td class="metric">4340</td>
-  <td class="metric">189.3 msg/s</td>
-  <td class="metric">144.67 msg/s</td>
-  <td><span class="badge high">10019 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>philosopher_3</strong></td>
-  <td class="metric">5461</td>
-  <td class="metric">4231</td>
-  <td class="metric">182.03 msg/s</td>
-  <td class="metric">141.03 msg/s</td>
-  <td><span class="badge high">9692 total</span></td>
+  <td class="metric">7731</td>
+  <td class="metric">5366</td>
+  <td class="metric">257.7 msg/s</td>
+  <td class="metric">178.87 msg/s</td>
+  <td><span class="badge high">13097 total</span></td>
 </tr>
 
 <tr>
   <td><strong>philosopher_4</strong></td>
-  <td class="metric">4547</td>
-  <td class="metric">3774</td>
-  <td class="metric">151.57 msg/s</td>
-  <td class="metric">125.8 msg/s</td>
-  <td><span class="badge high">8321 total</span></td>
+  <td class="metric">4577</td>
+  <td class="metric">3789</td>
+  <td class="metric">152.57 msg/s</td>
+  <td class="metric">126.3 msg/s</td>
+  <td><span class="badge high">8366 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_0</strong></td>
-  <td class="metric">2243</td>
-  <td class="metric">3762</td>
-  <td class="metric">74.77 msg/s</td>
-  <td class="metric">125.4 msg/s</td>
-  <td><span class="badge high">6005 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>fork_1</strong></td>
-  <td class="metric">2244</td>
-  <td class="metric">3761</td>
-  <td class="metric">74.8 msg/s</td>
-  <td class="metric">125.37 msg/s</td>
-  <td><span class="badge high">6005 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>fork_2</strong></td>
-  <td class="metric">3000</td>
-  <td class="metric">4509</td>
-  <td class="metric">100.0 msg/s</td>
-  <td class="metric">150.3 msg/s</td>
-  <td><span class="badge high">7509 total</span></td>
-</tr>
-
-<tr>
-  <td><strong>fork_3</strong></td>
-  <td class="metric">1520</td>
-  <td class="metric">2569</td>
-  <td class="metric">50.67 msg/s</td>
-  <td class="metric">85.63 msg/s</td>
-  <td><span class="badge high">4089 total</span></td>
+  <td class="metric">2260</td>
+  <td class="metric">3771</td>
+  <td class="metric">75.33 msg/s</td>
+  <td class="metric">125.7 msg/s</td>
+  <td><span class="badge high">6031 total</span></td>
 </tr>
 
 <tr>
   <td><strong>fork_4</strong></td>
   <td class="metric">3000</td>
-  <td class="metric">4509</td>
+  <td class="metric">4505</td>
   <td class="metric">100.0 msg/s</td>
-  <td class="metric">150.3 msg/s</td>
-  <td><span class="badge high">7509 total</span></td>
+  <td class="metric">150.17 msg/s</td>
+  <td><span class="badge high">7505 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>philosopher_1</strong></td>
+  <td class="metric">5739</td>
+  <td class="metric">4370</td>
+  <td class="metric">191.3 msg/s</td>
+  <td class="metric">145.67 msg/s</td>
+  <td><span class="badge high">10109 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>philosopher_2</strong></td>
+  <td class="metric">5377</td>
+  <td class="metric">4189</td>
+  <td class="metric">179.23 msg/s</td>
+  <td class="metric">139.63 msg/s</td>
+  <td><span class="badge high">9566 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>philosopher_3</strong></td>
+  <td class="metric">5697</td>
+  <td class="metric">4349</td>
+  <td class="metric">189.9 msg/s</td>
+  <td class="metric">144.97 msg/s</td>
+  <td><span class="badge high">10046 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>fork_1</strong></td>
+  <td class="metric">2230</td>
+  <td class="metric">3734</td>
+  <td class="metric">74.33 msg/s</td>
+  <td class="metric">124.47 msg/s</td>
+  <td><span class="badge high">5964 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>fork_2</strong></td>
+  <td class="metric">3000</td>
+  <td class="metric">4505</td>
+  <td class="metric">100.0 msg/s</td>
+  <td class="metric">150.17 msg/s</td>
+  <td><span class="badge high">7505 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>fork_3</strong></td>
+  <td class="metric">1503</td>
+  <td class="metric">2536</td>
+  <td class="metric">50.1 msg/s</td>
+  <td class="metric">84.53 msg/s</td>
+  <td><span class="badge high">4039 total</span></td>
 </tr>
 
     </tbody>
@@ -413,14 +413,44 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 82436 •
+    Total messages: 82228 •
     Duration: 30000ms •
     Actors: 10
   </div>
 </div>
 
 
-  
+  <div class="section">
+  <h2>💻 Model Source Code</h2>
+  <p>This is the Elixir code that defines the actor simulation model:</p>
+  <div class="code-block">
+    <pre><code class="language-elixir">simulation =
+  DiningPhilosophers.create_simulation(
+    num_philosophers: 5,
+    think_time: 20,
+    eat_time: 10,
+    trace: true
+  )
+  |> ActorSimulation.run(
+    max_duration: 30_000,
+    terminate_when: fn sim ->
+      # Check if all philosophers have eaten
+      trace = sim.trace
+      philosophers_who_ate =
+        Enum.filter(0..4, fn i ->
+          name = :"philosopher_#{i}"
+          Enum.any?(trace, fn event ->
+            event.from == name and event.to == name and
+              event.message == {:mumble, "I'm full!"}
+          end)
+        end)
+      length(philosophers_who_ate) == 5
+    end
+  )
+</code></pre>
+  </div>
+</div>
+
 
   <div class="source-links">
     <h3>🔗 Source & Links</h3>

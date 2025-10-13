@@ -10,6 +10,14 @@ defmodule MermaidReportTest do
     :ok
   end
 
+  # Helper to define simulation and generate source code from quoted expression
+  # This eliminates code duplication by defining the simulation once
+  defp simulation_with_source(quoted_code) do
+    simulation = Code.eval_quoted(quoted_code) |> elem(0)
+    source = "simulation =\n#{Macro.to_string(quoted_code)}"
+    {simulation, source}
+  end
+
   describe "Mermaid Report Generation" do
     test "generates basic flowchart report" do
       # Create a simple producer-consumer simulation
@@ -139,29 +147,22 @@ defmodule MermaidReportTest do
     end
 
     test "generates pub-sub topology report" do
-      model_source = """
-      simulation =
-        ActorSimulation.new()
-        |> ActorSimulation.add_actor(:publisher,
-          send_pattern: {:rate, 10, :event},
-          targets: [:sub1, :sub2, :sub3]
-        )
-        |> ActorSimulation.add_actor(:sub1)
-        |> ActorSimulation.add_actor(:sub2)
-        |> ActorSimulation.add_actor(:sub3)
-        |> ActorSimulation.run(duration: 1000)
-      """
+      # Define simulation once using quoted expression
+      simulation_code =
+        quote do
+          ActorSimulation.new()
+          |> ActorSimulation.add_actor(:publisher,
+            send_pattern: {:rate, 10, :event},
+            targets: [:sub1, :sub2, :sub3]
+          )
+          |> ActorSimulation.add_actor(:sub1)
+          |> ActorSimulation.add_actor(:sub2)
+          |> ActorSimulation.add_actor(:sub3)
+          |> ActorSimulation.run(duration: 1000)
+        end
 
-      simulation =
-        ActorSimulation.new()
-        |> ActorSimulation.add_actor(:publisher,
-          send_pattern: {:rate, 10, :event},
-          targets: [:sub1, :sub2, :sub3]
-        )
-        |> ActorSimulation.add_actor(:sub1)
-        |> ActorSimulation.add_actor(:sub2)
-        |> ActorSimulation.add_actor(:sub3)
-        |> ActorSimulation.run(duration: 1000)
+      # Generate both simulation and source code from the same definition
+      {simulation, model_source} = simulation_with_source(simulation_code)
 
       html =
         MermaidReportGenerator.generate_report(simulation,
@@ -355,19 +356,28 @@ defmodule MermaidReportTest do
     end
 
     test "write_report helper function" do
-      simulation =
-        ActorSimulation.new()
-        |> ActorSimulation.add_actor(:actor1,
-          send_pattern: {:periodic, 100, :msg},
-          targets: [:actor2]
-        )
-        |> ActorSimulation.add_actor(:actor2)
-        |> ActorSimulation.run(duration: 300)
+      # Define simulation once using quoted expression
+      simulation_code =
+        quote do
+          ActorSimulation.new()
+          |> ActorSimulation.add_actor(:actor1,
+            send_pattern: {:periodic, 100, :msg},
+            targets: [:actor2]
+          )
+          |> ActorSimulation.add_actor(:actor2)
+          |> ActorSimulation.run(duration: 300)
+        end
+
+      # Generate both simulation and source code from the same definition
+      {simulation, model_source} = simulation_with_source(simulation_code)
 
       filename = Path.join(@output_dir, "write_helper_test.html")
 
       {:ok, ^filename} =
-        MermaidReportGenerator.write_report(simulation, filename, title: "Write Helper Test")
+        MermaidReportGenerator.write_report(simulation, filename,
+          title: "Write Helper Test",
+          model_source: model_source
+        )
 
       assert File.exists?(filename)
       content = File.read!(filename)

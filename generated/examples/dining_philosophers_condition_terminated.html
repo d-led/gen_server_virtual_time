@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <title>Dining Philosophers - Condition Terminated</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-elixir.min.js"></script>
   <style>
     body { font-family: system-ui; max-width: 1400px; margin: 40px auto; padding: 20px; }
     .mermaid { background: white; padding: 40px; border-radius: 8px; }
@@ -16,6 +19,17 @@
     <strong>✅ Success!</strong><br>
     Both philosophers successfully ate at least once during the simulation.<br>
     Look for each philosopher's <strong>"I'm full!"</strong> message in the diagram below!
+  </div>
+  <div style="background: #fff3e0; padding: 20px; border-left: 4px solid #ff9800; margin-bottom: 20px; border-radius: 4px;">
+    <h3 style="margin-top: 0; color: #e65100;">Simulation Source Code</h3>
+    <pre><code class="language-elixir">simulation =
+DiningPhilosophers.create_simulation(
+num_philosophers: 2,
+think_time: 150,
+eat_time: 75,
+trace: true
+)
+|> ActorSimulation.run(duration: 1000)</code></pre>
   </div>
   <div class="mermaid">
 sequenceDiagram

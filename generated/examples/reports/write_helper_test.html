@@ -292,7 +292,18 @@ flowchart LR
 </div>
 
 
-  
+  <div class="section">
+  <h2>💻 Model Source Code</h2>
+  <p>This is the Elixir code that defines the actor simulation model:</p>
+  <div class="code-block">
+    <pre><code class="language-elixir">simulation =
+ActorSimulation.new()
+|> ActorSimulation.add_actor(:actor1, send_pattern: {:periodic, 100, :msg}, targets: [:actor2])
+|> ActorSimulation.add_actor(:actor2)
+|> ActorSimulation.run(duration: 300)</code></pre>
+  </div>
+</div>
+
 
   <div class="source-links">
     <h3>🔗 Source & Links</h3>
