@@ -10,10 +10,10 @@ Model implementations: in Java, Pony, Go and C++.
 [![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
 
 > **🎬
-> [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/examples/)**
+> [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/)**
 > • **📊
-> [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/examples/reports/)**
-> (NEW!)
+> [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/reports/)**
+>
 
 ## 🚀 Code Generators
 
