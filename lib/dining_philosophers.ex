@@ -1,6 +1,6 @@
 defmodule DiningPhilosophers do
   @moduledoc false
-  @doc"""
+  @doc """
   Classic dining philosophers problem solved with actor simulation.
 
   Five philosophers sit at a round table with five forks. Each philosopher

@@ -117,7 +117,7 @@ defmodule GenServerVirtualTime.MixProject do
         {"docs/vlingo_generator.md", [title: "VLINGO XOOM Generator"]}
       ],
       groups_for_extras: [
-        "Project": [
+        Project: [
           "README.md",
           "CHANGELOG.md",
           "CONTRIBUTING.md",
