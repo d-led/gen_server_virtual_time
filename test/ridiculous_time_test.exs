@@ -101,6 +101,7 @@ defmodule RidiculousTimeTest do
 
     @tag :ridiculous
     @tag :slow
+    @tag timeout: 120_000
     test "daily backup for a century (because why not)" do
       # 86,400,000 ms
       one_day_ms = 24 * 60 * 60 * 1000
