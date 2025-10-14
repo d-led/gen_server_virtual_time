@@ -8,6 +8,11 @@ Documentation for developers working on the GenServerVirtualTime library.
   release workflow, and publishing
 - **[PUBLISHING.md](PUBLISHING.md)** - Additional publishing instructions
 
+## Testing & Coverage
+
+- **[test_coverage_improvements.md](test_coverage_improvements.md)** - Test
+  coverage improvements, spec-style testing approach, and testing best practices
+
 ## Virtual Clock Configuration: Global vs Local
 
 ### Design Philosophy
@@ -151,6 +156,10 @@ mix coveralls
 # Generate HTML coverage report
 mix coveralls.html
 ```
+
+**See [test_coverage_improvements.md](test_coverage_improvements.md) for
+detailed information about test coverage, spec-style testing approach, and test
+design principles.**
 
 ## Code Quality
 

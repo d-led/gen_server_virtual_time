@@ -156,7 +156,7 @@ jobs:
           include_passed: true
   
   coverage:
-    name: Code Coverage
+    name: Combined Code Coverage (All Tests)
     runs-on: ubuntu-latest
     
     permissions:
@@ -184,11 +184,28 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
       
-      - name: Run tests with coverage
+      - name: Run fast tests with coverage export
+        env:
+          MIX_ENV: test
+        run: mix coveralls --export-coverage fast
+      
+      - name: Run slow tests with coverage export
+        env:
+          MIX_ENV: test
+        run: mix coveralls --only slow --export-coverage slow
+      
+      - name: Run diagram generation tests with coverage export
+        env:
+          MIX_ENV: test
+        run: mix coveralls --only diagram_generation --export-coverage diagram
+      
+      - name: Merge coverage and report to GitHub
         env:
           MIX_ENV: test
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mix coveralls.github --exclude slow --exclude omnetpp
+        run: |
+          mix test.coverage
+          mix coveralls.github --import-cover cover
   
   quality:
     name: Code Quality
