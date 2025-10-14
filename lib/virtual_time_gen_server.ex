@@ -12,7 +12,7 @@ defmodule VirtualTimeGenServer.Wrapper do
   end
 
   def handle_call(request, from, {module, state}) do
-    # Handle internal stats request
+    # Handle internal requests
     case request do
       :__vtgs_get_stats__ ->
         stats = VirtualTimeGenServer.get_process_stats()
@@ -22,6 +22,8 @@ defmodule VirtualTimeGenServer.Wrapper do
         # Track incoming call only if stats tracking is enabled (in simulations)
         if Process.get(:__vtgs_stats_enabled__) do
           track_received_message(request, :call)
+          # Generate trace event for incoming message
+          VirtualTimeGenServer.generate_incoming_trace_event(request, :call)
         end
 
         case module.handle_call(request, from, state) do
@@ -39,6 +41,8 @@ defmodule VirtualTimeGenServer.Wrapper do
     # Track incoming cast only if stats tracking is enabled (in simulations)
     if Process.get(:__vtgs_stats_enabled__) do
       track_received_message(request, :cast)
+      # Generate trace event for incoming message
+      VirtualTimeGenServer.generate_incoming_trace_event(request, :cast)
     end
 
     case module.handle_cast(request, state) do
@@ -260,6 +264,30 @@ defmodule VirtualTimeGenServer do
     backend.cancel_timer(ref)
   end
 
+  @doc """
+  Sleeps for the specified duration (in milliseconds).
+
+  With virtual time, this advances the actor's position in the timeline without
+  consuming real time. With real time, this blocks using Process.sleep/1.
+
+  This is useful for simulating work or processing delays within actors.
+
+  ## Examples
+
+      # In a GenServer callback - simulate 100ms of processing time
+      def handle_call(:compute, _from, state) do
+        VirtualTimeGenServer.sleep(100)  # Simulated work
+        {:reply, :done, state}
+      end
+
+      # With virtual time: returns instantly but advances virtual clock
+      # With real time: blocks for 100ms
+  """
+  def sleep(duration) do
+    backend = get_time_backend()
+    backend.sleep(duration)
+  end
+
   defmacro __using__(_opts) do
     quote do
       use GenServer
@@ -426,6 +454,43 @@ defmodule VirtualTimeGenServer do
   def enable_stats_tracking do
     Process.put(:__vtgs_stats_enabled__, true)
     Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+  end
+
+  @doc false
+  # Generate trace events for incoming messages (only used in simulations)
+  def generate_incoming_trace_event(message, type) do
+    # Skip internal messages
+    case message do
+      :get_stats -> :ok
+      :__vtgs_get_stats__ -> :ok
+      {:start_sending, _, _} -> :ok
+      _ -> send_incoming_trace_event(message, type)
+    end
+  end
+
+  defp send_incoming_trace_event(message, type) do
+    case Process.whereis(:trace_collector) do
+      nil ->
+        :ok
+
+      pid ->
+        # Get actor name from process context
+        actor_name = Process.get(:__vtgs_actor_name__)
+
+        if actor_name do
+          # For incoming messages, we don't know the sender, so we use a generic source
+          # The diagram generator can infer connections from the message patterns
+          send(pid, {:trace,
+           %{
+             timestamp: VirtualClock.now(Process.get(:virtual_clock)),
+             # We don't know the sender for incoming messages
+             from: :unknown,
+             to: actor_name,
+             message: message,
+             type: type
+           }})
+        end
+    end
   end
 
   @doc false

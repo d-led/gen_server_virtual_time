@@ -187,15 +187,15 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">65<span class="unit">ms</span></div>
+      <div class="value">63<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">46.2x</div>
+      <div class="value">47.6x</div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card warning">
   <div class="label">Termination</div>
-  <div class="value">✓ Quiescence</div>
+  <div class="value">⏱ Max Time</div>
 </div>
 
   </div>
@@ -207,55 +207,55 @@
     <div class="diagram-container">
       <div class="mermaid">
 flowchart LR
-    alice("alice<br/>📤 Sent: 30226<br/>📥 Recv: 30215")
-    bob("bob<br/>📤 Sent: 30215<br/>📥 Recv: 30203")
-    charlie("charlie<br/>📤 Sent: 30497<br/>📥 Recv: 30485")
-    diana("diana<br/>📤 Sent: 30278<br/>📥 Recv: 30267")
-    eve("eve<br/>📤 Sent: 30028<br/>📥 Recv: 30017")
-    frank("frank<br/>📤 Sent: 29631<br/>📥 Recv: 29620")
-    grace("grace<br/>📤 Sent: 30276<br/>📥 Recv: 30265")
-    alice -->|:hi| bob
-    alice -->|:hi| charlie
-    alice -->|:hi| diana
-    alice -->|:hi| eve
-    alice -->|:hi| frank
-    alice -->|:hi| grace
-    bob -->|:hi| alice
-    bob -->|:hi| charlie
-    bob -->|:hi| diana
-    bob -->|:hi| eve
-    bob -->|:hi| frank
-    bob -->|:hi| grace
-    charlie -->|:hi| alice
-    charlie -->|:hi| bob
-    charlie -->|:hi| diana
-    charlie -->|:hi| eve
-    charlie -->|:hi| frank
-    charlie -->|:hi| grace
-    diana -->|:hi| alice
-    diana -->|:hi| bob
-    diana -->|:hi| charlie
-    diana -->|:hi| eve
-    diana -->|:hi| frank
-    diana -->|:hi| grace
-    eve -->|:hi| alice
-    eve -->|:hi| bob
-    eve -->|:hi| charlie
-    eve -->|:hi| diana
-    eve -->|:hi| frank
-    eve -->|:hi| grace
-    frank -->|:hi| alice
-    frank -->|:hi| bob
-    frank -->|:hi| charlie
-    frank -->|:hi| diana
-    frank -->|:hi| eve
-    frank -->|:hi| grace
-    grace -->|:hi| alice
-    grace -->|:hi| bob
-    grace -->|:hi| charlie
-    grace -->|:hi| diana
-    grace -->|:hi| eve
-    grace -->|:hi| frank
+    alice("alice<br/>📤 Sent: 28262<br/>📥 Recv: 28251")
+    bob("bob<br/>📤 Sent: 28125<br/>📥 Recv: 28114")
+    charlie("charlie<br/>📤 Sent: 28304<br/>📥 Recv: 28293")
+    diana("diana<br/>📤 Sent: 28263<br/>📥 Recv: 28252")
+    eve("eve<br/>📤 Sent: 27771<br/>📥 Recv: 27760")
+    frank("frank<br/>📤 Sent: 27753<br/>📥 Recv: 27742")
+    grace("grace<br/>📤 Sent: 27865<br/>📥 Recv: 27854")
+    alice -->|:message| bob
+    alice -->|:message| charlie
+    alice -->|:message| diana
+    alice -->|:message| eve
+    alice -->|:message| frank
+    alice -->|:message| grace
+    bob -->|:message| alice
+    bob -->|:message| charlie
+    bob -->|:message| diana
+    bob -->|:message| eve
+    bob -->|:message| frank
+    bob -->|:message| grace
+    charlie -->|:message| alice
+    charlie -->|:message| bob
+    charlie -->|:message| diana
+    charlie -->|:message| eve
+    charlie -->|:message| frank
+    charlie -->|:message| grace
+    diana -->|:message| alice
+    diana -->|:message| bob
+    diana -->|:message| charlie
+    diana -->|:message| eve
+    diana -->|:message| frank
+    diana -->|:message| grace
+    eve -->|:message| alice
+    eve -->|:message| bob
+    eve -->|:message| charlie
+    eve -->|:message| diana
+    eve -->|:message| frank
+    eve -->|:message| grace
+    frank -->|:message| alice
+    frank -->|:message| bob
+    frank -->|:message| charlie
+    frank -->|:message| diana
+    frank -->|:message| eve
+    frank -->|:message| grace
+    grace -->|:message| alice
+    grace -->|:message| bob
+    grace -->|:message| charlie
+    grace -->|:message| diana
+    grace -->|:message| eve
+    grace -->|:message| frank
     style alice fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style bob fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style charlie fill:#fff3e0,stroke:#f57c00,stroke-width:3px
@@ -309,65 +309,65 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>alice</strong></td>
-  <td class="metric">30226</td>
-  <td class="metric">30215</td>
-  <td class="metric">10075.33 msg/s</td>
-  <td class="metric">10071.67 msg/s</td>
-  <td><span class="badge high">60441 total</span></td>
+  <td class="metric">28262</td>
+  <td class="metric">28251</td>
+  <td class="metric">9420.67 msg/s</td>
+  <td class="metric">9417.0 msg/s</td>
+  <td><span class="badge high">56513 total</span></td>
 </tr>
 
 <tr>
   <td><strong>bob</strong></td>
-  <td class="metric">30215</td>
-  <td class="metric">30203</td>
-  <td class="metric">10071.67 msg/s</td>
-  <td class="metric">10067.67 msg/s</td>
-  <td><span class="badge high">60418 total</span></td>
+  <td class="metric">28125</td>
+  <td class="metric">28114</td>
+  <td class="metric">9375.0 msg/s</td>
+  <td class="metric">9371.33 msg/s</td>
+  <td><span class="badge high">56239 total</span></td>
 </tr>
 
 <tr>
   <td><strong>charlie</strong></td>
-  <td class="metric">30497</td>
-  <td class="metric">30485</td>
-  <td class="metric">10165.67 msg/s</td>
-  <td class="metric">10161.67 msg/s</td>
-  <td><span class="badge high">60982 total</span></td>
+  <td class="metric">28304</td>
+  <td class="metric">28293</td>
+  <td class="metric">9434.67 msg/s</td>
+  <td class="metric">9431.0 msg/s</td>
+  <td><span class="badge high">56597 total</span></td>
 </tr>
 
 <tr>
   <td><strong>diana</strong></td>
-  <td class="metric">30278</td>
-  <td class="metric">30267</td>
-  <td class="metric">10092.67 msg/s</td>
-  <td class="metric">10089.0 msg/s</td>
-  <td><span class="badge high">60545 total</span></td>
+  <td class="metric">28263</td>
+  <td class="metric">28252</td>
+  <td class="metric">9421.0 msg/s</td>
+  <td class="metric">9417.33 msg/s</td>
+  <td><span class="badge high">56515 total</span></td>
 </tr>
 
 <tr>
   <td><strong>eve</strong></td>
-  <td class="metric">30028</td>
-  <td class="metric">30017</td>
-  <td class="metric">10009.33 msg/s</td>
-  <td class="metric">10005.67 msg/s</td>
-  <td><span class="badge high">60045 total</span></td>
+  <td class="metric">27771</td>
+  <td class="metric">27760</td>
+  <td class="metric">9257.0 msg/s</td>
+  <td class="metric">9253.33 msg/s</td>
+  <td><span class="badge high">55531 total</span></td>
 </tr>
 
 <tr>
   <td><strong>frank</strong></td>
-  <td class="metric">29631</td>
-  <td class="metric">29620</td>
-  <td class="metric">9877.0 msg/s</td>
-  <td class="metric">9873.33 msg/s</td>
-  <td><span class="badge high">59251 total</span></td>
+  <td class="metric">27753</td>
+  <td class="metric">27742</td>
+  <td class="metric">9251.0 msg/s</td>
+  <td class="metric">9247.33 msg/s</td>
+  <td><span class="badge high">55495 total</span></td>
 </tr>
 
 <tr>
   <td><strong>grace</strong></td>
-  <td class="metric">30276</td>
-  <td class="metric">30265</td>
-  <td class="metric">10092.0 msg/s</td>
-  <td class="metric">10088.33 msg/s</td>
-  <td><span class="badge high">60541 total</span></td>
+  <td class="metric">27865</td>
+  <td class="metric">27854</td>
+  <td class="metric">9288.33 msg/s</td>
+  <td class="metric">9284.67 msg/s</td>
+  <td><span class="badge high">55719 total</span></td>
 </tr>
 
     </tbody>
@@ -375,7 +375,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 422223 •
+    Total messages: 392609 •
     Duration: 3000ms •
     Actors: 7
   </div>
@@ -416,6 +416,10 @@ defmodule HiActor do
   end
 
   def handle_cast({:hi, from}, state) do
+    # Simulate processing time for handling the message (50-150ms)
+    processing_delay = :rand.uniform(101) + 50
+    VirtualTimeGenServer.sleep(processing_delay)
+
     # Received :hi, send random response
     available_targets = Enum.reject(state.all_actors, &(&1 == from))
     if length(available_targets) > 0 do

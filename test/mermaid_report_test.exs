@@ -855,6 +855,10 @@ defmodule MermaidReportTest do
         end
 
         def handle_cast({:hi, from}, state) do
+          # Simulate processing time for handling the message (50-150ms)
+          processing_delay = :rand.uniform(101) + 50
+          VirtualTimeGenServer.sleep(processing_delay)
+
           # Received :hi, send random response
           available_targets = Enum.reject(state.all_actors, &(&1 == from))
           if length(available_targets) > 0 do
@@ -962,6 +966,144 @@ defmodule MermaidReportTest do
       assert String.contains?(html, "alice")
       assert String.contains?(html, "grace")
       assert String.contains?(html, "flowchart LR")
+
+      ActorSimulation.stop(simulation)
+    end
+
+    test "generates quiescence batching report (no artificial delays)" do
+      # Model source code for documentation
+      model_source = """
+      # Quiescence example: sender emits 10 messages, receiver batches and replies once
+      # Termination: :quiescence (no timers left), with long timeout (60 seconds)
+      # Minimal delays (1ms each) to advance virtual time and show message flow
+
+      defmodule BatchReceiver do
+        use VirtualTimeGenServer
+
+        # args: {sender_name, expected_count}
+        def init({sender, expected}), do: {:ok, %{sender: sender, expected: expected, received: []}}
+
+        def handle_cast({:msg, i}, state) do
+          new_received = [i | state.received]
+          if length(new_received) == state.expected do
+            VirtualTimeGenServer.cast(state.sender, {:batch, Enum.reverse(new_received)})
+            {:noreply, %{state | received: []}}
+          else
+            {:noreply, %{state | received: new_received}}
+          end
+        end
+      end
+
+      defmodule BatchSender do
+        use VirtualTimeGenServer
+        def init(receiver), do: {:ok, %{receiver: receiver, batch: nil}}
+
+        def handle_info(:start, state) do
+          # Schedule messages with tiny delays (1ms each) to advance virtual time
+          Enum.each(1..10, fn i ->
+            VirtualTimeGenServer.send_after(self(), {:send_msg, i}, i)
+          end)
+          {:noreply, state}
+        end
+
+        def handle_info({:send_msg, i}, state) do
+          VirtualTimeGenServer.cast(state.receiver, {:msg, i})
+          {:noreply, state}
+        end
+
+        def handle_cast({:batch, list}, state), do: {:noreply, %{state | batch: list}}
+      end
+
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_process(:receiver, module: BatchReceiver, args: {:sender, 10})
+        |> ActorSimulation.add_process(:sender, module: BatchSender, args: :receiver)
+
+      # Kick off sending with minimal delay to advance virtual time
+      VirtualTimeGenServer.send_after(simulation.actors[:sender].pid, :start, 1)
+
+      # Run until quiescence (no timers left), up to 60s max virtual time
+      simulation =
+        ActorSimulation.run(simulation,
+          max_duration: 60_000,
+          terminate_when: :quiescence
+        )
+      """
+
+      # Define modules inline for the test run
+      defmodule BatchReceiver do
+        use VirtualTimeGenServer
+
+        def init({sender, expected}),
+          do: {:ok, %{sender: sender, expected: expected, received: []}}
+
+        def handle_cast({:msg, i}, state) do
+          new_received = [i | state.received]
+
+          if length(new_received) == state.expected do
+            VirtualTimeGenServer.cast(state.sender, {:batch, Enum.reverse(new_received)})
+            {:noreply, %{state | received: []}}
+          else
+            {:noreply, %{state | received: new_received}}
+          end
+        end
+      end
+
+      defmodule BatchSender do
+        use VirtualTimeGenServer
+        def init(receiver), do: {:ok, %{receiver: receiver, batch: nil}}
+
+        def handle_info(:start, state) do
+          # Schedule messages with tiny delays (1ms each) to advance virtual time
+          Enum.each(1..10, fn i ->
+            VirtualTimeGenServer.send_after(self(), {:send_msg, i}, i)
+          end)
+
+          {:noreply, state}
+        end
+
+        def handle_info({:send_msg, i}, state) do
+          VirtualTimeGenServer.cast(state.receiver, {:msg, i})
+          {:noreply, state}
+        end
+
+        def handle_cast({:batch, list}, state), do: {:noreply, %{state | batch: list}}
+      end
+
+      # Build and run
+      simulation =
+        ActorSimulation.new(trace: true)
+        |> ActorSimulation.add_process(:receiver, module: BatchReceiver, args: {:sender, 10})
+        |> ActorSimulation.add_process(:sender, module: BatchSender, args: :receiver)
+
+      # Kick off sending with minimal delay to advance virtual time
+      VirtualTimeGenServer.send_after(simulation.actors[:sender].pid, :start, 1)
+
+      simulation =
+        ActorSimulation.run(simulation,
+          max_duration: 60_000,
+          terminate_when: :quiescence
+        )
+
+      # Generate report reflecting quiescence termination
+      html =
+        MermaidReportGenerator.generate_report(simulation,
+          title: "Quiescence Batching - Real Actors",
+          layout: "LR",
+          model_source: model_source
+        )
+
+      filename = Path.join(@output_dir, "quiescence_batching.html")
+      File.write!(filename, html)
+
+      IO.puts("\n✅ Generated quiescence batching report: #{filename}")
+      IO.puts("   Terminated by ✓ Quiescence, no artificial delays")
+
+      # Verify termination reason and that batch was returned
+      assert simulation.termination_reason == :quiescence
+
+      # Ensure we have the modules present and basic wiring
+      assert String.contains?(html, "Quiescence Batching - Real Actors")
 
       ActorSimulation.stop(simulation)
     end

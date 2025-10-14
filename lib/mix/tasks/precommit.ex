@@ -35,7 +35,7 @@ defmodule Mix.Tasks.Precommit do
   @impl Mix.Task
   @dialyzer {:no_return, run: 1}
   def run(args) do
-    run_dialyzer = "--all" in args
+    run_all = "--all" in args
 
     IO.puts("\n🔍 Running pre-commit checks...\n")
 
@@ -46,12 +46,16 @@ defmodule Mix.Tasks.Precommit do
       {"Checking markdown formatting", fn -> check_markdown_formatting() end},
       {"Compiling with warnings as errors", fn -> compile_strict() end},
       {"Running tests", fn -> run_tests() end},
+      # Optionally run diagram-generation tests (HTML reports)
+      # Only when --all flag is provided, to avoid slowing down regular precommit
+      {"Running diagram-generation tests",
+       fn -> if run_all, do: run_diagram_tests(), else: :ok end},
       {"Running Credo", fn -> run_credo() end},
       {"Building documentation", fn -> build_docs() end}
     ]
 
     checks =
-      if run_dialyzer do
+      if run_all do
         checks ++ [{"Running Dialyzer (this may take a while)", fn -> run_dialyzer() end}]
       else
         checks
@@ -131,6 +135,19 @@ defmodule Mix.Tasks.Precommit do
          ) do
       {_, 0} -> :ok
       _ -> {:error, "Tests failed"}
+    end
+  end
+
+  defp run_diagram_tests do
+    Mix.Task.clear()
+    Mix.Task.reenable("test")
+
+    case System.cmd("mix", ["test", "--include", "diagram_generation"],
+           stderr_to_stdout: true,
+           env: [{"MIX_ENV", "test"}]
+         ) do
+      {_, 0} -> :ok
+      _ -> {:error, "Diagram-generation tests failed"}
     end
   end
 

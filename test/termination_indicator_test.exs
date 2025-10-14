@@ -277,5 +277,108 @@ defmodule TerminationIndicatorTest do
 
       ActorSimulation.stop(simulation)
     end
+
+    test "5 dining philosophers with 10ms thinking delays - dramatic speedup" do
+      simulation =
+        DiningPhilosophers.create_simulation(
+          num_philosophers: 5,
+          # 10ms thinking time for faster convergence
+          think_time: 10,
+          # 10ms eating time
+          eat_time: 10,
+          trace: true
+        )
+        |> ActorSimulation.run(
+          # Shorter cap since convergence is quicker
+          max_duration: 30_000,
+          terminate_when: fn sim ->
+            # Check if all philosophers have eaten by looking for "I'm full!" messages
+            trace = sim.trace
+
+            philosophers_who_ate =
+              Enum.filter(0..4, fn i ->
+                name = :"philosopher_#{i}"
+
+                Enum.any?(trace, fn event ->
+                  event.from == name and event.to == name and
+                    event.message == {:mumble, "I'm full!"}
+                end)
+              end)
+
+            length(philosophers_who_ate) == 5
+          end,
+          # Check frequently to terminate as soon as goal is reached
+          check_interval: 100
+        )
+
+      # Verify all 5 philosophers ate (said "I'm full!")
+      trace = simulation.trace
+
+      philosophers_who_ate =
+        Enum.filter(0..4, fn i ->
+          name = :"philosopher_#{i}"
+
+          Enum.any?(trace, fn event ->
+            event.from == name and event.to == name and
+              event.message == {:mumble, "I'm full!"}
+          end)
+        end)
+
+      assert length(philosophers_who_ate) == 5,
+             "Expected all 5 philosophers to eat, but only #{inspect(philosophers_who_ate)} ate"
+
+      # Generate flowchart report
+      File.mkdir_p!("generated/examples/reports")
+
+      model_source = """
+      simulation =
+        DiningPhilosophers.create_simulation(
+          num_philosophers: 5,
+          think_time: 10,
+          eat_time: 10,
+          trace: true
+        )
+        |> ActorSimulation.run(
+          max_duration: 30_000,
+          terminate_when: fn sim ->
+            trace = sim.trace
+            philosophers_who_ate =
+              Enum.filter(0..4, fn i ->
+                name = :"philosopher_\#{i}"
+                Enum.any?(trace, fn event ->
+                  event.from == name and event.to == name and
+                    event.message == {:mumble, "I'm full!"}
+                end)
+              end)
+            length(philosophers_who_ate) == 5
+          end,
+          check_interval: 100
+        )
+      """
+
+      html =
+        ActorSimulation.generate_flowchart_report(simulation,
+          title: "🍴 5 Dining Philosophers - 10ms Thinking (Speedup)",
+          layout: "TB",
+          show_stats_on_nodes: true,
+          model_source: model_source
+        )
+
+      File.write!("generated/examples/reports/dining_philosophers_10ms_thinking.html", html)
+
+      # Calculate speedup
+      real_time = simulation.real_time_elapsed
+      virtual_time = simulation.actual_duration
+      speedup = Float.round(virtual_time / real_time, 1)
+
+      IO.puts("\n🚀 SPEEDUP with 10ms thinking delays!")
+      IO.puts("   Virtual time: #{virtual_time}ms (#{Float.round(virtual_time / 1000, 1)}s)")
+      IO.puts("   Real time: #{real_time}ms")
+      IO.puts("   Speedup: #{speedup}x")
+      IO.puts("   All 5 philosophers successfully ate - check the flowchart report!")
+      IO.puts("   Report: generated/examples/reports/dining_philosophers_10ms_thinking.html")
+
+      ActorSimulation.stop(simulation)
+    end
   end
 end

@@ -5,6 +5,7 @@ defmodule TimeBackend do
 
   @callback send_after(pid(), term(), non_neg_integer()) :: reference()
   @callback cancel_timer(reference()) :: non_neg_integer() | false
+  @callback sleep(non_neg_integer()) :: :ok
 end
 
 defmodule RealTimeBackend do
@@ -21,6 +22,11 @@ defmodule RealTimeBackend do
   @impl true
   def cancel_timer(ref) do
     Process.cancel_timer(ref)
+  end
+
+  @impl true
+  def sleep(duration) do
+    Process.sleep(duration)
   end
 end
 
@@ -40,6 +46,17 @@ defmodule VirtualTimeBackend do
   def cancel_timer(ref) do
     clock = get_virtual_clock()
     VirtualClock.cancel_timer(clock, ref)
+  end
+
+  @impl true
+  def sleep(duration) do
+    # Schedule a wake-up message in virtual time and wait for it
+    ref = make_ref()
+    send_after(self(), {:__vtgs_sleep_done__, ref}, duration)
+
+    receive do
+      {:__vtgs_sleep_done__, ^ref} -> :ok
+    end
   end
 
   defp get_virtual_clock do

@@ -129,6 +129,57 @@ defmodule TerminationConditionTest do
 
       ActorSimulation.stop(simulation)
     end
+
+    test "quiescence termination with batching real actors" do
+      defmodule BatchReceiver do
+        use VirtualTimeGenServer
+
+        def init(_), do: {:ok, %{received: []}}
+
+        def handle_cast({:msg, i}, state) do
+          {:noreply, %{state | received: [i | state.received]}}
+        end
+
+        def handle_call(:flush, _from, state) do
+          msgs = Enum.reverse(state.received)
+          {:reply, msgs, %{state | received: []}}
+        end
+      end
+
+      defmodule BatchSender do
+        use VirtualTimeGenServer
+
+        def init(receiver), do: {:ok, %{receiver: receiver}}
+
+        def handle_info(:start, state) do
+          Enum.each(1..10, fn i -> VirtualTimeGenServer.cast(state.receiver, {:msg, i}) end)
+          {:noreply, state}
+        end
+      end
+
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_process(:receiver, module: BatchReceiver, args: nil)
+        |> ActorSimulation.add_process(:sender, module: BatchSender, args: :receiver)
+
+      # Kick off sending
+      sender = simulation.actors[:sender].pid
+      send(sender, :start)
+
+      # Run until quiescence with long timeout; no artificial delays
+      simulation =
+        ActorSimulation.run(simulation, max_duration: 60_000, terminate_when: :quiescence)
+
+      # Verify receiver got all messages and is idle
+      receiver = simulation.actors[:receiver].pid
+      msgs = GenServer.call(receiver, :flush)
+      assert length(msgs) == 10
+
+      # Ensure quiescence was the termination reason
+      assert simulation.termination_reason == :quiescence
+
+      ActorSimulation.stop(simulation)
+    end
   end
 
   describe "DSL impact of termination conditions" do

@@ -141,12 +141,13 @@ defmodule DiningPhilosophers do
             {:send, [{second_fork, {:request_fork, philosopher_name}}],
              Map.put(state, :first_fork_held, true)}
           else
-            # Got second fork! We can eat now - mumble satisfaction
+            # Got second fork! We can eat now - sleep for eat_time, then mumble satisfaction
             new_state = %{state | second_fork_held: true}
             times_eaten = (state[:times_eaten] || 0) + 1
+            eat_time = state[:eat_time] || 50
 
-            # Mumble that we're full, then release forks
-            {:send,
+            # Use send_after to simulate eating time (non-blocking virtual time!)
+            {:send_after, eat_time,
              [
                {philosopher_name, {:mumble, "I'm full!"}},
                {first_fork, {:release_fork, philosopher_name}},

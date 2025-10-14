@@ -109,6 +109,45 @@ defmodule ActorSimulation.Actor do
   end
 
   @impl true
+  def handle_info({:delayed_send, messages_to_send}, state) do
+    # Handle delayed sends (from send_after return value)
+    # This simulates processing time in virtual time
+    Enum.each(messages_to_send, fn
+      {target, message} ->
+        target_info =
+          if target == state.definition.name do
+            %{pid: self(), type: :simulated}
+          else
+            Map.get(state.actors_map, target)
+          end
+
+        case target_info do
+          nil -> :ok
+          info -> send_message(state, target, info, message)
+        end
+
+      message when is_tuple(message) and tuple_size(message) == 2 ->
+        {target, msg} = message
+
+        target_info =
+          if target == state.definition.name do
+            %{pid: self(), type: :simulated}
+          else
+            Map.get(state.actors_map, target)
+          end
+
+        case target_info do
+          nil -> :ok
+          info -> send_message(state, target, info, msg)
+        end
+    end)
+
+    sent_count = length(messages_to_send)
+
+    {:noreply, %{state | sent_count: state.sent_count + sent_count}}
+  end
+
+  @impl true
   def handle_info({:actor_message, from, msg}, state) do
     # Track received message
     new_received_messages = [{from, msg} | state.received_messages]
@@ -146,6 +185,17 @@ defmodule ActorSimulation.Actor do
 
       {:reply, _reply, user_state} ->
         # Reply from pattern match but in async context, just ignore reply
+        {:noreply, %{new_state | user_state: user_state}}
+
+      {:send_after, duration, messages_to_send, user_state} ->
+        # Schedule messages to be sent after a delay (simulating processing time)
+        # This is non-blocking and works with virtual time
+        messages_to_send =
+          if is_list(messages_to_send), do: messages_to_send, else: [messages_to_send]
+
+        # Schedule a self-message to trigger the actual sends later
+        VirtualTimeGenServer.send_after(self(), {:delayed_send, messages_to_send}, duration)
+
         {:noreply, %{new_state | user_state: user_state}}
 
       {:send, messages_to_send, user_state} ->

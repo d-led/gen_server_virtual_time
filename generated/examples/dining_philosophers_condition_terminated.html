@@ -39,26 +39,26 @@ sequenceDiagram
     Note over philosopher_0,philosopher_0: t=150ms
     philosopher_1->>philosopher_1: {:mumble, "I'm hungry!"}
     Note over philosopher_1,philosopher_1: t=150ms
-    philosopher_0->>philosopher_0: {:mumble, "I'm hungry!"}
-    Note over philosopher_0,philosopher_0: t=150ms
     philosopher_1->>fork_0: {:request_fork, :philosopher_1}
     Note over philosopher_1,fork_0: t=150ms
-    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=150ms
+    philosopher_0->>philosopher_0: {:mumble, "I'm hungry!"}
+    Note over philosopher_0,philosopher_0: t=150ms
     fork_0->>philosopher_1: {:fork_granted, :fork_0}
     Note over fork_0,philosopher_1: t=150ms
-    fork_0->>philosopher_0: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_0: t=150ms
+    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
+    Note over philosopher_0,fork_0: t=150ms
     philosopher_1->>fork_1: {:request_fork, :philosopher_1}
     Note over philosopher_1,fork_1: t=150ms
+    fork_0->>philosopher_0: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_0: t=150ms
     fork_1->>philosopher_1: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_1: t=150ms
     philosopher_1->>philosopher_1: {:mumble, "I'm full!"}
-    Note over philosopher_1,philosopher_1: t=150ms
+    Note over philosopher_1,philosopher_1: t=225ms
     philosopher_1->>fork_0: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_0: t=150ms
+    Note over philosopher_1,fork_0: t=225ms
     philosopher_1->>fork_1: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=150ms
+    Note over philosopher_1,fork_1: t=225ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=300ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
@@ -76,33 +76,33 @@ sequenceDiagram
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=300ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=300ms
+    Note over philosopher_0,philosopher_0: t=375ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=300ms
+    Note over philosopher_0,fork_0: t=375ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=300ms
+    Note over philosopher_0,fork_1: t=375ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,philosopher_1: t=450ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=450ms
-    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_0: t=450ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=450ms
-    fork_0->>philosopher_1: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_1: t=450ms
-    fork_0->>philosopher_0: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_0: t=450ms
-    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=450ms
-    fork_1->>philosopher_1: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_1: t=450ms
-    philosopher_1->>philosopher_1: {:mumble, "I'm full!"}
-    Note over philosopher_1,philosopher_1: t=450ms
-    philosopher_1->>fork_0: {:release_fork, :philosopher_1}
+    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
     Note over philosopher_1,fork_0: t=450ms
-    philosopher_1->>fork_1: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=450ms
+    fork_0->>philosopher_0: {:fork_granted, :fork_0}
+    Note over fork_0,philosopher_0: t=450ms
+    fork_0->>philosopher_1: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_1: t=450ms
+    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
+    Note over philosopher_0,fork_1: t=450ms
+    fork_1->>philosopher_0: {:fork_granted, :fork_1}
+    Note over fork_1,philosopher_0: t=450ms
+    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
+    Note over philosopher_0,philosopher_0: t=525ms
+    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
+    Note over philosopher_0,fork_0: t=525ms
+    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
+    Note over philosopher_0,fork_1: t=525ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=600ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
@@ -120,33 +120,33 @@ sequenceDiagram
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=600ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=600ms
+    Note over philosopher_0,philosopher_0: t=675ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=600ms
+    Note over philosopher_0,fork_0: t=675ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=600ms
+    Note over philosopher_0,fork_1: t=675ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_1,philosopher_1: t=750ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=750ms
-    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_0: t=750ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=750ms
-    fork_0->>philosopher_1: {:fork_granted, :fork_0}
-    Note over fork_0,philosopher_1: t=750ms
-    fork_0->>philosopher_0: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_0: t=750ms
-    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=750ms
-    fork_1->>philosopher_1: {:fork_granted, :fork_1}
-    Note over fork_1,philosopher_1: t=750ms
-    philosopher_1->>philosopher_1: {:mumble, "I'm full!"}
-    Note over philosopher_1,philosopher_1: t=750ms
-    philosopher_1->>fork_0: {:release_fork, :philosopher_1}
+    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
     Note over philosopher_1,fork_0: t=750ms
-    philosopher_1->>fork_1: {:release_fork, :philosopher_1}
-    Note over philosopher_1,fork_1: t=750ms
+    fork_0->>philosopher_0: {:fork_granted, :fork_0}
+    Note over fork_0,philosopher_0: t=750ms
+    fork_0->>philosopher_1: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_1: t=750ms
+    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
+    Note over philosopher_0,fork_1: t=750ms
+    fork_1->>philosopher_0: {:fork_granted, :fork_1}
+    Note over fork_1,philosopher_0: t=750ms
+    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
+    Note over philosopher_0,philosopher_0: t=825ms
+    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
+    Note over philosopher_0,fork_0: t=825ms
+    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
+    Note over philosopher_0,fork_1: t=825ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=900ms
     philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
@@ -164,11 +164,11 @@ sequenceDiagram
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=900ms
     philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
-    Note over philosopher_0,philosopher_0: t=900ms
+    Note over philosopher_0,philosopher_0: t=975ms
     philosopher_0->>fork_0: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_0: t=900ms
+    Note over philosopher_0,fork_0: t=975ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
-    Note over philosopher_0,fork_1: t=900ms
+    Note over philosopher_0,fork_1: t=975ms
   </div>
   <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
     <h3 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 1.1em;">🔗 Source & Links</h3>

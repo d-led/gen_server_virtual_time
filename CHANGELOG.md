@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-10-14
+
+### Added
+
+- Virtual delays feature for actors:
+  - `VirtualTimeGenServer.sleep/1` delegates to time backends via behaviour
+  - ActorSimulation `on_receive` can return
+    `{:send_after, duration, messages, state}` for non-blocking processing
+    delays
+- Quiescence termination:
+  - `terminate_when: :quiescence` runs until no timers remain or `max_duration`
+    reached
+  - New termination_reason field: `:condition | :quiescence | :max_time`
+- Report generator improvements:
+  - Termination card now reflects reason: ⚡ Early, ✓ Quiescence, ⏱ Max Time
+  - Enhanced diagram generation with hybrid trace-based approach
+  - Real process message tracing via VirtualTimeGenServer handlers
+  - Improved message label inference (:msg, :batch, :data, :ack)
+  - Better actor shape detection based on actual message activity
+- Example and tests:
+  - Added quiescence test with batching real actors (no artificial delays)
+  - Dining philosophers variant with 1s thinking demonstrating 555x speedup
+
+### Changed
+
+- Refactored sleep handling into `TimeBackend` behaviour to remove backend
+  case-matching
+- Enhanced `ActorSimulation.run/2` to return accumulated trace for
+  condition/quiescence paths
+- Refactored diagram generation to use trace-based edge detection
+- Improved code quality by extracting nested functions to reduce complexity
+
+### Fixed
+
+- Corrected misleading "✓ Quiescence" label on fixed-duration reports; now shows
+  ⏱ Max Time
+- Fixed Credo code quality issues (function nesting depth)
+- Improved diagram accuracy for real processes with disconnected nodes
+
 ## [0.2.3] - 2025-10-14
 
 ### Added
@@ -149,7 +188,6 @@ and this project adheres to
   - `docs/vlingo_generator.md` - Vlingo generator guide
   - `docs/generators.md` - Overview of all generators
 
-
 #### Features from Previous Unreleased
 
 - **Termination Conditions** - Simulations can now terminate based on actor
@@ -238,6 +276,8 @@ and this project adheres to
 
 [Unreleased]:
   https://github.com/d-led/gen_server_virtual_time/compare/v0.2.0...HEAD
+[0.2.4]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.2.3...v0.2.4
 [0.2.0]:
   https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/d-led/gen_server_virtual_time/releases/tag/v0.1.0

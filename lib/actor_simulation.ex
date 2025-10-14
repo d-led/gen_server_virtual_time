@@ -156,6 +156,9 @@ defmodule ActorSimulation do
 
     {:ok, pid} = VirtualTimeGenServer.start_link(module, args, name: name)
 
+    # Set up actor name context for trace generation
+    Process.put(:__vtgs_actor_name__, name)
+
     actors =
       Map.put(simulation.actors, name, %{
         pid: pid,
@@ -228,19 +231,30 @@ defmodule ActorSimulation do
     start_time = System.monotonic_time(:millisecond)
 
     # Advance virtual time with optional termination check
-    actual_duration =
-      if terminate_when do
-        advance_with_condition(simulation, duration, terminate_when, check_interval)
-      else
-        VirtualClock.advance(simulation.clock, duration)
-        duration
+    {actual_duration, accumulated_trace, termination_reason} =
+      cond do
+        terminate_when == :quiescence ->
+          {dur, tr} = advance_until_quiescence(simulation, duration)
+          {dur, tr, :quiescence}
+
+        is_function(terminate_when) ->
+          {dur, tr} = advance_with_condition(simulation, duration, terminate_when, check_interval)
+          {dur, tr, :condition}
+
+        true ->
+          VirtualClock.advance(simulation.clock, duration)
+          {duration, [], :max_time}
       end
 
     end_time = System.monotonic_time(:millisecond)
     real_elapsed = end_time - start_time
 
     # Mark if terminated early due to condition
-    terminated_early = terminate_when != nil && actual_duration < duration
+    terminated_early =
+      case termination_reason do
+        :condition -> actual_duration < duration
+        _ -> false
+      end
 
     # Update simulation with timing info before collecting stats
     # (stats need actual_duration for rate calculations)
@@ -250,10 +264,19 @@ defmodule ActorSimulation do
       |> Map.put(:max_duration, duration)
       |> Map.put(:terminated_early, terminated_early)
       |> Map.put(:real_time_elapsed, real_elapsed)
+      |> Map.put(:termination_reason, termination_reason)
 
     # Collect statistics and trace (now that actual_duration is set)
     stats = collect_stats(simulation_with_timing)
-    trace = if simulation.trace_enabled, do: collect_trace(), else: []
+    # If we accumulated trace during termination checks, use it and collect any remaining messages
+    # Otherwise collect fresh trace
+    trace =
+      if simulation.trace_enabled do
+        remaining_trace = collect_trace()
+        accumulated_trace ++ remaining_trace
+      else
+        []
+      end
 
     # Return enhanced simulation state with timing information
     %{simulation_with_timing | stats: stats, trace: trace, running: false}
@@ -477,7 +500,8 @@ defmodule ActorSimulation do
   # Private functions
 
   defp advance_with_condition(simulation, max_duration, condition_fn, check_interval) do
-    advance_with_condition_loop(simulation, max_duration, condition_fn, check_interval, 0)
+    # Start with empty accumulated trace
+    advance_with_condition_loop(simulation, max_duration, condition_fn, check_interval, 0, [])
   end
 
   defp advance_with_condition_loop(
@@ -485,27 +509,71 @@ defmodule ActorSimulation do
          max_duration,
          condition_fn,
          check_interval,
-         elapsed
+         elapsed,
+         accumulated_trace
        ) do
     if elapsed >= max_duration do
-      max_duration
+      {max_duration, accumulated_trace}
     else
       # Advance by check_interval
       step = min(check_interval, max_duration - elapsed)
       VirtualClock.advance(simulation.clock, step)
       new_elapsed = elapsed + step
 
+      # Collect new trace messages and accumulate them
+      # This allows terminate_when to access the trace accumulated so far
+      {current_simulation, new_accumulated_trace} =
+        if simulation.trace_enabled do
+          new_trace_messages = collect_trace()
+          full_trace = accumulated_trace ++ new_trace_messages
+          {%{simulation | trace: full_trace}, full_trace}
+        else
+          {simulation, accumulated_trace}
+        end
+
       # Check termination condition
-      if condition_fn.(simulation) do
-        new_elapsed
+      if condition_fn.(current_simulation) do
+        {new_elapsed, new_accumulated_trace}
       else
         advance_with_condition_loop(
           simulation,
           max_duration,
           condition_fn,
           check_interval,
-          new_elapsed
+          new_elapsed,
+          new_accumulated_trace
         )
+      end
+    end
+  end
+
+  # Advance until quiescence or max_duration
+  # Quiescence: no scheduled timers and mailbox drains to empty across all simulated actors
+  defp advance_until_quiescence(simulation, max_duration) do
+    advance_until_quiescence_loop(simulation, max_duration, 0, [])
+  end
+
+  defp advance_until_quiescence_loop(simulation, max_duration, elapsed, accumulated_trace) do
+    if elapsed >= max_duration do
+      {max_duration, accumulated_trace}
+    else
+      # If no timers scheduled, we are quiescent
+      if VirtualClock.scheduled_count(simulation.clock) == 0 do
+        {elapsed, accumulated_trace}
+      else
+        # Advance to next scheduled event to let messages flow
+        advance = VirtualClock.advance_to_next(simulation.clock)
+        new_elapsed = elapsed + advance
+
+        {acc_sim, acc_trace} =
+          if simulation.trace_enabled do
+            new_msgs = collect_trace()
+            {%{simulation | trace: accumulated_trace ++ new_msgs}, accumulated_trace ++ new_msgs}
+          else
+            {simulation, accumulated_trace}
+          end
+
+        advance_until_quiescence_loop(acc_sim, max_duration, new_elapsed, acc_trace)
       end
     end
   end
