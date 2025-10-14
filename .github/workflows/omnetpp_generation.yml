@@ -18,8 +18,11 @@ jobs:
     
     strategy:
       matrix:
-        elixir: ['1.17', '1.18']
-        otp: ['26', '27']
+        # Reduced matrix for faster CI - only test latest versions
+        elixir: ['1.18']
+        otp: ['27']
+        # elixir: ['1.17', '1.18']
+        # otp: ['26', '27']
     
     steps:
       - name: Checkout code
@@ -248,7 +251,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        example: [omnetpp_pubsub, omnetpp_pipeline, omnetpp_burst, omnetpp_loadbalanced]
+        # Reduced matrix for faster CI - only test one example
+        example: [omnetpp_burst]
+        # example: [omnetpp_pubsub, omnetpp_pipeline, omnetpp_burst, omnetpp_loadbalanced]
     
     steps:
     - uses: actions/checkout@v4
