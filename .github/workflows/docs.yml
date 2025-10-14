@@ -1,0 +1,143 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - 'mix.exs'
+      - 'lib/**/*.ex'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - 'CONTRIBUTING.md'
+      - 'LICENSE'
+      - 'mix.exs'
+      - 'lib/**/*.ex'
+      - '.github/workflows/docs.yml'
+
+env:
+  MIX_ENV: dev
+  ELIXIR_VERSION: "1.16"
+  OTP_VERSION: "26"
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-docs-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-docs-
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Build documentation
+        run: mix docs
+      
+      - name: Check for documentation warnings
+        run: |
+          output=$(mix docs 2>&1)
+          echo "$output"
+          if echo "$output" | grep -q "warning:.*does not exist"; then
+            echo "❌ Documentation has broken links"
+            exit 1
+          fi
+          echo "✅ Documentation builds without warnings"
+      
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: doc/
+          retention-days: 7
+      
+      - name: Upload EPUB
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-epub
+          path: doc/GenServerVirtualTime.epub
+          retention-days: 7
+  
+  generate-diagrams:
+    name: Generate Sequence Diagrams
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.head_commit.message, '[diagrams]') ||
+      github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION }}
+          otp-version: ${{ env.OTP_VERSION }}
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-diagrams-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-diagrams-
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Generate sequence diagrams
+        run: mix test --only diagram_generation
+      
+      - name: Upload diagrams
+        uses: actions/upload-artifact@v4
+        with:
+          name: sequence-diagrams
+          path: generated/examples/*.html
+          retention-days: 7
+  
+  validate-markdown:
+    name: Validate Markdown Links
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check Markdown links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'no'
+          config-file: '.github/workflows/markdown-link-check-config.json'
+          check-modified-files-only: 'yes'
+        continue-on-error: true
+

@@ -911,33 +911,30 @@ defmodule ActorSimulation.CAFGenerator do
   end
 
   defp collect_atoms_from_definition(definition) do
-    atoms = MapSet.new()
-
     # Always include "event" and "msg" atoms
-    atoms = MapSet.put(atoms, "event")
-    atoms = MapSet.put(atoms, "msg")
+    base_atoms = ["event", "msg"]
 
-    # Add atoms from send_pattern
-    atoms =
-      case definition.send_pattern do
-        {:periodic, _interval, msg} when is_atom(msg) ->
-          MapSet.put(atoms, Atom.to_string(msg))
+    # Extract atom from send_pattern if present
+    pattern_atom = extract_atom_from_send_pattern(definition.send_pattern)
 
-        {:rate, _rate, msg} when is_atom(msg) ->
-          MapSet.put(atoms, Atom.to_string(msg))
-
-        {:burst, _count, _interval, msg} when is_atom(msg) ->
-          MapSet.put(atoms, Atom.to_string(msg))
-
-        {:self_message, _delay, msg} when is_atom(msg) ->
-          MapSet.put(atoms, Atom.to_string(msg))
-
-        _ ->
-          atoms
-      end
-
-    MapSet.to_list(atoms)
+    # Combine all atoms and convert to list
+    atoms = if pattern_atom, do: [pattern_atom | base_atoms], else: base_atoms
+    Enum.uniq(atoms)
   end
+
+  defp extract_atom_from_send_pattern({:periodic, _interval, msg}) when is_atom(msg),
+    do: Atom.to_string(msg)
+
+  defp extract_atom_from_send_pattern({:rate, _rate, msg}) when is_atom(msg),
+    do: Atom.to_string(msg)
+
+  defp extract_atom_from_send_pattern({:burst, _count, _interval, msg}) when is_atom(msg),
+    do: Atom.to_string(msg)
+
+  defp extract_atom_from_send_pattern({:self_message, _delay, msg}) when is_atom(msg),
+    do: Atom.to_string(msg)
+
+  defp extract_atom_from_send_pattern(_), do: nil
 
   defp get_atom_name_from_message(msg) when is_atom(msg) do
     Atom.to_string(msg)

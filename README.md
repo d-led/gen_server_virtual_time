@@ -13,7 +13,6 @@ Model implementations: in Java, Pony, Go and C++.
 > [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/)**
 > • **📊
 > [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/reports/)**
->
 
 ## 🚀 Code Generators
 
@@ -225,7 +224,7 @@ File.write!("report.html", html)
 ```elixir
 def deps do
   [
-    {:gen_server_virtual_time, "~> 0.2.2"}
+    {:gen_server_virtual_time, "~> 0.2.3"}
   ]
 end
 ```
@@ -404,8 +403,8 @@ cd generated/phony_burst
 
 ## Documentation
 
-- [OMNeT++ Code Generation](docs/omnetpp_generation.md) - Export to OMNeT++ C++
-- [CAF Code Generation](docs/caf_generation.md) - Export to CAF with callbacks
+- [OMNeT++ Code Generation](docs/omnetpp_generator.md) - Export to OMNeT++ C++
+- [CAF Code Generation](docs/caf_generator.md) - Export to CAF with callbacks
 - [Pony Generator](docs/pony_generator.md) - Capabilities-secure actors
 - [Phony Generator](docs/phony_generator.md) - Go actor systems
 - [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors
@@ -413,7 +412,6 @@ cd generated/phony_burst
 - [API Documentation](https://hexdocs.pm/gen_server_virtual_time) - Complete API
   reference
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute
-- [Development Docs](docs/development/) - Development notes
 
 ## Performance
 
@@ -436,8 +434,8 @@ Processing rate: ~6,000 virtual events per real second (M1 MacBook Pro)
 
 ## Contributing
 
-Contributions welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions welcome! Please see the [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details.
+MIT License - See the [LICENSE](LICENSE) file for details.

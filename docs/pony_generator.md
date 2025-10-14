@@ -47,11 +47,9 @@ Pony is a capabilities-secure, actor-model language that provides:
 
 ## Examples
 
-See [`examples/pony_pubsub/`](../examples/pony_pubsub/) for a complete generated
-project.
+See the complete generated project in the repository at `examples/pony_pubsub/`.
 
-Try the single-file script:
-[`examples/single_file_pony.exs`](../examples/single_file_pony.exs)
+Try the single-file script: `examples/single_file_pony.exs`
 
 ## Building Generated Code
 

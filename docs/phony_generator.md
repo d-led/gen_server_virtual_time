@@ -49,11 +49,10 @@ Go that provides:
 
 ## Examples
 
-See [`examples/phony_pubsub/`](../examples/phony_pubsub/) for a complete
-generated project.
+See the complete generated project in the repository at
+`examples/phony_pubsub/`.
 
-Try the single-file script:
-[`examples/single_file_phony.exs`](../examples/single_file_phony.exs)
+Try the single-file script: `examples/single_file_phony.exs`
 
 ## Building Generated Code
 

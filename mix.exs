@@ -1,7 +1,7 @@
 defmodule GenServerVirtualTime.MixProject do
   use Mix.Project
 
-  @version "0.2.2"
+  @version "0.2.3"
   @source_url "https://github.com/d-led/gen_server_virtual_time"
 
   def project do
@@ -101,17 +101,21 @@ defmodule GenServerVirtualTime.MixProject do
 
   defp docs do
     [
-      main: "readme",
+      main: "GenServerVirtualTime",
       source_ref: "v#{@version}",
       source_url: @source_url,
       extras: [
-        "README.md",
-        "docs/generators.md": [title: "Code Generators Overview"],
-        "docs/omnetpp_generator.md": [title: "OMNeT++ Generator"],
-        "docs/caf_generator.md": [title: "CAF Generator"],
-        "docs/pony_generator.md": [title: "Pony Generator"],
-        "docs/phony_generator.md": [title: "Phony (Go) Generator"],
-        "docs/implementation_summary.md": [title: "Implementation Summary"]
+        {"README.md", [title: "Overview"]},
+        {"CHANGELOG.md", [title: "Changelog"]},
+        {"CONTRIBUTING.md", [title: "Contributing"]},
+        {"LICENSE", [title: "License"]},
+        {"docs/generators.md", [title: "Code Generators Overview"]},
+        {"docs/omnetpp_generator.md", [title: "OMNeT++ Generator"]},
+        {"docs/caf_generator.md", [title: "CAF Generator"]},
+        {"docs/pony_generator.md", [title: "Pony Generator"]},
+        {"docs/phony_generator.md", [title: "Phony (Go) Generator"]},
+        {"docs/vlingo_generator.md", [title: "VLINGO XOOM Generator"]},
+        {"docs/implementation_summary.md", [title: "Implementation Summary"]}
       ],
       groups_for_modules: [
         Core: [

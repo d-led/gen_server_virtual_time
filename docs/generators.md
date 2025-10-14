@@ -86,12 +86,12 @@ ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
 
 ## Complete Examples
 
-See the [`examples/`](../examples/) directory for complete single-file scripts:
+See the repository's `examples/` directory for complete single-file scripts:
 
-- [`single_file_omnetpp.exs`](../examples/single_file_omnetpp.exs)
-- [`single_file_caf.exs`](../examples/single_file_caf.exs)
-- [`single_file_pony.exs`](../examples/single_file_pony.exs)
-- [`single_file_phony.exs`](../examples/single_file_phony.exs)
+- `single_file_omnetpp.exs` - OMNeT++ network simulation
+- `single_file_caf.exs` - C++ Actor Framework
+- `single_file_pony.exs` - Pony capabilities-secure actors
+- `single_file_phony.exs` - Go actors with Phony
 
 ## Comparison
 
