@@ -146,7 +146,8 @@ defmodule OMNeTPPGeneratorTest do
       assert cmake =~ "project(TestNetwork)"
       assert cmake =~ "Alice.cc"
       assert cmake =~ "Bob.cc"
-      assert cmake =~ "find_package(OMNeT++ REQUIRED)"
+      assert cmake =~ "find_library(OMNETPP_COMMON_LIB oppcommon"
+      assert cmake =~ "OMNETPP_ROOT"
     end
 
     test "generates conanfile.txt" do
