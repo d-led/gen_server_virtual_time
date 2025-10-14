@@ -4,9 +4,23 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'lib/actor_simulation/mermaid_report_generator.ex'
+      - 'test/diagram_generation_test.exs'
+      - 'test/mermaid_report_test.exs'
+      - 'generated/examples/**/*.html'
+      - 'generated/examples/**/*.md'
+      - '.github/workflows/test-and-deploy-diagrams.yml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'lib/actor_simulation/mermaid_report_generator.ex'
+      - 'test/diagram_generation_test.exs'
+      - 'test/mermaid_report_test.exs'
+      - 'generated/examples/**/*.html'
+      - 'generated/examples/**/*.md'
+      - '.github/workflows/test-and-deploy-diagrams.yml'
   workflow_dispatch:
 
 permissions:
