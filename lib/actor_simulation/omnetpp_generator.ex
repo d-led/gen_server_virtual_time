@@ -400,13 +400,18 @@ defmodule ActorSimulation.OMNeTPPGenerator do
         set(OMNETPP_INCLUDE_DIRS ${OMNETPP_ROOT}/include)
         set(OMNETPP_LIB_DIR ${OMNETPP_ROOT}/lib)
 
+        # Find all required OMNeT++ libraries
+        find_library(OMNETPP_MAIN_LIB oppmain PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
         find_library(OMNETPP_CMDENV_LIB oppcmdenv PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+        find_library(OMNETPP_ENVIR_LIB oppenvir PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
         find_library(OMNETPP_SIM_LIB oppsim PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
         find_library(OMNETPP_COMMON_LIB oppcommon PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
 
-        # Libraries must be in this order: cmdenv provides main(), then sim, then common
+        # Libraries must be in this order: main (contains main()), cmdenv, envir, sim, common
         set(OMNETPP_LIBRARIES
+            ${OMNETPP_MAIN_LIB}
             ${OMNETPP_CMDENV_LIB}
+            ${OMNETPP_ENVIR_LIB}
             ${OMNETPP_SIM_LIB}
             ${OMNETPP_COMMON_LIB}
             dl
