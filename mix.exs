@@ -144,14 +144,16 @@ defmodule GenServerVirtualTime.MixProject do
           ActorSimulation,
           ActorSimulation.Actor,
           ActorSimulation.Definition,
-          ActorSimulation.Stats
+          ActorSimulation.Stats,
+          ActorSimulation.MermaidReportGenerator
         ],
         "Code Generators": [
           ActorSimulation.GeneratorUtils,
           ActorSimulation.OMNeTPPGenerator,
           ActorSimulation.CAFGenerator,
           ActorSimulation.PonyGenerator,
-          ActorSimulation.PhonyGenerator
+          ActorSimulation.PhonyGenerator,
+          ActorSimulation.VlingoGenerator
         ]
       ]
     ]

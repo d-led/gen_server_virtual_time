@@ -133,7 +133,6 @@ Perfect for:
 - [CAF Generator](caf_generator.md)
 - [Pony Generator](pony_generator.md)
 - [Phony Generator](phony_generator.md)
-- [Implementation Details](implementation_summary.md)
 
 ## Next Steps
 

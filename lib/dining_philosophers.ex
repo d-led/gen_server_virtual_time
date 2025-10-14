@@ -1,5 +1,6 @@
 defmodule DiningPhilosophers do
-  @moduledoc """
+  @moduledoc false
+  @doc"""
   Classic dining philosophers problem solved with actor simulation.
 
   Five philosophers sit at a round table with five forks. Each philosopher
@@ -8,10 +9,8 @@ defmodule DiningPhilosophers do
   - Synchronous communication (requesting forks)
   - State machines (thinking -> hungry -> eating -> thinking)
   - Deadlock-free solution using asymmetric fork acquisition
-  """
 
-  @doc """
-  Creates a simulation of the dining philosophers problem.
+  create_simulation Creates a simulation of the dining philosophers problem.
 
   Options:
   - `:num_philosophers` - Number of philosophers (default: 5)
