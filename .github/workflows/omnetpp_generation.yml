@@ -295,11 +295,12 @@ jobs:
       working-directory: examples/${{ matrix.example }}
       run: |
         export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
+        export OMNETPP_ROOT=$HOME/omnetpp-6.2.0
         source ~/omnetpp-6.2.0/setenv
         if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
         mkdir -p build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$HOME/omnetpp-6.2.0
+        cmake .. -DCMAKE_BUILD_TYPE=Release
         cmake --build . --config Release
 
     - name: Run simulation
@@ -307,6 +308,7 @@ jobs:
       shell: bash
       run: |
         export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
+        export OMNETPP_ROOT=$HOME/omnetpp-6.2.0
         source ~/omnetpp-6.2.0/setenv
         if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
         # Run short simulation with timeout
