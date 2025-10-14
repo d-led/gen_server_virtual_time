@@ -15,37 +15,41 @@ else()
   set(OS_SUFFIX "bin")
 endif()
 
-# Find OMNeT++ - use environment variable if CMAKE_PREFIX_PATH is not set
-if(NOT DEFINED ENV{OMNETPP_ROOT})
-  message(FATAL_ERROR "OMNETPP_ROOT environment variable is not set. Please source OMNeT++ setenv script.")
+# Find OMNeT++ using the CMake module
+# First, try the modern find_package approach
+find_package(OmnetPP QUIET)
+
+if(NOT OmnetPP_FOUND)
+  # Fallback: manually find OMNeT++ using environment variable
+  if(NOT DEFINED ENV{OMNETPP_ROOT})
+    message(FATAL_ERROR "OMNETPP_ROOT environment variable is not set. Please source OMNeT++ setenv script.")
+  endif()
+
+  set(OMNETPP_ROOT $ENV{OMNETPP_ROOT})
+  list(APPEND CMAKE_MODULE_PATH "${OMNETPP_ROOT}/misc/cmake")
+  
+  # Try again with the module path
+  find_package(OmnetPP QUIET)
+  
+  if(NOT OmnetPP_FOUND)
+    # Last resort: manual library finding
+    set(OMNETPP_INCLUDE_DIRS ${OMNETPP_ROOT}/include)
+    set(OMNETPP_LIB_DIR ${OMNETPP_ROOT}/lib)
+
+    find_library(OMNETPP_CMDENV_LIB oppcmdenv PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+    find_library(OMNETPP_SIM_LIB oppsim PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+    find_library(OMNETPP_COMMON_LIB oppcommon PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+
+    # Libraries must be in this order: cmdenv provides main(), then sim, then common
+    set(OMNETPP_LIBRARIES
+        ${OMNETPP_CMDENV_LIB}
+        ${OMNETPP_SIM_LIB}
+        ${OMNETPP_COMMON_LIB}
+        dl
+        pthread
+    )
+  endif()
 endif()
-
-set(OMNETPP_ROOT $ENV{OMNETPP_ROOT})
-set(OMNETPP_INCLUDE_DIRS ${OMNETPP_ROOT}/include)
-set(OMNETPP_LIB_DIR ${OMNETPP_ROOT}/lib)
-
-# Find OMNeT++ libraries - order matters for linking
-find_library(OMNETPP_CMDENV_LIB oppcmdenv PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
-find_library(OMNETPP_ENVIR_LIB oppenvir PATHS ${OMNETPP_LIB_DIR} NO_DEFAULT_PATH)
-find_library(OMNETPP_SIM_LIB oppsim PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
-find_library(OMNETPP_COMMON_LIB oppcommon PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
-
-# Libraries must be in this order: cmdenv provides main(), then sim, envir (if exists), common
-set(OMNETPP_LIBRARIES
-    ${OMNETPP_CMDENV_LIB}
-    ${OMNETPP_SIM_LIB}
-)
-
-# Add oppenvir if it exists (not present in all OMNeT++ versions)
-if(OMNETPP_ENVIR_LIB)
-    list(APPEND OMNETPP_LIBRARIES ${OMNETPP_ENVIR_LIB})
-endif()
-
-list(APPEND OMNETPP_LIBRARIES
-    ${OMNETPP_COMMON_LIB}
-    dl
-    pthread
-)
 
 # Source files
 set(SOURCES
@@ -62,11 +66,22 @@ set_target_properties(BurstNetwork PROPERTIES
 )
 
 # Link OMNeT++ libraries
-target_link_libraries(BurstNetwork
-    ${OMNETPP_LIBRARIES}
-)
-
-target_include_directories(BurstNetwork PRIVATE
-    ${OMNETPP_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
+if(TARGET OmnetPP::main)
+  # Use modern CMake targets if available
+  target_link_libraries(BurstNetwork PRIVATE
+      OmnetPP::main
+      OmnetPP::envir
+      OmnetPP::sim
+  )
+elseif(TARGET OmnetPP::omnetpp)
+  target_link_libraries(BurstNetwork PRIVATE OmnetPP::omnetpp)
+else()
+  # Fallback to manually found libraries
+  target_link_libraries(BurstNetwork PRIVATE
+      ${OMNETPP_LIBRARIES}
+  )
+  target_include_directories(BurstNetwork PRIVATE
+      ${OMNETPP_INCLUDE_DIRS}
+      ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+endif()
