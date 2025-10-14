@@ -150,8 +150,8 @@ jobs:
                 exit 1
               fi
               
-              if ! grep -q "find_package(OMNeT++" "$cmake_file"; then
-                echo "❌ Missing OMNeT++ package finder in $cmake_file"
+              if ! grep -q "OMNETPP_ROOT" "$cmake_file"; then
+                echo "❌ Missing OMNETPP_ROOT configuration in $cmake_file"
                 exit 1
               fi
               
