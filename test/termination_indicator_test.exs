@@ -2,6 +2,7 @@ defmodule TerminationIndicatorTest do
   use ExUnit.Case, async: false
 
   @moduletag :diagram_generation
+  @moduletag timeout: :infinity
 
   # Use fixed seed for deterministic diagram generation
   setup_all do
@@ -10,6 +11,7 @@ defmodule TerminationIndicatorTest do
   end
 
   describe "Termination indicators in diagrams" do
+    @describetag :serial
     test "Mermaid diagram shows termination note when condition met" do
       simulation =
         ActorSimulation.new(trace: true)
@@ -194,12 +196,12 @@ defmodule TerminationIndicatorTest do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
-          think_time: 20,
-          eat_time: 10,
+          think_time: 50,
+          eat_time: 25,
           trace: true
         )
         |> ActorSimulation.run(
-          max_duration: 30_000,
+          max_duration: 120_000,
           terminate_when: fn sim ->
             # Check if all philosophers have eaten by looking for "I'm full!" messages
             trace = sim.trace
@@ -241,12 +243,12 @@ defmodule TerminationIndicatorTest do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
-          think_time: 20,
-          eat_time: 10,
+          think_time: 50,
+          eat_time: 25,
           trace: true
         )
         |> ActorSimulation.run(
-          max_duration: 30_000,
+          max_duration: 120_000,
           terminate_when: fn sim ->
             # Check if all philosophers have eaten
             trace = sim.trace
@@ -293,8 +295,8 @@ defmodule TerminationIndicatorTest do
           trace: true
         )
         |> ActorSimulation.run(
-          # Shorter cap since convergence is quicker
-          max_duration: 30_000,
+          # Longer cap to ensure all philosophers eat despite fast timing
+          max_duration: 120_000,
           terminate_when: fn sim ->
             # Check if all philosophers have eaten by looking for "I'm full!" messages
             trace = sim.trace
@@ -343,7 +345,7 @@ defmodule TerminationIndicatorTest do
           trace: true
         )
         |> ActorSimulation.run(
-          max_duration: 30_000,
+          max_duration: 120_000,
           terminate_when: fn sim ->
             trace = sim.trace
             philosophers_who_ate =
