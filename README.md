@@ -7,7 +7,7 @@ Model implementations: in Java, Pony, Go and C++.
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
 [![CI](https://github.com/d-led/gen_server_virtual_time/workflows/CI/badge.svg)](https://github.com/d-led/gen_server_virtual_time/actions)
-[![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
 
 > **🎬
 > [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/)**
