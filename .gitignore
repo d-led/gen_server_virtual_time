@@ -320,3 +320,4 @@ examples/*/out/
 examples/*/results/
 examples/*/*.vec
 examples/*/*.sca
+*.bak
