@@ -25,16 +25,23 @@ set(OMNETPP_INCLUDE_DIRS ${OMNETPP_ROOT}/include)
 set(OMNETPP_LIB_DIR ${OMNETPP_ROOT}/lib)
 
 # Find OMNeT++ libraries - order matters for linking
-find_library(OMNETPP_SIM_LIB oppsim PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
-find_library(OMNETPP_ENVIR_LIB oppenvir PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
 find_library(OMNETPP_CMDENV_LIB oppcmdenv PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+find_library(OMNETPP_ENVIR_LIB oppenvir PATHS ${OMNETPP_LIB_DIR} NO_DEFAULT_PATH)
+find_library(OMNETPP_SIM_LIB oppsim PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
 find_library(OMNETPP_COMMON_LIB oppcommon PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
 
-# Libraries must be in this order: sim, envir, cmdenv, common
-set(OMNETPP_LIBRARIES 
-    ${OMNETPP_SIM_LIB}
-    ${OMNETPP_ENVIR_LIB}
+# Libraries must be in this order: cmdenv provides main(), then sim, envir (if exists), common
+set(OMNETPP_LIBRARIES
     ${OMNETPP_CMDENV_LIB}
+    ${OMNETPP_SIM_LIB}
+)
+
+# Add oppenvir if it exists (not present in all OMNeT++ versions)
+if(OMNETPP_ENVIR_LIB)
+    list(APPEND OMNETPP_LIBRARIES ${OMNETPP_ENVIR_LIB})
+endif()
+
+list(APPEND OMNETPP_LIBRARIES
     ${OMNETPP_COMMON_LIB}
     dl
     pthread

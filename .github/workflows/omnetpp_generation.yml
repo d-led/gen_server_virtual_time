@@ -311,6 +311,14 @@ jobs:
         export OMNETPP_ROOT=$HOME/omnetpp-6.2.0
         source ~/omnetpp-6.2.0/setenv
         if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
+        # Find the executable (it's named NetworkName.omnetpp.linux)
+        EXECUTABLE=$(find . -name "*.omnetpp.linux" -type f | head -1)
+        if [ -z "$EXECUTABLE" ]; then
+          echo "ERROR: Could not find OMNeT++ executable"
+          ls -la
+          exit 1
+        fi
+        echo "Found executable: $EXECUTABLE"
         # Run short simulation with timeout
-        timeout 10 ./${{ matrix.example }} -u Cmdenv -c General || true
+        timeout 10 $EXECUTABLE -u Cmdenv -c General || true
 
