@@ -22,17 +22,23 @@ defmodule ActorSimulation.GeneratorMetadata do
   """
   def from_stacktrace do
     # Get the stack trace
-    stacktrace = Process.info(self(), :current_stacktrace) |> elem(1)
+    case Process.info(self(), :current_stacktrace) do
+      {_key, stacktrace} when is_list(stacktrace) ->
+        # Find test info and generator function from stacktrace
+        test_info = find_test_info(stacktrace)
+        generator_function = find_generator_function(stacktrace)
 
-    # Find test info and generator function from stacktrace
-    test_info = find_test_info(stacktrace)
-    generator_function = find_generator_function(stacktrace)
+        if test_info do
+          Map.put(test_info, :generator_function, generator_function)
+        else
+          nil
+        end
 
-    if test_info do
-      Map.put(test_info, :generator_function, generator_function)
-    else
-      nil
+      _ ->
+        nil
     end
+  rescue
+    _ -> nil
   end
 
   @doc """
