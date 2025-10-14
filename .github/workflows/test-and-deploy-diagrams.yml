@@ -7,7 +7,9 @@ on:
     paths:
       - 'lib/actor_simulation/mermaid_report_generator.ex'
       - 'test/diagram_generation_test.exs'
+      - 'test/termination_indicator_test.exs'
       - 'test/mermaid_report_test.exs'
+      - 'test/dining_philosophers_test.exs'
       - 'generated/examples/**/*.html'
       - 'generated/examples/**/*.md'
       - '.github/workflows/test-and-deploy-diagrams.yml'
@@ -17,7 +19,9 @@ on:
     paths:
       - 'lib/actor_simulation/mermaid_report_generator.ex'
       - 'test/diagram_generation_test.exs'
+      - 'test/termination_indicator_test.exs'
       - 'test/mermaid_report_test.exs'
+      - 'test/dining_philosophers_test.exs'
       - 'generated/examples/**/*.html'
       - 'generated/examples/**/*.md'
       - '.github/workflows/test-and-deploy-diagrams.yml'
