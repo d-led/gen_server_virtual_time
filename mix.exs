@@ -23,7 +23,10 @@ defmodule GenServerVirtualTime.MixProject do
       name: "GenServerVirtualTime",
 
       # Code quality and test reporting
-      test_coverage: [tool: ExCoveralls],
+      test_coverage: [
+        tool: ExCoveralls,
+        summary: [threshold: 70]
+      ],
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
