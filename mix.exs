@@ -101,7 +101,7 @@ defmodule GenServerVirtualTime.MixProject do
 
   defp docs do
     [
-      main: "GenServerVirtualTime",
+      main: "readme",
       source_ref: "v#{@version}",
       source_url: @source_url,
       extras: [
@@ -114,8 +114,23 @@ defmodule GenServerVirtualTime.MixProject do
         {"docs/caf_generator.md", [title: "CAF Generator"]},
         {"docs/pony_generator.md", [title: "Pony Generator"]},
         {"docs/phony_generator.md", [title: "Phony (Go) Generator"]},
-        {"docs/vlingo_generator.md", [title: "VLINGO XOOM Generator"]},
-        {"docs/implementation_summary.md", [title: "Implementation Summary"]}
+        {"docs/vlingo_generator.md", [title: "VLINGO XOOM Generator"]}
+      ],
+      groups_for_extras: [
+        "Project": [
+          "README.md",
+          "CHANGELOG.md",
+          "CONTRIBUTING.md",
+          "LICENSE"
+        ],
+        "Code Generators": [
+          "docs/generators.md",
+          "docs/omnetpp_generator.md",
+          "docs/caf_generator.md",
+          "docs/pony_generator.md",
+          "docs/phony_generator.md",
+          "docs/vlingo_generator.md"
+        ]
       ],
       groups_for_modules: [
         Core: [
