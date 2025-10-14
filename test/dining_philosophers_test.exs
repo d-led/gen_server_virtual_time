@@ -240,10 +240,14 @@ defmodule DiningPhilosophersTest do
         ""
       end
 
+    # Auto-detect generator metadata
+    metadata = ActorSimulation.GeneratorMetadata.from_stacktrace()
+    generator_comment = ActorSimulation.GeneratorMetadata.to_html_comment(metadata)
+
     """
     <!DOCTYPE html>
     <html>
-    <head>
+    #{generator_comment}<head>
       <meta charset="utf-8">
       <title>#{full_title} - Dining Philosophers</title>
       <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>

@@ -122,10 +122,14 @@ defmodule TerminationIndicatorTest do
       # Save to file for visual verification
       File.mkdir_p!("generated/examples")
 
+      # Add generator metadata
+      metadata = ActorSimulation.GeneratorMetadata.from_stacktrace()
+      generator_comment = ActorSimulation.GeneratorMetadata.to_html_comment(metadata)
+
       html = """
       <!DOCTYPE html>
       <html>
-      <head>
+      #{generator_comment}<head>
         <meta charset="utf-8">
         <title>Dining Philosophers - Condition Terminated</title>
         <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>

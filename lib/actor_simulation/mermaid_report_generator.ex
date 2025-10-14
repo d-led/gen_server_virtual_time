@@ -38,6 +38,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
   - `:style_by_activity` - Color nodes by message activity (default: true)
   """
 
+  alias ActorSimulation.GeneratorMetadata
   alias ActorSimulation.Stats
 
   @doc """
@@ -57,6 +58,9 @@ defmodule ActorSimulation.MermaidReportGenerator do
     style_by_activity = Keyword.get(opts, :style_by_activity, true)
     model_source = Keyword.get(opts, :model_source)
 
+    # Auto-detect generator metadata if not provided
+    generated_by = Keyword.get(opts, :generated_by) || GeneratorMetadata.from_stacktrace()
+
     stats = simulation.stats
 
     mermaid_code =
@@ -67,7 +71,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
         style_by_activity: style_by_activity
       })
 
-    generate_html(mermaid_code, simulation, title, stats, model_source)
+    generate_html(mermaid_code, simulation, title, stats, model_source, generated_by)
   end
 
   @doc """
@@ -504,7 +508,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
     Map.get(stats.actors, actor_name)
   end
 
-  defp generate_html(mermaid_code, simulation, title, stats, model_source) do
+  defp generate_html(mermaid_code, simulation, title, stats, model_source, generated_by) do
     actors = simulation.actors
     formatted_stats = Stats.format(stats)
     stats_table = generate_stats_table(formatted_stats)
@@ -513,10 +517,12 @@ defmodule ActorSimulation.MermaidReportGenerator do
     model_source_section =
       if model_source, do: generate_model_source_section(model_source), else: ""
 
+    generator_comment = GeneratorMetadata.to_html_comment(generated_by)
+
     """
     <!DOCTYPE html>
     <html>
-    <head>
+    #{generator_comment}<head>
       <meta charset="utf-8">
       <title>#{title}</title>
       <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
