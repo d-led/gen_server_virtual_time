@@ -379,8 +379,21 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       set(OS_SUFFIX "bin")
     endif()
 
-    # Find OMNeT++
-    find_package(OMNeT++ REQUIRED)
+    # Find OMNeT++ - use environment variable if CMAKE_PREFIX_PATH is not set
+    if(NOT DEFINED ENV{OMNETPP_ROOT})
+      message(FATAL_ERROR "OMNETPP_ROOT environment variable is not set. Please source OMNeT++ setenv script.")
+    endif()
+
+    set(OMNETPP_ROOT $ENV{OMNETPP_ROOT})
+    set(OMNETPP_INCLUDE_DIRS ${OMNETPP_ROOT}/include)
+    set(OMNETPP_LIB_DIR ${OMNETPP_ROOT}/lib)
+
+    # Find OMNeT++ libraries
+    find_library(OMNETPP_COMMON_LIB oppcommon PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+    find_library(OMNETPP_CMDENV_LIB oppcmdenv PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+    find_library(OMNETPP_SIM_LIB oppsim PATHS ${OMNETPP_LIB_DIR} REQUIRED NO_DEFAULT_PATH)
+
+    set(OMNETPP_LIBRARIES ${OMNETPP_SIM_LIB} ${OMNETPP_CMDENV_LIB} ${OMNETPP_COMMON_LIB})
 
     # Source files
     set(SOURCES
