@@ -8,6 +8,7 @@ Model implementations: in Java, Pony, Go and C++.
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
 [![CI](https://github.com/d-led/gen_server_virtual_time/workflows/CI/badge.svg)](https://github.com/d-led/gen_server_virtual_time/actions)
 [![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time?ref=badge_shield&issueType=license)
 
 > **🎬
 > [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/)**
@@ -439,3 +440,5 @@ Contributions welcome! Please see the [Contributing Guide](CONTRIBUTING.md).
 ## License
 
 MIT License - See the [LICENSE](LICENSE) file for details.
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time.svg?type=large&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time?ref=badge_large&issueType=license)
