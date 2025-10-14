@@ -113,8 +113,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.16'
-          otp-version: '26'
+          elixir-version: '1.18'
+          otp-version: '27'
       
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -170,8 +170,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.16'
-          otp-version: '26'
+          elixir-version: '1.18'
+          otp-version: '27'
       
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -201,8 +201,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.16'
-          otp-version: '26'
+          elixir-version: '1.18'
+          otp-version: '27'
       
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -216,9 +216,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: priv/plts
-          key: ${{ runner.os }}-dialyzer-1.16-26-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-dialyzer-1.18-27-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-dialyzer-1.16-26-
+            ${{ runner.os }}-dialyzer-1.18-27-
       
       - name: Install dependencies
         run: mix deps.get
@@ -244,8 +244,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.16'
-          otp-version: '26'
+          elixir-version: '1.18'
+          otp-version: '27'
       
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -286,8 +286,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.16'
-          otp-version: '26'
+          elixir-version: '1.18'
+          otp-version: '27'
       
       - name: Install dependencies
         run: mix deps.get

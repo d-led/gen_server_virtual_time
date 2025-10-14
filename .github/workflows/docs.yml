@@ -26,8 +26,8 @@ on:
 
 env:
   MIX_ENV: dev
-  ELIXIR_VERSION: "1.16"
-  OTP_VERSION: "26"
+  ELIXIR_VERSION: "1.18"
+  OTP_VERSION: "27"
 
 jobs:
   build-docs:
