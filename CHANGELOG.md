@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - TBD
+
+### Added
+
+- **Ractor (Rust) Code Generator**:
+  - Generate production-ready Rust actor systems using
+    [Ractor](https://github.com/slawlor/ractor) framework
+  - Gen_server-inspired actor model (perfect for Elixir developers!)
+  - Ractor 0.15 support with native async/await (Rust 1.75+)
+  - OTP-style supervision trees and actor registry
+  - Callback traits for customization without modifying generated code
+  - Complete Cargo project with integration tests
+  - GitHub Actions CI/CD pipeline with clippy validation
+  - 4 working examples: pubsub, pipeline, burst, loadbalanced
+  - Clean, warning-free generated code
+  - 95.6% test coverage for RactorGenerator module
+- **Single-file generator examples**:
+  - `examples/single_file_ractor.exs` - portable Ractor/Rust generator
+  - `examples/single_file_vlingo.exs` - portable VLINGO/Java generator
+  - Following
+    [Fly.io's single-file Elixir pattern](https://fly.io/phoenix-files/single-file-elixir-scripts/)
+- Documentation:
+  - `docs/ractor_generator.md` - comprehensive guide with patterns
+  - `examples/ractor_demo.exs` - demo script generating 4 examples
+  - `scripts/test_ractor_demo.sh` - test helper script
+  - `.github/workflows/ractor_validation.yml` - CI/CD pipeline for Rust code
+    validation
+  - Updated all generator lists in README, docs/generators.md, and
+    generated/examples/generators.html
+
 ## [0.3.0] - 2025-10-14
 
 ### Added
