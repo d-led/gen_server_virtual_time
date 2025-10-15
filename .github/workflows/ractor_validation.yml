@@ -1,0 +1,264 @@
+name: Ractor (Rust) Code Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'lib/actor_simulation/ractor_generator.ex'
+      - 'examples/ractor_*/**'
+      - 'examples/ractor_demo.exs'
+      - 'examples/single_file_ractor.exs'
+      - 'scripts/test_ractor_demo.sh'
+      - '.github/workflows/ractor_validation.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-ractor-examples:
+    name: Validate ${{ matrix.example }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [ractor_pubsub, ractor_pipeline, ractor_burst, ractor_loadbalanced]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+        cache: true
+        cache-workspaces: examples/${{ matrix.example }}
+
+    - name: Install Cargo dependencies
+      working-directory: examples/${{ matrix.example }}
+      run: cargo fetch
+
+    - name: Run Clippy (linting)
+      working-directory: examples/${{ matrix.example }}
+      run: cargo clippy --all-targets --all-features
+      continue-on-error: true
+
+    - name: Build debug
+      working-directory: examples/${{ matrix.example }}
+      run: cargo build --verbose
+
+    - name: Run tests
+      working-directory: examples/${{ matrix.example }}
+      run: cargo test --verbose
+
+    - name: Build release
+      working-directory: examples/${{ matrix.example }}
+      run: cargo build --release --verbose
+
+    - name: Run demo application (with timeout)
+      working-directory: examples/${{ matrix.example }}
+      shell: bash
+      run: |
+        timeout 5 cargo run --release || exit_code=$?
+        # Exit code 124 means timeout (expected), anything else is an error
+        if [ $exit_code -eq 124 ] || [ $exit_code -eq 143 ]; then
+          echo "✓ Demo ran successfully and was terminated after timeout"
+          exit 0
+        elif [ -z "$exit_code" ]; then
+          # No error, program exited cleanly (also fine)
+          echo "✓ Demo ran successfully and exited cleanly"
+          exit 0
+        else
+          echo "✗ Demo failed with exit code $exit_code"
+          exit $exit_code
+        fi
+
+    - name: Check generated code quality
+      working-directory: examples/${{ matrix.example }}
+      run: |
+        echo "================================================"
+        echo "Code Quality Report for ${{ matrix.example }}"
+        echo "================================================"
+        
+        # Count lines of code
+        echo "Lines of Rust code:"
+        find src -name "*.rs" -type f -exec wc -l {} + | tail -1
+        
+        # Check for any TODO comments
+        echo ""
+        echo "TODOs in generated code:"
+        grep -r "TODO" src/ || echo "None found"
+        
+        echo "================================================"
+
+  test-ractor-generation:
+    name: Test Ractor Code Generation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.15'
+          otp-version: '25'
+      
+      - name: Install Elixir dependencies
+        run: mix deps.get
+      
+      - name: Generate Ractor examples
+        run: |
+          mix run examples/ractor_demo.exs
+          echo "✓ Generated Ractor examples"
+      
+      - name: Verify all expected files exist
+        run: |
+          examples=(ractor_pubsub ractor_pipeline ractor_burst ractor_loadbalanced)
+          for example in "${examples[@]}"; do
+            echo "Checking $example..."
+            if [ ! -f "examples/$example/Cargo.toml" ]; then
+              echo "ERROR: Missing Cargo.toml in $example"
+              exit 1
+            fi
+            if [ ! -f "examples/$example/src/main.rs" ]; then
+              echo "ERROR: Missing src/main.rs in $example"
+              exit 1
+            fi
+            if [ ! -f "examples/$example/src/lib.rs" ]; then
+              echo "ERROR: Missing src/lib.rs in $example"
+              exit 1
+            fi
+            if [ ! -d "examples/$example/src/actors" ]; then
+              echo "ERROR: Missing src/actors/ in $example"
+              exit 1
+            fi
+            echo "  ✓ $example has all required files"
+          done
+          echo ""
+          echo "================================================"
+          echo "✅ All Ractor examples validated successfully"
+          echo "================================================"
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+      
+      - name: Quick compile check on generated code
+        run: |
+          cd examples/ractor_burst
+          cargo check --verbose
+          echo "✓ Generated code compiles successfully"
+
+  create-test-script:
+    name: Create Test Helper Script
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create test script
+        run: |
+          cat > scripts/test_ractor_demo.sh << 'SCRIPT_EOF'
+          #!/usr/bin/env bash
+          # Test script for Ractor (Rust) examples
+          # Usage: ./scripts/test_ractor_demo.sh <example_name>
+          
+          set -e
+          
+          EXAMPLE_NAME="$1"
+          
+          if [ -z "$EXAMPLE_NAME" ]; then
+            echo "Usage: $0 <example_name>"
+            echo "Examples: ractor_pubsub, ractor_pipeline, ractor_burst, ractor_loadbalanced"
+            exit 1
+          fi
+          
+          EXAMPLE_DIR="examples/${EXAMPLE_NAME}"
+          
+          if [ ! -d "$EXAMPLE_DIR" ]; then
+            echo "Error: Example directory $EXAMPLE_DIR does not exist"
+            exit 1
+          fi
+          
+          echo "================================================"
+          echo "Testing Ractor example: $EXAMPLE_NAME"
+          echo "================================================"
+          
+          cd "$EXAMPLE_DIR"
+          
+          echo ""
+          echo "→ Fetching dependencies..."
+          cargo fetch
+          
+          echo ""
+          echo "→ Building project..."
+          cargo build --verbose
+          
+          echo ""
+          echo "→ Running tests..."
+          cargo test --verbose
+          
+          echo ""
+          echo "→ Building release..."
+          cargo build --release --verbose
+          
+          echo ""
+          echo "→ Running demo (with 5s timeout)..."
+          timeout 5 cargo run --release || exit_code=$?
+          
+          if [ $exit_code -eq 124 ] || [ $exit_code -eq 143 ]; then
+            echo "✓ Demo ran successfully and was terminated after timeout"
+          elif [ -z "$exit_code" ]; then
+            echo "✓ Demo ran successfully and exited cleanly"
+          else
+            echo "✗ Demo failed with exit code $exit_code"
+            exit $exit_code
+          fi
+          
+          echo ""
+          echo "================================================"
+          echo "✅ $EXAMPLE_NAME validation completed successfully"
+          echo "================================================"
+          SCRIPT_EOF
+          
+          chmod +x scripts/test_ractor_demo.sh
+          echo "✓ Created test script"
+      
+      - name: Upload test script
+        uses: actions/upload-artifact@v4
+        with:
+          name: ractor-test-script
+          path: scripts/test_ractor_demo.sh
+
+  summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [validate-ractor-examples, test-ractor-generation]
+    if: always()
+    
+    steps:
+      - name: Check results
+        run: |
+          echo "================================================"
+          echo "Ractor (Rust) Code Validation Summary"
+          echo "================================================"
+          echo ""
+          echo "Validation Status:"
+          echo "  • Examples validation: ${{ needs.validate-ractor-examples.result }}"
+          echo "  • Generation test: ${{ needs.test-ractor-generation.result }}"
+          echo ""
+          
+          if [ "${{ needs.validate-ractor-examples.result }}" == "success" ] && \
+             [ "${{ needs.test-ractor-generation.result }}" == "success" ]; then
+            echo "✅ All Ractor validations passed!"
+            echo "================================================"
+            exit 0
+          else
+            echo "❌ Some validations failed"
+            echo "================================================"
+            exit 1
+          fi
+

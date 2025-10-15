@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Precommit do
   ## Usage
 
       mix precommit           # Run all checks except Dialyzer
-      mix precommit --all     # Run all checks including Dialyzer
+      mix precommit --all     # Run all checks including Dialyzer and coverage
 
   ## Checks performed
 
@@ -20,7 +20,13 @@ defmodule Mix.Tasks.Precommit do
   6. Tests (`mix test`)
   7. Code quality (`mix credo --strict`)
   8. Documentation build (`mix docs`)
-  9. Type checking (`mix dialyzer`) - only with --all flag
+  9. Coverage report (`mix coveralls.html`) - only with --all flag
+  10. Type checking (`mix dialyzer`) - only with --all flag
+
+  ## Coverage reporting
+
+  When run with `--all`, the task will display the total code coverage percentage
+  and generate an HTML report in `cover/excoveralls.html`.
 
   ## Exit codes
 
@@ -56,7 +62,11 @@ defmodule Mix.Tasks.Precommit do
 
     checks =
       if run_all do
-        checks ++ [{"Running Dialyzer (this may take a while)", fn -> run_dialyzer() end}]
+        checks ++
+          [
+            {"Running combined coverage analysis", fn -> run_coverage() end},
+            {"Running Dialyzer (this may take a while)", fn -> run_dialyzer() end}
+          ]
       else
         checks
       end
@@ -67,10 +77,49 @@ defmodule Mix.Tasks.Precommit do
 
     if Enum.all?(results) do
       IO.puts("✅ All checks passed! Safe to commit.")
+
+      if run_all do
+        IO.puts("\n📊 Coverage report generated!")
+
+        case Process.get(:coverage_percentage) do
+          nil ->
+            IO.puts("📂 Open: cover/excoveralls.html")
+
+          percentage ->
+            coverage_value = String.to_float(percentage)
+
+            if coverage_value >= 70.0 do
+              IO.puts("📈 Total coverage: #{percentage}% ✅")
+            else
+              IO.puts("⚠️  Total coverage: #{percentage}% (below 70% threshold)")
+            end
+
+            IO.puts("📂 Open: cover/excoveralls.html")
+        end
+      end
+
       IO.puts(String.duplicate("=", 80) <> "\n")
       System.halt(0)
     else
       IO.puts("❌ Some checks failed. Please fix the issues before committing.")
+
+      # Still show coverage if available, even when other checks fail
+      if run_all do
+        case Process.get(:coverage_percentage) do
+          nil ->
+            :ok
+
+          percentage ->
+            coverage_value = String.to_float(percentage)
+
+            if coverage_value >= 70.0 do
+              IO.puts("📈 Coverage: #{percentage}% ✅")
+            else
+              IO.puts("⚠️  Coverage: #{percentage}% (below 70% threshold)")
+            end
+        end
+      end
+
       IO.puts(String.duplicate("=", 80) <> "\n")
       System.halt(1)
     end
@@ -170,6 +219,75 @@ defmodule Mix.Tasks.Precommit do
     case System.cmd("mix", ["dialyzer"], stderr_to_stdout: true) do
       {_, 0} -> :ok
       _ -> {:error, "Dialyzer found issues"}
+    end
+  end
+
+  defp run_coverage do
+    # Clean old coverage data
+    File.rm_rf("cover")
+    File.mkdir_p!("cover")
+
+    # Run coverage exports - ignore exit codes as individual test suites may have low coverage
+    # Exit codes 0, 1, 2 are all OK (0=success, 1=below threshold, 2=below threshold with warning)
+    with {_, code1} when code1 in [0, 1, 2] <-
+           System.cmd("mix", ["coveralls", "--export-coverage", "fast"],
+             stderr_to_stdout: true,
+             env: [{"MIX_ENV", "test"}]
+           ),
+         {_, code2} when code2 in [0, 1, 2] <-
+           System.cmd("mix", ["coveralls", "--only", "slow", "--export-coverage", "slow"],
+             stderr_to_stdout: true,
+             env: [{"MIX_ENV", "test"}]
+           ),
+         {_, code3} when code3 in [0, 1, 2] <-
+           System.cmd(
+             "mix",
+             ["coveralls", "--only", "diagram_generation", "--export-coverage", "diagram"],
+             stderr_to_stdout: true,
+             env: [{"MIX_ENV", "test"}]
+           ),
+         {_, code_test_cov} when code_test_cov in [0, 1, 2] <-
+           System.cmd("mix", ["test.coverage"],
+             stderr_to_stdout: true,
+             env: [{"MIX_ENV", "test"}]
+           ),
+         {output, code4} when code4 in [0, 1, 2] <-
+           System.cmd("mix", ["coveralls.html", "--import-cover", "cover"],
+             stderr_to_stdout: true,
+             env: [{"MIX_ENV", "test"}]
+           ) do
+      # Extract coverage percentage from output
+      extract_and_store_coverage(output)
+      :ok
+    else
+      {_, bad_code} ->
+        {:error, "Coverage analysis failed with exit code #{bad_code}"}
+
+      _ ->
+        {:error, "Coverage analysis failed"}
+    end
+  end
+
+  defp extract_and_store_coverage(_output) do
+    # Extract coverage percentage from the HTML file instead of console output
+    html_path = "cover/excoveralls.html"
+
+    if File.exists?(html_path) do
+      case File.read(html_path) do
+        {:ok, content} ->
+          # Look for the total coverage in the HTML file
+          # Format: <div class='percentage'>XX.X</div>
+          case Regex.run(~r/<div class='percentage'>(\d+\.?\d*)<\/div>/, content) do
+            [_, percentage] ->
+              Process.put(:coverage_percentage, percentage)
+
+            _ ->
+              nil
+          end
+
+        _ ->
+          nil
+      end
     end
   end
 

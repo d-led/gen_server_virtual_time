@@ -1,6 +1,6 @@
 # Code Generators - Quick Start Guide
 
-This library includes **four production-ready code generators** that translate
+This library includes **six production-ready code generators** that translate
 ActorSimulation DSL into different languages and frameworks.
 
 ## Single-File Script Examples
@@ -84,23 +84,72 @@ simulation = ActorSimulation.new()
 ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
 ```
 
+### Ractor (Rust Actors)
+
+```elixir
+#!/usr/bin/env elixir
+Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:producer,
+      send_pattern: {:rate, 100, :data},
+      targets: [:consumer])
+  |> ActorSimulation.add_actor(:consumer)
+
+{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+  project_name: "my_actors",
+  enable_callbacks: true)
+
+ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_out/")
+```
+
+### VLINGO XOOM (Java Actors)
+
+```elixir
+#!/usr/bin/env elixir
+Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+
+simulation = ActorSimulation.new()
+  |> ActorSimulation.add_actor(:publisher,
+      send_pattern: {:periodic, 100, :event},
+      targets: [:subscriber])
+  |> ActorSimulation.add_actor(:subscriber)
+
+{:ok, files} = ActorSimulation.VlingoGenerator.generate(simulation,
+  project_name: "my-actors",
+  group_id: "com.example",
+  enable_callbacks: true)
+
+ActorSimulation.VlingoGenerator.write_to_directory(files, "vlingo_out/")
+```
+
 ## Complete Examples
 
 See the repository's `examples/` directory for complete single-file scripts:
 
-- `single_file_omnetpp.exs` - OMNeT++ network simulation
-- `single_file_caf.exs` - C++ Actor Framework
-- `single_file_pony.exs` - Pony capabilities-secure actors
-- `single_file_phony.exs` - Go actors with Phony
+- [`single_file_omnetpp.exs`](https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_omnetpp.exs) -
+  OMNeT++ network simulation
+- [`single_file_caf.exs`](https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_caf.exs) -
+  C++ Actor Framework
+- [`single_file_pony.exs`](https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_pony.exs) -
+  Pony capabilities-secure actors
+- [`single_file_phony.exs`](https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_phony.exs) -
+  Go actors with Phony
+- [`single_file_ractor.exs`](https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_ractor.exs) -
+  Rust actors with Ractor
+- [`single_file_vlingo.exs`](https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_vlingo.exs) -
+  Java actors with VLINGO XOOM
 
 ## Comparison
 
-| Generator   | Purpose            | Output           | Key Feature               |
-| ----------- | ------------------ | ---------------- | ------------------------- |
-| **OMNeT++** | Network simulation | NED + C++        | GUI tools, INET framework |
-| **CAF**     | Production actors  | C++ + Catch2     | Callback interfaces       |
-| **Pony**    | Safe concurrency   | Type-safe actors | Data-race freedom         |
-| **Phony**   | Go actors          | Go + tests       | Zero-allocation messaging |
+| Generator   | Purpose            | Output           | Key Feature                                |
+| ----------- | ------------------ | ---------------- | ------------------------------------------ |
+| **OMNeT++** | Network simulation | NED + C++        | GUI tools, INET framework                  |
+| **CAF**     | Production actors  | C++ + Catch2     | Callback interfaces                        |
+| **Pony**    | Safe concurrency   | Type-safe actors | Data-race freedom                          |
+| **Phony**   | Go actors          | Go + tests       | Zero-allocation messaging                  |
+| **Ractor**  | Rust actors        | Rust + Cargo     | Gen_server-inspired, OTP-style supervision |
+| **VLINGO**  | Java actors        | Java + Maven     | Protocol actors, type-safe                 |
 
 ## Development Workflow
 
@@ -133,6 +182,8 @@ Perfect for:
 - [CAF Generator](caf_generator.md)
 - [Pony Generator](pony_generator.md)
 - [Phony Generator](phony_generator.md)
+- [Ractor Generator](ractor_generator.md)
+- [VLINGO Generator](vlingo_generator.md)
 
 ## Next Steps
 

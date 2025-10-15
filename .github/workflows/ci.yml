@@ -359,15 +359,26 @@ jobs:
           fi
           echo "✓ VLINGO generator: OK"
       
+      - name: Run Ractor generator script
+        run: |
+          mix run examples/ractor_demo.exs
+          # Check that at least one file was generated
+          if [ ! -f "examples/ractor_burst/Cargo.toml" ]; then
+            echo "ERROR: Ractor generator did not create expected files"
+            exit 1
+          fi
+          echo "✓ Ractor generator: OK"
+      
       - name: Summary
         run: |
           echo "================================================"
-          echo "✅ All 5 generator scripts executed successfully"
+          echo "✅ All 6 generator scripts executed successfully"
           echo "================================================"
           echo "Generators validated:"
           echo "  ✓ OMNeT++ (C++ network simulation)"
           echo "  ✓ CAF (C++ actors)"
           echo "  ✓ Pony (capabilities-secure actors)"
           echo "  ✓ Phony (Go actors)"
+          echo "  ✓ Ractor (Rust actors)"
           echo "  ✓ VLINGO XOOM (Java actors)"
           echo "================================================"

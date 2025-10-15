@@ -166,6 +166,10 @@
       background: #e0f2f1;
       color: #00897b;
     }
+    .badge.rust {
+      background: #fbe9e7;
+      color: #d84315;
+    }
     .examples-list {
       margin-top: 8px;
     }
@@ -256,7 +260,7 @@
         <div class="label">Frameworks</div>
       </div>
       <div class="stat">
-        <div class="number">16</div>
+        <div class="number">21</div>
         <div class="label">Live Examples</div>
       </div>
     </div>
@@ -374,6 +378,30 @@
         
         <tr>
           <td>
+            <div class="framework-name">Ractor</div>
+            <a href="https://github.com/slawlor/ractor" class="framework-link" target="_blank">Ractor Actor Framework →</a>
+          </td>
+          <td><span class="badge rust">Rust</span></td>
+          <td>
+            <div class="output-features">
+              • Gen_server-inspired actor model<br>
+              • OTP-style supervision trees<br>
+              • Cargo build with integration tests<br>
+              • Type-safe async/await actors
+            </div>
+          </td>
+          <td>
+            <div class="examples-list">
+              <a href="https://github.com/d-led/gen_server_virtual_time/tree/main/examples/ractor_burst" class="example-link" target="_blank">burst</a>
+              <a href="https://github.com/d-led/gen_server_virtual_time/tree/main/examples/ractor_loadbalanced" class="example-link" target="_blank">loadbalanced</a>
+              <a href="https://github.com/d-led/gen_server_virtual_time/tree/main/examples/ractor_pipeline" class="example-link" target="_blank">pipeline</a>
+              <a href="https://github.com/d-led/gen_server_virtual_time/tree/main/examples/ractor_pubsub" class="example-link" target="_blank">pubsub</a>
+            </div>
+          </td>
+        </tr>
+        
+        <tr>
+          <td>
             <div class="framework-name">VLINGO XOOM</div>
             <a href="https://docs.vlingo.io/" class="framework-link" target="_blank">VLINGO Platform →</a>
           </td>
@@ -405,7 +433,7 @@
       </div>
       <div class="feature">
         <h4>🧪 Test Suites</h4>
-        <p>Comprehensive tests with Catch2, JUnit 5, PonyTest, or Go testing</p>
+        <p>Comprehensive tests with Catch2, JUnit 5, PonyTest, Go testing, or Cargo</p>
       </div>
       <div class="feature">
         <h4>🔄 CI/CD Pipelines</h4>
@@ -465,6 +493,11 @@ ActorSimulation.CAFGenerator.write_to_directory(files, "output/")
 {:ok, files} = ActorSimulation.PhonyGenerator.generate(simulation,
   project_name: "pubsub")
 
+# Or Rust with Ractor  
+{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+  project_name: "pubsub",
+  enable_callbacks: true)
+
 # Or Java with VLINGO XOOM
 {:ok, files} = ActorSimulation.VlingoGenerator.generate(simulation,
   project_name: "pubsub-actors",
@@ -484,6 +517,9 @@ cd output/ && make test
 
 # Phony (Go)
 cd output/ && go test ./...
+
+# Ractor (Rust)
+cd output/ && cargo test
 
 # VLINGO (Java)
 cd output/ && mvn test</code></pre>
@@ -509,8 +545,12 @@ cd output/ && mvn test</code></pre>
         <a href="https://github.com/d-led/gen_server_virtual_time/tree/main/examples" style="color: #4299e1; text-decoration: none;" target="_blank">→ All Example Projects</a><br>
         <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/caf_demo.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ CAF Demo Script</a><br>
         <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/omnetpp_demo.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ OMNeT++ Demo Script</a><br>
+        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_caf.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ CAF Single File Example</a><br>
+        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_omnetpp.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ OMNeT++ Single File Example</a><br>
         <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_pony.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ Pony Single File Example</a><br>
-        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_phony.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ Phony Single File Example</a>
+        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_phony.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ Phony Single File Example</a><br>
+        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_ractor.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ Ractor Single File Example</a><br>
+        <a href="https://github.com/d-led/gen_server_virtual_time/blob/main/examples/single_file_vlingo.exs" style="color: #4299e1; text-decoration: none;" target="_blank">→ VLINGO Single File Example</a>
       </div>
     </div>
   </div>

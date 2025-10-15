@@ -2,7 +2,7 @@
 
 Test time-based GenServers instantly. Simulate actor systems with virtual time.
 Model, simulate, analyze actor systems and generate boilerplate in various Actor
-Model implementations: in Java, Pony, Go and C++.
+Model implementations: in Java, Rust, Pony, Go and C++.
 
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
@@ -24,6 +24,7 @@ Generate production-ready actor system implementations from high-level DSL:
 | **CAF**     | C++      | [C++ Actor Framework](https://www.actor-framework.org/) | Typed actors, CMake build, Conan deps, tests |
 | **Phony**   | Go       | [Phony](https://github.com/Arceliar/phony)              | Zero-alloc actors, Go modules, tests         |
 | **Pony**    | Pony     | [Pony Language](https://www.ponylang.io/)               | Type-safe actors, Corral deps, PonyTest      |
+| **Ractor**  | Rust     | [Ractor](https://github.com/slawlor/ractor)             | Gen_server-inspired, Cargo, async/await      |
 | **VLINGO**  | Java     | [VLINGO XOOM](https://docs.vlingo.io/)                  | Protocol actors, Maven, JUnit 5              |
 | **OMNeT++** | C++      | [OMNeT++](https://omnetpp.org/)                         | Discrete-event simulation, NED files, CMake  |
 
@@ -154,6 +155,19 @@ ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_output/")
 # cd phony_output && go test ./...
 ```
 
+**Ractor (Rust Actors):**
+
+```elixir
+# Generate Rust actor system with Ractor
+{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+  project_name: "pubsub",
+  enable_callbacks: true)
+ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_output/")
+
+# Then build and test:
+# cd ractor_output && cargo test
+```
+
 Customize WITHOUT touching generated code:
 
 ```cpp
@@ -169,6 +183,16 @@ void publisher_callbacks::on_event() {
 public void onEvent() {
   logger.info("Publishing event");
   metrics.increment("events.published");
+}
+```
+
+```rust
+// Ractor: publisher.rs
+impl PublisherCallbacks for MyPublisherCallbacks {
+    fn on_event(&self) {
+        println!("Publishing event with custom handler");
+        // Add your custom logic here
+    }
 }
 ```
 
@@ -261,8 +285,10 @@ end
 - **CAF**: Production actor systems with callback interfaces
 - **Pony**: Capabilities-secure, data-race free actors
 - **Phony**: Pony-inspired Go actor library
+- **Ractor**: Gen_server-inspired Rust actors with supervision
 - **VLINGO XOOM**: Type-safe Java actors with scheduling
-- **Tests included**: Catch2, PonyTest, Go tests, JUnit 5 with CI pipelines
+- **Tests included**: Catch2, PonyTest, Go tests, Cargo tests, JUnit 5 with CI
+  pipelines
 - **Fast prototyping**: 10-100x faster in Elixir, then scale in production
 
 ## Quick API Reference
@@ -400,6 +426,11 @@ cd generated/pony_loadbalanced
 # Phony (Go)
 mix run examples/phony_demo.exs
 cd generated/phony_burst
+
+# Ractor (Rust)
+mix run examples/ractor_demo.exs
+cd generated/ractor_pipeline
+cargo test
 ```
 
 ## Documentation
@@ -408,8 +439,9 @@ cd generated/phony_burst
 - [CAF Code Generation](docs/caf_generator.md) - Export to CAF with callbacks
 - [Pony Generator](docs/pony_generator.md) - Capabilities-secure actors
 - [Phony Generator](docs/phony_generator.md) - Go actor systems
-- [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors
+- [Ractor Generator](docs/ractor_generator.md) - Rust gen_server-inspired actors
   (NEW!)
+- [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors
 - [API Documentation](https://hexdocs.pm/gen_server_virtual_time) - Complete API
   reference
 - [Contributing Guide](CONTRIBUTING.md) - How to contribute

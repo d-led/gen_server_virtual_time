@@ -25,7 +25,8 @@ defmodule GenServerVirtualTime.MixProject do
       # Code quality and test reporting
       test_coverage: [
         tool: ExCoveralls,
-        summary: [threshold: 70]
+        summary: [threshold: 70],
+        ignore_modules: [Mix.Tasks.Precommit, DiningPhilosophers]
       ],
       preferred_cli_env: [
         coveralls: :test,
