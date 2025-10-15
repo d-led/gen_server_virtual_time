@@ -269,9 +269,6 @@ defmodule Mix.Tasks.Precommit do
     else
       {_, bad_code} ->
         {:error, "Coverage analysis failed with exit code #{bad_code}"}
-
-      _ ->
-        {:error, "Coverage analysis failed"}
     end
   end
 
