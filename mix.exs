@@ -84,12 +84,10 @@ defmodule GenServerVirtualTime.MixProject do
 
   defp description do
     """
-    Virtual time-based extension to the GenServer behavior that allows testing time-based
-    processes and actor systems without waiting. Primary uses: testing time-dependent
-    GenServer behavior and simulating actor systems. Test hours of behavior in seconds
-    with deterministic, fast execution.
+    Virtual time extension to `GenServer` allowing testing time-based
+    actor systems orders of magnitude faster than in wallclock-time.
     Includes actor simulation DSL with statistics, tracing, and code generation into other
-    Actor Model implementations: OMNeT++, CAF (C++), Pony, Phony (Go), Ractor (Rust), VLINGO XOOM (Java).
+    Actor Model implementations in C++, Pony, Go, Rust, Java.
     """
   end
 
