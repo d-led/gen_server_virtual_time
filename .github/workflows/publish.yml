@@ -39,7 +39,9 @@ jobs:
             ${{ runner.os }}-mix-publish-
 
       - name: Install dependencies
-        run: mix deps.get
+        run: |
+          mix deps.get --only prod
+          MIX_ENV=dev mix deps.get --only dev
 
       - name: Compile project
         run: mix compile
@@ -48,6 +50,8 @@ jobs:
         run: mix test --exclude slow --exclude omnetpp
 
       - name: Build documentation
+        env:
+          MIX_ENV: dev
         run: mix docs
 
       - name: Publish to Hex
