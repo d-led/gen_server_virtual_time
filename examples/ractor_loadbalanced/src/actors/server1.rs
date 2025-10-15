@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: server1
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 
@@ -7,11 +8,6 @@ use ractor::{Actor, ActorProcessingErr, ActorRef};
 /// Implement this trait to customize actor behavior
 pub trait Server1Callbacks: Send + Sync {}
 
-/// DefaultServer1Callbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultServer1Callbacks;
-
-impl Server1Callbacks for DefaultServer1Callbacks {}
 
 #[allow(dead_code)]
 pub struct Server1State {

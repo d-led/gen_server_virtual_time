@@ -45,9 +45,10 @@ go test -v ./...
 
 ## Customizing Behavior
 
-The generated actor code uses callback interfaces to allow customization:
+The generated actor code uses callback interfaces to allow customization WITHOUT
+modifying generated files:
 
-1. Find the `*Callbacks` interface in each actor file
+1. Find the `*_callbacks.go` files
 2. Modify the `Default*Callbacks` implementation
 3. Add your custom logic in the callback methods
 4. Rebuild
@@ -57,7 +58,8 @@ The generated actor code will automatically call your callbacks.
 ## Project Structure
 
 - `main.go` - Entry point and actor spawning
-- `*.go` - Generated actor implementations
+- `*_actor.go` - Generated actor interface (DO NOT EDIT)
+- `*_callbacks.go` - Callback implementations (EDIT THIS!)
 - `actor_test.go` - Go test suite
 - `go.mod` - Module definition
 

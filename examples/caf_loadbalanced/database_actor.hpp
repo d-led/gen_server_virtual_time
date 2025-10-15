@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: database
+// DO NOT EDIT - This file is auto-generated
 
 #pragma once
 
@@ -7,7 +8,16 @@
 #include <chrono>
 #include <vector>
 #include "atoms.hpp"
-#include "database_callbacks.hpp"
+
+// Callback interface for: database
+// This is the contract - do not modify
+class database_callbacks {
+  public:
+    virtual ~database_callbacks() = default;
+
+    virtual void on_message();
+};
+
 
 class database_actor : public caf::event_based_actor {
   public:

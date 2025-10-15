@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: source
+// DO NOT EDIT - This file is auto-generated
 
 #pragma once
 
@@ -7,7 +8,16 @@
 #include <chrono>
 #include <vector>
 #include "atoms.hpp"
-#include "source_callbacks.hpp"
+
+// Callback interface for: source
+// This is the contract - do not modify
+class source_callbacks {
+  public:
+    virtual ~source_callbacks() = default;
+
+    virtual void on_data();
+};
+
 
 class source_actor : public caf::event_based_actor {
   public:

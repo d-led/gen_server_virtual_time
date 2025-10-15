@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: publisher
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in publisher_actor.hpp
 
-#include "publisher_callbacks.hpp"
+#include "publisher_actor.hpp"
 #include <iostream>
 
 void publisher_callbacks::on_event() {

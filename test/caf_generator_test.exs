@@ -55,13 +55,32 @@ defmodule CAFGeneratorTest do
 
       filenames = Enum.map(files, fn {name, _content} -> name end)
 
-      # Callback interface should be generated
-      assert "worker_callbacks.hpp" in filenames
-      assert "consumer_callbacks.hpp" in filenames
+      # Callback interface should be in actor header (not separate file)
+      {_name, worker_header} = Enum.find(files, fn {name, _} -> name == "worker_actor.hpp" end)
+      assert worker_header =~ "class worker_callbacks"
+      assert worker_header =~ "virtual void on_tick();"
+      assert worker_header =~ "DO NOT EDIT"
 
-      # Example implementation should be generated
+      {_name, consumer_header} =
+        Enum.find(files, fn {name, _} -> name == "consumer_actor.hpp" end)
+
+      assert consumer_header =~ "class consumer_callbacks"
+
+      # Only implementation files should be generated (customizable)
       assert "worker_callbacks_impl.cpp" in filenames
       assert "consumer_callbacks_impl.cpp" in filenames
+
+      # Separate header files should NOT exist
+      refute "worker_callbacks.hpp" in filenames
+      refute "consumer_callbacks.hpp" in filenames
+
+      # Check implementation file content
+      {_name, worker_impl} =
+        Enum.find(files, fn {name, _} -> name == "worker_callbacks_impl.cpp" end)
+
+      assert worker_impl =~ "#include \"worker_actor.hpp\""
+      assert worker_impl =~ "CUSTOMIZE THIS FILE"
+      assert worker_impl =~ "void worker_callbacks::on_tick()"
     end
 
     test "generates C++ header with CAF actor class" do

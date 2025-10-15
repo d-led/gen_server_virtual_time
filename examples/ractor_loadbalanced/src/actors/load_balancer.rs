@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: load_balancer
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 use std::time::Duration;
@@ -11,16 +12,6 @@ pub trait LoadBalancerCallbacks: Send + Sync {
     fn on_request(&self);
 }
 
-/// DefaultLoadBalancerCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultLoadBalancerCallbacks;
-
-impl LoadBalancerCallbacks for DefaultLoadBalancerCallbacks {
-    fn on_request(&self) {
-        // TODO: Implement custom behavior for request
-        println!("LoadBalancer: Sending request message");
-    }
-}
 
 #[allow(dead_code)]
 pub struct LoadBalancerState {

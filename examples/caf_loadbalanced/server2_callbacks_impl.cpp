@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: server2
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in server2_actor.hpp
 
-#include "server2_callbacks.hpp"
+#include "server2_actor.hpp"
 #include <iostream>
 
 void server2_callbacks::on_message() {

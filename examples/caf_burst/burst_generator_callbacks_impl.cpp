@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: burst_generator
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in burst_generator_actor.hpp
 
-#include "burst_generator_callbacks.hpp"
+#include "burst_generator_actor.hpp"
 #include <iostream>
 
 void burst_generator_callbacks::on_batch() {

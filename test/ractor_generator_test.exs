@@ -158,10 +158,25 @@ defmodule RactorGeneratorTest do
           enable_callbacks: true
         )
 
-      {_name, source} = Enum.find(files, fn {name, _} -> name == "src/actors/processor.rs" end)
+      # Check actor file (contains trait - the contract)
+      {_name, actor_source} =
+        Enum.find(files, fn {name, _} -> name == "src/actors/processor.rs" end)
 
-      assert source =~ "pub trait ProcessorCallbacks"
-      assert source =~ "fn on_tick"
+      assert actor_source =~ "pub trait ProcessorCallbacks"
+      assert actor_source =~ "fn on_tick(&self);"
+      assert actor_source =~ "callbacks: Box<dyn ProcessorCallbacks"
+      assert actor_source =~ "state.callbacks.on_tick()"
+      assert actor_source =~ "DO NOT EDIT"
+
+      # Check callbacks file (only implementation - customizable)
+      {_name, callbacks_source} =
+        Enum.find(files, fn {name, _} -> name == "src/actors/processor_callbacks.rs" end)
+
+      assert callbacks_source =~ "use super::processor::ProcessorCallbacks"
+      assert callbacks_source =~ "pub struct DefaultProcessorCallbacks"
+      assert callbacks_source =~ "impl ProcessorCallbacks for DefaultProcessorCallbacks"
+      assert callbacks_source =~ "CUSTOMIZE THIS"
+      refute callbacks_source =~ "pub trait ProcessorCallbacks"
     end
 
     test "generates self-message pattern with tokio::time::sleep" do

@@ -1,11 +1,11 @@
 // Generated from ActorSimulation DSL
 // Actor: source
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
 import (
 	"github.com/Arceliar/phony"
-	"fmt"
 	"time"
 )
 
@@ -14,16 +14,6 @@ import (
 type SourceCallbacks interface {
 	OnData()
 }
-
-// DefaultSourceCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultSourceCallbacks struct{}
-
-func (c *DefaultSourceCallbacks) OnData() {
-	// TODO: Implement custom behavior for data
-	fmt.Printf("Source: Sending data message\n")
-}
-
 
 
 type Source struct {

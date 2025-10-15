@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: processor
+// DO NOT EDIT - This file is auto-generated
 
 #pragma once
 
@@ -7,7 +8,16 @@
 #include <chrono>
 #include <vector>
 #include "atoms.hpp"
-#include "processor_callbacks.hpp"
+
+// Callback interface for: processor
+// This is the contract - do not modify
+class processor_callbacks {
+  public:
+    virtual ~processor_callbacks() = default;
+
+    virtual void on_message();
+};
+
 
 class processor_actor : public caf::event_based_actor {
   public:

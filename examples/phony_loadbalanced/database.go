@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: database
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
@@ -12,12 +13,6 @@ import (
 type DatabaseCallbacks interface {
 
 }
-
-// DefaultDatabaseCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultDatabaseCallbacks struct{}
-
-
 
 
 type Database struct {

@@ -100,14 +100,8 @@ defmodule ActorSimulation.CAFGenerator do
 
           new_files =
             if enable_callbacks do
-              callback_header = generate_callback_header(name, definition)
               callback_impl = generate_callback_impl(name, definition)
-
-              new_files ++
-                [
-                  {"#{actor_name}_callbacks.hpp", callback_header},
-                  {"#{actor_name}_callbacks_impl.cpp", callback_impl}
-                ]
+              new_files ++ [{"#{actor_name}_callbacks_impl.cpp", callback_impl}]
             else
               new_files
             end
@@ -155,11 +149,9 @@ defmodule ActorSimulation.CAFGenerator do
     actor_name = actor_snake_case(name)
     class_name = "#{actor_name}_actor"
 
-    callback_include =
+    callback_interface =
       if enable_callbacks do
-        """
-        #include "#{actor_name}_callbacks.hpp"
-        """
+        generate_callback_interface_definition(name, definition)
       else
         ""
       end
@@ -188,6 +180,7 @@ defmodule ActorSimulation.CAFGenerator do
     """
     // Generated from ActorSimulation DSL
     // Actor: #{name}
+    // DO NOT EDIT - This file is auto-generated
 
     #pragma once
 
@@ -195,7 +188,8 @@ defmodule ActorSimulation.CAFGenerator do
     #include <chrono>
     #include <vector>
     #include "atoms.hpp"
-    #{callback_include}
+
+    #{callback_interface}
     class #{class_name} : public caf::event_based_actor {
       public:
         #{class_name}(caf::actor_config& cfg, const std::vector<caf::actor>& targets);
@@ -365,7 +359,7 @@ defmodule ActorSimulation.CAFGenerator do
     end
   end
 
-  defp generate_callback_header(name, definition) do
+  defp generate_callback_interface_definition(name, definition) do
     actor_name = actor_snake_case(name)
     class_name = "#{actor_name}_callbacks"
 
@@ -385,20 +379,15 @@ defmodule ActorSimulation.CAFGenerator do
       end
 
     """
-    // Generated from ActorSimulation DSL
     // Callback interface for: #{name}
-    //
-    // CUSTOMIZE THIS FILE to add your own behavior!
-    // The generated actor code will call these methods.
-
-    #pragma once
-
+    // This is the contract - do not modify
     class #{class_name} {
       public:
         virtual ~#{class_name}() = default;
 
     #{methods_str}
     };
+
     """
   end
 
@@ -439,10 +428,10 @@ defmodule ActorSimulation.CAFGenerator do
     // Generated from ActorSimulation DSL
     // Callback implementation for: #{name}
     //
-    // IMPLEMENT YOUR CUSTOM LOGIC HERE
-    // This file is meant to be edited - add your business logic!
+    // CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+    // The interface is defined in #{actor_name}_actor.hpp
 
-    #include "#{actor_name}_callbacks.hpp"
+    #include "#{actor_name}_actor.hpp"
     #include <iostream>
 
     #{methods_str}

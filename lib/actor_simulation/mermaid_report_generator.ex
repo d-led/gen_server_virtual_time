@@ -93,7 +93,9 @@ defmodule ActorSimulation.MermaidReportGenerator do
     node_lines = generate_nodes(actors, stats, show_stats)
 
     # Add edges (connections) from both definitions and actual trace
-    edge_lines = generate_edges(actors, simulation.trace, show_labels)
+    # Pass actual simulation duration for accurate frequency calculation
+    duration_ms = Map.get(simulation, :actual_duration, 1000)
+    edge_lines = generate_edges(actors, simulation.trace, show_labels, duration_ms)
 
     # Add styling based on activity
     style_lines =
@@ -229,29 +231,73 @@ defmodule ActorSimulation.MermaidReportGenerator do
   defp select_shape_for_capabilities(%{is_sink: true}), do: {"[\"", "\"]"}
   defp select_shape_for_capabilities(_), do: {"[\"", "\"]"}
 
-  defp generate_edges(actors, trace, show_labels) do
-    # Hybrid approach: use trace events for simulated actors, synthetic edges for real processes
+  defp generate_edges(actors, trace, show_labels, duration_ms) do
+    # Hybrid approach: prefer specific labels over generic ones
+    # Priority: definition edges with specific labels > trace edges > definition edges with generic labels > synthetic
 
-    # First, try to extract edges from trace (works for simulated actors)
-    trace_edges = extract_edges_from_trace(trace, actors, show_labels)
-
-    # Then, generate synthetic edges for real processes that don't have trace events
+    # Generate all edge sources
+    definition_edges = generate_definition_edges(actors, show_labels)
+    trace_edges = extract_edges_from_trace(trace, actors, show_labels, duration_ms)
     synthetic_edges = generate_synthetic_edges_from_stats(actors, show_labels)
 
-    # Finally, fall back to definition-based edges for simulated actors without trace
-    definition_edges = generate_definition_edges(actors, show_labels)
+    # Separate definition edges into specific and generic
+    {specific_def_edges, generic_def_edges} =
+      Enum.split_with(definition_edges, fn edge ->
+        # Generic edges contain "forwarded" - these are inferred, not explicit
+        not String.contains?(edge, "forwarded")
+      end)
 
-    # Combine all edge sources and deduplicate
-    (trace_edges ++ synthetic_edges ++ definition_edges)
-    |> Enum.uniq()
+    # Build a map of actor pairs to their best edge
+    edge_map = %{}
+
+    # Start with synthetic edges (lowest priority)
+    edge_map =
+      Enum.reduce(synthetic_edges, edge_map, fn edge, acc ->
+        pair = extract_edge_pair(edge)
+        Map.put_new(acc, pair, edge)
+      end)
+
+    # Override with generic definition edges
+    edge_map =
+      Enum.reduce(generic_def_edges, edge_map, fn edge, acc ->
+        pair = extract_edge_pair(edge)
+        Map.put(acc, pair, edge)
+      end)
+
+    # Override with trace edges (actual runtime messages)
+    edge_map =
+      Enum.reduce(trace_edges, edge_map, fn edge, acc ->
+        pair = extract_edge_pair(edge)
+        Map.put(acc, pair, edge)
+      end)
+
+    # Override with specific definition edges (highest priority - explicit send patterns)
+    edge_map =
+      Enum.reduce(specific_def_edges, edge_map, fn edge, acc ->
+        pair = extract_edge_pair(edge)
+        Map.put(acc, pair, edge)
+      end)
+
+    # Return edges in a consistent order
+    Map.values(edge_map)
+  end
+
+  # Extract the (from, to) pair from an edge string like "actor1 -->|label| actor2"
+  defp extract_edge_pair(edge) do
+    case Regex.run(~r/^(\w+)\s+-->.*?\s+(\w+)$/, edge) do
+      [_, from, to] -> {from, to}
+      _ -> {nil, nil}
+    end
   end
 
   # Extract edges from actual message trace
   # This captures dynamic interactions not defined in static targets
-  defp extract_edges_from_trace(nil, _actors, _show_labels), do: []
-  defp extract_edges_from_trace([], _actors, _show_labels), do: []
+  defp extract_edges_from_trace(nil, _actors, _show_labels, _duration_ms), do: []
+  defp extract_edges_from_trace([], _actors, _show_labels, _duration_ms), do: []
 
-  defp extract_edges_from_trace(trace, actors, show_labels) do
+  defp extract_edges_from_trace(trace, actors, show_labels, duration_ms) do
+    # Use provided simulation duration for accurate rate calculation
+
     # First, handle events with known senders (simulated actors)
     known_edges =
       trace
@@ -266,7 +312,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
       |> Enum.map(fn {{from, to}, events} ->
         # Get the most common message type for this edge
         if show_labels do
-          message_label = extract_trace_message_label(events)
+          message_label = extract_trace_message_label(events, duration_ms)
           "#{from} -->|#{escape_mermaid_label(message_label)}| #{to}"
         else
           "#{from} --> #{to}"
@@ -312,7 +358,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
   end
 
   # Extract a representative label for an edge from trace events
-  defp extract_trace_message_label(events) do
+  defp extract_trace_message_label(events, duration_ms) do
     # Count message types
     message_counts =
       events
@@ -322,12 +368,31 @@ defmodule ActorSimulation.MermaidReportGenerator do
     # Find the most frequent message
     {most_common_msg, count} = Enum.max_by(message_counts, fn {_msg, count} -> count end)
 
+    # Calculate frequency
+    total_messages = length(events)
+    freq_per_sec = (total_messages * 1000 / duration_ms) |> Float.round(1)
+
+    # Format based on frequency
+    freq_label =
+      if freq_per_sec >= 1.0 do
+        # Show messages per second
+        if freq_per_sec == Float.round(freq_per_sec, 0) do
+          "#{trunc(freq_per_sec)}/s"
+        else
+          "#{freq_per_sec}/s"
+        end
+      else
+        # Show interval in ms
+        interval_ms = (duration_ms / total_messages) |> round()
+        "every #{interval_ms}ms"
+      end
+
     if length(events) > count do
       # Multiple different messages on this edge
-      "#{count}× #{most_common_msg}<br/>+#{length(events) - count} more"
+      "#{count}× #{most_common_msg}<br/>#{freq_label}"
     else
       # Single message type
-      most_common_msg
+      "#{most_common_msg}<br/>#{freq_label}"
     end
   end
 

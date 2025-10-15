@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: subscriber2
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
@@ -12,12 +13,6 @@ import (
 type Subscriber2Callbacks interface {
 
 }
-
-// DefaultSubscriber2Callbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultSubscriber2Callbacks struct{}
-
-
 
 
 type Subscriber2 struct {

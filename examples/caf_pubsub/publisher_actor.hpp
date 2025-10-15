@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: publisher
+// DO NOT EDIT - This file is auto-generated
 
 #pragma once
 
@@ -7,7 +8,16 @@
 #include <chrono>
 #include <vector>
 #include "atoms.hpp"
-#include "publisher_callbacks.hpp"
+
+// Callback interface for: publisher
+// This is the contract - do not modify
+class publisher_callbacks {
+  public:
+    virtual ~publisher_callbacks() = default;
+
+    virtual void on_event();
+};
+
 
 class publisher_actor : public caf::event_based_actor {
   public:

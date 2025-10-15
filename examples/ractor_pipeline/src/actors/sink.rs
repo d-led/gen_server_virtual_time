@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: sink
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 
@@ -7,11 +8,6 @@ use ractor::{Actor, ActorProcessingErr, ActorRef};
 /// Implement this trait to customize actor behavior
 pub trait SinkCallbacks: Send + Sync {}
 
-/// DefaultSinkCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultSinkCallbacks;
-
-impl SinkCallbacks for DefaultSinkCallbacks {}
 
 #[allow(dead_code)]
 pub struct SinkState {

@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: subscriber3
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 
@@ -7,11 +8,6 @@ use ractor::{Actor, ActorProcessingErr, ActorRef};
 /// Implement this trait to customize actor behavior
 pub trait Subscriber3Callbacks: Send + Sync {}
 
-/// DefaultSubscriber3Callbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultSubscriber3Callbacks;
-
-impl Subscriber3Callbacks for DefaultSubscriber3Callbacks {}
 
 #[allow(dead_code)]
 pub struct Subscriber3State {

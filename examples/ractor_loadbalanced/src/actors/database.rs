@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: database
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 
@@ -7,11 +8,6 @@ use ractor::{Actor, ActorProcessingErr, ActorRef};
 /// Implement this trait to customize actor behavior
 pub trait DatabaseCallbacks: Send + Sync {}
 
-/// DefaultDatabaseCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultDatabaseCallbacks;
-
-impl DatabaseCallbacks for DefaultDatabaseCallbacks {}
 
 #[allow(dead_code)]
 pub struct DatabaseState {

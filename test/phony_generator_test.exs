@@ -155,10 +155,22 @@ defmodule PhonyGeneratorTest do
           enable_callbacks: true
         )
 
-      {_name, source} = Enum.find(files, fn {name, _} -> name == "processor.go" end)
+      # Check actor file (contains interface - the contract)
+      {_name, actor_source} = Enum.find(files, fn {name, _} -> name == "processor.go" end)
+      assert actor_source =~ "type ProcessorCallbacks interface"
+      assert actor_source =~ "OnTick()"
+      assert actor_source =~ "callbacks ProcessorCallbacks"
+      assert actor_source =~ "a.callbacks.OnTick()"
+      assert actor_source =~ "DO NOT EDIT"
 
-      assert source =~ "type ProcessorCallbacks interface"
-      assert source =~ "OnTick()"
+      # Check callbacks file (only implementation - customizable)
+      {_name, callbacks_source} =
+        Enum.find(files, fn {name, _} -> name == "processor_callbacks.go" end)
+
+      assert callbacks_source =~ "type DefaultProcessorCallbacks struct"
+      assert callbacks_source =~ "func (c *DefaultProcessorCallbacks) OnTick()"
+      assert callbacks_source =~ "CUSTOMIZE THIS"
+      refute callbacks_source =~ "type ProcessorCallbacks interface"
     end
 
     test "generates self-message pattern with time.Sleep" do

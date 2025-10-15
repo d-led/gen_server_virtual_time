@@ -221,8 +221,10 @@ simulation = ActorSimulation.new()
     send_pattern: {:rate, 100, :data},
     targets: [:stage1, :stage2])
 |> ActorSimulation.add_actor(:stage1,
+    targets: [:sink],  # Define targets for flowchart edges
     on_receive: fn msg, s -> {:send, [{:sink, msg}], s} end)
 |> ActorSimulation.add_actor(:stage2,
+    targets: [:sink],
     on_receive: fn msg, s -> {:send, [{:sink, msg}], s} end)
 |> ActorSimulation.add_actor(:sink)
 |> ActorSimulation.run(duration: 5000)
@@ -242,6 +244,9 @@ File.write!("report.html", html)
 # • Activity-based color coding
 # • Detailed statistics table
 # • Virtual time speedup metrics
+
+# 💡 Tip: For dynamic sends without targets, enable tracing:
+# simulation = ActorSimulation.new(trace: true)
 ```
 
 ## Installation

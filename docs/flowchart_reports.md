@@ -43,6 +43,43 @@ Open `report.html` in your browser to see:
 - Simulation summary with timing metrics
 - Activity-based color coding
 
+## When to Enable Tracing
+
+**Important**: Enable tracing when actors send messages dynamically via
+`on_match` or `on_receive` callbacks **without** explicit `targets`:
+
+```elixir
+# ✅ Tracing required - dynamic sends without targets
+simulation = ActorSimulation.new(trace: true)
+|> ActorSimulation.add_actor(:worker,
+    on_match: [
+      {:work, fn s -> {:send, [{:collector, :result}], s} end}
+    ])
+
+# ✅ No tracing needed - explicit targets defined
+simulation = ActorSimulation.new()
+|> ActorSimulation.add_actor(:worker,
+    targets: [:collector],  # Explicit target
+    on_receive: fn msg, s -> {:send, [{:collector, msg}], s} end)
+
+# ✅ No tracing needed - static send_pattern
+simulation = ActorSimulation.new()
+|> ActorSimulation.add_actor(:producer,
+    send_pattern: {:periodic, 100, :data},
+    targets: [:consumer])
+```
+
+Without tracing, dynamic message sends won't appear as edges in the flowchart.
+Tracing captures the actual message flows during simulation, which is essential
+for accurately representing runtime message patterns.
+
+**Trade-off**: Tracing has minimal overhead but collects message events. For
+large simulations (thousands of messages), consider:
+
+- Using explicit `targets` when possible
+- Enabling tracing only for report generation
+- Running shorter simulations for documentation
+
 ## Options
 
 ```elixir
@@ -98,9 +135,11 @@ simulation = ActorSimulation.new()
     send_pattern: {:periodic, 100, :request},
     targets: [:stage1])
 |> ActorSimulation.add_actor(:stage1,
+    targets: [:stage2],  # Explicit targets enable edge detection
     on_receive: forward,
     initial_state: %{next: :stage2})
 |> ActorSimulation.add_actor(:stage2,
+    targets: [:sink],
     on_receive: forward,
     initial_state: %{next: :sink})
 |> ActorSimulation.add_actor(:sink)
@@ -135,7 +174,8 @@ File.write!("pubsub.html", html)
 ### Load Balanced Workers
 
 ```elixir
-simulation = ActorSimulation.new()
+# Enable tracing to capture dynamic sends from workers to collector
+simulation = ActorSimulation.new(trace: true)
 |> ActorSimulation.add_actor(:load_balancer,
     send_pattern: {:burst, 3, 200, :work},
     targets: [:worker1, :worker2, :worker3])

@@ -1,11 +1,11 @@
 // Generated from ActorSimulation DSL
 // Actor: load_balancer
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
 import (
 	"github.com/Arceliar/phony"
-	"fmt"
 	"time"
 )
 
@@ -14,16 +14,6 @@ import (
 type LoadBalancerCallbacks interface {
 	OnRequest()
 }
-
-// DefaultLoadBalancerCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultLoadBalancerCallbacks struct{}
-
-func (c *DefaultLoadBalancerCallbacks) OnRequest() {
-	// TODO: Implement custom behavior for request
-	fmt.Printf("LoadBalancer: Sending request message\n")
-}
-
 
 
 type LoadBalancer struct {

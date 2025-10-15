@@ -35,6 +35,29 @@ and this project adheres to
     validation
   - Updated all generator lists in README, docs/generators.md, and
     generated/examples/generators.html
+  - `docs/flowchart_reports.md` - added "When to Enable Tracing" section with
+    examples and best practices
+
+### Fixed
+
+- **Generator Code Separation** - Properly separated generated
+  contract/interface code from customizable implementation code across all
+  generators:
+  - **Phony (Go)**: Interface now in `{actor}.go` (generated), implementation in
+    `{actor}_callbacks.go` (customizable)
+  - **Ractor (Rust)**: Trait now in `{actor}.rs` (generated), implementation in
+    `{actor}_callbacks.rs` (customizable)
+  - **CAF (C++)**: Interface now in `{actor}_actor.hpp` (generated),
+    implementation in `{actor}_callbacks_impl.cpp` (customizable). Removed
+    separate `*_callbacks.hpp` files.
+  - **VLINGO (Java)**: Clarified that `*Callbacks.java` interface is generated
+    (DO NOT EDIT), `*CallbacksImpl.java` is customizable
+  - This ensures users don't accidentally modify the contract/interface when
+    they only want to customize the implementation
+- Mermaid flowchart reports missing edges for dynamic sends: actors using
+  `on_match`/`on_receive` callbacks without explicit `targets` now require
+  `trace: true` to capture runtime message flows. Updated load-balanced example
+  and documentation.
 
 ## [0.3.0] - 2025-10-14
 

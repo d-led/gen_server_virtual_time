@@ -78,8 +78,22 @@ defmodule ActorSimulation.PhonyGenerator do
       case actor_info.type do
         :simulated ->
           definition = actor_info.definition
+          snake_name = GeneratorUtils.to_snake_case(name)
+
+          # Generate actor interface file (generated code, do not edit)
           actor_file = generate_actor_file(name, definition, enable_callbacks)
-          [{"#{GeneratorUtils.to_snake_case(name)}.go", actor_file} | acc]
+          new_files = [{"#{snake_name}.go", actor_file}]
+
+          # Generate callbacks file (custom code, meant to be edited)
+          new_files =
+            if enable_callbacks do
+              callback_file = generate_callbacks_file(name, definition)
+              new_files ++ [{"#{snake_name}_callbacks.go", callback_file}]
+            else
+              new_files
+            end
+
+          new_files ++ acc
 
         :real_process ->
           acc
@@ -145,16 +159,15 @@ defmodule ActorSimulation.PhonyGenerator do
 
     # Determine which imports are needed
     needs_time = definition.send_pattern != nil
-    needs_fmt = enable_callbacks && definition.send_pattern != nil
 
     imports = ["\"github.com/Arceliar/phony\""]
-    imports = if needs_fmt, do: ["\"fmt\"" | imports], else: imports
     imports = if needs_time, do: ["\"time\"" | imports], else: imports
     import_list = Enum.map_join(Enum.reverse(imports), "\n", &"\t#{&1}")
 
     """
     // Generated from ActorSimulation DSL
     // Actor: #{name}
+    // DO NOT EDIT - This file is auto-generated
 
     package main
 
@@ -163,7 +176,6 @@ defmodule ActorSimulation.PhonyGenerator do
     )
 
     #{callback_interface}
-
     type #{type_name} struct {
     \tphony.Inbox
     \ttargets []*#{type_name}
@@ -191,6 +203,20 @@ defmodule ActorSimulation.PhonyGenerator do
         "\tOn#{msg_name}()"
       end)
 
+    """
+    // #{type_name}Callbacks defines the callback interface
+    // Implement this interface to customize actor behavior
+    type #{type_name}Callbacks interface {
+    #{methods}
+    }
+
+    """
+  end
+
+  defp generate_callbacks_file(name, definition) do
+    type_name = GeneratorUtils.to_pascal_case(name)
+    messages = GeneratorUtils.extract_messages(definition.send_pattern)
+
     impl_methods =
       Enum.map_join(messages, "\n\n", fn msg ->
         msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
@@ -206,11 +232,15 @@ defmodule ActorSimulation.PhonyGenerator do
       end)
 
     """
-    // #{type_name}Callbacks defines the callback interface
-    // Implement this interface to customize actor behavior
-    type #{type_name}Callbacks interface {
-    #{methods}
-    }
+    // Generated from ActorSimulation DSL
+    // Default callback implementation for: #{name}
+    // CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+
+    package main
+
+    import (
+    \t"fmt"
+    )
 
     // Default#{type_name}Callbacks provides default implementations
     // CUSTOMIZE THIS to add your own behavior!
@@ -507,9 +537,10 @@ defmodule ActorSimulation.PhonyGenerator do
 
     ## Customizing Behavior
 
-    The generated actor code uses callback interfaces to allow customization:
+    The generated actor code uses callback interfaces to allow customization WITHOUT
+    modifying generated files:
 
-    1. Find the `*Callbacks` interface in each actor file
+    1. Find the `*_callbacks.go` files
     2. Modify the `Default*Callbacks` implementation
     3. Add your custom logic in the callback methods
     4. Rebuild
@@ -519,7 +550,8 @@ defmodule ActorSimulation.PhonyGenerator do
     ## Project Structure
 
     - `main.go` - Entry point and actor spawning
-    - `*.go` - Generated actor implementations
+    - `*_actor.go` - Generated actor interface (DO NOT EDIT)
+    - `*_callbacks.go` - Callback implementations (EDIT THIS!)
     - `actor_test.go` - Go test suite
     - `go.mod` - Module definition
 

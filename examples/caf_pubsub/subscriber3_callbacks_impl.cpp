@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: subscriber3
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in subscriber3_actor.hpp
 
-#include "subscriber3_callbacks.hpp"
+#include "subscriber3_actor.hpp"
 #include <iostream>
 
 void subscriber3_callbacks::on_message() {

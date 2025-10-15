@@ -479,14 +479,17 @@ defmodule ActorSimulation.VlingoGenerator do
     """
     // Generated from ActorSimulation DSL
     // Callback interface for: #{name}
+    // DO NOT EDIT - This file is auto-generated
     //
-    // IMPLEMENT THIS INTERFACE to add custom behavior!
+    // This interface defines the contract for #{class_name} callbacks.
+    // Customize behavior by editing #{class_name}CallbacksImpl.java
 
     package #{group_id};
 
     /**
      * Callback interface for #{class_name} actor.
-     * Implement this interface to customize actor behavior.
+     * This is the contract - do not modify this interface.
+     * Customize behavior in #{class_name}CallbacksImpl instead.
      */
     public interface #{class_name}Callbacks {
     #{methods}

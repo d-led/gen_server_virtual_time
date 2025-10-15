@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: stage1
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 
@@ -7,11 +8,6 @@ use ractor::{Actor, ActorProcessingErr, ActorRef};
 /// Implement this trait to customize actor behavior
 pub trait Stage1Callbacks: Send + Sync {}
 
-/// DefaultStage1Callbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultStage1Callbacks;
-
-impl Stage1Callbacks for DefaultStage1Callbacks {}
 
 #[allow(dead_code)]
 pub struct Stage1State {

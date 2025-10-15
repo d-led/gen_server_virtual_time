@@ -1,11 +1,11 @@
 // Generated from ActorSimulation DSL
 // Actor: burst_generator
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
 import (
 	"github.com/Arceliar/phony"
-	"fmt"
 	"time"
 )
 
@@ -14,16 +14,6 @@ import (
 type BurstGeneratorCallbacks interface {
 	OnBatch()
 }
-
-// DefaultBurstGeneratorCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultBurstGeneratorCallbacks struct{}
-
-func (c *DefaultBurstGeneratorCallbacks) OnBatch() {
-	// TODO: Implement custom behavior for batch
-	fmt.Printf("BurstGenerator: Sending batch message\n")
-}
-
 
 
 type BurstGenerator struct {

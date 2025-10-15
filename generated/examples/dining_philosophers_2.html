@@ -240,20 +240,20 @@ sequenceDiagram
     Note over philosopher_0,fork_0: t=675ms
     philosopher_0->>fork_1: {:release_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=675ms
-    philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
-    Note over philosopher_1,philosopher_1: t=750ms
     philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     Note over philosopher_0,philosopher_0: t=750ms
     philosopher_0->>fork_0: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_0: t=750ms
-    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
-    Note over philosopher_1,fork_0: t=750ms
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
+    Note over philosopher_1,philosopher_1: t=750ms
     fork_0->>philosopher_0: {:fork_granted, :fork_0}
     Note over fork_0,philosopher_0: t=750ms
-    fork_0->>philosopher_1: {:fork_denied, :fork_0}
-    Note over fork_0,philosopher_1: t=750ms
     philosopher_0->>fork_1: {:request_fork, :philosopher_0}
     Note over philosopher_0,fork_1: t=750ms
+    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
+    Note over philosopher_1,fork_0: t=750ms
+    fork_0->>philosopher_1: {:fork_denied, :fork_0}
+    Note over fork_0,philosopher_1: t=750ms
     fork_1->>philosopher_0: {:fork_granted, :fork_1}
     Note over fork_1,philosopher_0: t=750ms
       </div>

@@ -213,110 +213,68 @@
       <div class="mermaid">
 flowchart LR
     alice("alice<br/>
-📤 Sent: 3238<br/>
-📥 Recv: 3160")
+📤 Sent: 3122<br/>
+📥 Recv: 3038")
     bob("bob<br/>
-📤 Sent: 3281<br/>
-📥 Recv: 3209")
+📤 Sent: 3162<br/>
+📥 Recv: 3090")
     charlie("charlie<br/>
-📤 Sent: 3325<br/>
-📥 Recv: 3271")
+📤 Sent: 3204<br/>
+📥 Recv: 3144")
     diana("diana<br/>
-📤 Sent: 3381<br/>
-📥 Recv: 3333")
+📤 Sent: 3160<br/>
+📥 Recv: 3112")
     eve("eve<br/>
-📤 Sent: 3443<br/>
-📥 Recv: 3401")
+📤 Sent: 3261<br/>
+📥 Recv: 3219")
     frank("frank<br/>
-📤 Sent: 3418<br/>
-📥 Recv: 3382")
+📤 Sent: 3481<br/>
+📥 Recv: 3445")
     grace("grace<br/>
-📤 Sent: 3630<br/>
-📥 Recv: 3594")
-    diana -->|:hi| eve
-    eve -->|:hi| diana
-    bob -->|:hi| diana
-    frank -->|:hi| diana
-    alice -->|:hi| grace
-    alice -->|:hi| eve
-    frank -->|:hi| eve
-    frank -->|:hi| charlie
-    alice -->|:hi| diana
-    grace -->|:hi| alice
-    diana -->|:hi| frank
-    eve -->|:hi| bob
-    charlie -->|:hi| eve
-    eve -->|:hi| alice
-    frank -->|:hi| alice
-    charlie -->|:hi| bob
-    charlie -->|:hi| alice
-    charlie -->|:hi| diana
-    charlie -->|:hi| grace
-    diana -->|:hi| alice
-    eve -->|:hi| frank
-    bob -->|:hi| eve
-    diana -->|:hi| charlie
-    grace -->|:hi| eve
-    diana -->|:hi| grace
-    alice -->|:hi| frank
-    diana -->|:hi| bob
-    grace -->|:hi| bob
-    eve -->|:hi| charlie
-    grace -->|:hi| diana
-    alice -->|:hi| charlie
-    grace -->|:hi| frank
-    alice -->|:hi| bob
-    bob -->|:hi| charlie
-    bob -->|:hi| alice
-    frank -->|:hi| grace
-    eve -->|:hi| grace
-    grace -->|:hi| charlie
-    bob -->|:hi| grace
-    bob -->|:hi| frank
-    charlie -->|:hi| frank
-    frank -->|:hi| bob
-    alice -->|:hi<br/>every 200ms| bob
-    alice -->|:hi<br/>every 200ms| charlie
-    alice -->|:hi<br/>every 200ms| diana
-    alice -->|:hi<br/>every 200ms| eve
-    alice -->|:hi<br/>every 200ms| frank
-    alice -->|:hi<br/>every 200ms| grace
+📤 Sent: 3450<br/>
+📥 Recv: 3420")
     bob -->|:hi<br/>every 250ms| alice
-    bob -->|:hi<br/>every 250ms| charlie
-    bob -->|:hi<br/>every 250ms| diana
-    bob -->|:hi<br/>every 250ms| eve
-    bob -->|:hi<br/>every 250ms| frank
-    bob -->|:hi<br/>every 250ms| grace
-    charlie -->|:hi<br/>every 300ms| alice
-    charlie -->|:hi<br/>every 300ms| bob
-    charlie -->|:hi<br/>every 300ms| diana
-    charlie -->|:hi<br/>every 300ms| eve
-    charlie -->|:hi<br/>every 300ms| frank
-    charlie -->|:hi<br/>every 300ms| grace
     diana -->|:hi<br/>every 350ms| alice
-    diana -->|:hi<br/>every 350ms| bob
-    diana -->|:hi<br/>every 350ms| charlie
-    diana -->|:hi<br/>every 350ms| eve
-    diana -->|:hi<br/>every 350ms| frank
-    diana -->|:hi<br/>every 350ms| grace
-    eve -->|:hi<br/>every 400ms| alice
-    eve -->|:hi<br/>every 400ms| bob
+    charlie -->|:hi<br/>every 300ms| alice
+    bob -->|:hi<br/>every 250ms| charlie
+    eve -->|:hi<br/>every 400ms| grace
+    charlie -->|:hi<br/>every 300ms| grace
     eve -->|:hi<br/>every 400ms| charlie
+    frank -->|:hi<br/>every 450ms| bob
+    charlie -->|:hi<br/>every 300ms| frank
+    bob -->|:hi<br/>every 250ms| diana
+    grace -->|:hi<br/>every 500ms| frank
+    grace -->|:hi<br/>every 500ms| eve
+    diana -->|:hi<br/>every 350ms| eve
+    grace -->|:hi<br/>every 500ms| diana
+    grace -->|:hi<br/>every 500ms| bob
+    diana -->|:hi<br/>every 350ms| grace
+    alice -->|:hi<br/>every 200ms| eve
+    grace -->|:hi<br/>every 500ms| alice
+    charlie -->|:hi<br/>every 300ms| diana
+    eve -->|:hi<br/>every 400ms| bob
     eve -->|:hi<br/>every 400ms| diana
     eve -->|:hi<br/>every 400ms| frank
-    eve -->|:hi<br/>every 400ms| grace
-    frank -->|:hi<br/>every 450ms| alice
-    frank -->|:hi<br/>every 450ms| bob
-    frank -->|:hi<br/>every 450ms| charlie
-    frank -->|:hi<br/>every 450ms| diana
+    alice -->|:hi<br/>every 200ms| charlie
+    bob -->|:hi<br/>every 250ms| grace
     frank -->|:hi<br/>every 450ms| eve
+    alice -->|:hi<br/>every 200ms| diana
+    alice -->|:hi<br/>every 200ms| grace
+    charlie -->|:hi<br/>every 300ms| eve
+    bob -->|:hi<br/>every 250ms| frank
+    diana -->|:hi<br/>every 350ms| charlie
+    charlie -->|:hi<br/>every 300ms| bob
+    frank -->|:hi<br/>every 450ms| alice
+    eve -->|:hi<br/>every 400ms| alice
+    frank -->|:hi<br/>every 450ms| diana
+    alice -->|:hi<br/>every 200ms| bob
     frank -->|:hi<br/>every 450ms| grace
-    grace -->|:hi<br/>every 500ms| alice
-    grace -->|:hi<br/>every 500ms| bob
+    diana -->|:hi<br/>every 350ms| frank
+    frank -->|:hi<br/>every 450ms| charlie
+    diana -->|:hi<br/>every 350ms| bob
     grace -->|:hi<br/>every 500ms| charlie
-    grace -->|:hi<br/>every 500ms| diana
-    grace -->|:hi<br/>every 500ms| eve
-    grace -->|:hi<br/>every 500ms| frank
+    alice -->|:hi<br/>every 200ms| frank
+    bob -->|:hi<br/>every 250ms| eve
     style alice fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style bob fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style charlie fill:#fff3e0,stroke:#f57c00,stroke-width:3px
@@ -370,65 +328,65 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>alice</strong></td>
-  <td class="metric">3238</td>
-  <td class="metric">3160</td>
-  <td class="metric">1079.33 msg/s</td>
-  <td class="metric">1053.33 msg/s</td>
-  <td><span class="badge high">6398 total</span></td>
+  <td class="metric">3122</td>
+  <td class="metric">3038</td>
+  <td class="metric">1040.67 msg/s</td>
+  <td class="metric">1012.67 msg/s</td>
+  <td><span class="badge high">6160 total</span></td>
 </tr>
 
 <tr>
   <td><strong>bob</strong></td>
-  <td class="metric">3281</td>
-  <td class="metric">3209</td>
-  <td class="metric">1093.67 msg/s</td>
-  <td class="metric">1069.67 msg/s</td>
-  <td><span class="badge high">6490 total</span></td>
+  <td class="metric">3162</td>
+  <td class="metric">3090</td>
+  <td class="metric">1054.0 msg/s</td>
+  <td class="metric">1030.0 msg/s</td>
+  <td><span class="badge high">6252 total</span></td>
 </tr>
 
 <tr>
   <td><strong>charlie</strong></td>
-  <td class="metric">3325</td>
-  <td class="metric">3271</td>
-  <td class="metric">1108.33 msg/s</td>
-  <td class="metric">1090.33 msg/s</td>
-  <td><span class="badge high">6596 total</span></td>
+  <td class="metric">3204</td>
+  <td class="metric">3144</td>
+  <td class="metric">1068.0 msg/s</td>
+  <td class="metric">1048.0 msg/s</td>
+  <td><span class="badge high">6348 total</span></td>
 </tr>
 
 <tr>
   <td><strong>diana</strong></td>
-  <td class="metric">3381</td>
-  <td class="metric">3333</td>
-  <td class="metric">1127.0 msg/s</td>
-  <td class="metric">1111.0 msg/s</td>
-  <td><span class="badge high">6714 total</span></td>
+  <td class="metric">3160</td>
+  <td class="metric">3112</td>
+  <td class="metric">1053.33 msg/s</td>
+  <td class="metric">1037.33 msg/s</td>
+  <td><span class="badge high">6272 total</span></td>
 </tr>
 
 <tr>
   <td><strong>eve</strong></td>
-  <td class="metric">3443</td>
-  <td class="metric">3401</td>
-  <td class="metric">1147.67 msg/s</td>
-  <td class="metric">1133.67 msg/s</td>
-  <td><span class="badge high">6844 total</span></td>
+  <td class="metric">3261</td>
+  <td class="metric">3219</td>
+  <td class="metric">1087.0 msg/s</td>
+  <td class="metric">1073.0 msg/s</td>
+  <td><span class="badge high">6480 total</span></td>
 </tr>
 
 <tr>
   <td><strong>frank</strong></td>
-  <td class="metric">3418</td>
-  <td class="metric">3382</td>
-  <td class="metric">1139.33 msg/s</td>
-  <td class="metric">1127.33 msg/s</td>
-  <td><span class="badge high">6800 total</span></td>
+  <td class="metric">3481</td>
+  <td class="metric">3445</td>
+  <td class="metric">1160.33 msg/s</td>
+  <td class="metric">1148.33 msg/s</td>
+  <td><span class="badge high">6926 total</span></td>
 </tr>
 
 <tr>
   <td><strong>grace</strong></td>
-  <td class="metric">3630</td>
-  <td class="metric">3594</td>
-  <td class="metric">1210.0 msg/s</td>
-  <td class="metric">1198.0 msg/s</td>
-  <td><span class="badge high">7224 total</span></td>
+  <td class="metric">3450</td>
+  <td class="metric">3420</td>
+  <td class="metric">1150.0 msg/s</td>
+  <td class="metric">1140.0 msg/s</td>
+  <td><span class="badge high">6870 total</span></td>
 </tr>
 
     </tbody>
@@ -436,7 +394,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 47066 •
+    Total messages: 45308 •
     Duration: 3000ms •
     Actors: 7
   </div>

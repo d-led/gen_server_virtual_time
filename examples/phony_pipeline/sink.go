@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: sink
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
@@ -12,12 +13,6 @@ import (
 type SinkCallbacks interface {
 
 }
-
-// DefaultSinkCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultSinkCallbacks struct{}
-
-
 
 
 type Sink struct {

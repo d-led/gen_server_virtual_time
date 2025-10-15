@@ -105,7 +105,7 @@ defmodule MermaidReportTest do
       end
 
       simulation =
-        ActorSimulation.new()
+        ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:source,
           send_pattern: {:periodic, 100, :request},
           targets: [:stage1]
@@ -188,7 +188,7 @@ defmodule MermaidReportTest do
     test "generates load-balanced system report" do
       model_source = """
       simulation =
-        ActorSimulation.new()
+        ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:load_balancer,
           send_pattern: {:burst, 3, 200, :work},
           targets: [:worker1, :worker2, :worker3]
@@ -213,7 +213,7 @@ defmodule MermaidReportTest do
       """
 
       simulation =
-        ActorSimulation.new()
+        ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:load_balancer,
           send_pattern: {:burst, 3, 200, :work},
           targets: [:worker1, :worker2, :worker3]
@@ -439,7 +439,7 @@ defmodule MermaidReportTest do
 
       # Create the actual simulation with proper ring topology
       simulation =
-        ActorSimulation.new()
+        ActorSimulation.new(trace: true)
         |> ActorSimulation.add_actor(:actor0,
           send_pattern: {:periodic, 100, :token},
           targets: [:actor1]

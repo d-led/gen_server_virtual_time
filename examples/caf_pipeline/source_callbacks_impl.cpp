@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: source
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in source_actor.hpp
 
-#include "source_callbacks.hpp"
+#include "source_actor.hpp"
 #include <iostream>
 
 void source_callbacks::on_data() {

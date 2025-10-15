@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: burst_generator
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 use std::time::Duration;
@@ -11,16 +12,6 @@ pub trait BurstGeneratorCallbacks: Send + Sync {
     fn on_batch(&self);
 }
 
-/// DefaultBurstGeneratorCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultBurstGeneratorCallbacks;
-
-impl BurstGeneratorCallbacks for DefaultBurstGeneratorCallbacks {
-    fn on_batch(&self) {
-        // TODO: Implement custom behavior for batch
-        println!("BurstGenerator: Sending batch message");
-    }
-}
 
 #[allow(dead_code)]
 pub struct BurstGeneratorState {

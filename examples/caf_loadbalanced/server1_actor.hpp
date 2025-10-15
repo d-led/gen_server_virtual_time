@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: server1
+// DO NOT EDIT - This file is auto-generated
 
 #pragma once
 
@@ -7,7 +8,16 @@
 #include <chrono>
 #include <vector>
 #include "atoms.hpp"
-#include "server1_callbacks.hpp"
+
+// Callback interface for: server1
+// This is the contract - do not modify
+class server1_callbacks {
+  public:
+    virtual ~server1_callbacks() = default;
+
+    virtual void on_message();
+};
+
 
 class server1_actor : public caf::event_based_actor {
   public:

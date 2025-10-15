@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: source
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 use std::time::Duration;
@@ -11,16 +12,6 @@ pub trait SourceCallbacks: Send + Sync {
     fn on_data(&self);
 }
 
-/// DefaultSourceCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultSourceCallbacks;
-
-impl SourceCallbacks for DefaultSourceCallbacks {
-    fn on_data(&self) {
-        // TODO: Implement custom behavior for data
-        println!("Source: Sending data message");
-    }
-}
 
 #[allow(dead_code)]
 pub struct SourceState {

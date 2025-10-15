@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: load_balancer
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in load_balancer_actor.hpp
 
-#include "load_balancer_callbacks.hpp"
+#include "load_balancer_actor.hpp"
 #include <iostream>
 
 void load_balancer_callbacks::on_request() {

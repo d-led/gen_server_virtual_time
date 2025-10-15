@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: processor
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
@@ -12,12 +13,6 @@ import (
 type ProcessorCallbacks interface {
 
 }
-
-// DefaultProcessorCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultProcessorCallbacks struct{}
-
-
 
 
 type Processor struct {

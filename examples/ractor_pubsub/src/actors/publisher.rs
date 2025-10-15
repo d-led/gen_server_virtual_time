@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: publisher
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 use std::time::Duration;
@@ -11,16 +12,6 @@ pub trait PublisherCallbacks: Send + Sync {
     fn on_event(&self);
 }
 
-/// DefaultPublisherCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultPublisherCallbacks;
-
-impl PublisherCallbacks for DefaultPublisherCallbacks {
-    fn on_event(&self) {
-        // TODO: Implement custom behavior for event
-        println!("Publisher: Sending event message");
-    }
-}
 
 #[allow(dead_code)]
 pub struct PublisherState {

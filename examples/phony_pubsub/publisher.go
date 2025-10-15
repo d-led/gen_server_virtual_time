@@ -1,11 +1,11 @@
 // Generated from ActorSimulation DSL
 // Actor: publisher
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
 import (
 	"github.com/Arceliar/phony"
-	"fmt"
 	"time"
 )
 
@@ -14,16 +14,6 @@ import (
 type PublisherCallbacks interface {
 	OnEvent()
 }
-
-// DefaultPublisherCallbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultPublisherCallbacks struct{}
-
-func (c *DefaultPublisherCallbacks) OnEvent() {
-	// TODO: Implement custom behavior for event
-	fmt.Printf("Publisher: Sending event message\n")
-}
-
 
 
 type Publisher struct {

@@ -52,18 +52,17 @@ cargo test test_actor_system
 
 ## Customizing Behavior
 
-The generated actor code uses callback traits to allow customization:
+The generated actor code uses callback traits to allow customization WITHOUT
+modifying generated files:
 
-1. Find the `*Callbacks` trait in each actor file
-2. Create your own implementation of the trait
-3. Modify the actor's `pre_start` to use your implementation
+1. Find the `*_callbacks.rs` files in `src/actors/`
+2. Modify the `Default*Callbacks` implementation
+3. Add your custom logic in the callback methods
 4. Rebuild
 
 Example:
 ```rust
-pub struct MyCustomCallbacks;
-
-impl WorkerCallbacks for MyCustomCallbacks {
+impl WorkerCallbacks for DefaultWorkerCallbacks {
     fn on_tick(&self) {
         // Your custom logic here
         println!("Custom tick handler!");
@@ -74,7 +73,8 @@ impl WorkerCallbacks for MyCustomCallbacks {
 ## Project Structure
 
 - `src/main.rs` - Entry point and actor spawning
-- `src/actors/` - Generated actor implementations
+- `src/actors/*.rs` - Generated actor implementations (DO NOT EDIT)
+- `src/actors/*_callbacks.rs` - Callback implementations (EDIT THIS!)
 - `tests/` - Integration test suite
 - `Cargo.toml` - Package configuration
 

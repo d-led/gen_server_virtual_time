@@ -1,10 +1,10 @@
 // Generated from ActorSimulation DSL
 // Callback implementation for: database
 //
-// IMPLEMENT YOUR CUSTOM LOGIC HERE
-// This file is meant to be edited - add your business logic!
+// CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+// The interface is defined in database_actor.hpp
 
-#include "database_callbacks.hpp"
+#include "database_actor.hpp"
 #include <iostream>
 
 void database_callbacks::on_message() {

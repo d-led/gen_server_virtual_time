@@ -82,9 +82,22 @@ defmodule ActorSimulation.RactorGenerator do
       case actor_info.type do
         :simulated ->
           definition = actor_info.definition
-          actor_file = generate_actor_file(name, definition, enable_callbacks)
           snake_name = GeneratorUtils.to_snake_case(name)
-          [{"src/actors/#{snake_name}.rs", actor_file} | acc]
+
+          # Generate actor implementation file (generated code, do not edit)
+          actor_file = generate_actor_file(name, definition, enable_callbacks)
+          new_files = [{"src/actors/#{snake_name}.rs", actor_file}]
+
+          # Generate callbacks file (custom code, meant to be edited)
+          new_files =
+            if enable_callbacks do
+              callback_file = generate_callback_file(name, definition)
+              new_files ++ [{"src/actors/#{snake_name}_callbacks.rs", callback_file}]
+            else
+              new_files
+            end
+
+          new_files ++ acc
 
         :real_process ->
           acc
@@ -126,7 +139,7 @@ defmodule ActorSimulation.RactorGenerator do
   defp generate_actor_file(name, definition, enable_callbacks) do
     callback_trait =
       if enable_callbacks do
-        generate_callback_trait(name, definition)
+        generate_callback_trait_definition(name, definition)
       else
         ""
       end
@@ -145,6 +158,7 @@ defmodule ActorSimulation.RactorGenerator do
     result = """
     // Generated from ActorSimulation DSL
     // Actor: #{name}
+    // DO NOT EDIT - This file is auto-generated
 
     use ractor::{Actor, ActorProcessingErr, ActorRef};
     #{imports_section}
@@ -159,7 +173,7 @@ defmodule ActorSimulation.RactorGenerator do
     String.trim_trailing(result, "\n") <> "\n"
   end
 
-  defp generate_callback_trait(name, definition) do
+  defp generate_callback_trait_definition(name, definition) do
     type_name = GeneratorUtils.to_pascal_case(name)
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
 
@@ -168,6 +182,33 @@ defmodule ActorSimulation.RactorGenerator do
         msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_snake_case()
         "    fn on_#{msg_name}(&self);"
       end)
+
+    if length(messages) > 0 do
+      """
+      /// #{type_name}Callbacks defines the callback trait
+      /// Implement this trait to customize actor behavior
+      pub trait #{type_name}Callbacks: Send + Sync {
+      #{methods}
+      }
+
+      """
+    else
+      """
+      /// #{type_name}Callbacks defines the callback trait
+      /// Implement this trait to customize actor behavior
+      pub trait #{type_name}Callbacks: Send + Sync {}
+
+      """
+    end
+  end
+
+  defp generate_callback_file(name, definition) do
+    type_name = GeneratorUtils.to_pascal_case(name)
+    messages = GeneratorUtils.extract_messages(definition.send_pattern)
+
+    # Import the trait from the actor module
+    snake_name = GeneratorUtils.to_snake_case(name)
+    trait_use = "use super::#{snake_name}::#{type_name}Callbacks;"
 
     impl_methods =
       Enum.map_join(messages, "\n\n    ", fn msg ->
@@ -184,11 +225,11 @@ defmodule ActorSimulation.RactorGenerator do
 
     if length(messages) > 0 do
       """
-      /// #{type_name}Callbacks defines the callback trait
-      /// Implement this trait to customize actor behavior
-      pub trait #{type_name}Callbacks: Send + Sync {
-      #{methods}
-      }
+      // Generated from ActorSimulation DSL
+      // Default callback implementation for: #{name}
+      // CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+
+      #{trait_use}
 
       /// Default#{type_name}Callbacks provides default implementations
       /// CUSTOMIZE THIS to add your own behavior!
@@ -200,9 +241,11 @@ defmodule ActorSimulation.RactorGenerator do
       """
     else
       """
-      /// #{type_name}Callbacks defines the callback trait
-      /// Implement this trait to customize actor behavior
-      pub trait #{type_name}Callbacks: Send + Sync {}
+      // Generated from ActorSimulation DSL
+      // Default callback implementation for: #{name}
+      // CUSTOMIZE THIS FILE - This is where you add your custom behavior!
+
+      #{trait_use}
 
       /// Default#{type_name}Callbacks provides default implementations
       /// CUSTOMIZE THIS to add your own behavior!
@@ -445,15 +488,17 @@ defmodule ActorSimulation.RactorGenerator do
     # Sort for consistent ordering (rustfmt requirement)
     sorted_actors = Enum.sort_by(simulated, fn {name, _def} -> name end)
 
+    # Generate module declarations for both actor and callback modules
+    # Note: Callbacks import the trait from the actor module
     mod_declarations =
       Enum.map_join(sorted_actors, "\n", fn {name, _def} ->
         snake_name = GeneratorUtils.to_snake_case(name)
-        "pub mod #{snake_name};"
+        "pub mod #{snake_name};\npub mod #{snake_name}_callbacks;"
       end)
 
     """
     // Generated from ActorSimulation DSL
-    // Module declarations for all actors
+    // Module declarations for all actors and their callback implementations
 
     #{mod_declarations}
     """
@@ -690,18 +735,17 @@ defmodule ActorSimulation.RactorGenerator do
 
     ## Customizing Behavior
 
-    The generated actor code uses callback traits to allow customization:
+    The generated actor code uses callback traits to allow customization WITHOUT
+    modifying generated files:
 
-    1. Find the `*Callbacks` trait in each actor file
-    2. Create your own implementation of the trait
-    3. Modify the actor's `pre_start` to use your implementation
+    1. Find the `*_callbacks.rs` files in `src/actors/`
+    2. Modify the `Default*Callbacks` implementation
+    3. Add your custom logic in the callback methods
     4. Rebuild
 
     Example:
     ```rust
-    pub struct MyCustomCallbacks;
-
-    impl WorkerCallbacks for MyCustomCallbacks {
+    impl WorkerCallbacks for DefaultWorkerCallbacks {
         fn on_tick(&self) {
             // Your custom logic here
             println!("Custom tick handler!");
@@ -712,7 +756,8 @@ defmodule ActorSimulation.RactorGenerator do
     ## Project Structure
 
     - `src/main.rs` - Entry point and actor spawning
-    - `src/actors/` - Generated actor implementations
+    - `src/actors/*.rs` - Generated actor implementations (DO NOT EDIT)
+    - `src/actors/*_callbacks.rs` - Callback implementations (EDIT THIS!)
     - `tests/` - Integration test suite
     - `Cargo.toml` - Package configuration
 

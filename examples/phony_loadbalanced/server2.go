@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: server2
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
@@ -12,12 +13,6 @@ import (
 type Server2Callbacks interface {
 
 }
-
-// DefaultServer2Callbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultServer2Callbacks struct{}
-
-
 
 
 type Server2 struct {

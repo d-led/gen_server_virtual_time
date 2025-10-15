@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: stage2
+// DO NOT EDIT - This file is auto-generated
 
 package main
 
@@ -12,12 +13,6 @@ import (
 type Stage2Callbacks interface {
 
 }
-
-// DefaultStage2Callbacks provides default implementations
-// CUSTOMIZE THIS to add your own behavior!
-type DefaultStage2Callbacks struct{}
-
-
 
 
 type Stage2 struct {

@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: processor
+// DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 
@@ -7,11 +8,6 @@ use ractor::{Actor, ActorProcessingErr, ActorRef};
 /// Implement this trait to customize actor behavior
 pub trait ProcessorCallbacks: Send + Sync {}
 
-/// DefaultProcessorCallbacks provides default implementations
-/// CUSTOMIZE THIS to add your own behavior!
-pub struct DefaultProcessorCallbacks;
-
-impl ProcessorCallbacks for DefaultProcessorCallbacks {}
 
 #[allow(dead_code)]
 pub struct ProcessorState {

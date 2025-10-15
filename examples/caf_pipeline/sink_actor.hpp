@@ -1,5 +1,6 @@
 // Generated from ActorSimulation DSL
 // Actor: sink
+// DO NOT EDIT - This file is auto-generated
 
 #pragma once
 
@@ -7,7 +8,16 @@
 #include <chrono>
 #include <vector>
 #include "atoms.hpp"
-#include "sink_callbacks.hpp"
+
+// Callback interface for: sink
+// This is the contract - do not modify
+class sink_callbacks {
+  public:
+    virtual ~sink_callbacks() = default;
+
+    virtual void on_message();
+};
+
 
 class sink_actor : public caf::event_based_actor {
   public:
