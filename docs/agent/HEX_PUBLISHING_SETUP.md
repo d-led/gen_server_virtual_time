@@ -159,7 +159,7 @@ mix hex.build
 # This creates: gen_server_virtual_time-0.1.0.tar
 
 # Inspect the package contents
-tar -tzf gen_server_virtual_time-0.1.0.tar
+tar -tzf gen_server_virtual_time-*.tar
 
 # Dry run (won't actually publish)
 mix hex.publish --dry-run
