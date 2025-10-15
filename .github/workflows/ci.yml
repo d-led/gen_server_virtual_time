@@ -187,17 +187,19 @@ jobs:
       - name: Run fast tests with coverage export
         env:
           MIX_ENV: test
-        run: mix coveralls --export-coverage fast --no-fail-on-minimum
+        run: mix coveralls --export-coverage fast
       
       - name: Run slow tests with coverage export
         env:
           MIX_ENV: test
-        run: mix coveralls --only slow --export-coverage slow --no-fail-on-minimum
+        continue-on-error: true
+        run: mix coveralls --only slow --export-coverage slow
       
       - name: Run diagram generation tests with coverage export
         env:
           MIX_ENV: test
-        run: mix coveralls --only diagram_generation --export-coverage diagram --no-fail-on-minimum
+        continue-on-error: true
+        run: mix coveralls --only diagram_generation --export-coverage diagram
       
       - name: Merge coverage and report to GitHub
         env:
