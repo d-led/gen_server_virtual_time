@@ -118,6 +118,7 @@ defmodule GenServerVirtualTime.MixProject do
         {"docs/caf_generator.md", [title: "CAF Generator"]},
         {"docs/pony_generator.md", [title: "Pony Generator"]},
         {"docs/phony_generator.md", [title: "Phony (Go) Generator"]},
+        {"docs/ractor_generator.md", [title: "Ractor (Rust) Generator"]},
         {"docs/vlingo_generator.md", [title: "VLINGO XOOM Generator"]}
       ],
       groups_for_extras: [
@@ -133,6 +134,7 @@ defmodule GenServerVirtualTime.MixProject do
           "docs/caf_generator.md",
           "docs/pony_generator.md",
           "docs/phony_generator.md",
+          "docs/ractor_generator.md",
           "docs/vlingo_generator.md"
         ]
       ],
