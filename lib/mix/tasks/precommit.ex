@@ -80,22 +80,7 @@ defmodule Mix.Tasks.Precommit do
 
       if run_all do
         IO.puts("\n📊 Coverage report generated!")
-
-        case Process.get(:coverage_percentage) do
-          nil ->
-            IO.puts("📂 Open: cover/excoveralls.html")
-
-          percentage ->
-            coverage_value = String.to_float(percentage)
-
-            if coverage_value >= 70.0 do
-              IO.puts("📈 Total coverage: #{percentage}% ✅")
-            else
-              IO.puts("⚠️  Total coverage: #{percentage}% (below 70% threshold)")
-            end
-
-            IO.puts("📂 Open: cover/excoveralls.html")
-        end
+        print_coverage_with_file_link()
       end
 
       IO.puts(String.duplicate("=", 80) <> "\n")
@@ -105,23 +90,45 @@ defmodule Mix.Tasks.Precommit do
 
       # Still show coverage if available, even when other checks fail
       if run_all do
-        case Process.get(:coverage_percentage) do
-          nil ->
-            :ok
-
-          percentage ->
-            coverage_value = String.to_float(percentage)
-
-            if coverage_value >= 70.0 do
-              IO.puts("📈 Coverage: #{percentage}% ✅")
-            else
-              IO.puts("⚠️  Coverage: #{percentage}% (below 70% threshold)")
-            end
-        end
+        print_coverage_summary()
       end
 
       IO.puts(String.duplicate("=", 80) <> "\n")
       System.halt(1)
+    end
+  end
+
+  defp print_coverage_with_file_link do
+    case Process.get(:coverage_percentage) do
+      nil ->
+        IO.puts("📂 Open: cover/excoveralls.html")
+
+      percentage ->
+        coverage_value = String.to_float(percentage)
+
+        if coverage_value >= 70.0 do
+          IO.puts("📈 Total coverage: #{percentage}% ✅")
+        else
+          IO.puts("⚠️  Total coverage: #{percentage}% (below 70% threshold)")
+        end
+
+        IO.puts("📂 Open: cover/excoveralls.html")
+    end
+  end
+
+  defp print_coverage_summary do
+    case Process.get(:coverage_percentage) do
+      nil ->
+        :ok
+
+      percentage ->
+        coverage_value = String.to_float(percentage)
+
+        if coverage_value >= 70.0 do
+          IO.puts("📈 Coverage: #{percentage}% ✅")
+        else
+          IO.puts("⚠️  Coverage: #{percentage}% (below 70% threshold)")
+        end
     end
   end
 
