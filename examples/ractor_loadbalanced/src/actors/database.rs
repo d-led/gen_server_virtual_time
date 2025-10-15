@@ -3,6 +3,7 @@
 // DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
+use super::database_callbacks::DefaultDatabaseCallbacks;
 
 /// DatabaseCallbacks defines the callback trait
 /// Implement this trait to customize actor behavior

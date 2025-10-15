@@ -5,6 +5,7 @@
 use ractor::{Actor, ActorProcessingErr, ActorRef};
 use std::time::Duration;
 use tokio::time::interval;
+use super::publisher_callbacks::DefaultPublisherCallbacks;
 
 /// PublisherCallbacks defines the callback trait
 /// Implement this trait to customize actor behavior

@@ -144,6 +144,16 @@ defmodule ActorSimulation.RactorGenerator do
         ""
       end
 
+    # Import the default callbacks implementation if callbacks are enabled
+    callback_import =
+      if enable_callbacks do
+        snake_name = GeneratorUtils.to_snake_case(name)
+        type_name = GeneratorUtils.to_pascal_case(name)
+        "use super::#{snake_name}_callbacks::Default#{type_name}Callbacks;\n"
+      else
+        ""
+      end
+
     state_struct = generate_state_struct(name, definition, enable_callbacks)
     message_enum = generate_message_enum(name, definition)
     actor_impl = generate_actor_impl(name, definition, enable_callbacks)
@@ -161,7 +171,7 @@ defmodule ActorSimulation.RactorGenerator do
     // DO NOT EDIT - This file is auto-generated
 
     use ractor::{Actor, ActorProcessingErr, ActorRef};
-    #{imports_section}
+    #{imports_section}#{callback_import}
     #{callback_trait}
     #{state_struct}
     #{message_enum}
@@ -667,7 +677,18 @@ defmodule ActorSimulation.RactorGenerator do
           if: matrix.rust == 'stable'
 
         - name: Build
-          run: cargo build --release --verbose
+          shell: bash
+          run: |
+            cargo build --release --verbose
+            # Determine OS name and rename binary with .ractor.{os} suffix
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            PROJECT_NAME=$(grep '^name = ' Cargo.toml | head -1 | sed 's/name = "\(.*\)"/\1/')
+            BINARY="${PROJECT_NAME}.ractor.${OS_NAME}"
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              cp target/release/${PROJECT_NAME}.exe ${BINARY}.exe || true
+            else
+              cp target/release/${PROJECT_NAME} ${BINARY} || true
+            fi
 
         - name: Test
           run: cargo test --verbose
@@ -675,7 +696,15 @@ defmodule ActorSimulation.RactorGenerator do
         - name: Run Demo Application
           shell: bash
           run: |
-            timeout 5 cargo run --release || true
+            # Determine binary name: {project}.ractor.{os}
+            OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+            PROJECT_NAME=$(grep '^name = ' Cargo.toml | head -1 | sed 's/name = "\(.*\)"/\1/')
+            BINARY="${PROJECT_NAME}.ractor.${OS_NAME}"
+            if [ "$RUNNER_OS" = "Windows" ]; then
+              timeout 5 ./${BINARY}.exe || true
+            else
+              timeout 5 ./${BINARY} || true
+            fi
     """
   end
 
@@ -718,6 +747,11 @@ defmodule ActorSimulation.RactorGenerator do
 
     # Run
     cargo run --release
+
+    # Or run the platform-specific binary (built by CI)
+    # Binary naming convention: {project_name}.ractor.{os}
+    # e.g., #{project_name}.ractor.darwin on macOS
+    #       #{project_name}.ractor.linux on Linux
     ```
 
     ## Testing

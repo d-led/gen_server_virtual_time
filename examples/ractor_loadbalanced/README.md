@@ -35,6 +35,11 @@ cargo build --release
 
 # Run
 cargo run --release
+
+# Or run the platform-specific binary (built by CI)
+# Binary naming convention: {project_name}.ractor.{os}
+# e.g., loadbalanced_actors.ractor.darwin on macOS
+#       loadbalanced_actors.ractor.linux on Linux
 ```
 
 ## Testing

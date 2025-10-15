@@ -287,6 +287,8 @@ _build/test/lib/*/test-junit-report.xml
 *.pony.linux
 *.phony.darwin
 *.phony.linux
+*.ractor.darwin
+*.ractor.linux
 *.caf.darwin
 *.caf.linux
 *.omnetpp.darwin
@@ -296,6 +298,7 @@ _build/test/lib/*/test-junit-report.xml
 # Windows binaries
 *.pony.exe
 *.phony.exe
+*.ractor.exe
 *.caf.exe
 *.omnetpp.exe
 *.vlingo.exe

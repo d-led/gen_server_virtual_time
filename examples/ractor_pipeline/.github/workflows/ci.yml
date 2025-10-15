@@ -33,7 +33,18 @@ jobs:
       if: matrix.rust == 'stable'
 
     - name: Build
-      run: cargo build --release --verbose
+      shell: bash
+      run: |
+        cargo build --release --verbose
+        # Determine OS name and rename binary with .ractor.{os} suffix
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep '^name = ' Cargo.toml | head -1 | sed 's/name = "(.*)"/1/')
+        BINARY="${PROJECT_NAME}.ractor.${OS_NAME}"
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          cp target/release/${PROJECT_NAME}.exe ${BINARY}.exe || true
+        else
+          cp target/release/${PROJECT_NAME} ${BINARY} || true
+        fi
 
     - name: Test
       run: cargo test --verbose
@@ -41,4 +52,12 @@ jobs:
     - name: Run Demo Application
       shell: bash
       run: |
-        timeout 5 cargo run --release || true
+        # Determine binary name: {project}.ractor.{os}
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep '^name = ' Cargo.toml | head -1 | sed 's/name = "(.*)"/1/')
+        BINARY="${PROJECT_NAME}.ractor.${OS_NAME}"
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          timeout 5 ./${BINARY}.exe || true
+        else
+          timeout 5 ./${BINARY} || true
+        fi

@@ -3,6 +3,7 @@
 // DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
+use super::stage1_callbacks::DefaultStage1Callbacks;
 
 /// Stage1Callbacks defines the callback trait
 /// Implement this trait to customize actor behavior

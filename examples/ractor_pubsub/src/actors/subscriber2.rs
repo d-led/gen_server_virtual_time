@@ -3,6 +3,7 @@
 // DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
+use super::subscriber2_callbacks::DefaultSubscriber2Callbacks;
 
 /// Subscriber2Callbacks defines the callback trait
 /// Implement this trait to customize actor behavior

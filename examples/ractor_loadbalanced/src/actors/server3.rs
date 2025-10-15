@@ -3,6 +3,7 @@
 // DO NOT EDIT - This file is auto-generated
 
 use ractor::{Actor, ActorProcessingErr, ActorRef};
+use super::server3_callbacks::DefaultServer3Callbacks;
 
 /// Server3Callbacks defines the callback trait
 /// Implement this trait to customize actor behavior
