@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"fmt"
-)
+
 
 // DefaultSubscriber3Callbacks provides default implementations
 // CUSTOMIZE THIS to add your own behavior!

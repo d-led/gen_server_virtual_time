@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"fmt"
-)
+
 
 // DefaultDatabaseCallbacks provides default implementations
 // CUSTOMIZE THIS to add your own behavior!

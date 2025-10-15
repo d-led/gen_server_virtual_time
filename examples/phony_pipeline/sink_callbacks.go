@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"fmt"
-)
+
 
 // DefaultSinkCallbacks provides default implementations
 // CUSTOMIZE THIS to add your own behavior!

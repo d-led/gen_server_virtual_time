@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"fmt"
-)
+
 
 // DefaultStage3Callbacks provides default implementations
 // CUSTOMIZE THIS to add your own behavior!

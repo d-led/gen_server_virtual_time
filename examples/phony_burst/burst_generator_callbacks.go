@@ -8,6 +8,7 @@ import (
 	"fmt"
 )
 
+
 // DefaultBurstGeneratorCallbacks provides default implementations
 // CUSTOMIZE THIS to add your own behavior!
 type DefaultBurstGeneratorCallbacks struct{}

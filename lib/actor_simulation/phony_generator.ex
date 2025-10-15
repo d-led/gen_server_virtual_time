@@ -231,6 +231,17 @@ defmodule ActorSimulation.PhonyGenerator do
         """
       end)
 
+    imports_section =
+      if length(messages) > 0 do
+        """
+        import (
+        \t"fmt"
+        )
+        """
+      else
+        ""
+      end
+
     """
     // Generated from ActorSimulation DSL
     // Default callback implementation for: #{name}
@@ -238,9 +249,7 @@ defmodule ActorSimulation.PhonyGenerator do
 
     package main
 
-    import (
-    \t"fmt"
-    )
+    #{imports_section}
 
     // Default#{type_name}Callbacks provides default implementations
     // CUSTOMIZE THIS to add your own behavior!

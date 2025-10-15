@@ -4,9 +4,7 @@
 
 package main
 
-import (
-	"fmt"
-)
+
 
 // DefaultSubscriber2Callbacks provides default implementations
 // CUSTOMIZE THIS to add your own behavior!
