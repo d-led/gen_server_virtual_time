@@ -1,4 +1,3 @@
-
 defmodule VirtualTimeGenStateMachine do
   @moduledoc """
   A behavior module for GenStateMachine with virtual time support.
@@ -124,5 +123,4 @@ defmodule VirtualTimeGenStateMachine do
 
   # Note: Users should call set_virtual_clock/1 BEFORE starting the GenStateMachine
   # Child processes will inherit the Process dictionary containing the virtual clock
-
 end
