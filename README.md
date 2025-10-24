@@ -100,13 +100,13 @@ test "state machine transitions and timers" do
   VirtualTimeGenStateMachine.set_virtual_clock(clock)
 
   {:ok, sm} = SwitchStateMachine.start_link([])
-  
+
   # Trigger transition and schedule timeout
   GenStateMachine.cast(sm, :flip)
-  
+
   # Advance virtual time - timeout fires instantly
   VirtualClock.advance(clock, 100)  # ~10ms real time ⚡
-  
+
   # Check timeout fired
   assert get_state(sm).timeout_fired == true
 end
@@ -325,7 +325,8 @@ end
 
 **VirtualTimeGenStateMachine** - Test state machines with virtual time
 
-- Drop-in replacement: `use VirtualTimeGenStateMachine` instead of `use GenStateMachine`
+- Drop-in replacement: `use VirtualTimeGenStateMachine` instead of
+  `use GenStateMachine`
 - All standard callbacks: `handle_event`, state transitions, timeouts
 - Fast: simulate complex state transitions instantly
 
