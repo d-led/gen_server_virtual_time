@@ -85,7 +85,7 @@ defmodule GenServerVirtualTime.MixProject do
       {:exavier, "~> 0.3.0", only: :test, runtime: false},
 
       # State machine support
-      {:gen_state_machine, "~> 3.0", only: :test}
+      {:gen_state_machine, "~> 3.0"}
     ]
   end
 
