@@ -28,15 +28,6 @@ defmodule GenServerVirtualTime.MixProject do
         summary: [threshold: 70],
         ignore_modules: [Mix.Tasks.Precommit, DiningPhilosophers]
       ],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test,
-        muzak: :test,
-        "exavier.test": :test
-      ],
-
       # Test reporting (JUnit XML for CI)
       test_paths: ["test"],
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -53,6 +44,19 @@ defmodule GenServerVirtualTime.MixProject do
   def application do
     [
       extra_applications: [:logger]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        muzak: :test,
+        "exavier.test": :test
+      ]
     ]
   end
 
