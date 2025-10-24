@@ -438,6 +438,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       # Use modern CMake targets if available
       target_link_libraries(#{network_name} PRIVATE
           OmnetPP::main
+          OmnetPP::cmdenv
           OmnetPP::envir
           OmnetPP::sim
       )
@@ -451,6 +452,10 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       target_include_directories(#{network_name} PRIVATE
           ${OMNETPP_INCLUDE_DIRS}
           ${CMAKE_CURRENT_SOURCE_DIR}
+      )
+      # Ensure shared libraries are linked properly
+      target_link_options(#{network_name} PRIVATE
+          -Wl,--no-as-needed
       )
     endif()
     """

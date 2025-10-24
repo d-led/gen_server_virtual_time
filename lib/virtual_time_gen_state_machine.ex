@@ -11,7 +11,7 @@ defmodule VirtualTimeGenStateMachine do
         use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
 
         def start_link(opts) do
-          VirtualTimeGenStateMachine.start_link(__MODULE__, :off, opts)
+          GenStateMachine.start_link(__MODULE__, :off, opts)
         end
 
         @impl true

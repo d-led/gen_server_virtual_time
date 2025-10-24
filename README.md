@@ -66,6 +66,52 @@ test "100 seconds completes instantly" do
 end
 ```
 
+### Test state machines with virtual time
+
+```elixir
+defmodule SwitchStateMachine do
+  use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
+
+  def start_link(opts) do
+    GenStateMachine.start_link(__MODULE__, :off, opts)
+  end
+
+  def init(_) do
+    {:ok, :off, %{flip_count: 0}}
+  end
+
+  def handle_event(:cast, :flip, :off, data) do
+    # Schedule timeout for 100ms
+    VirtualTimeGenStateMachine.send_after(self(), :timeout, 100)
+    {:next_state, :on, %{data | flip_count: data.flip_count + 1}}
+  end
+
+  def handle_event(:cast, :flip, :on, data) do
+    {:next_state, :off, data}
+  end
+
+  def handle_event(:info, :timeout, state, data) do
+    {:keep_state, %{data | timeout_fired: true}}
+  end
+end
+
+test "state machine transitions and timers" do
+  {:ok, clock} = VirtualClock.start_link()
+  VirtualTimeGenStateMachine.set_virtual_clock(clock)
+
+  {:ok, sm} = SwitchStateMachine.start_link([])
+  
+  # Trigger transition and schedule timeout
+  GenStateMachine.cast(sm, :flip)
+  
+  # Advance virtual time - timeout fires instantly
+  VirtualClock.advance(clock, 100)  # ~10ms real time ⚡
+  
+  # Check timeout fired
+  assert get_state(sm).timeout_fired == true
+end
+```
+
 ### Simulate message-passing systems
 
 ```elixir
@@ -277,6 +323,12 @@ end
 - All standard callbacks: `handle_call`, `handle_cast`, `handle_info`
 - Fast: simulate hours in seconds
 
+**VirtualTimeGenStateMachine** - Test state machines with virtual time
+
+- Drop-in replacement: `use VirtualTimeGenStateMachine` instead of `use GenStateMachine`
+- All standard callbacks: `handle_event`, state transitions, timeouts
+- Fast: simulate complex state transitions instantly
+
 **Actor Simulation DSL** - Prototype distributed systems
 
 - Pattern matching: declarative message handlers
@@ -309,6 +361,11 @@ VirtualClock.now(clock)                    # Current virtual time
 use VirtualTimeGenServer
 VirtualTimeGenServer.set_virtual_clock(clock)
 VirtualTimeGenServer.send_after(pid, msg, delay)
+
+# Virtual Time GenStateMachine
+use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
+VirtualTimeGenStateMachine.set_virtual_clock(clock)
+VirtualTimeGenStateMachine.send_after(pid, msg, delay)
 
 # Actor Simulation (import for clean DSL)
 import ActorSimulation

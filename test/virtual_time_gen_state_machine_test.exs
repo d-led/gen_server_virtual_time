@@ -54,7 +54,7 @@ defmodule VirtualTimeGenStateMachineTest do
   defmodule DoorSM do
     use VirtualTimeGenStateMachine, callback_mode: :state_functions
 
-    def start_link() do
+    def start_link do
       GenStateMachine.start_link(__MODULE__, nil, [])
     end
 
@@ -121,7 +121,7 @@ defmodule VirtualTimeGenStateMachineTest do
   defmodule LightSM do
     use VirtualTimeGenStateMachine, callback_mode: [:handle_event_function, :state_enter]
 
-    def start_link() do
+    def start_link do
       GenStateMachine.start_link(__MODULE__, nil, [])
     end
 
