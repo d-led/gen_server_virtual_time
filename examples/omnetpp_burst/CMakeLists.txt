@@ -75,6 +75,7 @@ if(TARGET OmnetPP::main)
   # Use modern CMake targets if available
   target_link_libraries(BurstNetwork PRIVATE
       OmnetPP::main
+      OmnetPP::cmdenv
       OmnetPP::envir
       OmnetPP::sim
   )
@@ -88,5 +89,9 @@ else()
   target_include_directories(BurstNetwork PRIVATE
       ${OMNETPP_INCLUDE_DIRS}
       ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  # Ensure shared libraries are linked properly
+  target_link_options(BurstNetwork PRIVATE
+      -Wl,--no-as-needed
   )
 endif()

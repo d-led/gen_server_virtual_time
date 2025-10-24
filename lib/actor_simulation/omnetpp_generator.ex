@@ -114,7 +114,7 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
     simple_modules =
       Enum.map(simulated_actors, fn {name, definition} ->
-        generate_simple_module(name, definition)
+        generate_simple_module(name, definition, simulated_actors)
       end)
 
     network = generate_network_module(simulated_actors, network_name)
@@ -128,28 +128,38 @@ defmodule ActorSimulation.OMNeTPPGenerator do
     """
   end
 
-  defp generate_simple_module(name, definition) do
+  defp generate_simple_module(name, definition, all_actors) do
     class_name = camelize(name)
     target_count = length(definition.targets)
 
-    gates =
-      if target_count > 0 do
-        """
-            gates:
-                input in;
-                output out[#{target_count}];
-        """
-      else
-        """
-            gates:
-                input in;
-        """
-      end
+    # Check if this actor receives messages from any other actor
+    receives_messages =
+      Enum.any?(all_actors, fn {_from_name, from_def} ->
+        name in from_def.targets
+      end)
+
+    gates = build_gates(target_count, receives_messages)
 
     """
     simple #{class_name} {
     #{gates}}
     """
+  end
+
+  defp build_gates(0, false) do
+    "        // No gates needed"
+  end
+
+  defp build_gates(0, true) do
+    "            gates:\n                input in;"
+  end
+
+  defp build_gates(target_count, false) do
+    "            gates:\n                output out[#{target_count}];"
+  end
+
+  defp build_gates(target_count, true) do
+    "            gates:\n                input in;\n                output out[#{target_count}];"
   end
 
   defp generate_network_module(actors, network_name) do

@@ -1,28 +1,23 @@
 // Generated from ActorSimulation DSL
 
 simple Publisher {
-    gates:
-        input in;
-        output out[3];
-}
+            gates:
+                output out[3];}
 
 
 simple Subscriber1 {
-    gates:
-        input in;
-}
+            gates:
+                input in;}
 
 
 simple Subscriber2 {
-    gates:
-        input in;
-}
+            gates:
+                input in;}
 
 
 simple Subscriber3 {
-    gates:
-        input in;
-}
+            gates:
+                input in;}
 
 
 network PubSubNetwork {

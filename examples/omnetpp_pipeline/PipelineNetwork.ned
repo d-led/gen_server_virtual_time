@@ -1,37 +1,31 @@
 // Generated from ActorSimulation DSL
 
 simple Sink {
-    gates:
-        input in;
-}
+            gates:
+                input in;}
 
 
 simple Source {
-    gates:
-        input in;
-        output out[1];
-}
+            gates:
+                output out[1];}
 
 
 simple Stage1 {
-    gates:
-        input in;
-        output out[1];
-}
+            gates:
+                input in;
+                output out[1];}
 
 
 simple Stage2 {
-    gates:
-        input in;
-        output out[1];
-}
+            gates:
+                input in;
+                output out[1];}
 
 
 simple Stage3 {
-    gates:
-        input in;
-        output out[1];
-}
+            gates:
+                input in;
+                output out[1];}
 
 
 network PipelineNetwork {

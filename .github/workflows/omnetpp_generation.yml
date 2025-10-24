@@ -246,8 +246,8 @@ jobs:
 
   compile-omnetpp-examples:
     name: Compile & Test OMNeT++ Examples
-    # Note: macOS builds are disabled due to system Python install restrictions with opp_env
     runs-on: ubuntu-latest
+    needs: test-generation
     strategy:
       fail-fast: false
       matrix:
@@ -257,68 +257,74 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Install OMNeT++ dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential gcc g++ bison flex perl python3 python3-pip python3-venv python3-dev \
-          libxml2-dev zlib1g-dev cmake
 
-    - name: Cache OMNeT++
-      id: cache-omnetpp
-      uses: actions/cache@v4
+    - name: Download generated code artifacts
+      uses: actions/download-artifact@v4
       with:
-        path: ~/omnetpp-6.2.0
-        key: omnetpp-6.2.0-${{ runner.os }}-v2
+        pattern: omnetpp-generated-code-*
+        merge-multiple: true
 
-    - name: Download and build OMNeT++ 6.2
-      if: steps.cache-omnetpp.outputs.cache-hit != 'true'
+    - name: Verify generated code exists
       run: |
-        cd ~
-        wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-6.2.0/omnetpp-6.2.0-linux-x86_64.tgz
-        tar xzf omnetpp-6.2.0-linux-x86_64.tgz
-        cd omnetpp-6.2.0
-        export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
-        . setenv
-        # Create virtual environment and install Python dependencies
-        python3 -m venv .venv
-        source .venv/bin/activate
-        pip install --upgrade pip
-        pip install -r python/requirements.txt
-        # Configure: command-line only, no GUI
-        ./configure WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no MODE=release
-        # Build
-        make MODE=release -j$(nproc)
-
-    - name: Build OMNeT++ project
-      working-directory: examples/${{ matrix.example }}
-      run: |
-        export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
-        export OMNETPP_ROOT=$HOME/omnetpp-6.2.0
-        source ~/omnetpp-6.2.0/setenv
-        if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
-        mkdir -p build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release
-        cmake --build . --config Release
-
-    - name: Run simulation
-      working-directory: examples/${{ matrix.example }}/build
-      shell: bash
-      run: |
-        export PATH=$HOME/omnetpp-6.2.0/bin:$PATH
-        export OMNETPP_ROOT=$HOME/omnetpp-6.2.0
-        source ~/omnetpp-6.2.0/setenv
-        if [ -d ~/omnetpp-6.2.0/.venv ]; then source ~/omnetpp-6.2.0/.venv/bin/activate; fi
-        # Find the executable (it's named NetworkName.omnetpp.linux)
-        EXECUTABLE=$(find . -name "*.omnetpp.linux" -type f | head -1)
-        if [ -z "$EXECUTABLE" ]; then
-          echo "ERROR: Could not find OMNeT++ executable"
-          ls -la
+        echo "Checking for generated OMNeT++ examples..."
+        ls -la examples/
+        if [ ! -d "examples/${{ matrix.example }}" ]; then
+          echo "ERROR: examples/${{ matrix.example }} not found"
           exit 1
         fi
-        echo "Found executable: $EXECUTABLE"
-        # Run short simulation with timeout
-        timeout 10 $EXECUTABLE -u Cmdenv -c General || true
+        echo "✅ Found examples/${{ matrix.example }}"
+
+    - name: Build and run simulation in OMNeT++ Docker container
+      run: |
+        docker run --rm \
+          -v "$(pwd):/workspace" \
+          -w /workspace/examples/${{ matrix.example }} \
+          -e OMNETPP_ROOT=/root/omnetpp \
+          ghcr.io/omnetpp/omnetpp:u24.04-6.2.0 \
+          /bin/bash -c "
+            set -e
+            echo 'Installing cmake...'
+            apt-get update -qq && apt-get install -y -qq cmake > /dev/null 2>&1
+            
+            echo 'Configuring build environment...'
+            export PATH=\$OMNETPP_ROOT/bin:\$PATH
+            export LD_LIBRARY_PATH=\$OMNETPP_ROOT/lib:\$LD_LIBRARY_PATH
+            
+            echo 'Building simulation...'
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Release 2>&1 | grep -v 'CMake Warning' || true
+            cmake --build . --config Release
+            
+            echo 'Verifying executable...'
+            EXECUTABLE=\$(find . -name '*.omnetpp.linux' -type f | head -1)
+            if [ -z \"\$EXECUTABLE\" ]; then
+              echo 'ERROR: Could not find OMNeT++ executable'
+              echo 'Files in build directory:'
+              ls -la
+              echo 'Files matching pattern:'
+              find . -name '*.omnetpp.*' -o -name '*omnetpp*'
+              exit 1
+            fi
+            
+            echo \"✅ Found executable: \$EXECUTABLE\"
+            echo ''
+            echo '🚀 Running simulation...'
+            echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+            
+            cd ..
+            EXECUTABLE=\$(find build -name '*.omnetpp.linux' -type f | head -1)
+            cp \$EXECUTABLE .
+            EXECUTABLE_NAME=\$(basename \$EXECUTABLE)
+            ./\$EXECUTABLE_NAME -f omnetpp.ini 2>&1 || EXIT_CODE=\$?
+            
+            echo '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'
+            
+            if [ -z \"\$EXIT_CODE\" ] || [ \"\$EXIT_CODE\" -eq 0 ]; then
+              echo '✅ Simulation completed successfully!'
+            else
+              echo \"⚠️  Simulation exited with code: \$EXIT_CODE\"
+              exit \$EXIT_CODE
+            fi
+          "
+
 
