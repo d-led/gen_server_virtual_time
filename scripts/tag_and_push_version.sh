@@ -61,8 +61,4 @@ git push origin "$TAG"
 echo ""
 echo "✅ Tag $TAG pushed to origin successfully"
 echo ""
-echo "Next steps:"
-echo "  - Create a GitHub release at: https://github.com/d-led/gen_server_virtual_time/releases/new"
-echo "  - If this is a pre-release (RC), mark it as 'pre-release'"
-echo "  - If stable, you can publish to Hex.pm with: mix hex.publish"
 
