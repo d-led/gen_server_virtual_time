@@ -44,7 +44,9 @@ jobs:
           MIX_ENV=dev mix deps.get --only dev
 
       - name: Compile project
-        run: mix compile
+        run: |
+          mix compile
+          MIX_ENV=dev mix compile
 
       - name: Run tests
         run: mix test --exclude slow --exclude omnetpp
@@ -57,6 +59,7 @@ jobs:
       - name: Publish to Hex
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+          MIX_ENV: dev
         run: |
           mix hex.publish --yes
 
