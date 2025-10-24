@@ -78,7 +78,10 @@ defmodule GenServerVirtualTime.MixProject do
 
       # Mutation testing
       {:muzak, "~> 1.1", only: :test, runtime: false},
-      {:exavier, "~> 0.3.0", only: :test, runtime: false}
+      {:exavier, "~> 0.3.0", only: :test, runtime: false},
+
+      # State machine support
+      {:gen_state_machine, "~> 3.0", only: :test}
     ]
   end
 
