@@ -107,12 +107,12 @@ defmodule ActorSimulationTest do
           targets: [:consumer]
         )
         |> ActorSimulation.add_actor(:consumer)
-        |> ActorSimulation.run(duration: 1100)
+        |> ActorSimulation.run(duration: 1000)
 
       stats = ActorSimulation.get_stats(simulation)
 
       # 2 bursts (at 0ms and 500ms), each with 5 messages = 10 total
-      # Extended duration to 1100ms to ensure second burst at 500ms is fully processed
+      # Quiescence should ensure all scheduled events are processed
       assert stats.actors[:producer].sent_count == 10
       assert stats.actors[:consumer].received_count == 10
 

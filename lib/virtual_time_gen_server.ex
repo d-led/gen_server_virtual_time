@@ -484,13 +484,14 @@ defmodule VirtualTimeGenServer do
     # Extract time-related options from opts
     {virtual_clock, opts} = Keyword.pop(opts, :virtual_clock)
     {real_time, opts} = Keyword.pop(opts, :real_time, false)
+    {stats_enabled, opts} = Keyword.pop(opts, :stats_enabled, false)
 
     # Determine which clock and backend to use
     # Priority: local options > global Process dictionary
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
-    # Get stats tracking flag from parent process
-    stats_enabled = Process.get(:__vtgs_stats_enabled__, false)
+    # Use injected stats_enabled option, fallback to parent process if not provided
+    final_stats_enabled = stats_enabled || Process.get(:__vtgs_stats_enabled__, false)
 
     # Use a wrapper to inject virtual clock into spawned process
     init_fun = fn ->
@@ -501,7 +502,7 @@ defmodule VirtualTimeGenServer do
       Process.put(:time_backend, final_backend)
 
       # Propagate stats tracking to child process
-      if stats_enabled do
+      if final_stats_enabled do
         Process.put(:__vtgs_stats_enabled__, true)
         Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
       end
@@ -526,12 +527,13 @@ defmodule VirtualTimeGenServer do
     # Extract time-related options from opts
     {virtual_clock, opts} = Keyword.pop(opts, :virtual_clock)
     {real_time, opts} = Keyword.pop(opts, :real_time, false)
+    {stats_enabled, opts} = Keyword.pop(opts, :stats_enabled, false)
 
     # Determine which clock and backend to use
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
-    # Get stats tracking flag from parent process
-    stats_enabled = Process.get(:__vtgs_stats_enabled__, false)
+    # Use injected stats_enabled option, fallback to parent process if not provided
+    final_stats_enabled = stats_enabled || Process.get(:__vtgs_stats_enabled__, false)
 
     init_fun = fn ->
       if final_clock do
@@ -541,7 +543,7 @@ defmodule VirtualTimeGenServer do
       Process.put(:time_backend, final_backend)
 
       # Propagate stats tracking to child process
-      if stats_enabled do
+      if final_stats_enabled do
         Process.put(:__vtgs_stats_enabled__, true)
         Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
       end
@@ -629,9 +631,60 @@ defmodule VirtualTimeGenServer do
     end
   end
 
-  @doc false
-  # Internal API for ActorSimulation to enable stats tracking
+  @doc """
+  Sets GLOBAL stats tracking for all child processes.
+
+  ⚠️  WARNING: This can cause race conditions in tests and production!
+
+  Consider using test-local stats injection instead:
+
+  ```elixir
+  # ❌ Global (can cause race conditions)
+  VirtualTimeGenServer.enable_stats_tracking()
+  {:ok, server} = MyServer.start_link([])
+
+  # ✅ Test-local (isolated, safe)
+  {:ok, server} = MyServer.start_link([], stats_enabled: true)
+  ```
+
+  For coordinated stats tracking, use global tracking intentionally.
+  For isolated testing, use test-local stats injection.
+  """
   def enable_stats_tracking do
+    # Get caller information from stacktrace
+    caller_info = get_caller_info()
+
+    # Emit a compilation warning to alert users about potential race conditions
+    IO.warn(
+      """
+      ⚠️  GLOBAL STATS TRACKING DETECTED ⚠️
+
+      VirtualTimeGenServer.enable_stats_tracking/0 sets GLOBAL stats tracking that affects
+      ALL child processes. This can cause race conditions in tests and production!
+
+      Consider using test-local stats injection instead:
+
+      # ❌ Global (can cause race conditions)
+      VirtualTimeGenServer.enable_stats_tracking()
+      {:ok, server} = MyServer.start_link([])
+
+      # ✅ Test-local (isolated, safe)
+      {:ok, server} = MyServer.start_link([], stats_enabled: true)
+
+      For coordinated stats tracking, use global tracking intentionally.
+      For isolated testing, use test-local stats injection.
+      """,
+      caller_info
+    )
+
+    Process.put(:__vtgs_stats_enabled__, true)
+    Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
+  end
+
+  @doc """
+  Warning-free version of enable_stats_tracking/0 for intentional global usage.
+  """
+  def enable_stats_tracking(:i_know_what_i_am_doing, explanation) when is_binary(explanation) do
     Process.put(:__vtgs_stats_enabled__, true)
     Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
   end

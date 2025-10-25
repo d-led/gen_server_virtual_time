@@ -167,15 +167,13 @@ defmodule ActorSimulation do
     args = Keyword.get(opts, :args, nil)
     targets = Keyword.get(opts, :targets, [])
 
-    # Enable stats tracking before starting the process
-    VirtualTimeGenServer.enable_stats_tracking()
-
-    # Start the real GenServer with the simulation's local virtual clock
-    # This avoids setting the global clock and affecting other tests
+    # Start the real GenServer with the simulation's local virtual clock and stats injection
+    # This avoids setting global state and affecting other tests
     {:ok, pid} =
       VirtualTimeGenServer.start_link(module, args,
         name: name,
-        virtual_clock: simulation.clock
+        virtual_clock: simulation.clock,
+        stats_enabled: true
       )
 
     # Set up actor name context for trace generation
