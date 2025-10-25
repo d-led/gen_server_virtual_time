@@ -94,7 +94,7 @@ jobs:
           include_passed: true
   
   coverage:
-    name: Coverage & Slow Tests
+    name: Coverage & Fast Tests  
     runs-on: ubuntu-latest
     
     permissions:
@@ -128,31 +128,6 @@ jobs:
           MIX_ENV: test
         run: mix coveralls --export-coverage fast
       
-      - name: Run slow tests with coverage export
-        env:
-          MIX_ENV: test
-        continue-on-error: true
-        run: |
-          mix coveralls --only slow --export-coverage slow \
-            --formatter JUnitFormatter \
-            --formatter ExUnit.CLIFormatter \
-            --slowest 10
-      
-      - name: Upload slow test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: slow-test-results
-          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
-      
-      - name: Publish slow test report
-        uses: mikepenz/action-junit-report@v4
-        if: always()
-        with:
-          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
-          check_name: 'Slow Test Report'
-          detailed_summary: true
-          include_passed: true
       
       - name: Run diagram generation tests with coverage export
         env:
@@ -167,6 +142,65 @@ jobs:
         run: |
           mix test.coverage
           mix coveralls.github --import-cover cover
+  
+  slow-tests:
+    name: Slow Tests (ARM - Cost Optimized)
+    runs-on: ubuntu-latest-arm64
+    
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.18'
+          otp-version: '27'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-arm64-mix-slow-${{ hashFiles('**/mix.lock') }}
+      
+      - name: Install dependencies
+        run: mix deps.get
+      
+      - name: Compile
+        run: mix compile --warnings-as-errors
+      
+      - name: Run slow tests (century backup, etc.)
+        env:
+          MIX_ENV: test
+          CI: true
+        run: |
+          mix test --only slow \
+            --formatter JUnitFormatter \
+            --formatter ExUnit.CLIFormatter \
+            --slowest 10
+      
+      - name: Upload slow test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: slow-test-results-arm64
+          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
+      
+      - name: Publish slow test report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
+          check_name: 'Slow Test Report (ARM64)'
+          detailed_summary: true
+          include_passed: true
   
   quality:
     name: Code Quality
