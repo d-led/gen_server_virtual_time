@@ -229,11 +229,10 @@ defmodule VirtualClock do
         # Wait for quiescence before continuing to ensure all actors have
         # processed their messages and scheduled new events at this time point
         # This allows actors to schedule new events before advancing to the next time
-        Process.send_after(self(), {:do_advance, target_time, from}, 10)
+        Process.send_after(self(), {:do_advance, target_time, from}, 1)
         {:noreply, new_state}
     end
   end
-
 
   # Private helpers for priority queue operations
 
