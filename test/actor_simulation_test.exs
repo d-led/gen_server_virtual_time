@@ -90,9 +90,14 @@ defmodule ActorSimulationTest do
 
       stats = ActorSimulation.get_stats(simulation)
 
-      # At 10 messages/second for 2 seconds = 20 messages
-      assert stats.actors[:producer].sent_count >= 10
-      assert stats.actors[:consumer].received_count >= 10
+      # At 10 messages/second for 2 seconds should be ~20 messages
+      # But boundary conditions may cause slight variations (19-21 messages)
+      assert stats.actors[:producer].sent_count >= 19,
+             "Expected at least 19 messages from producer, got #{stats.actors[:producer].sent_count}"
+      assert stats.actors[:producer].sent_count <= 21,
+             "Expected at most 21 messages from producer, got #{stats.actors[:producer].sent_count}"
+      assert stats.actors[:consumer].received_count >= 19,
+             "Expected at least 19 messages received, got #{stats.actors[:consumer].received_count}"
 
       ActorSimulation.stop(simulation)
     end
