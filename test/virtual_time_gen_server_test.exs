@@ -32,6 +32,7 @@ defmodule VirtualTimeGenServerTest do
     end
 
     defp schedule_tick(interval) do
+      # Use the simple production API - no backend parameter needed
       VirtualTimeGenServer.send_after(self(), :tick, interval)
     end
   end

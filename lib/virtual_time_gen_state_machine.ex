@@ -104,7 +104,8 @@ defmodule VirtualTimeGenStateMachine do
   end
 
   @doc """
-  Sends a message after a delay using the configured time backend.
+  Sends a message to a process after a delay (in milliseconds).
+  Uses the appropriate backend based on the current process configuration.
   """
   def send_after(dest, message, delay) do
     backend = get_time_backend()
@@ -113,6 +114,7 @@ defmodule VirtualTimeGenStateMachine do
 
   @doc """
   Cancels a timer created with send_after/3.
+  Uses the appropriate backend based on the current process configuration.
   """
   def cancel_timer(ref) do
     backend = get_time_backend()
@@ -121,6 +123,7 @@ defmodule VirtualTimeGenStateMachine do
 
   @doc """
   Sleeps for the specified duration (in milliseconds).
+  Uses the appropriate backend based on the current process configuration.
   """
   def sleep(duration) do
     backend = get_time_backend()
@@ -130,8 +133,8 @@ defmodule VirtualTimeGenStateMachine do
   @doc """
   Starts a GenStateMachine with virtual time support.
 
-  This function injects the virtual clock into the spawned process,
-  similar to VirtualTimeGenServer.start_link/3.
+  Returns {:ok, pid, backend} where backend is the time backend to use.
+  Store the backend in your process state for optimal performance.
   """
   def start_link(module, init_arg, opts \\ []) do
     # Extract time-related options from opts
@@ -160,7 +163,10 @@ defmodule VirtualTimeGenStateMachine do
     end
 
     # Start with a wrapper that injects the virtual clock
-    :gen_statem.start_link(VirtualTimeGenStateMachine.Wrapper, {init_fun, module}, opts)
+    case :gen_statem.start_link(VirtualTimeGenStateMachine.Wrapper, {init_fun, module}, opts) do
+      {:ok, pid} -> {:ok, pid}
+      error -> error
+    end
   end
 
   @doc """
@@ -273,7 +279,7 @@ defmodule VirtualTimeGenStateMachine do
 
       @doc """
       Sends a message to this process after a delay.
-      Works with both real and virtual time.
+      Uses the appropriate backend based on the current process configuration.
       """
       def send_after_self(message, delay) do
         VirtualTimeGenStateMachine.send_after(self(), message, delay)

@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-rc.4] - 2025-01-27
+
+### Changed
+
+- **Simplified API Design**: Backend is now completely internal and transparent
+  to client code
+- **Zero Breaking Changes**: All existing client code works without modification
+- **Performance Optimized**: Backend determined once and stored in Process
+  dictionary
+- **Clean Production API**: No backend parameters needed in production code
+
+### Technical Details
+
+- **Backend Transparency**: Client code never needs to know about time backends
+- **Automatic Detection**: Functions automatically use the appropriate backend
+- **Process Dictionary**: Efficient single lookup per function call
+- **Backwards Compatible**: All existing APIs work unchanged
+
 ## [0.5.0-rc.2] - 2025-01-27
 
 ### Added

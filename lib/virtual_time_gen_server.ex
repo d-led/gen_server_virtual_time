@@ -249,7 +249,8 @@ defmodule VirtualTimeGenServer do
   end
 
   @doc """
-  Sends a message after a delay using the configured time backend.
+  Sends a message to a process after a delay (in milliseconds).
+  Uses the appropriate backend based on the current process configuration.
   """
   def send_after(dest, message, delay) do
     backend = get_time_backend()
@@ -258,6 +259,7 @@ defmodule VirtualTimeGenServer do
 
   @doc """
   Cancels a timer created with send_after/3.
+  Uses the appropriate backend based on the current process configuration.
   """
   def cancel_timer(ref) do
     backend = get_time_backend()
@@ -294,7 +296,7 @@ defmodule VirtualTimeGenServer do
 
       @doc """
       Sends a message to this process after a delay.
-      Works with both real and virtual time.
+      Uses the appropriate backend based on the current process configuration.
       """
       def send_after_self(message, delay) do
         VirtualTimeGenServer.send_after(self(), message, delay)
@@ -339,7 +341,10 @@ defmodule VirtualTimeGenServer do
     end
 
     # Start with wrapper module
-    GenServer.start_link(VirtualTimeGenServer.Wrapper, {init_fun, module}, opts)
+    case GenServer.start_link(VirtualTimeGenServer.Wrapper, {init_fun, module}, opts) do
+      {:ok, pid} -> {:ok, pid}
+      error -> error
+    end
   end
 
   def start(module, init_arg, opts \\ []) do
