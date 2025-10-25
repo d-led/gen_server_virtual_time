@@ -91,7 +91,7 @@ defmodule GenServerVirtualTime.MixProject do
 
   defp description do
     """
-    Virtual time extension to `GenServer` and `GenStateMachine` allowing testing time-based
+    Virtual time extension to GenServer and GenStateMachine allowing testing time-based
     actor systems orders of magnitude faster than in wallclock-time.
     Includes actor simulation DSL with statistics, tracing, and code generation into other
     Actor Model implementations in C++, Pony, Go, Rust, Java.
