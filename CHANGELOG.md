@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [0.5.0-rc.4] - 2025-01-27
 
+### Added
+
+- **Global Clock Injection Warnings**: Added compilation warnings to alert users
+  about potential race conditions when using global virtual clock operations
+- **Race Condition Prevention**: Warnings help users identify and avoid
+  problematic global clock injection patterns
+- **Best Practice Guidance**: Clear examples showing test-local vs global clock
+  usage patterns
+
 ### Changed
 
 - **Simplified API Design**: Backend is now completely internal and transparent
@@ -16,6 +25,14 @@ and this project adheres to
 - **Performance Optimized**: Backend determined once and stored in Process
   dictionary
 - **Clean Production API**: No backend parameters needed in production code
+- **VirtualTimeGenServer.set_virtual_clock/1**: Now emits warning about global
+  virtual clock injection with race condition alerts
+- **VirtualTimeGenServer.use_real_time/0**: Now emits warning about global time
+  backend changes
+- **VirtualTimeGenStateMachine.set_virtual_clock/1**: Now emits warning about
+  global virtual clock injection with race condition alerts
+- **VirtualTimeGenStateMachine.use_real_time/0**: Now emits warning about global
+  time backend changes
 
 ### Technical Details
 
@@ -23,6 +40,14 @@ and this project adheres to
 - **Automatic Detection**: Functions automatically use the appropriate backend
 - **Process Dictionary**: Efficient single lookup per function call
 - **Backwards Compatible**: All existing APIs work unchanged
+- **Warning Messages**: Comprehensive warnings with clear examples of what NOT
+  to do (❌ Global) and what TO do (✅ Test-local)
+- **Educational Content**: Warnings teach users the difference between global
+  and test-local approaches
+- **Race Condition Alerts**: Explicit warnings about potential race conditions
+  in tests and production
+- **Context-Aware**: Warnings explain when to use global clocks (coordinated
+  simulations) vs test-local clocks (isolated testing)
 
 ## [0.5.0-rc.2] - 2025-01-27
 
