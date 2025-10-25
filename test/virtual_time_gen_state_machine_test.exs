@@ -5,8 +5,8 @@ defmodule VirtualTimeGenStateMachineTest do
   defmodule SwitchSM do
     use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
 
-    def start_link(initial_state) do
-      VirtualTimeGenStateMachine.start_link(__MODULE__, initial_state, [])
+    def start_link(initial_state, opts \\ []) do
+      VirtualTimeGenStateMachine.start_link(__MODULE__, initial_state, opts)
     end
 
     def flip(server) do
@@ -54,8 +54,8 @@ defmodule VirtualTimeGenStateMachineTest do
   defmodule DoorSM do
     use VirtualTimeGenStateMachine, callback_mode: :state_functions
 
-    def start_link do
-      VirtualTimeGenStateMachine.start_link(__MODULE__, nil, [])
+    def start_link(opts \\ []) do
+      VirtualTimeGenStateMachine.start_link(__MODULE__, nil, opts)
     end
 
     def open(server) do
@@ -121,8 +121,8 @@ defmodule VirtualTimeGenStateMachineTest do
   defmodule LightSM do
     use VirtualTimeGenStateMachine, callback_mode: [:handle_event_function, :state_enter]
 
-    def start_link do
-      VirtualTimeGenStateMachine.start_link(__MODULE__, nil, [])
+    def start_link(opts \\ []) do
+      VirtualTimeGenStateMachine.start_link(__MODULE__, nil, opts)
     end
 
     def turn_on(server) do
@@ -166,12 +166,11 @@ defmodule VirtualTimeGenStateMachineTest do
   describe "VirtualTimeGenStateMachine with handle_event_function" do
     setup do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
       {:ok, clock: clock}
     end
 
-    test "state transitions work correctly" do
-      {:ok, server} = SwitchSM.start_link(:off)
+    test "state transitions work correctly", %{clock: clock} do
+      {:ok, server} = SwitchSM.start_link(:off, virtual_clock: clock)
 
       # Start in :off state
       assert VirtualTimeGenStateMachine.call(server, :get_count) == 0
@@ -186,7 +185,7 @@ defmodule VirtualTimeGenStateMachineTest do
     end
 
     test "timers fire in virtual time", %{clock: clock} do
-      {:ok, server} = SwitchSM.start_link(:off)
+      {:ok, server} = SwitchSM.start_link(:off, virtual_clock: clock)
 
       start_time = System.monotonic_time(:millisecond)
 
@@ -265,12 +264,11 @@ defmodule VirtualTimeGenStateMachineTest do
   describe "VirtualTimeGenStateMachine with state_functions" do
     setup do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
       {:ok, clock: clock}
     end
 
-    test "door state machine transitions" do
-      {:ok, door} = DoorSM.start_link()
+    test "door state machine transitions", %{clock: clock} do
+      {:ok, door} = DoorSM.start_link(virtual_clock: clock)
 
       # Start closed
       assert DoorSM.get_state(door) == :closed
@@ -294,8 +292,8 @@ defmodule VirtualTimeGenStateMachineTest do
       GenServer.stop(door)
     end
 
-    test "auto-close timer works with virtual time" do
-      {:ok, door} = DoorSM.start_link()
+    test "auto-close timer works with virtual time", %{clock: clock} do
+      {:ok, door} = DoorSM.start_link(virtual_clock: clock)
 
       start_time = System.monotonic_time(:millisecond)
 
@@ -319,12 +317,11 @@ defmodule VirtualTimeGenStateMachineTest do
   describe "VirtualTimeGenStateMachine with state_enter" do
     setup do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
       {:ok, clock: clock}
     end
 
-    test "state enter callbacks are invoked" do
-      {:ok, light} = LightSM.start_link()
+    test "state enter callbacks are invoked", %{clock: clock} do
+      {:ok, light} = LightSM.start_link(virtual_clock: clock)
 
       # Initial state enter counted
       stats = LightSM.get_stats(light)
@@ -352,11 +349,8 @@ defmodule VirtualTimeGenStateMachineTest do
       {:ok, clock2} = VirtualClock.start_link()
 
       # Start two servers with different clocks
-      VirtualTimeGenStateMachine.set_virtual_clock(clock1)
-      {:ok, server1} = SwitchSM.start_link(:off)
-
-      VirtualTimeGenStateMachine.set_virtual_clock(clock2)
-      {:ok, server2} = SwitchSM.start_link(:off)
+      {:ok, server1} = SwitchSM.start_link(:off, virtual_clock: clock1)
+      {:ok, server2} = SwitchSM.start_link(:off, virtual_clock: clock2)
 
       # Flip both
       SwitchSM.flip(server1)

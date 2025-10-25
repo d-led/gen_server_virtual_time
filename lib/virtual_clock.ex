@@ -63,8 +63,18 @@ defmodule VirtualClock do
   Advances the virtual clock by the specified amount.
   All events scheduled up to the new time will be triggered.
 
-  This advances time incrementally, processing each scheduled event
-  and allowing new events to be scheduled in response.
+  This ensures that:
+  - All events up to the target time are processed
+  - The system reaches quiescence at the target time
+  - All callbacks scheduled for the target time are executed
+
+  ## Examples
+
+      # Advance by 1000ms
+      VirtualClock.advance(clock, 1000)
+
+      # Advance by 0 (process all events at current time and wait for quiescence)
+      VirtualClock.advance(clock, 0)
   """
   def advance(clock, amount) do
     GenServer.call(clock, {:advance, amount}, :infinity)
@@ -256,7 +266,7 @@ defmodule VirtualClock do
         {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
 
         Enum.each(triggered, fn event ->
-          send(event.dest, event.message)
+          VirtualTimeGenServer.send_immediately(event.dest, event.message)
         end)
 
         {:reply, amount, %{state | current_time: next_time, scheduled: remaining}}
@@ -277,6 +287,7 @@ defmodule VirtualClock do
 
   @impl true
   def handle_info({:do_advance, target_time, from}, state) do
+    # Normal advance - process events and wait for quiescence at target time
     advance_loop(state, target_time, from)
   end
 
@@ -288,32 +299,66 @@ defmodule VirtualClock do
   end
 
   defp advance_loop_iterative(state, target_time, from) do
-    # Process events in batches to allow other processes to proceed
-    # This ensures that actors can process messages and schedule new ones
+    # Advance to target_time and wait for quiescence
+    # Process all events up to target_time, then wait for quiescence at that time
     case get_next_event_time(state.scheduled, target_time) do
       nil ->
-        # No more events, finish advance
+        # No events up to target_time, advance to target_time and wait for quiescence
         new_state = %{state | current_time: target_time}
-        GenServer.reply(from, {:ok, target_time})
+        wait_for_quiescence_and_finish(new_state, target_time, from)
         {:noreply, new_state}
 
-      next_time ->
+      next_time when next_time <= target_time ->
         # Process all events at exactly the same time point
-        # This ensures we only batch events that trigger simultaneously
         {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
 
         Enum.each(triggered, fn event ->
-          send(event.dest, event.message)
+          VirtualTimeGenServer.send_immediately(event.dest, event.message)
         end)
 
         # Update state and continue advancing
         new_state = %{state | current_time: next_time, scheduled: remaining}
 
-        # Wait for quiescence before continuing to ensure all actors have
-        # processed their messages and scheduled new events at this time point
-        # This allows actors to schedule new events before advancing to the next time
+        # Continue processing events up to target_time
         Process.send_after(self(), {:do_advance, target_time, from}, 1)
         {:noreply, new_state}
+
+      _next_time ->
+        # Next event is beyond target_time, advance to target_time and wait for quiescence
+        new_state = %{state | current_time: target_time}
+        wait_for_quiescence_and_finish(new_state, target_time, from)
+        {:noreply, new_state}
+    end
+  end
+
+  defp wait_for_quiescence_and_finish(state, target_time, from) do
+    # Wait for quiescence at target_time
+    # Check if there are any events scheduled at exactly target_time
+    case get_next_event_time(state.scheduled, target_time) do
+      nil ->
+        # No events at target_time, finish advance
+        GenServer.reply(from, {:ok, target_time})
+        {:noreply, state}
+
+      next_time when next_time == target_time ->
+        # There are events at exactly target_time, process them and continue waiting
+        {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
+
+        Enum.each(triggered, fn event ->
+          VirtualTimeGenServer.send_immediately(event.dest, event.message)
+        end)
+
+        # Update state but don't advance time
+        new_state = %{state | scheduled: remaining}
+
+        # Continue waiting for quiescence at target_time
+        Process.send_after(self(), {:do_advance, target_time, from}, 1)
+        {:noreply, new_state}
+
+      _next_time ->
+        # Events are scheduled for later times, finish advance
+        GenServer.reply(from, {:ok, target_time})
+        {:noreply, state}
     end
   end
 

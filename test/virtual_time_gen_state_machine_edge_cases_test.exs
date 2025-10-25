@@ -157,12 +157,11 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
   describe "VirtualTimeGenStateMachine API functions" do
     setup do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
       {:ok, clock: clock}
     end
 
-    test "start_link/3 with virtual clock" do
-      {:ok, server} = TestSM.start_link()
+    test "start_link/3 with virtual clock", %{clock: clock} do
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
       assert Process.alive?(server)
       GenServer.stop(server)
     end
@@ -180,14 +179,14 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       GenServer.stop(server)
     end
 
-    test "start/3 without linking" do
-      {:ok, server} = TestSM.start()
+    test "start/3 without linking", %{clock: clock} do
+      {:ok, server} = TestSM.start(virtual_clock: clock)
       assert Process.alive?(server)
       GenServer.stop(server)
     end
 
-    test "cast/2 sends asynchronous message" do
-      {:ok, server} = TestSM.start_link()
+    test "cast/2 sends asynchronous message", %{clock: clock} do
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       TestSM.cast_test(server)
 
@@ -197,8 +196,8 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       GenServer.stop(server)
     end
 
-    test "call/3 makes synchronous call" do
-      {:ok, server} = TestSM.start_link()
+    test "call/3 makes synchronous call", %{clock: clock} do
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       result = TestSM.call_test(server)
       assert result == 0
@@ -206,8 +205,8 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       GenServer.stop(server)
     end
 
-    test "stop/3 stops the server" do
-      {:ok, server} = TestSM.start_link()
+    test "stop/3 stops the server", %{clock: clock} do
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
       assert Process.alive?(server)
 
       TestSM.stop_test(server)
@@ -217,14 +216,14 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       refute Process.alive?(server)
     end
 
-    test "send_after/3 schedules message in virtual time" do
-      {:ok, server} = TestSM.start_link()
+    test "send_after/3 schedules message in virtual time", %{clock: clock} do
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       # Schedule a message
       TestSM.send_after_test(server, 100)
 
       # Advance virtual time
-      VirtualClock.advance(Process.get(:virtual_clock), 100)
+      VirtualClock.advance(clock, 100)
 
       # Give it a moment to process
       Process.sleep(10)
@@ -232,15 +231,15 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       GenServer.stop(server)
     end
 
-    test "cancel_timer/1 cancels scheduled timer" do
-      {:ok, server} = TestSM.start_link()
+    test "cancel_timer/1 cancels scheduled timer", %{clock: clock} do
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       # Schedule and immediately cancel
       ref = TestSM.send_after_test(server, 100)
       TestSM.cancel_timer_test(ref)
 
       # Advance virtual time - message should not fire
-      VirtualClock.advance(Process.get(:virtual_clock), 100)
+      VirtualClock.advance(clock, 100)
       Process.sleep(10)
 
       GenServer.stop(server)
@@ -282,12 +281,11 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
   describe "State functions callback mode" do
     setup do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
       {:ok, clock: clock}
     end
 
-    test "state_functions mode works correctly" do
-      {:ok, server} = StateFunctionsSM.start_link()
+    test "state_functions mode works correctly", %{clock: clock} do
+      {:ok, server} = StateFunctionsSM.start_link(virtual_clock: clock)
 
       # Start in idle state
       assert StateFunctionsSM.get_state(server) == :idle
@@ -307,12 +305,11 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
   describe "State enter callback mode" do
     setup do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
       {:ok, clock: clock}
     end
 
-    test "state_enter callbacks are invoked" do
-      {:ok, server} = StateEnterSM.start_link()
+    test "state_enter callbacks are invoked", %{clock: clock} do
+      {:ok, server} = StateEnterSM.start_link(virtual_clock: clock)
 
       # Initial state enter should be counted
       enters = StateEnterSM.get_enters(server)
@@ -478,7 +475,7 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       {:ok, clock} = VirtualClock.start_link()
       VirtualTimeGenStateMachine.set_virtual_clock(clock)
 
-      {:ok, server} = TestSM.start_link()
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       # Test the send_after_self helper
       TestSM.send_after_self(:test_msg, 100)
@@ -498,7 +495,7 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
 
       start_time = System.monotonic_time(:millisecond)
 
-      {:ok, server} = TestSM.start_link()
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       # Schedule multiple timers
       for i <- 1..10 do

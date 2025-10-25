@@ -92,7 +92,6 @@ defmodule GenServerCallTimeoutTest do
     test "use async pattern for virtual time delays" do
       {:ok, clock} = VirtualClock.start_link()
       # Use test-local virtual clock instead of global to avoid race conditions
-
       {:ok, server} = AsyncServer.start_link(virtual_clock: clock)
 
       # Start async operation

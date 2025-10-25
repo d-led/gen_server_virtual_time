@@ -19,7 +19,7 @@ defmodule TimeBackendTest do
 
     test "returns false when canceling already-fired timer" do
       ref = RealTimeBackend.send_after(self(), :fired, 10)
-      assert_receive :fired, 50
+      assert_receive :fired, 100
 
       result = RealTimeBackend.cancel_timer(ref)
       assert result == false

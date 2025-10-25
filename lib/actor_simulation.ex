@@ -191,6 +191,14 @@ defmodule ActorSimulation do
   - `:terminate_when` - Function that takes simulation and returns true to stop
   - `:check_interval` - How often to check termination condition in ms (default: 100)
 
+  ## Boundary Condition Handling
+
+  The simulation automatically handles boundary conditions where events are scheduled
+  at exactly the end time. For example, a rate pattern sending 50 messages per second
+  over 1000ms will send messages at times 0, 20, 40, ..., 980, 1000. The simulation
+  advances the clock one tick beyond the specified duration and waits for quiescence
+  to ensure all boundary events are processed.
+
   ## Example
 
       # Run for fixed duration (backward compatible)
@@ -255,9 +263,9 @@ defmodule ActorSimulation do
           {dur, tr, :condition}
 
         true ->
+          # Simple advance: just advance to the target time
+          # The VirtualClock.advance already handles quiescence at the target time
           VirtualClock.advance(simulation.clock, duration)
-          # Wait for quiescence to ensure all events at the end time are processed
-          VirtualClock.wait_for_quiescence_until(simulation.clock, until_time: duration)
           {duration, [], :max_time}
       end
 

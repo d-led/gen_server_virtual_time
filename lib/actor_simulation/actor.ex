@@ -311,8 +311,11 @@ defmodule ActorSimulation.Actor do
 
         # Send default :ok reply to caller
         case Map.get(new_state.actors_map, from) do
-          nil -> :ok
-          from_info -> send(from_info.pid, {:actor_reply, ref, :ok})
+          nil ->
+            :ok
+
+          from_info ->
+            VirtualTimeGenServer.send_immediately(from_info.pid, {:actor_reply, ref, :ok})
         end
 
         {:noreply,

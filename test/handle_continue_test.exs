@@ -4,8 +4,8 @@ defmodule HandleContinueTest do
   defmodule ContinueServer do
     use VirtualTimeGenServer
 
-    def start_link(opts) do
-      VirtualTimeGenServer.start_link(__MODULE__, opts, [])
+    def start_link(mode, opts \\ []) do
+      VirtualTimeGenServer.start_link(__MODULE__, mode, opts)
     end
 
     def init(mode) do
@@ -44,9 +44,8 @@ defmodule HandleContinueTest do
   describe "handle_continue/2 support" do
     test "init can return {:continue, arg}" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
 
-      {:ok, server} = ContinueServer.start_link(:use_continue)
+      {:ok, server} = ContinueServer.start_link(:use_continue, virtual_clock: clock)
 
       # Give time for continue to execute
       Process.sleep(10)
@@ -59,9 +58,8 @@ defmodule HandleContinueTest do
 
     test "handle_call can return {:continue, arg}" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
 
-      {:ok, server} = ContinueServer.start_link(:normal)
+      {:ok, server} = ContinueServer.start_link(:normal, virtual_clock: clock)
 
       # Trigger continue chain
       GenServer.call(server, :trigger_continue)
