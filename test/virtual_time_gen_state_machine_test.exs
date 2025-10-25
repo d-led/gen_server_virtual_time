@@ -378,7 +378,10 @@ defmodule VirtualTimeGenStateMachineTest do
     end
 
     test "can explicitly use real time" do
-      VirtualTimeGenStateMachine.use_real_time()
+      VirtualTimeGenStateMachine.use_real_time(
+        :i_know_what_i_am_doing,
+        "testing real time functionality"
+      )
 
       {:ok, server} = SwitchSM.start_link(:off)
 
@@ -391,7 +394,11 @@ defmodule VirtualTimeGenStateMachineTest do
 
   describe "comparison with real time" do
     setup do
-      VirtualTimeGenStateMachine.use_real_time()
+      VirtualTimeGenStateMachine.use_real_time(
+        :i_know_what_i_am_doing,
+        "testing real time functionality"
+      )
+
       :ok
     end
 

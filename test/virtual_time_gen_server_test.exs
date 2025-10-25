@@ -213,8 +213,7 @@ defmodule VirtualTimeGenServerTest do
       {:ok, clock1} = VirtualClock.start_link()
       {:ok, clock2} = VirtualClock.start_link()
 
-      # No global clock set - use real time by default
-      VirtualTimeGenServer.use_real_time()
+      # No global clock set - servers will use their explicit clocks
 
       # Start servers with explicit clocks
       {:ok, server1} =
@@ -240,7 +239,12 @@ defmodule VirtualTimeGenServerTest do
     test "local clock injection overrides global clock setting" do
       # Set a global clock
       {:ok, global_clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(global_clock)
+
+      VirtualTimeGenServer.set_virtual_clock(
+        global_clock,
+        :i_know_what_i_am_doing,
+        "testing global vs local clock interaction"
+      )
 
       # But start a server with a different local clock
       {:ok, local_clock} = VirtualClock.start_link()
@@ -332,7 +336,12 @@ defmodule VirtualTimeGenServerTest do
 
       # Even if global clock is set, server should use real time
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      VirtualTimeGenServer.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "testing real_time option overrides global clock"
+      )
 
       # Sleep for real time
       start_time = System.monotonic_time(:millisecond)
@@ -384,7 +393,11 @@ defmodule VirtualTimeGenServerTest do
       {:ok, clock} = VirtualClock.start_link()
 
       # Set global clock
-      VirtualTimeGenServer.set_virtual_clock(clock)
+      VirtualTimeGenServer.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "testing global clock basic functionality"
+      )
 
       # Start a single server with global clock
       {:ok, server} = TickerServer.start_link(100)

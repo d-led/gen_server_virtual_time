@@ -79,30 +79,66 @@ defmodule VirtualTimeGenStateMachine do
   @doc false
   def code_change(_old_vsn, state, data, _extra), do: {:ok, state, data}
 
+  # Helper function to get caller information from stacktrace
+  defp get_caller_info do
+    case Process.info(self(), :current_stacktrace) do
+      {:current_stacktrace, stacktrace} ->
+        # Find the first external caller (not from this module)
+        case find_external_caller(stacktrace) do
+          {_module, _function, _arity, location} ->
+            file = Keyword.get(location, :file, "unknown")
+            line = Keyword.get(location, :line, 0)
+            [file: to_string(file), line: line]
+
+          nil ->
+            []
+        end
+
+      _ ->
+        []
+    end
+  end
+
+  defp find_external_caller(stacktrace) do
+    Enum.find_value(stacktrace, fn
+      {module, function, arity, location} when module != __MODULE__ ->
+        {module, function, arity, location}
+
+      _ ->
+        nil
+    end)
+  end
+
   @doc """
   Sets the virtual clock for the current process.
   All child processes will inherit this setting.
   """
   def set_virtual_clock(clock) do
+    # Get caller information from stacktrace
+    caller_info = get_caller_info()
+
     # Emit a compilation warning to alert users about potential race conditions
-    IO.warn("""
-    ⚠️  GLOBAL VIRTUAL CLOCK INJECTION DETECTED ⚠️
+    IO.warn(
+      """
+      ⚠️  GLOBAL VIRTUAL CLOCK INJECTION DETECTED ⚠️
 
-    VirtualTimeGenStateMachine.set_virtual_clock/1 sets a GLOBAL virtual clock that affects
-    ALL child processes. This can cause race conditions in tests and production!
+      VirtualTimeGenStateMachine.set_virtual_clock/1 sets a GLOBAL virtual clock that affects
+      ALL child processes. This can cause race conditions in tests and production!
 
-    Consider using test-local virtual clocks instead:
+      Consider using test-local virtual clocks instead:
 
-    # ❌ Global (can cause race conditions)
-    VirtualTimeGenStateMachine.set_virtual_clock(clock)
-    {:ok, server} = MyStateMachine.start_link([])
+      # ❌ Global (can cause race conditions)
+      VirtualTimeGenStateMachine.set_virtual_clock(clock)
+      {:ok, server} = MyStateMachine.start_link([])
 
-    # ✅ Test-local (isolated, safe)
-    {:ok, server} = MyStateMachine.start_link([], virtual_clock: clock)
+      # ✅ Test-local (isolated, safe)
+      {:ok, server} = MyStateMachine.start_link([], virtual_clock: clock)
 
-    For coordinated simulations, use global clocks intentionally.
-    For isolated testing, use test-local clocks.
-    """)
+      For coordinated simulations, use global clocks intentionally.
+      For isolated testing, use test-local clocks.
+      """,
+      caller_info
+    )
 
     Process.put(:virtual_clock, clock)
     Process.put(:time_backend, VirtualTimeBackend)
@@ -131,25 +167,31 @@ defmodule VirtualTimeGenStateMachine do
   Uses real time (default behavior).
   """
   def use_real_time do
+    # Get caller information from stacktrace
+    caller_info = get_caller_info()
+
     # Emit a compilation warning to alert users about global time backend changes
-    IO.warn("""
-    ⚠️  GLOBAL TIME BACKEND CHANGE DETECTED ⚠️
+    IO.warn(
+      """
+      ⚠️  GLOBAL TIME BACKEND CHANGE DETECTED ⚠️
 
-    VirtualTimeGenStateMachine.use_real_time/0 changes the GLOBAL time backend for
-    ALL child processes. This can cause race conditions in tests and production!
+      VirtualTimeGenStateMachine.use_real_time/0 changes the GLOBAL time backend for
+      ALL child processes. This can cause race conditions in tests and production!
 
-    Consider using test-local time backend instead:
+      Consider using test-local time backend instead:
 
-    # ❌ Global (can cause race conditions)
-    VirtualTimeGenStateMachine.use_real_time()
-    {:ok, server} = MyStateMachine.start_link([])
+      # ❌ Global (can cause race conditions)
+      VirtualTimeGenStateMachine.use_real_time()
+      {:ok, server} = MyStateMachine.start_link([])
 
-    # ✅ Test-local (isolated, safe)
-    {:ok, server} = MyStateMachine.start_link([], real_time: true)
+      # ✅ Test-local (isolated, safe)
+      {:ok, server} = MyStateMachine.start_link([], real_time: true)
 
-    For production, the default is already real time.
-    For testing, use test-local virtual clocks.
-    """)
+      For production, the default is already real time.
+      For testing, use test-local virtual clocks.
+      """,
+      caller_info
+    )
 
     Process.delete(:virtual_clock)
     Process.put(:time_backend, RealTimeBackend)

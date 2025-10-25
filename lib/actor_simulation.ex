@@ -120,7 +120,16 @@ defmodule ActorSimulation do
   """
   def add_actor(simulation, name, opts \\ []) do
     actor_def = Definition.new(name, opts)
-    {:ok, pid} = Actor.start_link(actor_def, simulation.clock)
+
+    # Inject trace collector if tracing is enabled
+    actor_opts =
+      if simulation.trace_enabled do
+        [trace_collector: self()]
+      else
+        []
+      end
+
+    {:ok, pid} = Actor.start_link(actor_def, simulation.clock, actor_opts)
 
     actors =
       Map.put(simulation.actors, name, %{pid: pid, definition: actor_def, type: :simulated})
@@ -219,28 +228,12 @@ defmodule ActorSimulation do
     terminate_when = Keyword.get(opts, :terminate_when)
     check_interval = Keyword.get(opts, :check_interval, 100)
 
-    # Register trace collector if tracing enabled
-    if simulation.trace_enabled do
-      # Unregister if already exists
-      case Process.whereis(:trace_collector) do
-        nil ->
-          Process.register(self(), :trace_collector)
-
-        # Already registered to us
-        pid when pid == self() ->
-          :ok
-
-        _other ->
-          Process.unregister(:trace_collector)
-          Process.register(self(), :trace_collector)
-      end
-    end
-
     # Start all actors (only simulated actors need setup)
+    # Trace collector is already injected at start_link time
     Enum.each(simulation.actors, fn {_name, actor_info} ->
       case actor_info.type do
         :simulated ->
-          Actor.start_sending(actor_info.pid, simulation.actors, simulation.trace_enabled)
+          Actor.start_sending(actor_info.pid, simulation.actors)
 
         :real_process ->
           # Real processes are already started and don't need actor map

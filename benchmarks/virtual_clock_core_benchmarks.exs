@@ -26,7 +26,8 @@ defmodule VirtualClockCoreBenchmarks do
       memory_time: 2,
       warmup: 1,
       formatters: [
-        Benchee.Formatters.Console
+        Benchee.Formatters.Console,
+        {Benchee.Formatters.HTML, file: "_build/benchmarks/results.html"}
       ]
     )
 
@@ -35,7 +36,7 @@ defmodule VirtualClockCoreBenchmarks do
     IO.puts("   - VirtualClock.schedule_event: Event scheduling performance")
     IO.puts("   - VirtualTimeGenServer: GenServer with virtual time performance")
     IO.puts("   - ActorSimulation: Simple actor simulation performance")
-    IO.puts("\n📊 Check benchmarks/results/ for detailed HTML reports")
+    IO.puts("\n📊 Check _build/benchmarks/results.html for detailed HTML report")
   end
 
   # Benchmark: VirtualClock.advance for 1 second
@@ -161,7 +162,7 @@ defmodule PeriodicTicker do
 end
 
 # Create results directory
-File.mkdir_p("benchmarks/results")
+File.mkdir_p("_build/benchmarks")
 
 # Run the benchmarks
 VirtualClockCoreBenchmarks.run_benchmarks()

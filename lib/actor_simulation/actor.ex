@@ -12,23 +12,28 @@ defmodule ActorSimulation.Actor do
       :definition,
       :user_state,
       :actors_map,
+      :trace_collector_pid,
       sent_count: 0,
       received_count: 0,
       sent_messages: [],
-      received_messages: [],
-      trace_enabled: false
+      received_messages: []
     ]
   end
 
   # Client API
 
-  def start_link(definition, clock) do
+  def start_link(definition, clock, opts \\ []) do
     # Use test-local virtual clock injection instead of global
-    VirtualTimeGenServer.start_link(__MODULE__, definition, virtual_clock: clock)
+    # Also support trace collector injection
+    trace_collector = Keyword.get(opts, :trace_collector)
+
+    VirtualTimeGenServer.start_link(__MODULE__, {definition, trace_collector},
+      virtual_clock: clock
+    )
   end
 
-  def start_sending(actor, actors_map, trace_enabled \\ false) do
-    VirtualTimeGenServer.call(actor, {:start_sending, actors_map, trace_enabled})
+  def start_sending(actor, actors_map) do
+    VirtualTimeGenServer.call(actor, {:start_sending, actors_map})
   end
 
   def get_stats(actor) do
@@ -38,19 +43,20 @@ defmodule ActorSimulation.Actor do
   # Server callbacks
 
   @impl true
-  def init(definition) do
+  def init({definition, trace_collector}) do
     state = %State{
       definition: definition,
       user_state: definition.initial_state,
-      actors_map: %{}
+      actors_map: %{},
+      trace_collector_pid: trace_collector
     }
 
     {:ok, state}
   end
 
   @impl true
-  def handle_call({:start_sending, actors_map, trace_enabled}, _from, state) do
-    new_state = %{state | actors_map: actors_map, trace_enabled: trace_enabled}
+  def handle_call({:start_sending, actors_map}, _from, state) do
+    new_state = %{state | actors_map: actors_map}
 
     # Schedule first send if this actor has a send pattern
     new_state =
@@ -387,24 +393,22 @@ defmodule ActorSimulation.Actor do
   end
 
   defp trace_event(state, target, message, type) do
-    if state.trace_enabled do
-      case Process.whereis(:trace_collector) do
-        nil ->
-          :ok
+    if state.trace_collector_pid do
+      # Get the virtual clock from the process dictionary (injected by VirtualTimeGenServer)
+      clock = Process.get(:virtual_clock)
+      timestamp = if clock, do: VirtualClock.now(clock), else: 0
 
-        pid ->
-          VirtualTimeGenServer.send_immediately(
-            pid,
-            {:trace,
-             %{
-               timestamp: VirtualClock.now(Process.get(:virtual_clock)),
-               from: state.definition.name,
-               to: target,
-               message: message,
-               type: type
-             }}
-          )
-      end
+      send(
+        state.trace_collector_pid,
+        {:trace,
+         %{
+           timestamp: timestamp,
+           from: state.definition.name,
+           to: target,
+           message: message,
+           type: type
+         }}
+      )
     end
   end
 end

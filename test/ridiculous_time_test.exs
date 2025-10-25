@@ -83,7 +83,7 @@ defmodule RidiculousTimeTest do
       stats = ActorSimulation.get_stats(simulation)
 
       # 10 years * 12 months = 120 heartbeats (may get 121 due to timing)
-      expected_heartbeats = 120
+      _expected_heartbeats = 120
 
       # Use very lenient assertions for async execution
       assert stats.actors[:heartbeat_monitor].sent_count >= 1

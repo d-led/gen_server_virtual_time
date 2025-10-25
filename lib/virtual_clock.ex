@@ -251,7 +251,7 @@ defmodule VirtualClock do
   def handle_call({:advance, amount}, from, state) do
     target_time = state.current_time + amount
     # Start the advance process
-    send(self(), {:do_advance, target_time, from})
+    Process.send_after(self(), {:do_advance, target_time, from}, 1)
     {:noreply, state}
   end
 
@@ -299,8 +299,8 @@ defmodule VirtualClock do
   end
 
   defp advance_loop_iterative(state, target_time, from) do
-    # Advance to target_time and wait for quiescence
-    # Process all events up to target_time, then wait for quiescence at that time
+    # Process all events at the current time point in a tight loop
+    # Then send a message to continue to the next time point
     case get_next_event_time(state.scheduled, target_time) do
       nil ->
         # No events up to target_time, advance to target_time and wait for quiescence
@@ -309,19 +309,8 @@ defmodule VirtualClock do
         {:noreply, new_state}
 
       next_time when next_time <= target_time ->
-        # Process all events at exactly the same time point
-        {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
-
-        Enum.each(triggered, fn event ->
-          VirtualTimeGenServer.send_immediately(event.dest, event.message)
-        end)
-
-        # Update state and continue advancing
-        new_state = %{state | current_time: next_time, scheduled: remaining}
-
-        # Continue processing events up to target_time
-        Process.send_after(self(), {:do_advance, target_time, from}, 1)
-        {:noreply, new_state}
+        # Process ALL events at exactly the same time point in a tight loop
+        process_all_events_at_time(state, next_time, target_time, from)
 
       _next_time ->
         # Next event is beyond target_time, advance to target_time and wait for quiescence
@@ -331,14 +320,29 @@ defmodule VirtualClock do
     end
   end
 
+  defp process_all_events_at_time(state, current_time, target_time, from) do
+    # Extract ALL events at the current time point at once
+    {triggered, remaining} = extract_events_at_time(state.scheduled, current_time)
+
+    # Process all events at this time point in a tight loop
+    Enum.each(triggered, fn event ->
+      VirtualTimeGenServer.send_immediately(event.dest, event.message)
+    end)
+
+    # Update state (advance time to current_time) and send message to continue to next time
+    # This allows newly scheduled events to be picked up in the next iteration
+    new_state = %{state | current_time: current_time, scheduled: remaining}
+    Process.send_after(self(), {:do_advance, target_time, from}, 1)
+    {:noreply, new_state}
+  end
+
   defp wait_for_quiescence_and_finish(state, target_time, from) do
     # Wait for quiescence at target_time
-    # Check if there are any events scheduled at exactly target_time
+    # First, check if there are any events scheduled at exactly target_time
     case get_next_event_time(state.scheduled, target_time) do
       nil ->
-        # No events at target_time, finish advance
-        GenServer.reply(from, {:ok, target_time})
-        {:noreply, state}
+        # No events at target_time, wait for quiescence and finish advance
+        wait_for_all_events_processed(state, target_time, from)
 
       next_time when next_time == target_time ->
         # There are events at exactly target_time, process them and continue waiting
@@ -356,9 +360,29 @@ defmodule VirtualClock do
         {:noreply, new_state}
 
       _next_time ->
-        # Events are scheduled for later times, finish advance
-        GenServer.reply(from, {:ok, target_time})
-        {:noreply, state}
+        # Events are scheduled for later times, wait for quiescence and finish
+        wait_for_all_events_processed(state, target_time, from)
+    end
+  end
+
+  defp wait_for_all_events_processed(state, target_time, from) do
+    # Check if there are new events scheduled at or before target_time
+    # These would have been scheduled by message handlers processing the events we just sent
+    # IMPORTANT: We must check state.scheduled here, which should already include
+    # events scheduled by send_after calls during handler execution (they are synchronous)
+    count = count_events_until(state.scheduled, target_time)
+
+    # Debug: Print state for troubleshooting
+    # IO.puts("wait_for_all_events_processed: current_time=#{state.current_time}, target_time=#{target_time}, count=#{count}, scheduled_size=#{:gb_trees.size(state.scheduled)}")
+
+    if count > 0 do
+      # There are more events to process, continue the advance loop
+      Process.send_after(self(), {:do_advance, target_time, from}, 0)
+      {:noreply, state}
+    else
+      # No more events, we've reached quiescence - finish advance
+      GenServer.reply(from, {:ok, target_time})
+      {:noreply, state}
     end
   end
 

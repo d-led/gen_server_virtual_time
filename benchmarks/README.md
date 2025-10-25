@@ -54,13 +54,19 @@ The main bottleneck is in the virtual clock's advance mechanism when processing 
 
 ## Benchmark Results
 
-The benchmarks generate console output showing:
+The benchmarks generate:
+- **Console output** showing performance metrics
+- **HTML report** at `_build/benchmarks/results.html` with detailed charts and analysis
+
+Console output includes:
 - **ips**: Iterations per second
 - **average**: Average execution time
 - **deviation**: Standard deviation
 - **median**: Median execution time
 - **99th %**: 99th percentile execution time
 - **Memory usage**: Memory consumption per operation
+
+The HTML report provides interactive charts and detailed analysis that can be opened in any web browser.
 
 ## Adding New Benchmarks
 
@@ -92,5 +98,6 @@ The benchmarks require:
 
 - Benchmarks run with 5-second time limit and 1-second warmup
 - Memory usage is measured for each operation
-- Results are printed to console
+- Results are printed to console and saved as HTML report
+- HTML reports are saved to `_build/benchmarks/` (ignored by git)
 - All benchmarks include proper cleanup (stopping GenServers)

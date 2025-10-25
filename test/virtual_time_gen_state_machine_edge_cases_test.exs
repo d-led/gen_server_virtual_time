@@ -256,14 +256,22 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
   describe "Time backend configuration" do
     test "set_virtual_clock/1 sets virtual time backend" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
+
+      VirtualTimeGenStateMachine.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "testing time backend configuration"
+      )
 
       backend = VirtualTimeGenStateMachine.get_time_backend()
       assert backend == VirtualTimeBackend
     end
 
     test "use_real_time/0 sets real time backend" do
-      VirtualTimeGenStateMachine.use_real_time()
+      VirtualTimeGenStateMachine.use_real_time(
+        :i_know_what_i_am_doing,
+        "testing real time backend configuration"
+      )
 
       backend = VirtualTimeGenStateMachine.get_time_backend()
       assert backend == RealTimeBackend
@@ -357,7 +365,12 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
     test "real_time option overrides global settings" do
       # Set global virtual clock
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
+
+      VirtualTimeGenStateMachine.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "testing time backend configuration"
+      )
 
       # Start server with real_time: true
       {:ok, server} = TestSM.start_link(real_time: true)
@@ -473,7 +486,12 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
 
     test "send_after_self helper function works" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
+
+      VirtualTimeGenStateMachine.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "testing time backend configuration"
+      )
 
       {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
@@ -491,7 +509,12 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
   describe "Performance and timing" do
     test "virtual time is significantly faster than real time" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenStateMachine.set_virtual_clock(clock)
+
+      VirtualTimeGenStateMachine.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "testing time backend configuration"
+      )
 
       start_time = System.monotonic_time(:millisecond)
 
