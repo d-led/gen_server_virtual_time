@@ -254,6 +254,25 @@ defmodule VirtualTimeGenServer do
   end
 
   @doc """
+  Sets the virtual clock for the current process without emitting warnings.
+
+  Use this when you intentionally want global virtual clock behavior and understand
+  the implications. The explanation message should describe why global clock is needed.
+
+  ## Example
+
+      iex> {:ok, clock} = VirtualClock.start_link()
+      iex> VirtualTimeGenServer.set_virtual_clock(clock, :i_know_what_i_am_doing, "coordinated simulation")
+      VirtualTimeBackend
+
+  """
+  def set_virtual_clock(clock, :i_know_what_i_am_doing, explanation)
+      when is_binary(explanation) do
+    Process.put(:virtual_clock, clock)
+    Process.put(:time_backend, VirtualTimeBackend)
+  end
+
+  @doc """
   Uses real time (default behavior).
   """
   def use_real_time do
@@ -282,6 +301,23 @@ defmodule VirtualTimeGenServer do
   end
 
   @doc """
+  Uses real time without emitting warnings.
+
+  Use this when you intentionally want global real time behavior and understand
+  the implications. The explanation message should describe why global real time is needed.
+
+  ## Example
+
+      iex> VirtualTimeGenServer.use_real_time(:i_know_what_i_am_doing, "production mode")
+      RealTimeBackend
+
+  """
+  def use_real_time(:i_know_what_i_am_doing, explanation) when is_binary(explanation) do
+    Process.delete(:virtual_clock)
+    Process.put(:time_backend, RealTimeBackend)
+  end
+
+  @doc """
   Gets the current time backend.
   """
   def get_time_backend do
@@ -295,6 +331,29 @@ defmodule VirtualTimeGenServer do
   def send_after(dest, message, delay) do
     backend = get_time_backend()
     backend.send_after(dest, message, delay)
+  end
+
+  @doc """
+  Sends a message immediately in virtual time.
+
+  With virtual time, this schedules the message for the current virtual time,
+  ensuring it gets processed in the next event cycle.
+  With real time, this sends the message immediately.
+
+  This is useful for triggering immediate responses or state changes
+  within the virtual time simulation.
+
+  ## Examples
+
+      # Send immediate message to self
+      VirtualTimeGenServer.send_immediately(self(), :process_now)
+
+      # Send immediate message to another process
+      VirtualTimeGenServer.send_immediately(other_pid, {:urgent, data})
+  """
+  def send_immediately(dest, message) do
+    backend = get_time_backend()
+    backend.send_immediately(dest, message)
   end
 
   @doc """
@@ -525,7 +584,7 @@ defmodule VirtualTimeGenServer do
         if actor_name do
           # For incoming messages, we don't know the sender, so we use a generic source
           # The diagram generator can infer connections from the message patterns
-          send(pid, {:trace,
+          VirtualTimeGenServer.send_immediately(pid, {:trace,
            %{
              timestamp: VirtualClock.now(Process.get(:virtual_clock)),
              # We don't know the sender for incoming messages

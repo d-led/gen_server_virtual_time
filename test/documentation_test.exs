@@ -40,9 +40,10 @@ defmodule DocumentationTest do
       # Advance time - happens instantly!
       VirtualClock.advance(clock, 10_000)
 
-      # Precise verification (use more lenient assertion for async execution)
+      # Precise verification - virtual time should be deterministic
+      # 10,000ms / 100ms interval = 100 ticks
       count = GenServer.call(server, :get_count)
-      assert count >= 5
+      assert count == 100
 
       GenServer.stop(server)
     end
@@ -85,8 +86,8 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 500)
 
       stats = ActorSimulation.get_stats(simulation)
-      assert stats.actors[:client].sent_count >= 4
-      assert stats.actors[:server].received_count >= 4
+      assert stats.actors[:client].sent_count == 5
+      assert stats.actors[:server].received_count == 5
 
       ActorSimulation.stop(simulation)
     end
@@ -111,9 +112,11 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 300)
 
       stats = ActorSimulation.get_stats(simulation)
-      # Use more lenient assertions for async execution
-      assert stats.actors[:requester].sent_count >= 2
-      assert stats.actors[:notifier].sent_count >= 4
+      # Virtual time should be deterministic
+      # Requester: 300ms / 100ms = 3 messages (0, 100, 200ms) - 300ms is end time
+      # Notifier: 300ms / 50ms = 6 messages (0, 50, 100, 150, 200, 250ms) - 300ms is end time
+      assert stats.actors[:requester].sent_count == 3
+      assert stats.actors[:notifier].sent_count == 6
 
       ActorSimulation.stop(simulation)
     end
@@ -182,7 +185,7 @@ defmodule DocumentationTest do
       # Verify real server received messages
       real_pid = simulation.actors[:real_server].pid
       count = GenServer.call(real_pid, :get)
-      assert count >= 2
+      assert count == 5
 
       ActorSimulation.stop(simulation)
     end
@@ -267,7 +270,7 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 500)
 
       stats = ActorSimulation.get_stats(simulation)
-      assert stats.actors[:sender].sent_count >= 4
+      assert stats.actors[:sender].sent_count == 5
 
       ActorSimulation.stop(simulation)
     end
@@ -284,8 +287,8 @@ defmodule DocumentationTest do
 
       stats = ActorSimulation.get_stats(simulation)
       # 50 per second = 50 in 1 second
-      # Use more lenient assertion for async execution
-      assert stats.actors[:sender].sent_count >= 20
+      # Virtual time should be deterministic
+      assert stats.actors[:sender].sent_count == 50
 
       ActorSimulation.stop(simulation)
     end
@@ -301,8 +304,8 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 1000)
 
       stats = ActorSimulation.get_stats(simulation)
-      # 2 bursts of 10 = 20 total, but allow for timing variations
-      assert stats.actors[:sender].sent_count >= 10
+      # 2 bursts of 10 = 20 total
+      assert stats.actors[:sender].sent_count == 20
 
       ActorSimulation.stop(simulation)
     end
@@ -320,9 +323,9 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 300)
 
       stats = ActorSimulation.get_stats(simulation)
-      # Use more lenient assertions for async execution
-      assert stats.actors[:sender].sent_count >= 2
-      assert stats.actors[:receiver].received_count >= 2
+      # Virtual time should be deterministic
+      assert stats.actors[:sender].sent_count == 3
+      assert stats.actors[:receiver].received_count == 3
 
       ActorSimulation.stop(simulation)
     end
@@ -342,8 +345,8 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 300)
 
       stats = ActorSimulation.get_stats(simulation)
-      assert stats.actors[:caller].sent_count >= 2
-      assert stats.actors[:responder].received_count >= 2
+      assert stats.actors[:caller].sent_count == 3
+      assert stats.actors[:responder].received_count == 3
 
       ActorSimulation.stop(simulation)
     end
@@ -359,10 +362,90 @@ defmodule DocumentationTest do
         |> ActorSimulation.run(duration: 300)
 
       stats = ActorSimulation.get_stats(simulation)
-      assert stats.actors[:caster].sent_count >= 2
-      assert stats.actors[:listener].received_count >= 2
+      assert stats.actors[:caster].sent_count == 3
+      assert stats.actors[:listener].received_count == 3
 
       ActorSimulation.stop(simulation)
+    end
+  end
+
+  describe "Global time manipulation warning skip examples" do
+    test "VirtualTimeGenServer.set_virtual_clock with warning skip" do
+      # Set up virtual time without warnings
+      {:ok, clock} = VirtualClock.start_link()
+
+      VirtualTimeGenServer.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "coordinated simulation test"
+      )
+
+      # Start server using the MyServer module defined in the same file
+      {:ok, server} = VirtualTimeGenServer.start_link(DocumentationTest.MyServer, 100, [])
+
+      # Advance time - happens instantly!
+      VirtualClock.advance(clock, 10_000)
+
+      # Precise verification - virtual time should be deterministic
+      # 10,000ms / 100ms interval = 100 ticks
+      count = GenServer.call(server, :get_count)
+      assert count == 100
+
+      GenServer.stop(server)
+    end
+
+    test "VirtualTimeGenServer.use_real_time with warning skip" do
+      # Set up virtual time first
+      {:ok, clock} = VirtualClock.start_link()
+
+      VirtualTimeGenServer.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "initial virtual time setup"
+      )
+
+      # Switch to real time without warnings
+      VirtualTimeGenServer.use_real_time(
+        :i_know_what_i_am_doing,
+        "switching to real time for integration test"
+      )
+
+      # Verify we're using real time backend
+      assert VirtualTimeGenServer.get_time_backend() == RealTimeBackend
+    end
+
+    test "VirtualTimeGenStateMachine.set_virtual_clock with warning skip" do
+      # Set up virtual time without warnings
+      {:ok, clock} = VirtualClock.start_link()
+
+      VirtualTimeGenStateMachine.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "state machine simulation test"
+      )
+
+      # Verify we're using virtual time backend
+      assert VirtualTimeGenStateMachine.get_time_backend() == VirtualTimeBackend
+    end
+
+    test "VirtualTimeGenStateMachine.use_real_time with warning skip" do
+      # Set up virtual time first
+      {:ok, clock} = VirtualClock.start_link()
+
+      VirtualTimeGenStateMachine.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "initial virtual time setup"
+      )
+
+      # Switch to real time without warnings
+      VirtualTimeGenStateMachine.use_real_time(
+        :i_know_what_i_am_doing,
+        "switching to real time for production test"
+      )
+
+      # Verify we're using real time backend
+      assert VirtualTimeGenStateMachine.get_time_backend() == RealTimeBackend
     end
   end
 end

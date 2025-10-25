@@ -273,16 +273,22 @@ defmodule ActorSimulation.Actor do
       {:reply, reply, user_state} ->
         # Send reply back - 'from' is actor name, need to get pid
         case Map.get(new_state.actors_map, from) do
-          nil -> :ok
-          from_info -> send(from_info.pid, {:actor_reply, ref, reply})
+          nil ->
+            :ok
+
+          from_info ->
+            VirtualTimeGenServer.send_immediately(from_info.pid, {:actor_reply, ref, reply})
         end
 
         {:noreply, %{new_state | user_state: user_state}}
 
       {:ok, user_state} ->
         case Map.get(new_state.actors_map, from) do
-          nil -> :ok
-          from_info -> send(from_info.pid, {:actor_reply, ref, :ok})
+          nil ->
+            :ok
+
+          from_info ->
+            VirtualTimeGenServer.send_immediately(from_info.pid, {:actor_reply, ref, :ok})
         end
 
         {:noreply, %{new_state | user_state: user_state}}
@@ -338,7 +344,11 @@ defmodule ActorSimulation.Actor do
           :simulated ->
             # For simulated actors, use our custom protocol
             ref = make_ref()
-            send(target_info.pid, {:actor_call, state.definition.name, ref, message})
+
+            VirtualTimeGenServer.send_immediately(
+              target_info.pid,
+              {:actor_call, state.definition.name, ref, message}
+            )
 
             receive do
               {:actor_reply, ^ref, reply} -> reply
@@ -356,13 +366,20 @@ defmodule ActorSimulation.Actor do
             GenServer.cast(target_info.pid, message)
 
           :simulated ->
-            send(target_info.pid, {:actor_message, state.definition.name, message})
+            VirtualTimeGenServer.send_immediately(
+              target_info.pid,
+              {:actor_message, state.definition.name, message}
+            )
         end
 
       message ->
         # Regular send
         trace_event(state, target_name, message, :send)
-        send(target_info.pid, {:actor_message, state.definition.name, message})
+
+        VirtualTimeGenServer.send_immediately(
+          target_info.pid,
+          {:actor_message, state.definition.name, message}
+        )
     end
   end
 
@@ -373,7 +390,7 @@ defmodule ActorSimulation.Actor do
           :ok
 
         pid ->
-          send(
+          VirtualTimeGenServer.send_immediately(
             pid,
             {:trace,
              %{
