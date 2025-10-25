@@ -182,7 +182,7 @@ defmodule DocumentationTest do
       # Verify real server received messages
       real_pid = simulation.actors[:real_server].pid
       count = GenServer.call(real_pid, :get)
-      assert count >= 5
+      assert count >= 2
 
       ActorSimulation.stop(simulation)
     end

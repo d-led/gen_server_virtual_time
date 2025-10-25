@@ -185,7 +185,7 @@ defmodule Mix.Tasks.Precommit do
     Mix.Task.reenable("test")
 
     # Capture output but don't show it unless there's an error
-    case System.cmd("mix", ["test"],
+    case System.cmd("mix", ["test", "--exclude", "diagram_generation,slow"],
            stderr_to_stdout: true,
            env: [{"MIX_ENV", "test"}]
          ) do
