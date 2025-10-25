@@ -12,7 +12,7 @@ defmodule RaceConditionChecker do
   def run_check do
     IO.puts("🔍 Race Condition Checker Starting...")
     IO.puts("=" <> String.duplicate("=", 50))
-    
+
     # Test configurations to try
     configs = [
       %{name: "Sequential", max_cases: 1, async: false},
@@ -20,20 +20,20 @@ defmodule RaceConditionChecker do
       %{name: "Medium Concurrency", max_cases: 4, async: true},
       %{name: "High Concurrency", max_cases: 8, async: true}
     ]
-    
+
     # Seeds to test with
     seeds = [12345, 67890, 11111, 22222, 33333, 44444, 55555, 66666, 77777, 88888]
-    
+
     results = []
-    
+
     for config <- configs do
       IO.puts("\n🧪 Testing #{config.name} (#{config.max_cases} cases, async: #{config.async})")
-      
+
       config_results = for seed <- seeds do
         IO.write("  Seed #{seed}: ")
-        
+
         {output, exit_code} = run_test_with_config(config, seed)
-        
+
         if exit_code == 0 do
           IO.puts("✅ PASS")
           :pass
@@ -43,9 +43,9 @@ defmodule RaceConditionChecker do
           {:fail, output}
         end
       end
-      
+
       failures = Enum.filter(config_results, &match?({:fail, _}, &1))
-      
+
       if Enum.empty?(failures) do
         IO.puts("  ✅ All seeds passed for #{config.name}")
       else
@@ -53,11 +53,11 @@ defmodule RaceConditionChecker do
         results = results ++ [{config.name, failures}]
       end
     end
-    
+
     IO.puts("\n" <> String.duplicate("=", 50))
     IO.puts("📊 SUMMARY")
     IO.puts("=" <> String.duplicate("=", 50))
-    
+
     if Enum.empty?(results) do
       IO.puts("🎉 No race conditions detected!")
       IO.puts("All tests passed consistently across different configurations.")
@@ -70,7 +70,7 @@ defmodule RaceConditionChecker do
       IO.puts("   or adding proper synchronization to your tests.")
     end
   end
-  
+
   defp run_test_with_config(config, seed) do
     cmd = [
       "mix", "test",
@@ -78,7 +78,7 @@ defmodule RaceConditionChecker do
       "--max-cases", to_string(config.max_cases),
       "--exclude", "diagram_generation,slow"
     ]
-    
+
     System.cmd("elixir", ["-S"] ++ cmd, stderr_to_stdout: true)
   end
 end
