@@ -93,74 +93,13 @@ jobs:
           detailed_summary: true
           include_passed: true
   
-  slow-tests:
-    name: Slow Tests & Demos
+  coverage:
+    name: Coverage & Slow Tests
     runs-on: ubuntu-latest
     
     permissions:
       contents: read
       checks: write
-      pull-requests: write
-    
-    env:
-      MIX_ENV: test
-      CI: true
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Elixir
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: '1.18'
-          otp-version: '27'
-      
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            deps
-            _build
-          key: ${{ runner.os }}-mix-slow-tests-${{ hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-slow-tests-
-      
-      - name: Install dependencies
-        run: mix deps.get
-      
-      - name: Compile
-        run: mix compile
-      
-      - name: Run slow tests
-        run: |
-          mix test --only slow \
-            --formatter JUnitFormatter \
-            --formatter ExUnit.CLIFormatter \
-            --slowest 10
-      
-      - name: Upload slow test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: slow-test-results
-          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
-      
-      - name: Publish slow test report
-        uses: mikepenz/action-junit-report@v4
-        if: always()
-        with:
-          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
-          check_name: 'Slow Test Report'
-          detailed_summary: true
-          include_passed: true
-  
-  coverage:
-    name: Combined Code Coverage (All Tests)
-    runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
       pull-requests: write
     
     steps:
@@ -193,7 +132,27 @@ jobs:
         env:
           MIX_ENV: test
         continue-on-error: true
-        run: mix coveralls --only slow --export-coverage slow
+        run: |
+          mix coveralls --only slow --export-coverage slow \
+            --formatter JUnitFormatter \
+            --formatter ExUnit.CLIFormatter \
+            --slowest 10
+      
+      - name: Upload slow test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: slow-test-results
+          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
+      
+      - name: Publish slow test report
+        uses: mikepenz/action-junit-report@v4
+        if: always()
+        with:
+          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
+          check_name: 'Slow Test Report'
+          detailed_summary: true
+          include_passed: true
       
       - name: Run diagram generation tests with coverage export
         env:
