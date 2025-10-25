@@ -121,12 +121,12 @@ defmodule ActorSimulation do
   def add_actor(simulation, name, opts \\ []) do
     actor_def = Definition.new(name, opts)
 
-    # Inject trace collector if tracing is enabled
+    # Inject trace collector if tracing is enabled and stats tracking
     actor_opts =
       if simulation.trace_enabled do
-        [trace_collector: self()]
+        [trace_collector: self(), stats_enabled: true]
       else
-        []
+        [stats_enabled: true]
       end
 
     {:ok, pid} = Actor.start_link(actor_def, simulation.clock, actor_opts)
