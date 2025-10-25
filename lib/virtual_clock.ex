@@ -215,7 +215,8 @@ defmodule VirtualClock do
         {:noreply, new_state}
 
       next_time ->
-        # Process all events at the next time point
+        # Process all events at exactly the same time point
+        # This ensures we only batch events that trigger simultaneously
         {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
 
         Enum.each(triggered, fn event ->
@@ -225,13 +226,14 @@ defmodule VirtualClock do
         # Update state and continue advancing
         new_state = %{state | current_time: next_time, scheduled: remaining}
 
-        # Continue advancing by sending message to self
-        # This allows other processes to proceed and schedule new events
-        # Use a tiny delay to allow processes to handle messages and schedule new ones
-        Process.send_after(self(), {:do_advance, target_time, from}, 0)
+        # Wait for quiescence before continuing to ensure all actors have
+        # processed their messages and scheduled new events at this time point
+        # This allows actors to schedule new events before advancing to the next time
+        Process.send_after(self(), {:do_advance, target_time, from}, 10)
         {:noreply, new_state}
     end
   end
+
 
   # Private helpers for priority queue operations
 
