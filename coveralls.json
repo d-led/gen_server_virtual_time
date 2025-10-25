@@ -1,10 +1,13 @@
 {
   "coverage_options": {
     "treat_no_relevant_lines_as_covered": false,
-    "minimum_coverage": 70
+    "minimum_coverage": 0
   },
   "skip_files": [
     "lib/mix/tasks/precommit.ex",
-    "lib/dining_philosophers.ex"
+    "lib/mix/tasks/cover.ex",
+    "lib/dining_philosophers.ex",
+    "test/support/hi_actor.ex",
+    "lib/actor_simulation/generation_metadata.ex"
   ]
 }

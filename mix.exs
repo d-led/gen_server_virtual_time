@@ -85,7 +85,8 @@ defmodule GenServerVirtualTime.MixProject do
       {:exavier, "~> 0.3.0", only: :test, runtime: false},
 
       # Benchmarking
-      {:benchee, "~> 1.5", only: :dev, runtime: false}
+      {:benchee, "~> 1.5", only: :dev, runtime: false},
+      {:benchee_html, "~> 1.0", only: :dev, runtime: false}
     ]
   end
 
