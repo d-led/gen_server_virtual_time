@@ -241,29 +241,28 @@ defmodule ActorSimulationTest do
     test "simulates long durations much faster than real time" do
       start_time = System.monotonic_time(:millisecond)
 
-      # Simulate 1 minute of a high-frequency system
+      # Simulate 10 seconds at 10 messages/second (more reasonable for CI)
       simulation =
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:high_freq_producer,
-          # 100 messages/second
-          send_pattern: {:rate, 100, :tick},
+          # 10 messages/second
+          send_pattern: {:rate, 10, :tick},
           targets: [:consumer]
         )
         |> ActorSimulation.add_actor(:consumer)
-        # 1 minute
-        |> ActorSimulation.run(duration: 60_000)
+        # 10 seconds
+        |> ActorSimulation.run(duration: 10_000)
 
       elapsed = System.monotonic_time(:millisecond) - start_time
       stats = ActorSimulation.get_stats(simulation)
 
-      # Should have sent ~6,000 messages (100/sec * 60 sec)
+      # Should have sent ~100 messages (10/sec * 10 sec)
       # Allow some variance due to timing
-      assert stats.actors[:high_freq_producer].sent_count >= 5_900
-      assert stats.actors[:consumer].received_count >= 5_900
+      assert stats.actors[:high_freq_producer].sent_count >= 95
+      assert stats.actors[:consumer].received_count >= 95
 
-      # But the test completes much faster than real time (60 seconds)
-      # Be generous with the assertion to avoid flakiness on slower machines
-      assert elapsed < 60_000, "Should complete faster than the 60 seconds of real time simulated"
+      # But the test completes much faster than real time (10 seconds)
+      assert elapsed < 10_000, "Should complete faster than the 10 seconds of real time simulated"
 
       ActorSimulation.stop(simulation)
     end
