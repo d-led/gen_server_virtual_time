@@ -61,7 +61,7 @@ jobs:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           MIX_ENV: dev
         run: |
-          mix hex.publish --yes
+          mix hex.publish --yes --replace
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
