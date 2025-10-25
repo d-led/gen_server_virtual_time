@@ -59,6 +59,26 @@ defmodule VirtualTimeGenStateMachine do
       end
   """
 
+  @behaviour :gen_statem
+
+  # Required callbacks for :gen_statem behavior
+  @doc false
+  def callback_mode, do: :handle_event_function
+
+  @doc false
+  def init(_arg), do: {:ok, :undefined, :undefined}
+
+  @doc false
+  def handle_event(_event_type, _event_content, _state, _data) do
+    {:keep_state_and_data, []}
+  end
+
+  @doc false
+  def terminate(_reason, _state, _data), do: :ok
+
+  @doc false
+  def code_change(_old_vsn, state, data, _extra), do: {:ok, state, data}
+
   @doc """
   Sets the virtual clock for the current process.
   All child processes will inherit this setting.
@@ -129,8 +149,8 @@ defmodule VirtualTimeGenStateMachine do
 
     Process.put(:time_backend, final_backend)
 
-    # Start with the original module
-    GenStateMachine.start_link(module, init_arg, opts)
+    # Start with the original module using native gen_statem
+    :gen_statem.start_link(module, init_arg, opts)
   end
 
   @doc """
@@ -151,22 +171,22 @@ defmodule VirtualTimeGenStateMachine do
 
     Process.put(:time_backend, final_backend)
 
-    # Start with the original module
-    GenStateMachine.start(module, init_arg, opts)
+    # Start with the original module using native gen_statem
+    :gen_statem.start(module, init_arg, opts)
   end
 
   @doc """
   Makes a synchronous call to a state machine.
   """
   def call(server, request, timeout \\ 5000) do
-    GenStateMachine.call(server, request, timeout)
+    :gen_statem.call(server, request, timeout)
   end
 
   @doc """
   Sends an asynchronous cast to a state machine.
   """
   def cast(server, request) do
-    GenStateMachine.cast(server, request)
+    :gen_statem.cast(server, request)
   end
 
   @doc """
@@ -196,8 +216,50 @@ defmodule VirtualTimeGenStateMachine do
   end
 
   defmacro __using__(opts) do
-    quote do
-      use GenStateMachine, unquote(opts)
+    quote location: :keep, bind_quoted: [opts: opts] do
+      @behaviour :gen_statem
+
+      {callback_mode, _opts} = Keyword.pop(opts, :callback_mode, :handle_event_function)
+
+      @impl true
+      @doc false
+      def callback_mode do
+        unquote(Macro.escape(callback_mode))
+      end
+
+      @impl true
+      @doc false
+      def init({state, data}) do
+        {:ok, state, data}
+      end
+
+      @impl true
+      @doc false
+      def terminate(_reason, _state, _data) do
+        :ok
+      end
+
+      @impl true
+      @doc false
+      def code_change(_old_vsn, _state, _data, _extra) do
+        :undefined
+      end
+
+      unless Module.get_attribute(__MODULE__, :doc) do
+        @doc """
+        Returns a specification to start this module under a supervisor.
+        """
+        def child_spec(init_arg) do
+          %{
+            id: __MODULE__,
+            start: {__MODULE__, :start_link, [init_arg]},
+            type: :worker,
+            restart: :permanent,
+            shutdown: 5000,
+            modules: [__MODULE__]
+          }
+        end
+      end
 
       @doc """
       Sends a message to this process after a delay.

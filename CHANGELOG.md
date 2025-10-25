@@ -41,6 +41,7 @@ and this project adheres to
 ### Technical Details
 
 - **Breaking Change**: None - fully backwards compatible
+- **Dependency Reduction**: Removed `gen_state_machine` dependency, now uses native Erlang `:gen_statem`
 - **Test Coverage**: All 314 tests passing, including complex virtual time
   simulations
 - **Performance**: Maintained existing performance characteristics while adding

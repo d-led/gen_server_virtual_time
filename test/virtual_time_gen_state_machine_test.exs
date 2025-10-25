@@ -45,8 +45,8 @@ defmodule VirtualTimeGenStateMachineTest do
     end
 
     @impl true
-    def handle_event(event_type, event_content, state, data) do
-      super(event_type, event_content, state, data)
+    def handle_event(_event_type, _event_content, _state, _data) do
+      {:keep_state_and_data, []}
     end
   end
 
