@@ -6,15 +6,15 @@ defmodule VirtualTimeGenStateMachineTest do
     use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
 
     def start_link(initial_state) do
-      GenStateMachine.start_link(__MODULE__, initial_state, [])
+      VirtualTimeGenStateMachine.start_link(__MODULE__, initial_state, [])
     end
 
     def flip(server) do
-      GenStateMachine.cast(server, :flip)
+      VirtualTimeGenStateMachine.cast(server, :flip)
     end
 
     def get_count(server) do
-      GenStateMachine.call(server, :get_count)
+      VirtualTimeGenStateMachine.call(server, :get_count)
     end
 
     @impl true
@@ -55,27 +55,27 @@ defmodule VirtualTimeGenStateMachineTest do
     use VirtualTimeGenStateMachine, callback_mode: :state_functions
 
     def start_link do
-      GenStateMachine.start_link(__MODULE__, nil, [])
+      VirtualTimeGenStateMachine.start_link(__MODULE__, nil, [])
     end
 
     def open(server) do
-      GenStateMachine.cast(server, :open)
+      VirtualTimeGenStateMachine.cast(server, :open)
     end
 
     def close(server) do
-      GenStateMachine.cast(server, :close)
+      VirtualTimeGenStateMachine.cast(server, :close)
     end
 
     def lock(server) do
-      GenStateMachine.cast(server, :lock)
+      VirtualTimeGenStateMachine.cast(server, :lock)
     end
 
     def unlock(server) do
-      GenStateMachine.cast(server, :unlock)
+      VirtualTimeGenStateMachine.cast(server, :unlock)
     end
 
     def get_state(server) do
-      GenStateMachine.call(server, :get_state)
+      VirtualTimeGenStateMachine.call(server, :get_state)
     end
 
     @impl true
@@ -122,19 +122,19 @@ defmodule VirtualTimeGenStateMachineTest do
     use VirtualTimeGenStateMachine, callback_mode: [:handle_event_function, :state_enter]
 
     def start_link do
-      GenStateMachine.start_link(__MODULE__, nil, [])
+      VirtualTimeGenStateMachine.start_link(__MODULE__, nil, [])
     end
 
     def turn_on(server) do
-      GenStateMachine.cast(server, :turn_on)
+      VirtualTimeGenStateMachine.cast(server, :turn_on)
     end
 
     def turn_off(server) do
-      GenStateMachine.cast(server, :turn_off)
+      VirtualTimeGenStateMachine.cast(server, :turn_off)
     end
 
     def get_stats(server) do
-      GenStateMachine.call(server, :get_stats)
+      VirtualTimeGenStateMachine.call(server, :get_stats)
     end
 
     @impl true
@@ -174,15 +174,15 @@ defmodule VirtualTimeGenStateMachineTest do
       {:ok, server} = SwitchSM.start_link(:off)
 
       # Start in :off state
-      assert GenStateMachine.call(server, :get_count) == 0
+      assert VirtualTimeGenStateMachine.call(server, :get_count) == 0
 
       # Flip to :on state
       SwitchSM.flip(server)
-      assert GenStateMachine.call(server, :get_count) == 1
+      assert VirtualTimeGenStateMachine.call(server, :get_count) == 1
 
       # Flip back to :off state
       SwitchSM.flip(server)
-      assert GenStateMachine.call(server, :get_count) == 1
+      assert VirtualTimeGenStateMachine.call(server, :get_count) == 1
     end
 
     test "timers fire in virtual time", %{clock: clock} do

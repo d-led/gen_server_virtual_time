@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-rc.2] - 2025-01-27
+
+### Added
+
+- **Complete GenStateMachine API Coverage**:
+  - `VirtualTimeGenStateMachine.start_link/3` - Custom start function with
+    virtual clock injection
+  - `VirtualTimeGenStateMachine.start/3` - Custom start function without linking
+  - `VirtualTimeGenStateMachine.call/3` - Synchronous call function
+  - `VirtualTimeGenStateMachine.cast/2` - Asynchronous cast function
+  - `VirtualTimeGenStateMachine.stop/3` - Stop function
+  - Full feature parity with `VirtualTimeGenServer` API
+
+### Fixed
+
+- **State Enter Callbacks**: `:state_enter` callback mode now works correctly
+- **Long-running Simulations**: Resolved timeout issues in complex virtual time
+  scenarios
+- **Callback Mode Support**: Both `:handle_event_function` and
+  `:state_functions` modes work seamlessly
+- **Virtual Time Integration**: All GenStateMachine operations now properly
+  respect virtual clock settings
+
+### Changed
+
+- **API Consistency**: `VirtualTimeGenStateMachine` now provides the same level
+  of API coverage as `VirtualTimeGenServer`
+- **Simplified Architecture**: Removed complex wrapper module that was causing
+  callback conflicts
+- **Process Dictionary Injection**: Virtual clock settings are now injected
+  directly into the process before GenStateMachine starts
+
+### Technical Details
+
+- **Breaking Change**: None - fully backwards compatible
+- **Test Coverage**: All 314 tests passing, including complex virtual time
+  simulations
+- **Performance**: Maintained existing performance characteristics while adding
+  new functionality
+- **Documentation**: Updated examples to use new API functions instead of direct
+  GenStateMachine calls
+
 ## [0.4.0] - 2025-10-15
 
 ### Added
