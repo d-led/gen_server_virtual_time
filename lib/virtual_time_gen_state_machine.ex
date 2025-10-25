@@ -142,15 +142,25 @@ defmodule VirtualTimeGenStateMachine do
     # Priority: local options > global Process dictionary
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
 
-    # Set virtual clock in current process before starting
-    if final_clock do
-      Process.put(:virtual_clock, final_clock)
+    # Use a wrapper to inject virtual clock into spawned process
+    init_fun = fn ->
+      if final_clock do
+        Process.put(:virtual_clock, final_clock)
+      end
+
+      Process.put(:time_backend, final_backend)
+
+      # Call the module's init function
+      case module.init(init_arg) do
+        {:ok, state, data} -> {:ok, state, data}
+        {:ok, state, data, timeout} -> {:ok, state, data, timeout}
+        {:ok, state, data, {:continue, arg}} -> {:ok, state, data, {:continue, arg}}
+        other -> other
+      end
     end
 
-    Process.put(:time_backend, final_backend)
-
-    # Start with the original module using native gen_statem
-    :gen_statem.start_link(module, init_arg, opts)
+    # Start with a wrapper that injects the virtual clock
+    :gen_statem.start_link(VirtualTimeGenStateMachine.Wrapper, {init_fun, module}, opts)
   end
 
   @doc """
@@ -273,4 +283,126 @@ defmodule VirtualTimeGenStateMachine do
 
   # Note: Users should call set_virtual_clock/1 BEFORE starting the GenStateMachine
   # Child processes will inherit the Process dictionary containing the virtual clock
+end
+
+defmodule VirtualTimeGenStateMachine.Wrapper do
+  @moduledoc false
+  @behaviour :gen_statem
+
+  def callback_mode do
+    # Get the original module's callback mode
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :callback_mode, 0) do
+      module.callback_mode()
+    else
+      :handle_event_function
+    end
+  end
+
+  def init({init_fun, module}) do
+    # Store the module reference
+    Process.put(:__vtgsm_module__, module)
+
+    # Call the init function which injects the virtual clock
+    case init_fun.() do
+      {:ok, state, data} -> {:ok, state, data}
+      {:ok, state, data, timeout} -> {:ok, state, data, timeout}
+      {:ok, state, data, {:continue, arg}} -> {:ok, state, data, {:continue, arg}}
+      other -> other
+    end
+  end
+
+  def handle_event(event_type, event_content, state, data) do
+    # Get the original module
+    module = Process.get(:__vtgsm_module__)
+
+    if module do
+      # Delegate to the original module's handle_event
+      module.handle_event(event_type, event_content, state, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  # Dynamic dispatch for state functions
+  def closed(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :closed, 3) do
+      module.closed(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def open(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :open, 3) do
+      module.open(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def locked(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :locked, 3) do
+      module.locked(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def waiting(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :waiting, 3) do
+      module.waiting(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def working(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :working, 3) do
+      module.working(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def aborting(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :aborting, 3) do
+      module.aborting(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def terminate(reason, state, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :terminate, 3) do
+      module.terminate(reason, state, data)
+    else
+      :ok
+    end
+  end
+
+  def code_change(old_vsn, state, data, extra) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :code_change, 4) do
+      module.code_change(old_vsn, state, data, extra)
+    else
+      {:ok, state, data}
+    end
+  end
 end
