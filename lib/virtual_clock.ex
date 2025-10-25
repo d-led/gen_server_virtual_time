@@ -185,7 +185,7 @@ defmodule VirtualClock do
         new_state = %{state | current_time: next_time, scheduled: remaining}
 
         # Continue advancing by sending message to self
-        # This allows other processes to proceed
+        # This allows other processes to proceed and schedule new events
         # Use a tiny delay to allow processes to handle messages and schedule new ones
         Process.send_after(self(), {:do_advance, target_time, from}, 0)
         {:noreply, new_state}
