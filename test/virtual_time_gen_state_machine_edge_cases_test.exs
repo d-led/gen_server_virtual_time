@@ -25,6 +25,17 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       VirtualTimeGenStateMachine.stop(server)
     end
 
+    def child_spec(opts) do
+      %{
+        id: __MODULE__,
+        start: {__MODULE__, :start_link, [opts]},
+        type: :worker,
+        restart: :permanent,
+        shutdown: 5000,
+        modules: [__MODULE__]
+      }
+    end
+
     def send_after_test(server, delay) do
       VirtualTimeGenStateMachine.send_after(server, :timeout_msg, delay)
     end

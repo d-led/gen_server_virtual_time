@@ -261,21 +261,7 @@ defmodule VirtualTimeGenStateMachine do
         :undefined
       end
 
-      unless Module.get_attribute(__MODULE__, :doc) do
-        @doc """
-        Returns a specification to start this module under a supervisor.
-        """
-        def child_spec(init_arg) do
-          %{
-            id: __MODULE__,
-            start: {__MODULE__, :start_link, [init_arg]},
-            type: :worker,
-            restart: :permanent,
-            shutdown: 5000,
-            modules: [__MODULE__]
-          }
-        end
-      end
+      # Note: child_spec should be defined by the using module if needed
 
       @doc """
       Sends a message to this process after a delay.
