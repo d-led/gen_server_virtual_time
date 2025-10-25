@@ -94,8 +94,10 @@ defmodule ActorSimulationTest do
       # But boundary conditions may cause slight variations (19-21 messages)
       assert stats.actors[:producer].sent_count >= 19,
              "Expected at least 19 messages from producer, got #{stats.actors[:producer].sent_count}"
+
       assert stats.actors[:producer].sent_count <= 21,
              "Expected at most 21 messages from producer, got #{stats.actors[:producer].sent_count}"
+
       assert stats.actors[:consumer].received_count >= 19,
              "Expected at least 19 messages received, got #{stats.actors[:consumer].received_count}"
 

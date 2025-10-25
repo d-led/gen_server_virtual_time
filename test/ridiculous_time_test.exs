@@ -134,7 +134,9 @@ defmodule RidiculousTimeTest do
 
       # A century should complete in reasonable time (CI environments are slower)
       max_time = if System.get_env("CI"), do: 180_000, else: 60_000
-      assert elapsed < max_time, "A century should simulate in under #{div(max_time, 1000)} seconds, took #{div(elapsed, 1000)} seconds!"
+
+      assert elapsed < max_time,
+             "A century should simulate in under #{div(max_time, 1000)} seconds, took #{div(elapsed, 1000)} seconds!"
 
       IO.puts("🏆 CENTURY COMPLETE!")
       IO.puts("   Backups performed: #{stats.actors[:backup_system].sent_count}")
