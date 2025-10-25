@@ -263,10 +263,11 @@ defmodule ActorSimulation do
     end_time = System.monotonic_time(:millisecond)
     real_elapsed = end_time - start_time
 
-    # Mark if terminated early due to condition
+    # Mark if terminated early due to condition or quiescence
     terminated_early =
       case termination_reason do
         :condition -> actual_duration < duration
+        :quiescence -> actual_duration < duration
         _ -> false
       end
 
