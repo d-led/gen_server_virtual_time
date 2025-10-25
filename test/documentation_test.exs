@@ -370,17 +370,12 @@ defmodule DocumentationTest do
 
   describe "Global time manipulation warning skip examples" do
     test "VirtualTimeGenServer.set_virtual_clock with warning skip" do
-      # Set up virtual time without warnings
+      # Set up virtual time without warnings using local injection
       {:ok, clock} = VirtualClock.start_link()
 
-      VirtualTimeGenServer.set_virtual_clock(
-        clock,
-        :i_know_what_i_am_doing,
-        "coordinated simulation test"
-      )
-
-      # Start server using the MyServer module defined in the same file
-      {:ok, server} = VirtualTimeGenServer.start_link(DocumentationTest.MyServer, 100, [])
+      # Start server using local clock injection instead of global settings
+      {:ok, server} =
+        VirtualTimeGenServer.start_link(DocumentationTest.MyServer, 100, virtual_clock: clock)
 
       # Advance time - happens instantly!
       VirtualClock.advance(clock, 10_000)
