@@ -184,13 +184,18 @@ defmodule Mix.Tasks.Precommit do
     Mix.Task.clear()
     Mix.Task.reenable("test")
 
-    # Capture output but don't show it unless there's an error
+    # Capture output and show it when there's an error
     case System.cmd("mix", ["test", "--exclude", "diagram_generation,slow"],
            stderr_to_stdout: true,
            env: [{"MIX_ENV", "test"}]
          ) do
-      {_, 0} -> :ok
-      _ -> {:error, "Tests failed"}
+      {_output, 0} ->
+        :ok
+
+      {output, _exit_code} ->
+        IO.puts("Test failures:")
+        IO.puts(output)
+        {:error, "Tests failed"}
     end
   end
 

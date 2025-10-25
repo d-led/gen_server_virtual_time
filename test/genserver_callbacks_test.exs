@@ -6,7 +6,7 @@ defmodule GenServerCallbacksTest do
     use VirtualTimeGenServer
 
     def start_link(opts \\ []) do
-      VirtualTimeGenServer.start_link(__MODULE__, opts, name: __MODULE__)
+      VirtualTimeGenServer.start_link(__MODULE__, opts, opts)
     end
 
     # Client API
@@ -19,7 +19,7 @@ defmodule GenServerCallbacksTest do
     end
 
     def schedule_work(server \\ __MODULE__, delay) do
-      send(server, {:schedule, delay})
+      GenServer.call(server, {:schedule, delay})
     end
 
     # Callbacks
@@ -41,15 +41,15 @@ defmodule GenServerCallbacksTest do
     end
 
     @impl true
-    def handle_cast(:increment, state) do
-      {:noreply, %{state | count: state.count + 1}}
+    def handle_call({:schedule, delay}, _from, state) do
+      # Use VirtualTimeGenServer.send_after for virtual time
+      _ref = VirtualTimeGenServer.send_after(self(), :delayed_work, delay)
+      {:reply, :ok, state}
     end
 
     @impl true
-    def handle_info({:schedule, delay}, state) do
-      # Use VirtualTimeGenServer.send_after for virtual time
-      VirtualTimeGenServer.send_after(self(), :delayed_work, delay)
-      {:noreply, state}
+    def handle_cast(:increment, state) do
+      {:noreply, %{state | count: state.count + 1}}
     end
 
     @impl true
@@ -72,9 +72,8 @@ defmodule GenServerCallbacksTest do
   describe "handle_call (synchronous RPC)" do
     test "works with virtual time" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
 
-      {:ok, server} = TestServer.start_link(initial_count: 5)
+      {:ok, server} = TestServer.start_link(initial_count: 5, virtual_clock: clock)
 
       # Synchronous call
       result = GenServer.call(server, {:sync_increment, 3})
@@ -88,9 +87,8 @@ defmodule GenServerCallbacksTest do
 
     test "multiple calls in sequence" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
 
-      {:ok, server} = TestServer.start_link(initial_count: 0)
+      {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
       assert GenServer.call(server, {:sync_increment, 1}) == 1
       assert GenServer.call(server, {:sync_increment, 2}) == 3
@@ -103,9 +101,7 @@ defmodule GenServerCallbacksTest do
   describe "handle_cast (async messages)" do
     test "processes async messages" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
-
-      {:ok, server} = TestServer.start_link(initial_count: 0)
+      {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
       # Send multiple casts
       TestServer.async_increment(server)
@@ -125,9 +121,7 @@ defmodule GenServerCallbacksTest do
   describe "handle_info with send_after (virtual time)" do
     test "send_after triggers handle_info after virtual time" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
-
-      {:ok, server} = TestServer.start_link(initial_count: 0)
+      {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
       # Schedule work for 1000ms in the future
       TestServer.schedule_work(server, 1000)
@@ -140,8 +134,10 @@ defmodule GenServerCallbacksTest do
       # Advance virtual time
       VirtualClock.advance(clock, 1000)
 
-      # Now work should be done
+      # Give time for processing
       Process.sleep(10)
+
+      # Now work should be done
       state = TestServer.get_state(server)
       assert state.count == 10
       assert :delayed_work in state.messages_received
@@ -151,9 +147,7 @@ defmodule GenServerCallbacksTest do
 
     test "multiple send_after with different delays (using advance)" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
-
-      {:ok, server} = TestServer.start_link(initial_count: 0)
+      {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
       # Schedule multiple works at different times
       TestServer.schedule_work(server, 100)
@@ -161,17 +155,20 @@ defmodule GenServerCallbacksTest do
       TestServer.schedule_work(server, 300)
 
       # Advance to each event and let it process
-      VirtualClock.advance(clock, 150)
-      # Sync point
-      _ = TestServer.get_state(server)
-
+      # First event at 100ms
       VirtualClock.advance(clock, 100)
-      # Sync point
-      _ = TestServer.get_state(server)
+      # Give time for processing
+      Process.sleep(10)
 
-      VirtualClock.advance(clock, 250)
-      # Sync point
-      _ = TestServer.get_state(server)
+      # Second event at 200ms
+      VirtualClock.advance(clock, 100)
+      # Give time for processing
+      Process.sleep(10)
+
+      # Third event at 300ms
+      VirtualClock.advance(clock, 100)
+      # Give time for processing
+      Process.sleep(10)
 
       state = TestServer.get_state(server)
       # All 3 should have triggered
@@ -185,9 +182,7 @@ defmodule GenServerCallbacksTest do
   describe "immediate sends (handle_info)" do
     test "immediate send via send/2" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
-
-      {:ok, server} = TestServer.start_link()
+      {:ok, server} = TestServer.start_link(virtual_clock: clock)
 
       # Immediate send
       send(server, :immediate_message)
@@ -202,9 +197,7 @@ defmodule GenServerCallbacksTest do
 
     test "send_after with delay 0 is immediate" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
-
-      {:ok, server} = TestServer.start_link(initial_count: 0)
+      {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
       VirtualTimeGenServer.send_after(server, :work, 0)
 
@@ -222,9 +215,7 @@ defmodule GenServerCallbacksTest do
   describe "combining all callback types" do
     test "call, cast, and timed messages work together" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
-
-      {:ok, server} = TestServer.start_link(initial_count: 0)
+      {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
       # Synchronous call
       # count = 5

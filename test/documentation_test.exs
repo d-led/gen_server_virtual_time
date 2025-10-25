@@ -32,10 +32,9 @@ defmodule DocumentationTest do
     test "30-second quick start example works" do
       # Set up virtual time
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
 
-      # Start server
-      {:ok, server} = VirtualTimeGenServer.start_link(MyServer, 100, [])
+      # Start server with local virtual clock
+      {:ok, server} = VirtualTimeGenServer.start_link(MyServer, 100, virtual_clock: clock)
 
       # Advance time - happens instantly!
       VirtualClock.advance(clock, 10_000)

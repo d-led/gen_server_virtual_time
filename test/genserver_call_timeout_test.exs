@@ -83,7 +83,7 @@ defmodule GenServerCallTimeoutTest do
 
       def handle_info({:complete_op, caller}, state) do
         # Send result back to caller
-        send(caller, {:op_result, :success})
+        VirtualTimeGenServer.send_immediately(caller, {:op_result, :success})
         {:noreply, state}
       end
     end

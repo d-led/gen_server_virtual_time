@@ -86,6 +86,25 @@ defmodule VirtualClock do
   end
 
   @doc """
+  Returns the count of events scheduled up to a specific virtual time.
+
+  This is useful for waiting for quiescence within a time frame,
+  ignoring events scheduled for later times.
+
+  ## Examples
+
+      # Count events scheduled up to current time
+      VirtualClock.scheduled_count_until(clock)
+
+      # Count events scheduled up to 5000ms
+      VirtualClock.scheduled_count_until(clock, 5000)
+  """
+  def scheduled_count_until(clock, until_time \\ nil) do
+    until_time = until_time || now(clock)
+    GenServer.call(clock, {:scheduled_count_until, until_time})
+  end
+
+  @doc """
   Waits for quiescence - when all scheduled events have been processed
   and no new events are being scheduled.
 
@@ -93,6 +112,42 @@ defmodule VirtualClock do
   """
   def wait_for_quiescence(clock, timeout \\ 1000, retry_interval \\ 10) do
     wait_for_quiescence_loop(clock, timeout, retry_interval, 0)
+  end
+
+  @doc """
+  Waits for quiescence within a specific virtual time frame.
+
+  This function waits for all events scheduled up to the given virtual time
+  to be processed, but ignores events scheduled for later times.
+
+  ## Parameters
+  - `clock`: The virtual clock process
+  - `opts`: Keyword list of options:
+    - `:until_time` - Maximum virtual time to consider (default: current time)
+    - `:timeout` - Real-time timeout in milliseconds (default: 1000)
+    - `:retry_interval` - Retry interval in milliseconds (default: 10)
+
+  ## Examples
+
+      # Wait for quiescence up to current time
+      VirtualClock.wait_for_quiescence_until(clock)
+
+      # Wait for quiescence up to a specific virtual time
+      VirtualClock.wait_for_quiescence_until(clock, until_time: 5000)
+
+      # Wait with custom timeout and retry interval
+      VirtualClock.wait_for_quiescence_until(clock,
+        until_time: 1000,
+        timeout: 500,
+        retry_interval: 5
+      )
+  """
+  def wait_for_quiescence_until(clock, opts \\ []) do
+    until_time = Keyword.get(opts, :until_time, now(clock))
+    timeout = Keyword.get(opts, :timeout, 1000)
+    retry_interval = Keyword.get(opts, :retry_interval, 10)
+
+    wait_for_quiescence_until_loop(clock, until_time, timeout, retry_interval, 0)
   end
 
   defp wait_for_quiescence_loop(clock, timeout, retry_interval, elapsed) do
@@ -106,6 +161,28 @@ defmodule VirtualClock do
         _ ->
           Process.sleep(retry_interval)
           wait_for_quiescence_loop(clock, timeout, retry_interval, elapsed + retry_interval)
+      end
+    end
+  end
+
+  defp wait_for_quiescence_until_loop(clock, until_time, timeout, retry_interval, elapsed) do
+    if elapsed >= timeout do
+      {:error, :timeout}
+    else
+      case scheduled_count_until(clock, until_time) do
+        0 ->
+          :ok
+
+        _ ->
+          Process.sleep(retry_interval)
+
+          wait_for_quiescence_until_loop(
+            clock,
+            until_time,
+            timeout,
+            retry_interval,
+            elapsed + retry_interval
+          )
       end
     end
   end
@@ -189,6 +266,12 @@ defmodule VirtualClock do
   @impl true
   def handle_call(:scheduled_count, _from, state) do
     count = :gb_trees.size(state.scheduled)
+    {:reply, count, state}
+  end
+
+  @impl true
+  def handle_call({:scheduled_count_until, until_time}, _from, state) do
+    count = count_events_until(state.scheduled, until_time)
     {:reply, count, state}
   end
 
@@ -323,6 +406,30 @@ defmodule VirtualClock do
         {key, value, remaining} = :gb_trees.take_smallest(tree1)
         new_tree2 = :gb_trees.insert(key, value, tree2)
         merge_trees_recursive(remaining, new_tree2)
+    end
+  end
+
+  defp count_events_until(scheduled, until_time) do
+    # Count events scheduled up to (and including) the given time
+    count_events_until_recursive(scheduled, until_time, 0)
+  end
+
+  defp count_events_until_recursive(scheduled, until_time, count) do
+    case :gb_trees.is_empty(scheduled) do
+      true ->
+        count
+
+      false ->
+        {time, events, remaining} = :gb_trees.take_smallest(scheduled)
+
+        if time <= until_time do
+          # Count events at this time and continue
+          new_count = count + length(events)
+          count_events_until_recursive(remaining, until_time, new_count)
+        else
+          # Time is beyond our limit, stop counting
+          count
+        end
     end
   end
 end

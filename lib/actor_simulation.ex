@@ -158,13 +158,16 @@ defmodule ActorSimulation do
     args = Keyword.get(opts, :args, nil)
     targets = Keyword.get(opts, :targets, [])
 
-    # Start the real GenServer with virtual time
-    VirtualTimeGenServer.set_virtual_clock(simulation.clock)
-
     # Enable stats tracking before starting the process
     VirtualTimeGenServer.enable_stats_tracking()
 
-    {:ok, pid} = VirtualTimeGenServer.start_link(module, args, name: name)
+    # Start the real GenServer with the simulation's local virtual clock
+    # This avoids setting the global clock and affecting other tests
+    {:ok, pid} =
+      VirtualTimeGenServer.start_link(module, args,
+        name: name,
+        virtual_clock: simulation.clock
+      )
 
     # Set up actor name context for trace generation
     Process.put(:__vtgs_actor_name__, name)
@@ -253,6 +256,8 @@ defmodule ActorSimulation do
 
         true ->
           VirtualClock.advance(simulation.clock, duration)
+          # Wait for quiescence to ensure all events at the end time are processed
+          VirtualClock.wait_for_quiescence_until(simulation.clock, until_time: duration)
           {duration, [], :max_time}
       end
 
