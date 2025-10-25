@@ -94,7 +94,7 @@ jobs:
           include_passed: true
   
   coverage:
-    name: Coverage & Fast Tests  
+    name: Coverage & All Tests
     runs-on: ubuntu-latest
     
     permissions:
@@ -128,6 +128,11 @@ jobs:
           MIX_ENV: test
         run: mix coveralls --export-coverage fast
       
+      - name: Run slow tests with coverage export (for coverage completeness)
+        env:
+          MIX_ENV: test
+        continue-on-error: true
+        run: mix coveralls --only slow --export-coverage slow
       
       - name: Run diagram generation tests with coverage export
         env:
@@ -143,8 +148,8 @@ jobs:
           mix test.coverage
           mix coveralls.github --import-cover cover
   
-  slow-tests:
-    name: Slow Tests (ARM - Cost Optimized)
+  slow-tests-arm:
+    name: Slow Tests (ARM - Cost Optimized Validation)
     runs-on: ubuntu-latest-arm64
     
     permissions:
@@ -176,11 +181,13 @@ jobs:
       - name: Compile
         run: mix compile --warnings-as-errors
       
-      - name: Run slow tests (century backup, etc.)
+      - name: Run slow tests on ARM (century backup, etc.)
         env:
           MIX_ENV: test
           CI: true
         run: |
+          echo "🏃‍♂️ Running expensive slow tests on cost-optimized ARM64 runners"
+          echo "💰 This saves ~40% on compute costs for long-running simulations"
           mix test --only slow \
             --formatter JUnitFormatter \
             --formatter ExUnit.CLIFormatter \
