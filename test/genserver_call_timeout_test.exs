@@ -1,5 +1,5 @@
 defmodule GenServerCallTimeoutTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   defmodule SlowServer do
     use VirtualTimeGenServer
@@ -29,11 +29,12 @@ defmodule GenServerCallTimeoutTest do
   end
 
   describe "GenServer.call timeout (current limitation)" do
+    @tag timeout: 5_000
     test "timeout uses real time (not virtual time yet)" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
+      # Use test-local virtual clock instead of global to avoid race conditions
 
-      {:ok, server} = SlowServer.start_link()
+      {:ok, server} = SlowServer.start_link(virtual_clock: clock)
 
       # This timeout is in REAL time, not virtual time
       # So it will timeout in 100ms real time even if we advance virtual time
@@ -48,11 +49,12 @@ defmodule GenServerCallTimeoutTest do
       GenServer.stop(clock)
     end
 
+    @tag timeout: 2_000
     test "instant operations work fine" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
+      # Use test-local virtual clock instead of global to avoid race conditions
 
-      {:ok, server} = SlowServer.start_link()
+      {:ok, server} = SlowServer.start_link(virtual_clock: clock)
 
       result = GenServer.call(server, :instant_operation, 5000)
       assert result == :instant_result
@@ -65,8 +67,8 @@ defmodule GenServerCallTimeoutTest do
     defmodule AsyncServer do
       use VirtualTimeGenServer
 
-      def start_link do
-        VirtualTimeGenServer.start_link(__MODULE__, nil, [])
+      def start_link(opts \\ []) do
+        VirtualTimeGenServer.start_link(__MODULE__, nil, opts)
       end
 
       def init(_) do
@@ -86,11 +88,12 @@ defmodule GenServerCallTimeoutTest do
       end
     end
 
+    @tag timeout: 3_000
     test "use async pattern for virtual time delays" do
       {:ok, clock} = VirtualClock.start_link()
-      VirtualTimeGenServer.set_virtual_clock(clock)
+      # Use test-local virtual clock instead of global to avoid race conditions
 
-      {:ok, server} = AsyncServer.start_link()
+      {:ok, server} = AsyncServer.start_link(virtual_clock: clock)
 
       # Start async operation
       GenServer.cast(server, {:start_slow_op, self()})

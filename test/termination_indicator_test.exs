@@ -1,5 +1,5 @@
 defmodule TerminationIndicatorTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   @moduletag :diagram_generation
   @moduletag timeout: :infinity

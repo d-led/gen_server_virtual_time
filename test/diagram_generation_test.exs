@@ -1,5 +1,5 @@
 defmodule DiagramGenerationTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   # Use fixed seed for deterministic diagram generation
   @moduletag :capture_log

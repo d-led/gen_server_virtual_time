@@ -1,5 +1,5 @@
 defmodule VirtualTimeGenStateMachineEdgeCasesTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   # Test module with various callback modes and edge cases
   defmodule TestSM do

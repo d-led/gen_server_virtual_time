@@ -215,22 +215,22 @@ flowchart TB
     source(["source<br/>
 📤 Sent: 10<br/>
 📥 Recv: 0"])
-    sink["sink<br/>
-📤 Sent: 0<br/>
-📥 Recv: 10"]
     stage1("stage1<br/>
 📤 Sent: 10<br/>
 📥 Recv: 10")
     stage2("stage2<br/>
 📤 Sent: 10<br/>
 📥 Recv: 10")
+    sink["sink<br/>
+📤 Sent: 0<br/>
+📥 Recv: 10"]
     source -->|:request<br/>every 100ms| stage1
     stage1 -->|:request<br/>10/s| stage2
     stage2 -->|:request<br/>10/s| sink
     style source fill:#e8f5e9,stroke:#388e3c
-    style sink fill:#e8f5e9,stroke:#388e3c
     style stage1 fill:#e8f5e9,stroke:#388e3c
     style stage2 fill:#e8f5e9,stroke:#388e3c
+    style sink fill:#e8f5e9,stroke:#388e3c
       </div>
     </div>
 
@@ -289,15 +289,6 @@ flowchart LR
 </tr>
 
 <tr>
-  <td><strong>sink</strong></td>
-  <td class="metric">0</td>
-  <td class="metric">10</td>
-  <td class="metric">0.0 msg/s</td>
-  <td class="metric">10.0 msg/s</td>
-  <td><span class="badge low">10 total</span></td>
-</tr>
-
-<tr>
   <td><strong>stage1</strong></td>
   <td class="metric">10</td>
   <td class="metric">10</td>
@@ -313,6 +304,15 @@ flowchart LR
   <td class="metric">10.0 msg/s</td>
   <td class="metric">10.0 msg/s</td>
   <td><span class="badge ">20 total</span></td>
+</tr>
+
+<tr>
+  <td><strong>sink</strong></td>
+  <td class="metric">0</td>
+  <td class="metric">10</td>
+  <td class="metric">0.0 msg/s</td>
+  <td class="metric">10.0 msg/s</td>
+  <td><span class="badge low">10 total</span></td>
 </tr>
 
     </tbody>

@@ -1,5 +1,5 @@
 defmodule TerminationConditionTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   describe "Termination conditions" do
     test "simulation stops when condition is met" do

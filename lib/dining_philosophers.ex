@@ -35,8 +35,9 @@ defmodule DiningPhilosophers do
     think_time = Keyword.get(opts, :think_time, 100)
     eat_time = Keyword.get(opts, :eat_time, 50)
     trace = Keyword.get(opts, :trace, true)
+    clock = Keyword.get(opts, :clock)
 
-    simulation = ActorSimulation.new(trace: trace)
+    simulation = ActorSimulation.new(trace: trace, clock: clock)
 
     # Create forks with proper protocol
     simulation =

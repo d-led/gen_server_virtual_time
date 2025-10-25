@@ -1,5 +1,5 @@
 defmodule MermaidEnhancedTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   @moduledoc """
   Tests for enhanced Mermaid diagram features based on

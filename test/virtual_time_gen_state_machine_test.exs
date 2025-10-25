@@ -1,5 +1,5 @@
 defmodule VirtualTimeGenStateMachineTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   # Simple switch example with handle_event_function callback mode
   defmodule SwitchSM do

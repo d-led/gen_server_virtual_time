@@ -192,11 +192,11 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">36<span class="unit">ms</span></div>
+      <div class="value">34<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">83.3x</div>
+      <div class="value">88.2x</div>
     </div>
     <div class="summary-card warning">
   <div class="label">Termination</div>
@@ -213,26 +213,26 @@
       <div class="mermaid">
 flowchart LR
     alice("alice<br/>
-📤 Sent: 3122<br/>
-📥 Recv: 3038")
+📤 Sent: 3816<br/>
+📥 Recv: 3726")
     bob("bob<br/>
-📤 Sent: 3162<br/>
-📥 Recv: 3090")
+📤 Sent: 3966<br/>
+📥 Recv: 3894")
     charlie("charlie<br/>
-📤 Sent: 3204<br/>
-📥 Recv: 3144")
+📤 Sent: 4120<br/>
+📥 Recv: 4066")
     diana("diana<br/>
-📤 Sent: 3160<br/>
-📥 Recv: 3112")
+📤 Sent: 4239<br/>
+📥 Recv: 4191")
     eve("eve<br/>
-📤 Sent: 3261<br/>
-📥 Recv: 3219")
+📤 Sent: 4268<br/>
+📥 Recv: 4226")
     frank("frank<br/>
-📤 Sent: 3481<br/>
-📥 Recv: 3445")
+📤 Sent: 4276<br/>
+📥 Recv: 4240")
     grace("grace<br/>
-📤 Sent: 3450<br/>
-📥 Recv: 3420")
+📤 Sent: 4233<br/>
+📥 Recv: 4197")
     bob -->|:hi<br/>every 250ms| alice
     diana -->|:hi<br/>every 350ms| alice
     charlie -->|:hi<br/>every 300ms| alice
@@ -328,65 +328,65 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>alice</strong></td>
-  <td class="metric">3122</td>
-  <td class="metric">3038</td>
-  <td class="metric">1040.67 msg/s</td>
-  <td class="metric">1012.67 msg/s</td>
-  <td><span class="badge high">6160 total</span></td>
+  <td class="metric">3816</td>
+  <td class="metric">3726</td>
+  <td class="metric">1272.0 msg/s</td>
+  <td class="metric">1242.0 msg/s</td>
+  <td><span class="badge high">7542 total</span></td>
 </tr>
 
 <tr>
   <td><strong>bob</strong></td>
-  <td class="metric">3162</td>
-  <td class="metric">3090</td>
-  <td class="metric">1054.0 msg/s</td>
-  <td class="metric">1030.0 msg/s</td>
-  <td><span class="badge high">6252 total</span></td>
+  <td class="metric">3966</td>
+  <td class="metric">3894</td>
+  <td class="metric">1322.0 msg/s</td>
+  <td class="metric">1298.0 msg/s</td>
+  <td><span class="badge high">7860 total</span></td>
 </tr>
 
 <tr>
   <td><strong>charlie</strong></td>
-  <td class="metric">3204</td>
-  <td class="metric">3144</td>
-  <td class="metric">1068.0 msg/s</td>
-  <td class="metric">1048.0 msg/s</td>
-  <td><span class="badge high">6348 total</span></td>
+  <td class="metric">4120</td>
+  <td class="metric">4066</td>
+  <td class="metric">1373.33 msg/s</td>
+  <td class="metric">1355.33 msg/s</td>
+  <td><span class="badge high">8186 total</span></td>
 </tr>
 
 <tr>
   <td><strong>diana</strong></td>
-  <td class="metric">3160</td>
-  <td class="metric">3112</td>
-  <td class="metric">1053.33 msg/s</td>
-  <td class="metric">1037.33 msg/s</td>
-  <td><span class="badge high">6272 total</span></td>
+  <td class="metric">4239</td>
+  <td class="metric">4191</td>
+  <td class="metric">1413.0 msg/s</td>
+  <td class="metric">1397.0 msg/s</td>
+  <td><span class="badge high">8430 total</span></td>
 </tr>
 
 <tr>
   <td><strong>eve</strong></td>
-  <td class="metric">3261</td>
-  <td class="metric">3219</td>
-  <td class="metric">1087.0 msg/s</td>
-  <td class="metric">1073.0 msg/s</td>
-  <td><span class="badge high">6480 total</span></td>
+  <td class="metric">4268</td>
+  <td class="metric">4226</td>
+  <td class="metric">1422.67 msg/s</td>
+  <td class="metric">1408.67 msg/s</td>
+  <td><span class="badge high">8494 total</span></td>
 </tr>
 
 <tr>
   <td><strong>frank</strong></td>
-  <td class="metric">3481</td>
-  <td class="metric">3445</td>
-  <td class="metric">1160.33 msg/s</td>
-  <td class="metric">1148.33 msg/s</td>
-  <td><span class="badge high">6926 total</span></td>
+  <td class="metric">4276</td>
+  <td class="metric">4240</td>
+  <td class="metric">1425.33 msg/s</td>
+  <td class="metric">1413.33 msg/s</td>
+  <td><span class="badge high">8516 total</span></td>
 </tr>
 
 <tr>
   <td><strong>grace</strong></td>
-  <td class="metric">3450</td>
-  <td class="metric">3420</td>
-  <td class="metric">1150.0 msg/s</td>
-  <td class="metric">1140.0 msg/s</td>
-  <td><span class="badge high">6870 total</span></td>
+  <td class="metric">4233</td>
+  <td class="metric">4197</td>
+  <td class="metric">1411.0 msg/s</td>
+  <td class="metric">1399.0 msg/s</td>
+  <td><span class="badge high">8430 total</span></td>
 </tr>
 
     </tbody>
@@ -394,7 +394,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 45308 •
+    Total messages: 57458 •
     Duration: 3000ms •
     Actors: 7
   </div>

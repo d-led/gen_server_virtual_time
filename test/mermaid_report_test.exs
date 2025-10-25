@@ -1,5 +1,5 @@
 defmodule MermaidReportTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
   @moduletag :diagram_generation
 
   alias ActorSimulation.MermaidReportGenerator

@@ -53,7 +53,17 @@ defmodule ActorSimulation do
 
   """
   def new(opts \\ []) do
-    {:ok, clock} = VirtualClock.start_link()
+    clock = Keyword.get(opts, :clock)
+
+    clock =
+      if clock,
+        do: clock,
+        else:
+          (fn ->
+             {:ok, c} = VirtualClock.start_link()
+             c
+           end).()
+
     trace_enabled = Keyword.get(opts, :trace, false)
 
     %__MODULE__{

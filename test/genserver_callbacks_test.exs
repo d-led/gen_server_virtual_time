@@ -1,5 +1,5 @@
 defmodule GenServerCallbacksTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   # Test server that uses all GenServer callbacks
   defmodule TestServer do

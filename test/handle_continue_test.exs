@@ -1,5 +1,5 @@
 defmodule HandleContinueTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   defmodule ContinueServer do
     use VirtualTimeGenServer

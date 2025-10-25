@@ -1,5 +1,5 @@
 defmodule VirtualTimeGenServer.EdgeCasesTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   # Test server with various callback return types
   defmodule TestServer do

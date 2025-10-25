@@ -1,5 +1,5 @@
 defmodule SimulationTimingTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   describe "Simulation timing information" do
     test "returns virtual time and real time elapsed" do

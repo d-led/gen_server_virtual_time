@@ -23,9 +23,8 @@ defmodule ActorSimulation.Actor do
   # Client API
 
   def start_link(definition, clock) do
-    # Set up virtual time before starting
-    VirtualTimeGenServer.set_virtual_clock(clock)
-    VirtualTimeGenServer.start_link(__MODULE__, definition, [])
+    # Use test-local virtual clock injection instead of global
+    VirtualTimeGenServer.start_link(__MODULE__, definition, virtual_clock: clock)
   end
 
   def start_sending(actor, actors_map, trace_enabled \\ false) do

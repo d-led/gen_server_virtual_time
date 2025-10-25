@@ -1,5 +1,5 @@
 defmodule DiningPhilosophersTest do
-  use ExUnit.Case, async: false
+  use ExUnit.Case, async: true
 
   @moduletag :diagram_generation
 
@@ -7,6 +7,13 @@ defmodule DiningPhilosophersTest do
   setup_all do
     :rand.seed(:exsss, {200, 201, 202})
     :ok
+  end
+
+  # Setup virtual time for all tests using test-local clocks
+  setup do
+    {:ok, clock} = VirtualClock.start_link()
+    # Use test-local virtual clock instead of global to avoid race conditions
+    {:ok, clock: clock}
   end
 
   describe "Dining Philosophers simulation" do
@@ -27,15 +34,28 @@ defmodule DiningPhilosophersTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "philosophers can eat without deadlock" do
+    @tag timeout: 10_000
+    test "philosophers can eat without deadlock", %{clock: clock} do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
           think_time: 50,
           eat_time: 25,
-          trace: false
+          trace: false,
+          clock: clock
         )
-        |> ActorSimulation.run(duration: 1000)
+
+      # Use virtual time with proactive advancement
+      # Advance time in increments to speed up the simulation
+      start_time = System.monotonic_time(:millisecond)
+
+      # Run simulation with virtual time
+      simulation = ActorSimulation.run(simulation, duration: 1000)
+
+      # Proactively advance virtual time to complete the simulation faster
+      VirtualClock.advance(clock, 1000)
+
+      elapsed = System.monotonic_time(:millisecond) - start_time
 
       stats = ActorSimulation.get_stats(simulation)
 
@@ -49,19 +69,27 @@ defmodule DiningPhilosophersTest do
                "Philosopher #{i} didn't send any messages"
       end)
 
+      # Verify the test completed quickly with virtual time
+      assert elapsed < 1000, "Test should complete in under 1 second with virtual time"
+
       ActorSimulation.stop(simulation)
     end
 
-    test "generates trace of fork acquisitions and releases" do
+    @tag timeout: 10_000
+    test "generates trace of fork acquisitions and releases", %{clock: clock} do
       simulation =
         DiningPhilosophers.create_simulation(
           # Smaller for easier verification
           num_philosophers: 3,
           think_time: 100,
           eat_time: 50,
-          trace: true
+          trace: true,
+          clock: clock
         )
-        |> ActorSimulation.run(duration: 500)
+
+      # Run with virtual time and proactive advancement
+      simulation = ActorSimulation.run(simulation, duration: 500)
+      VirtualClock.advance(clock, 500)
 
       trace = ActorSimulation.get_trace(simulation)
 
@@ -80,15 +108,19 @@ defmodule DiningPhilosophersTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "generates viewable Mermaid diagram for 2 philosophers" do
+    test "generates viewable Mermaid diagram for 2 philosophers", %{clock: clock} do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 2,
           think_time: 150,
           eat_time: 75,
-          trace: true
+          trace: true,
+          clock: clock
         )
-        |> ActorSimulation.run(duration: 800)
+
+      # Run with virtual time and proactive advancement
+      simulation = ActorSimulation.run(simulation, duration: 800)
+      VirtualClock.advance(clock, 800)
 
       # Generate enhanced Mermaid with timestamps
       mermaid =
@@ -117,15 +149,19 @@ defmodule DiningPhilosophersTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "generates viewable Mermaid diagram for 3 philosophers" do
+    test "generates viewable Mermaid diagram for 3 philosophers", %{clock: clock} do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 3,
           think_time: 200,
           eat_time: 100,
-          trace: true
+          trace: true,
+          clock: clock
         )
-        |> ActorSimulation.run(duration: 1000)
+
+      # Run with virtual time and proactive advancement
+      simulation = ActorSimulation.run(simulation, duration: 1000)
+      VirtualClock.advance(clock, 1000)
 
       # Generate enhanced Mermaid with timestamps
       mermaid =
@@ -154,15 +190,19 @@ defmodule DiningPhilosophersTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "generates viewable Mermaid diagram for 5 philosophers" do
+    test "generates viewable Mermaid diagram for 5 philosophers", %{clock: clock} do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
           think_time: 150,
           eat_time: 75,
-          trace: true
+          trace: true,
+          clock: clock
         )
-        |> ActorSimulation.run(duration: 1000)
+
+      # Run with virtual time and proactive advancement
+      simulation = ActorSimulation.run(simulation, duration: 1000)
+      VirtualClock.advance(clock, 1000)
 
       # Generate enhanced Mermaid with timestamps
       mermaid =
@@ -190,15 +230,19 @@ defmodule DiningPhilosophersTest do
       ActorSimulation.stop(simulation)
     end
 
-    test "with detailed statistics shows eating counts" do
+    test "with detailed statistics shows eating counts", %{clock: clock} do
       simulation =
         DiningPhilosophers.create_simulation(
           num_philosophers: 5,
           think_time: 100,
           eat_time: 50,
-          trace: false
+          trace: false,
+          clock: clock
         )
-        |> ActorSimulation.run(duration: 2000)
+
+      # Run with virtual time and proactive advancement
+      simulation = ActorSimulation.run(simulation, duration: 2000)
+      VirtualClock.advance(clock, 2000)
 
       stats = ActorSimulation.get_stats(simulation)
 
@@ -364,17 +408,18 @@ defmodule DiningPhilosophersTest do
           </p>
           <p>
             <strong>Challenge:</strong> How to prevent deadlock when all philosophers
-            simultaneously grab their left fork?
+            simultaneously grab their left fork? This would create a circular wait condition.
           </p>
           <p>
-            <strong>Solution:</strong> Asymmetric fork acquisition - odd philosophers grab
-            right fork first, even philosophers grab left fork first.
+            <strong>Solution:</strong> Asymmetric fork acquisition strategy - odd-numbered philosophers grab
+            their right fork first, even-numbered philosophers grab their left fork first.
+            This breaks the symmetry and prevents circular deadlock.
           </p>
         </div>
 
         <div class="legend">
           <div class="legend-item">
-            <strong>→→</strong> Solid Arrow<br>
+            <strong>→</strong> Solid Arrow<br>
             Synchronous call (request/release fork)
           </div>
           <div class="legend-item">
@@ -384,6 +429,10 @@ defmodule DiningPhilosophersTest do
           <div class="legend-item">
             <strong>Timestamps</strong><br>
             Virtual time progression
+          </div>
+          <div class="legend-item">
+            <strong>Self-loops</strong><br>
+            Philosopher internal state changes
           </div>
         </div>
 
@@ -408,9 +457,9 @@ defmodule DiningPhilosophersTest do
         <div class="explanation" style="margin-top: 20px;">
           <h3>What the Diagram Shows</h3>
           <ul>
-            <li>Each philosopher sends synchronous <code>:request</code> messages to forks</li>
-            <li>Forks reply with <code>:granted</code> or <code>:denied</code></li>
-            <li>After eating, philosophers send <code>:release</code> to both forks</li>
+            <li>Each philosopher sends synchronous <code>:request_fork</code> messages to forks</li>
+            <li>Forks reply with <code>:fork_granted</code> or <code>:fork_denied</code></li>
+            <li>After eating, philosophers send <code>:release_fork</code> to both forks</li>
             <li>The timeline shows how virtual time advances instantly in tests</li>
             <li>No deadlocks occur due to asymmetric fork acquisition</li>
           </ul>
