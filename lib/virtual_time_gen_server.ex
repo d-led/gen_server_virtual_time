@@ -229,6 +229,26 @@ defmodule VirtualTimeGenServer do
 
   """
   def set_virtual_clock(clock) do
+    # Emit a compilation warning to alert users about potential race conditions
+    IO.warn("""
+    ⚠️  GLOBAL VIRTUAL CLOCK INJECTION DETECTED ⚠️
+
+    VirtualTimeGenServer.set_virtual_clock/1 sets a GLOBAL virtual clock that affects
+    ALL child processes. This can cause race conditions in tests and production!
+
+    Consider using test-local virtual clocks instead:
+
+    # ❌ Global (can cause race conditions)
+    VirtualTimeGenServer.set_virtual_clock(clock)
+    {:ok, server} = MyServer.start_link([])
+
+    # ✅ Test-local (isolated, safe)
+    {:ok, server} = MyServer.start_link([], virtual_clock: clock)
+
+    For coordinated simulations, use global clocks intentionally.
+    For isolated testing, use test-local clocks.
+    """)
+
     Process.put(:virtual_clock, clock)
     Process.put(:time_backend, VirtualTimeBackend)
   end
@@ -237,6 +257,26 @@ defmodule VirtualTimeGenServer do
   Uses real time (default behavior).
   """
   def use_real_time do
+    # Emit a compilation warning to alert users about global time backend changes
+    IO.warn("""
+    ⚠️  GLOBAL TIME BACKEND CHANGE DETECTED ⚠️
+
+    VirtualTimeGenServer.use_real_time/0 changes the GLOBAL time backend for
+    ALL child processes. This can cause race conditions in tests and production!
+
+    Consider using test-local time backend instead:
+
+    # ❌ Global (can cause race conditions)
+    VirtualTimeGenServer.use_real_time()
+    {:ok, server} = MyServer.start_link([])
+
+    # ✅ Test-local (isolated, safe)
+    {:ok, server} = MyServer.start_link([], real_time: true)
+
+    For production, the default is already real time.
+    For testing, use test-local virtual clocks.
+    """)
+
     Process.delete(:virtual_clock)
     Process.put(:time_backend, RealTimeBackend)
   end
