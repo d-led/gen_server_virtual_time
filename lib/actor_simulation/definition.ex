@@ -40,14 +40,14 @@ defmodule ActorSimulation.Definition do
   """
   def match_message(definition, msg) do
     Enum.find_value(definition.on_match, fn {pattern, response} ->
-      case pattern do
-        ^msg ->
+      cond do
+        pattern == msg ->
           {:matched, response}
 
-        _ when is_function(pattern, 1) ->
-          if pattern.(msg), do: {:matched, response}, else: nil
+        is_function(pattern, 1) and pattern.(msg) ->
+          {:matched, response}
 
-        _ ->
+        true ->
           nil
       end
     end)

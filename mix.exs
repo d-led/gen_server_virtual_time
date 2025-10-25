@@ -80,6 +80,9 @@ defmodule GenServerVirtualTime.MixProject do
       # Testing (optional, for coverage reports)
       {:excoveralls, "~> 0.18", only: :test, runtime: false},
 
+      # JSON parsing for coverage reports
+      {:jason, "~> 1.4", only: [:dev, :test], runtime: false},
+
       # Mutation testing
       {:muzak, "~> 1.1", only: :test, runtime: false},
       {:exavier, "~> 0.3.0", only: :test, runtime: false},

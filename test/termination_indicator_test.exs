@@ -157,7 +157,7 @@ defmodule TerminationIndicatorTest do
   end
 
   # Helper to generate Mermaid HTML
-  defp generate_mermaid_html(mermaid, title, opts \\ []) do
+  defp generate_mermaid_html(mermaid, title, opts) do
     model_source = Keyword.get(opts, :model_source, "")
     description = Keyword.get(opts, :description, "")
 
