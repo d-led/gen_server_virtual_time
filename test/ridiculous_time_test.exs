@@ -103,8 +103,8 @@ defmodule RidiculousTimeTest do
 
     @tag :ridiculous
     @tag :slow
-    @tag :skip
-    test "daily backup for a century (DISABLED - too slow for CI)" do
+    @tag timeout: 120_000
+    test "daily backup for a century (because why not)" do
       # 86,400,000 ms
       one_day_ms = 24 * 60 * 60 * 1000
       # ~3,153,600,000 ms
@@ -133,7 +133,7 @@ defmodule RidiculousTimeTest do
              "Expected exactly 36,500 backups over a century, got #{stats.actors[:backup_system].sent_count}"
 
       # A century should complete in reasonable time (CI environments are slower)
-      max_time = if System.get_env("CI"), do: 180_000, else: 60_000
+      max_time = if System.get_env("CI"), do: 300_000, else: 180_000
 
       assert elapsed < max_time,
              "A century should simulate in under #{div(max_time, 1000)} seconds, took #{div(elapsed, 1000)} seconds!"

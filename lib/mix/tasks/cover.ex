@@ -123,16 +123,13 @@ defmodule Mix.Tasks.Cover.Show do
         # macOS
         System.cmd("open", [file_path])
 
-      {:unix, _} ->
-        # Linux and other Unix-like systems
-        System.cmd("xdg-open", [file_path])
-
       {:win32, _} ->
         # Windows
         System.cmd("start", [file_path])
 
-      _ ->
-        {:error, "Unsupported operating system"}
+      {:unix, _} ->
+        # Linux and other Unix-like systems
+        System.cmd("xdg-open", [file_path])
     end
   end
 
