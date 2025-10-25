@@ -350,13 +350,12 @@ defmodule VirtualTimeGenServerTest do
 
   describe "Documentation examples for global vs local clocks" do
     @tag timeout: 5_000
-    test "GLOBAL CLOCK: All actors in one coordinated simulation" do
-      # This is the current/default approach - good for actor systems
-      # where all components must work together in lockstep
+    test "SHARED CLOCK: All actors in one coordinated simulation" do
+      # Use a shared clock for coordinated simulation - no global state
+      # This is the recommended approach for actor systems where all
+      # components must work together in lockstep
 
       {:ok, clock} = VirtualClock.start_link()
-      # Use coordinated virtual clock injection instead of global
-      # All actors must share the same clock for coordinated simulation
 
       # Start multiple actors that interact - inject same clock into all
       {:ok, producer} = TickerServer.start_link(100, virtual_clock: clock)
@@ -377,6 +376,28 @@ defmodule VirtualTimeGenServerTest do
       GenServer.stop(producer)
       GenServer.stop(consumer1)
       GenServer.stop(consumer2)
+      GenServer.stop(clock)
+    end
+
+    test "GLOBAL CLOCK: Basic functionality test (minimal)" do
+      # Tiny test for global clock functionality - isolated to avoid race conditions
+      {:ok, clock} = VirtualClock.start_link()
+
+      # Set global clock
+      VirtualTimeGenServer.set_virtual_clock(clock)
+
+      # Start a single server with global clock
+      {:ok, server} = TickerServer.start_link(100)
+
+      # Advance time
+      VirtualClock.advance(clock, 1000)
+
+      # Verify it worked
+      assert TickerServer.get_count(server) >= 9
+
+      # Clean up
+      GenServer.stop(server)
+      GenServer.stop(clock)
     end
 
     test "LOCAL CLOCK: Multiple independent simulations" do
