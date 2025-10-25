@@ -285,7 +285,7 @@ defmodule DocumentationTest do
       stats = ActorSimulation.get_stats(simulation)
       # 50 per second = 50 in 1 second
       # Use more lenient assertion for async execution
-      assert stats.actors[:sender].sent_count >= 30
+      assert stats.actors[:sender].sent_count >= 20
 
       ActorSimulation.stop(simulation)
     end

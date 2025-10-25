@@ -194,12 +194,7 @@ defmodule VirtualTimeGenStateMachine do
       Process.put(:time_backend, final_backend)
 
       # Call the module's init function
-      case module.init(init_arg) do
-        {:ok, state, data} -> {:ok, state, data}
-        {:ok, state, data, timeout} -> {:ok, state, data, timeout}
-        {:ok, state, data, {:continue, arg}} -> {:ok, state, data, {:continue, arg}}
-        other -> other
-      end
+      module.init(init_arg)
     end
 
     # Start with a wrapper that injects the virtual clock
@@ -337,12 +332,7 @@ defmodule VirtualTimeGenStateMachine.Wrapper do
     Process.put(:__vtgsm_module__, module)
 
     # Call the init function which injects the virtual clock
-    case init_fun.() do
-      {:ok, state, data} -> {:ok, state, data}
-      {:ok, state, data, timeout} -> {:ok, state, data, timeout}
-      {:ok, state, data, {:continue, arg}} -> {:ok, state, data, {:continue, arg}}
-      other -> other
-    end
+    init_fun.()
   end
 
   def handle_event(event_type, event_content, state, data) do

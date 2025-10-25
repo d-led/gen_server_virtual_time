@@ -153,6 +153,19 @@ defmodule VirtualClock do
 
   @impl true
   def handle_info({:do_advance, target_time, from}, state) do
+    advance_loop(state, target_time, from)
+  end
+
+  # Efficient advance loop that processes all events without real-time delays
+  defp advance_loop(state, target_time, from) do
+    # Process events in chronological order, allowing for newly scheduled events
+    # Use a loop to avoid stack overflow
+    advance_loop_iterative(state, target_time, from)
+  end
+
+  defp advance_loop_iterative(state, target_time, from) do
+    # Process events in batches to allow other processes to proceed
+    # This ensures that actors can process messages and schedule new ones
     case find_next_event_time_up_to(state.scheduled, target_time) do
       nil ->
         # No more events, finish advance
@@ -161,7 +174,7 @@ defmodule VirtualClock do
         {:noreply, new_state}
 
       next_time ->
-        # Trigger all events at this exact time
+        # Process all events up to the next time point
         {triggered, remaining} = split_events_at_time(state.scheduled, next_time)
 
         Enum.each(triggered, fn event ->
@@ -169,33 +182,18 @@ defmodule VirtualClock do
         end)
 
         # Update state and continue advancing
-        # Add a tiny delay to allow other processes to handle messages
         new_state = %{state | current_time: next_time, scheduled: remaining}
 
-        # Schedule continuation with a tiny delay for message processing
-        # The delay allows triggered processes to handle their messages
-        # and make new send_after calls that we'll process
-        :erlang.send_after(0, self(), {:do_advance, target_time, from})
+        # Continue advancing by sending message to self
+        # This allows other processes to proceed
+        # Use a tiny delay to allow processes to handle messages and schedule new ones
+        Process.send_after(self(), {:do_advance, target_time, from}, 0)
         {:noreply, new_state}
     end
   end
 
-  # Private helpers
-
-  defp split_events(scheduled, time) do
-    Enum.split_with(scheduled, fn event -> event.trigger_time <= time end)
-  end
-
   defp split_events_at_time(scheduled, time) do
     Enum.split_with(scheduled, fn event -> event.trigger_time == time end)
-  end
-
-  defp find_next_event_time([]), do: nil
-
-  defp find_next_event_time(scheduled) do
-    scheduled
-    |> Enum.map(& &1.trigger_time)
-    |> Enum.min()
   end
 
   defp find_next_event_time_up_to([], _target), do: nil
@@ -207,5 +205,19 @@ defmodule VirtualClock do
       [] -> nil
       events -> events |> Enum.map(& &1.trigger_time) |> Enum.min()
     end
+  end
+
+  # Private helpers
+
+  defp split_events(scheduled, time) do
+    Enum.split_with(scheduled, fn event -> event.trigger_time <= time end)
+  end
+
+  defp find_next_event_time([]), do: nil
+
+  defp find_next_event_time(scheduled) do
+    scheduled
+    |> Enum.map(& &1.trigger_time)
+    |> Enum.min()
   end
 end

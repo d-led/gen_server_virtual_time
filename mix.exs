@@ -82,7 +82,10 @@ defmodule GenServerVirtualTime.MixProject do
 
       # Mutation testing
       {:muzak, "~> 1.1", only: :test, runtime: false},
-      {:exavier, "~> 0.3.0", only: :test, runtime: false}
+      {:exavier, "~> 0.3.0", only: :test, runtime: false},
+
+      # Benchmarking
+      {:benchee, "~> 1.5", only: :dev, runtime: false}
     ]
   end
 

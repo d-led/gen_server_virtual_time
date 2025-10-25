@@ -128,9 +128,9 @@ defmodule RidiculousTimeTest do
       stats = ActorSimulation.get_stats(simulation)
 
       # 100 years * 365 days = 36,500 backups
-      # Allow some margin for very long simulations (at least 30,000 backups)
-      assert stats.actors[:backup_system].sent_count >= 30_000,
-             "Expected at least 30,000 backups over a century, got #{stats.actors[:backup_system].sent_count}"
+      # Virtual time should be deterministic and exact
+      assert stats.actors[:backup_system].sent_count == 36_500,
+             "Expected exactly 36,500 backups over a century, got #{stats.actors[:backup_system].sent_count}"
 
       # A century in under a minute!
       assert elapsed < 60_000, "A century should simulate in under 60 seconds!"
