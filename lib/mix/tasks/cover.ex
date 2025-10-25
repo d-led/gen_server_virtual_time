@@ -137,34 +137,28 @@ defmodule Mix.Tasks.Cover.Show do
   end
 
   defp print_coverage_summary do
-    # Try to read and parse the coverage data
-    case File.read("cover/coveralls.json") do
-      {:ok, content} ->
-        case Jason.decode(content) do
-          {:ok, data} ->
-            if is_map(data) and Map.has_key?(data, "source_files") do
-              source_files = data["source_files"]
-              total_lines = Enum.reduce(source_files, 0, &(&2 + &1["source_lines"]))
-              covered_lines = Enum.reduce(source_files, 0, &(&2 + &1["covered_lines"]))
-
-              coverage_percentage =
-                if total_lines > 0,
-                  do: Float.round(covered_lines / total_lines * 100, 1),
-                  else: 0.0
-
-              IO.puts("   📊 Total Lines: #{total_lines}")
-              IO.puts("   ✅ Covered Lines: #{covered_lines}")
-              IO.puts("   📈 Coverage: #{coverage_percentage}%")
-            else
-              IO.puts("   📊 Coverage data available in HTML report")
-            end
-
-          {:error, _} ->
-            IO.puts("   📊 Coverage data available in HTML report")
-        end
-
-      {:error, _} ->
-        IO.puts("   📊 Coverage data available in HTML report")
+    with {:ok, content} <- File.read("cover/coveralls.json"),
+         {:ok, data} <- Jason.decode(content),
+         true <- is_map(data) and Map.has_key?(data, "source_files") do
+      print_detailed_coverage(data["source_files"])
+    else
+      _ -> IO.puts("   📊 Coverage data available in HTML report")
     end
+  end
+
+  defp print_detailed_coverage(source_files) do
+    total_lines = Enum.reduce(source_files, 0, &(&2 + &1["source_lines"]))
+    covered_lines = Enum.reduce(source_files, 0, &(&2 + &1["covered_lines"]))
+    coverage_percentage = calculate_coverage_percentage(total_lines, covered_lines)
+
+    IO.puts("   📊 Total Lines: #{total_lines}")
+    IO.puts("   ✅ Covered Lines: #{covered_lines}")
+    IO.puts("   📈 Coverage: #{coverage_percentage}%")
+  end
+
+  defp calculate_coverage_percentage(total_lines, covered_lines) do
+    if total_lines > 0,
+      do: Float.round(covered_lines / total_lines * 100, 1),
+      else: 0.0
   end
 end
