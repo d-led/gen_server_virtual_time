@@ -119,10 +119,26 @@
   <div class="diagram-container">
     <div class="mermaid">
 sequenceDiagram
+    philosopher_1->>fork_2: {:release_fork, :philosopher_1}
+    philosopher_1->>fork_1: {:release_fork, :philosopher_1}
     activate responder
     requester->>responder: :get_data
     deactivate responder
+    philosopher_2->>philosopher_2: {:start_hungry, :fork_2, :fork_0}
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_2, :fork_1}
     notifier-->>listener: :notify
+    philosopher_1->>fork_2: {:request_fork, :philosopher_1}
+    fork_2->>philosopher_1: {:fork_granted, :fork_2}
+    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
+    fork_1->>philosopher_1: {:fork_granted, :fork_1}
+    philosopher_2->>fork_2: {:request_fork, :philosopher_2}
+    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
+    fork_0->>philosopher_0: {:fork_granted, :fork_0}
+    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
+    fork_1->>philosopher_0: {:fork_denied, :fork_1}
+    fork_2->>philosopher_2: {:fork_denied, :fork_2}
+    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
     activate responder
     requester->>responder: :get_data
     deactivate responder

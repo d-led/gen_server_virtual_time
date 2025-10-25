@@ -213,24 +213,24 @@
       <div class="mermaid">
 flowchart TB
     source(["source<br/>
-📤 Sent: 10<br/>
+📤 Sent: 9<br/>
 📥 Recv: 0"])
     stage1("stage1<br/>
-📤 Sent: 10<br/>
-📥 Recv: 10")
+📤 Sent: 9<br/>
+📥 Recv: 9")
     stage2("stage2<br/>
-📤 Sent: 10<br/>
-📥 Recv: 10")
+📤 Sent: 9<br/>
+📥 Recv: 9")
     sink["sink<br/>
 📤 Sent: 0<br/>
-📥 Recv: 10"]
+📥 Recv: 9"]
     source -->|:request<br/>every 100ms| stage1
-    stage1 -->|:request<br/>10/s| stage2
-    stage2 -->|:request<br/>10/s| sink
-    style source fill:#e8f5e9,stroke:#388e3c
+    stage1 -->|:request<br/>6/s| stage2
+    stage2 -->|:request<br/>5/s| sink
+    style source fill:#e3f2fd,stroke:#1976d2
     style stage1 fill:#e8f5e9,stroke:#388e3c
     style stage2 fill:#e8f5e9,stroke:#388e3c
-    style sink fill:#e8f5e9,stroke:#388e3c
+    style sink fill:#e3f2fd,stroke:#1976d2
       </div>
     </div>
 
@@ -255,8 +255,10 @@ flowchart TD
   <div>
     <div class="mermaid">
 flowchart LR
-    activity_0["🟢 Medium Activity (10-50 msgs)"]
-    style activity_0 fill:#e8f5e9,stroke:#388e3c
+    activity_0["🔵 Low Activity (<10 msgs)"]
+    activity_1["🟢 Medium Activity (10-50 msgs)"]
+    style activity_0 fill:#e3f2fd,stroke:#1976d2
+    style activity_1 fill:#e8f5e9,stroke:#388e3c
 
     </div>
   </div>
@@ -281,38 +283,38 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>source</strong></td>
-  <td class="metric">10</td>
+  <td class="metric">9</td>
   <td class="metric">0</td>
-  <td class="metric">10.0 msg/s</td>
+  <td class="metric">9.0 msg/s</td>
   <td class="metric">0.0 msg/s</td>
-  <td><span class="badge low">10 total</span></td>
+  <td><span class="badge low">9 total</span></td>
 </tr>
 
 <tr>
   <td><strong>stage1</strong></td>
-  <td class="metric">10</td>
-  <td class="metric">10</td>
-  <td class="metric">10.0 msg/s</td>
-  <td class="metric">10.0 msg/s</td>
-  <td><span class="badge ">20 total</span></td>
+  <td class="metric">9</td>
+  <td class="metric">9</td>
+  <td class="metric">9.0 msg/s</td>
+  <td class="metric">9.0 msg/s</td>
+  <td><span class="badge ">18 total</span></td>
 </tr>
 
 <tr>
   <td><strong>stage2</strong></td>
-  <td class="metric">10</td>
-  <td class="metric">10</td>
-  <td class="metric">10.0 msg/s</td>
-  <td class="metric">10.0 msg/s</td>
-  <td><span class="badge ">20 total</span></td>
+  <td class="metric">9</td>
+  <td class="metric">9</td>
+  <td class="metric">9.0 msg/s</td>
+  <td class="metric">9.0 msg/s</td>
+  <td><span class="badge ">18 total</span></td>
 </tr>
 
 <tr>
   <td><strong>sink</strong></td>
   <td class="metric">0</td>
-  <td class="metric">10</td>
+  <td class="metric">9</td>
   <td class="metric">0.0 msg/s</td>
-  <td class="metric">10.0 msg/s</td>
-  <td><span class="badge low">10 total</span></td>
+  <td class="metric">9.0 msg/s</td>
+  <td><span class="badge low">9 total</span></td>
 </tr>
 
     </tbody>
@@ -320,7 +322,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 60 •
+    Total messages: 54 •
     Duration: 1000ms •
     Actors: 4
   </div>

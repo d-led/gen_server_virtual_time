@@ -121,10 +121,27 @@
 sequenceDiagram
     client->>server: :request
     server->>client: :response
+    stage2->>sink: :request
+    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
+    client->>server: :request
+    source->>stage1: :request
+    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
+    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
+    stage1->>stage2: :request
+    server->>client: :response
+    stage2->>sink: :request
     client->>server: :request
     server->>client: :response
-    client->>server: :request
-    server->>client: :response
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
+    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
+    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
+    source->>stage1: :request
+    stage1->>stage2: :request
+    fork_0->>philosopher_1: {:fork_granted, :fork_0}
+    stage2->>sink: :request
+    fork_0->>philosopher_0: {:fork_denied, :fork_0}
+    philosopher_1->>fork_1: {:request_fork, :philosopher_1}
     </div>
   </div>
 

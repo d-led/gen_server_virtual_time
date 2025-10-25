@@ -124,13 +124,31 @@ sequenceDiagram
     database->>api: {:auth_ok, :token456}
     api->>auth: {:check_auth, :user123}
     auth->>database: {:check_auth, :user123}
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     database->>api: {:auth_ok, :token456}
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
+    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
+    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
+    fork_0->>philosopher_0: {:fork_granted, :fork_0}
+    fork_0->>philosopher_1: {:fork_denied, :fork_0}
+    philosopher_0->>fork_1: {:request_fork, :philosopher_0}
+    fork_1->>philosopher_0: {:fork_granted, :fork_1}
+    philosopher_0->>philosopher_0: {:mumble, "I'm full!"}
+    philosopher_0->>fork_0: {:release_fork, :philosopher_0}
+    philosopher_0->>fork_1: {:release_fork, :philosopher_0}
     api->>auth: {:check_auth, :user123}
     auth->>database: {:check_auth, :user123}
     database->>api: {:auth_ok, :token456}
     api->>auth: {:check_auth, :user123}
     auth->>database: {:check_auth, :user123}
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
     database->>api: {:auth_ok, :token456}
+    philosopher_1->>fork_0: {:request_fork, :philosopher_1}
+    philosopher_0->>fork_0: {:request_fork, :philosopher_0}
+    philosopher_0->>philosopher_0: {:start_hungry, :fork_0, :fork_1}
+    philosopher_1->>philosopher_1: {:start_hungry, :fork_0, :fork_1}
+    fork_0->>philosopher_1: {:fork_granted, :fork_0}
     </div>
   </div>
 
