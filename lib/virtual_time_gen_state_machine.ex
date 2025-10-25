@@ -386,6 +386,26 @@ defmodule VirtualTimeGenStateMachine.Wrapper do
     end
   end
 
+  def idle(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :idle, 3) do
+      module.idle(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
+  def active(event_type, event_content, data) do
+    module = Process.get(:__vtgsm_module__)
+
+    if module && function_exported?(module, :active, 3) do
+      module.active(event_type, event_content, data)
+    else
+      {:keep_state_and_data, []}
+    end
+  end
+
   def terminate(reason, state, data) do
     module = Process.get(:__vtgsm_module__)
 

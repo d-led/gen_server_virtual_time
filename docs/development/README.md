@@ -144,18 +144,54 @@ lib/
 ## Running Tests
 
 ```bash
-# All tests
+# All tests (default - excludes slow and diagram_generation)
 mix test
+
+# Fast tests only (excludes slow, diagram_generation, ridiculous)
+mix test --exclude slow --exclude diagram_generation --exclude ridiculous
+
+# Slow tests only
+mix test --include slow
+
+# Diagram generation tests
+mix test --include diagram_generation
+
+# Ridiculous tests (very long-running)
+mix test --include ridiculous
 
 # Specific test file
 mix test test/virtual_clock_test.exs
 
-# With coverage
-mix coveralls
+# Tests with coverage
+mix test --cover
 
-# Generate HTML coverage report
+# Detailed coverage report
 mix coveralls.html
+open cover/excoveralls.html
+
+# Combined coverage (all test types)
+./scripts/coverage_combined.sh
+
+# Failed tests only
+mix test --failed
+
+# Tests matching pattern
+mix test --only focus
 ```
+
+### Test Tags
+
+The project uses a tag-based testing system for different test categories:
+
+- **`:slow`** - Long-running tests (time simulations, complex scenarios)
+- **`:diagram_generation`** - Tests that generate Mermaid diagrams and reports
+- **`:ridiculous`** - Extremely long-running tests (century simulations, stress
+  tests)
+- **`:tmp_dir`** - Tests requiring temporary directories
+- **`:integration`** - Integration tests with external systems
+
+**Default behavior**: `mix test` excludes `:slow` and `:diagram_generation` tags
+for fast development feedback.
 
 **See [test_coverage_improvements.md](test_coverage_improvements.md) for
 detailed information about test coverage, spec-style testing approach, and test

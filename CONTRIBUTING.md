@@ -76,8 +76,20 @@ This project follows a simple code of conduct:
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (default - excludes slow and diagram_generation)
 mix test
+
+# Fast tests only (excludes slow, diagram_generation, ridiculous)
+mix test --exclude slow --exclude diagram_generation --exclude ridiculous
+
+# Slow tests only
+mix test --include slow
+
+# Diagram generation tests
+mix test --include diagram_generation
+
+# Ridiculous tests (very long-running)
+mix test --include ridiculous
 
 # Run specific test file
 mix test test/virtual_clock_test.exs
@@ -88,7 +100,33 @@ mix test --cover
 # Run with detailed coverage
 mix coveralls.html
 open cover/excoveralls.html
+
+# Combined coverage (all test types)
+./scripts/coverage_combined.sh
+
+# Run failed tests
+mix test --failed
+
+# Run tests matching a pattern
+mix test --only focus
+
+# Run tests with specific tag
+mix test --only integration
 ```
+
+### Test Tags
+
+The project uses a tag-based testing system for different test categories:
+
+- **`:slow`** - Long-running tests (time simulations, complex scenarios)
+- **`:diagram_generation`** - Tests that generate Mermaid diagrams and reports
+- **`:ridiculous`** - Extremely long-running tests (century simulations, stress
+  tests)
+- **`:tmp_dir`** - Tests requiring temporary directories
+- **`:integration`** - Integration tests with external systems
+
+**Default behavior**: `mix test` excludes `:slow` and `:diagram_generation` tags
+for fast development feedback.
 
 ### Code Quality Checks
 
