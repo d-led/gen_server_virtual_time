@@ -192,11 +192,11 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">39<span class="unit">ms</span></div>
+      <div class="value">7<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">76.9x</div>
+      <div class="value">428.6x</div>
     </div>
     <div class="summary-card warning">
   <div class="label">Termination</div>
@@ -213,26 +213,26 @@
       <div class="mermaid">
 flowchart LR
     alice("alice<br/>
-📤 Sent: 996<br/>
-📥 Recv: 918")
+📤 Sent: 199<br/>
+📥 Recv: 169")
     bob("bob<br/>
-📤 Sent: 1042<br/>
-📥 Recv: 988")
+📤 Sent: 223<br/>
+📥 Recv: 193")
     charlie("charlie<br/>
-📤 Sent: 1050<br/>
-📥 Recv: 1008")
+📤 Sent: 249<br/>
+📥 Recv: 225")
     diana("diana<br/>
-📤 Sent: 1054<br/>
-📥 Recv: 1006")
+📤 Sent: 260<br/>
+📥 Recv: 236")
     eve("eve<br/>
-📤 Sent: 1296<br/>
-📥 Recv: 1260")
+📤 Sent: 278<br/>
+📥 Recv: 260")
     frank("frank<br/>
-📤 Sent: 1314<br/>
-📥 Recv: 1278")
+📤 Sent: 278<br/>
+📥 Recv: 260")
     grace("grace<br/>
-📤 Sent: 1312<br/>
-📥 Recv: 1282")
+📤 Sent: 373<br/>
+📥 Recv: 355")
     bob -->|:hi<br/>every 250ms| alice
     diana -->|:hi<br/>every 350ms| alice
     charlie -->|:hi<br/>every 300ms| alice
@@ -328,65 +328,65 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>alice</strong></td>
-  <td class="metric">996</td>
-  <td class="metric">918</td>
-  <td class="metric">332.0 msg/s</td>
-  <td class="metric">306.0 msg/s</td>
-  <td><span class="badge high">1914 total</span></td>
+  <td class="metric">199</td>
+  <td class="metric">169</td>
+  <td class="metric">66.33 msg/s</td>
+  <td class="metric">56.33 msg/s</td>
+  <td><span class="badge high">368 total</span></td>
 </tr>
 
 <tr>
   <td><strong>bob</strong></td>
-  <td class="metric">1042</td>
-  <td class="metric">988</td>
-  <td class="metric">347.33 msg/s</td>
-  <td class="metric">329.33 msg/s</td>
-  <td><span class="badge high">2030 total</span></td>
+  <td class="metric">223</td>
+  <td class="metric">193</td>
+  <td class="metric">74.33 msg/s</td>
+  <td class="metric">64.33 msg/s</td>
+  <td><span class="badge high">416 total</span></td>
 </tr>
 
 <tr>
   <td><strong>charlie</strong></td>
-  <td class="metric">1050</td>
-  <td class="metric">1008</td>
-  <td class="metric">350.0 msg/s</td>
-  <td class="metric">336.0 msg/s</td>
-  <td><span class="badge high">2058 total</span></td>
+  <td class="metric">249</td>
+  <td class="metric">225</td>
+  <td class="metric">83.0 msg/s</td>
+  <td class="metric">75.0 msg/s</td>
+  <td><span class="badge high">474 total</span></td>
 </tr>
 
 <tr>
   <td><strong>diana</strong></td>
-  <td class="metric">1054</td>
-  <td class="metric">1006</td>
-  <td class="metric">351.33 msg/s</td>
-  <td class="metric">335.33 msg/s</td>
-  <td><span class="badge high">2060 total</span></td>
+  <td class="metric">260</td>
+  <td class="metric">236</td>
+  <td class="metric">86.67 msg/s</td>
+  <td class="metric">78.67 msg/s</td>
+  <td><span class="badge high">496 total</span></td>
 </tr>
 
 <tr>
   <td><strong>eve</strong></td>
-  <td class="metric">1296</td>
-  <td class="metric">1260</td>
-  <td class="metric">432.0 msg/s</td>
-  <td class="metric">420.0 msg/s</td>
-  <td><span class="badge high">2556 total</span></td>
+  <td class="metric">278</td>
+  <td class="metric">260</td>
+  <td class="metric">92.67 msg/s</td>
+  <td class="metric">86.67 msg/s</td>
+  <td><span class="badge high">538 total</span></td>
 </tr>
 
 <tr>
   <td><strong>frank</strong></td>
-  <td class="metric">1314</td>
-  <td class="metric">1278</td>
-  <td class="metric">438.0 msg/s</td>
-  <td class="metric">426.0 msg/s</td>
-  <td><span class="badge high">2592 total</span></td>
+  <td class="metric">278</td>
+  <td class="metric">260</td>
+  <td class="metric">92.67 msg/s</td>
+  <td class="metric">86.67 msg/s</td>
+  <td><span class="badge high">538 total</span></td>
 </tr>
 
 <tr>
   <td><strong>grace</strong></td>
-  <td class="metric">1312</td>
-  <td class="metric">1282</td>
-  <td class="metric">437.33 msg/s</td>
-  <td class="metric">427.33 msg/s</td>
-  <td><span class="badge high">2594 total</span></td>
+  <td class="metric">373</td>
+  <td class="metric">355</td>
+  <td class="metric">124.33 msg/s</td>
+  <td class="metric">118.33 msg/s</td>
+  <td><span class="badge high">728 total</span></td>
 </tr>
 
     </tbody>
@@ -394,7 +394,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 15804 •
+    Total messages: 3558 •
     Duration: 3000ms •
     Actors: 7
   </div>

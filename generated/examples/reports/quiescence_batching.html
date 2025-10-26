@@ -188,7 +188,7 @@
   <div class="summary-grid">
     <div class="summary-card">
       <div class="label">Virtual Time</div>
-      <div class="value">16<span class="unit">ms</span></div>
+      <div class="value">0<span class="unit">ms</span></div>
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
@@ -212,12 +212,12 @@
     <div class="diagram-container">
       <div class="mermaid">
 flowchart LR
-    receiver["receiver<br/>📤 Sent: 1<br/>📥 Recv: 10"]
-    sender["sender<br/>📤 Sent: 10<br/>📥 Recv: 1"]
+    receiver["receiver<br/>📤 Sent: 0<br/>📥 Recv: 0"]
+    sender["sender<br/>📤 Sent: 0<br/>📥 Recv: 0"]
     receiver -->|:batch| sender
     sender -->|:msg| receiver
-    style receiver fill:#e8f5e9,stroke:#388e3c
-    style sender fill:#e8f5e9,stroke:#388e3c
+    style receiver fill:#f5f5f5,stroke:#9e9e9e
+    style sender fill:#f5f5f5,stroke:#9e9e9e
       </div>
     </div>
 
@@ -227,8 +227,8 @@ flowchart LR
    <div>
      <div class="mermaid">
 flowchart TD
-    legend_processor("Processor<br/>(send & receive)")
-    style legend_processor fill:#ffffff,stroke:#666666,stroke-width:2px
+    legend_sink["Sink<br/>(receives only)"]
+    style legend_sink fill:#ffffff,stroke:#666666,stroke-width:2px
 
     </div>
   </div>
@@ -238,8 +238,8 @@ flowchart TD
   <div>
     <div class="mermaid">
 flowchart LR
-    activity_0["🟢 Medium Activity (10-50 msgs)"]
-    style activity_0 fill:#e8f5e9,stroke:#388e3c
+    activity_0["⚪ Inactive (0 msgs)"]
+    style activity_0 fill:#f5f5f5,stroke:#9e9e9e
 
     </div>
   </div>
@@ -264,20 +264,20 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>receiver</strong></td>
-  <td class="metric">1</td>
-  <td class="metric">10</td>
-  <td class="metric">62.5 msg/s</td>
-  <td class="metric">625.0 msg/s</td>
-  <td><span class="badge ">11 total</span></td>
+  <td class="metric">0</td>
+  <td class="metric">0</td>
+  <td class="metric">0.0 msg/s</td>
+  <td class="metric">0.0 msg/s</td>
+  <td><span class="badge low">0 total</span></td>
 </tr>
 
 <tr>
   <td><strong>sender</strong></td>
-  <td class="metric">10</td>
-  <td class="metric">1</td>
-  <td class="metric">625.0 msg/s</td>
-  <td class="metric">62.5 msg/s</td>
-  <td><span class="badge ">11 total</span></td>
+  <td class="metric">0</td>
+  <td class="metric">0</td>
+  <td class="metric">0.0 msg/s</td>
+  <td class="metric">0.0 msg/s</td>
+  <td><span class="badge low">0 total</span></td>
 </tr>
 
     </tbody>
@@ -285,8 +285,8 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 22 •
-    Duration: 16ms •
+    Total messages: 0 •
+    Duration: 0ms •
     Actors: 2
   </div>
 </div>

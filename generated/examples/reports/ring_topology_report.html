@@ -192,11 +192,11 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">15<span class="unit">ms</span></div>
+      <div class="value">0<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">100.0x</div>
+      <div class="value">∞x</div>
     </div>
     <div class="summary-card warning">
   <div class="label">Termination</div>
@@ -218,9 +218,9 @@ flowchart LR
     actor2("actor2<br/>
 📤 Sent: 15<br/>
 📥 Recv: 15")
-    actor0("actor0<br/>
+    actor0(["actor0<br/>
 📤 Sent: 15<br/>
-📥 Recv: 15")
+📥 Recv: 0"])
     actor3("actor3<br/>
 📤 Sent: 15<br/>
 📥 Recv: 15")
@@ -256,7 +256,9 @@ flowchart LR
    <div>
      <div class="mermaid">
 flowchart TD
+    legend_source(["Source<br/>(sends only)"])
     legend_processor("Processor<br/>(send & receive)")
+    style legend_source fill:#ffffff,stroke:#666666,stroke-width:2px
     style legend_processor fill:#ffffff,stroke:#666666,stroke-width:2px
 
     </div>
@@ -312,10 +314,10 @@ flowchart LR
 <tr>
   <td><strong>actor0</strong></td>
   <td class="metric">15</td>
-  <td class="metric">15</td>
+  <td class="metric">0</td>
   <td class="metric">10.0 msg/s</td>
-  <td class="metric">10.0 msg/s</td>
-  <td><span class="badge ">30 total</span></td>
+  <td class="metric">0.0 msg/s</td>
+  <td><span class="badge ">15 total</span></td>
 </tr>
 
 <tr>
@@ -359,7 +361,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 210 •
+    Total messages: 195 •
     Duration: 1500ms •
     Actors: 7
   </div>

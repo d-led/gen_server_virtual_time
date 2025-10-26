@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>🍴 3 Dining Philosophers - Quiescence Detection</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <h1>🍴 3 Dining Philosophers - Quiescence Detection</h1>
+  <p>Demonstrates quiescence detection: simulation stops naturally when no more events are scheduled</p>
+
+  <h2>🎯 Key Features Demonstrated</h2>
+  <ul>
+    <li><strong>Virtual Time:</strong> Simulation runs much faster than real time</li>
+    <li><strong>Quiescence Detection:</strong> System stops naturally when no more events are scheduled</li>
+    <li><strong>Actor Coordination:</strong> Complex multi-actor interaction patterns</li>
+  </ul>
+
+  <h2>📊 Sequence Diagram</h2>
+  <div class="mermaid">
+    sequenceDiagram
+    philosopher_2->>philosopher_2: :start_eating
+    philosopher_1->>philosopher_1: :start_eating
+    philosopher_0->>philosopher_0: :start_eating
+    Note over philosopher_2,philosopher_1: ⚡ Terminated at t=100ms (goal achieved)
+  </div>
+
+  <h2>💻 Source Code</h2>
+  <pre><code># FINITE philosophers (each eats only 2 meals, then stops)
+simulation = create_finite_philosophers(3, max_meals: 2, think_time: 100, eat_time: 50)
+  |> ActorSimulation.run(
+    max_duration: 30_000,
+    terminate_when: :quiescence  # Wait for natural end!
+  )
+
+# Result: termination_reason == :quiescence
+#   (system naturally stops when no more events are scheduled)
+</code></pre>
+
+  <script>
+    mermaid.initialize({startOnLoad: true});
+  </script>
+</body>
+</html>
