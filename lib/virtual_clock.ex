@@ -405,8 +405,8 @@ defmodule VirtualClock do
         new_state = %{state | current_time: next_time, scheduled: remaining}
 
         # Yield to allow actors to process and schedule new events
-        # Use 0ms delay only for extremely large simulations (century scale)
-        delay = if target_time > 1_000_000_000, do: 0, else: 1
+        # Use 1ms delay for reliable message processing and periodic event scheduling
+        delay = 1
         Process.send_after(self(), {:do_advance, target_time, from}, delay)
         {:noreply, new_state}
 

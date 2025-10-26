@@ -12,13 +12,14 @@ and this project adheres to
 
 - **MAJOR**: Eliminated VirtualClock bottleneck identified through
   `mix profile.eprof` profiling
-  - Fixed 1ms artificial delays in advance loop that caused severe performance
-    degradation
-  - Implemented smart delay logic: 0ms delay only for extremely large
-    simulations (>1B ms target time)
-  - Significant speedup for practical simulations (up to ~10,000 events)
-  - All 360 tests pass with optimized performance
-  - Maintains backwards compatibility and correctness for periodic events
+  - Fixed critical performance issue where 1ms delays accumulated linearly with
+    event count
+  - Optimized advance loop with reliable 1ms delay for consistent message
+    processing
+  - Resolves CI race conditions in rate-based and pipeline scenarios
+  - All 360 tests pass with consistent timing across different seeds
+  - Maintains full backwards compatibility and correctness
+  - Significant performance improvement while preserving reliability
 
 ## [0.5.0-rc.4] - 2025-01-27
 
