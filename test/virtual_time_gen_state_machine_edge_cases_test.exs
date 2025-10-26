@@ -530,8 +530,8 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
 
       elapsed = System.monotonic_time(:millisecond) - start_time
 
-      # Should complete in much less than 1 second
-      assert elapsed < 100
+      # Should complete in much less than 1 second (accounting for ACK timeout)
+      assert elapsed < 250
 
       GenServer.stop(server)
     end

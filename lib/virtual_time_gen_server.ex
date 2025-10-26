@@ -74,7 +74,22 @@ defmodule VirtualTimeGenServer.Wrapper do
 
       _ ->
         # Skip acks for internal VirtualClock messages to avoid infinite loops
-        unless match?({:actor_processed, _}, msg) do
+        if match?({:actor_processed, _}, msg) do
+          # Just pass through internal VirtualClock messages
+          case module.handle_info(msg, state) do
+            {:noreply, new_state} ->
+              {:noreply, {module, new_state}}
+
+            {:noreply, new_state, {:continue, arg}} ->
+              {:noreply, {module, new_state}, {:continue, arg}}
+
+            {:noreply, new_state, timeout} ->
+              {:noreply, {module, new_state}, timeout}
+
+            {:stop, reason, new_state} ->
+              {:stop, reason, {module, new_state}}
+          end
+        else
           result =
             case module.handle_info(msg, state) do
               {:noreply, new_state} ->
@@ -94,21 +109,6 @@ defmodule VirtualTimeGenServer.Wrapper do
           send_ack_to_virtual_clock()
 
           result
-        else
-          # Just pass through internal VirtualClock messages
-          case module.handle_info(msg, state) do
-            {:noreply, new_state} ->
-              {:noreply, {module, new_state}}
-
-            {:noreply, new_state, {:continue, arg}} ->
-              {:noreply, {module, new_state}, {:continue, arg}}
-
-            {:noreply, new_state, timeout} ->
-              {:noreply, {module, new_state}, timeout}
-
-            {:stop, reason, new_state} ->
-              {:stop, reason, {module, new_state}}
-          end
         end
     end
   end

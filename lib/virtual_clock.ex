@@ -45,9 +45,11 @@ defmodule VirtualClock do
   # This would eliminate any remaining synchronization complexity and give
   # actors and scheduler completely equal scheduling opportunities.
   defmodule VirtualScheduler do
+    @moduledoc false
     use GenServer
 
     defmodule SchedulerState do
+      @moduledoc false
       defstruct scheduled: :gb_trees.empty(), clock_pid: nil
     end
 
@@ -117,6 +119,11 @@ defmodule VirtualClock do
       {:reply, count, state}
     end
 
+    def handle_call({:scheduled_count_until, until_time}, _from, state) do
+      count = count_events_until(state.scheduled, until_time)
+      {:reply, count, state}
+    end
+
     @impl true
     def handle_cast(
           {:time_response_for_scheduling, current_time, original_from, dest, message, delay},
@@ -148,8 +155,6 @@ defmodule VirtualClock do
       GenServer.reply(original_from, ref)
       {:noreply, %{state | scheduled: new_scheduled}}
     end
-
-
 
     # Helper functions for VirtualScheduler
     defp get_next_event_time(scheduled, target_time) do
@@ -234,7 +239,26 @@ defmodule VirtualClock do
       end
     end
 
+    defp count_events_until(scheduled, until_time) do
+      count_events_until_recursive(scheduled, until_time, 0)
+    end
 
+    defp count_events_until_recursive(scheduled, until_time, count) do
+      case :gb_trees.is_empty(scheduled) do
+        true ->
+          count
+
+        false ->
+          {time, events, remaining} = :gb_trees.take_smallest(scheduled)
+
+          if time <= until_time do
+            new_count = count + length(events)
+            count_events_until_recursive(remaining, until_time, new_count)
+          else
+            count
+          end
+      end
+    end
   end
 
   # Client API
@@ -503,11 +527,12 @@ defmodule VirtualClock do
 
   defp advance_loop(state, target_time, from) do
     # Set up timeout for ack wait - only if we have pending acks
-    ack_timeout_ref = if MapSet.size(state.pending_acks) > 0 do
-      Process.send_after(self(), {:ack_timeout, MapSet.to_list(state.pending_acks)}, 20)
-    else
-      nil
-    end
+    ack_timeout_ref =
+      if MapSet.size(state.pending_acks) > 0 do
+        Process.send_after(self(), {:ack_timeout, MapSet.to_list(state.pending_acks)}, 20)
+      else
+        nil
+      end
 
     # Get next events from scheduler until target_time
     case VirtualScheduler.get_next_events_until(state.scheduler_pid, target_time) do
@@ -527,6 +552,7 @@ defmodule VirtualClock do
           if from do
             GenServer.reply(from, {:ok, target_time})
           end
+
           {:noreply, new_state}
         end
 
@@ -574,12 +600,11 @@ defmodule VirtualClock do
           if from do
             GenServer.reply(from, {:ok, target_time})
           end
+
           {:noreply, new_state}
         end
     end
   end
-
-
 
   @impl true
   def handle_cast(
@@ -594,6 +619,4 @@ defmodule VirtualClock do
 
     {:noreply, state}
   end
-
-
 end
