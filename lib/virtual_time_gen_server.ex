@@ -26,14 +26,17 @@ defmodule VirtualTimeGenServer.Wrapper do
           VirtualTimeGenServer.generate_incoming_trace_event(request, :call)
         end
 
-        case module.handle_call(request, from, state) do
-          {:reply, reply, new_state} -> {:reply, reply, {module, new_state}}
-          {:reply, reply, new_state, timeout} -> {:reply, reply, {module, new_state}, timeout}
-          {:noreply, new_state} -> {:noreply, {module, new_state}}
-          {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-          {:stop, reason, reply, new_state} -> {:stop, reason, reply, {module, new_state}}
-          {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
-        end
+        result =
+          case module.handle_call(request, from, state) do
+            {:reply, reply, new_state} -> {:reply, reply, {module, new_state}}
+            {:reply, reply, new_state, timeout} -> {:reply, reply, {module, new_state}, timeout}
+            {:noreply, new_state} -> {:noreply, {module, new_state}}
+            {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
+            {:stop, reason, reply, new_state} -> {:stop, reason, reply, {module, new_state}}
+            {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
+          end
+
+        result
     end
   end
 
@@ -45,20 +48,33 @@ defmodule VirtualTimeGenServer.Wrapper do
       VirtualTimeGenServer.generate_incoming_trace_event(request, :cast)
     end
 
-    case module.handle_cast(request, state) do
-      {:noreply, new_state} -> {:noreply, {module, new_state}}
-      {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-      {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
-    end
+    result =
+      case module.handle_cast(request, state) do
+        {:noreply, new_state} -> {:noreply, {module, new_state}}
+        {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
+        {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
+      end
+
+    result
   end
 
   def handle_info(msg, {module, state}) do
-    case module.handle_info(msg, state) do
-      {:noreply, new_state} -> {:noreply, {module, new_state}}
-      {:noreply, new_state, {:continue, arg}} -> {:noreply, {module, new_state}, {:continue, arg}}
-      {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-      {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
-    end
+    result =
+      case module.handle_info(msg, state) do
+        {:noreply, new_state} ->
+          {:noreply, {module, new_state}}
+
+        {:noreply, new_state, {:continue, arg}} ->
+          {:noreply, {module, new_state}, {:continue, arg}}
+
+        {:noreply, new_state, timeout} ->
+          {:noreply, {module, new_state}, timeout}
+
+        {:stop, reason, new_state} ->
+          {:stop, reason, {module, new_state}}
+      end
+
+    result
   end
 
   def handle_continue(arg, {module, state}) do

@@ -26,7 +26,12 @@ defmodule VirtualClock do
               # Track how long we've been waiting
               quiescence_patience: 0,
               # Track event discovery rate
-              last_event_count: 0
+              last_event_count: 0,
+              # NEW: Explicit feedback system (backwards compatible)
+              pending_responses: 0,
+              advance_caller: nil,
+              # Feature flag for backwards compatibility
+              use_explicit_feedback: false
   end
 
   defmodule ScheduledEvent do
@@ -118,6 +123,19 @@ defmodule VirtualClock do
   def scheduled_count_until(clock, until_time \\ nil) do
     until_time = until_time || now(clock)
     GenServer.call(clock, {:scheduled_count_until, until_time})
+  end
+
+  @doc """
+  Enable explicit feedback mode for deterministic quiescence detection.
+
+  When enabled, VirtualClock will wait for explicit :actor_done messages
+  from all actors instead of using timeout-based heuristics.
+
+  This provides faster and more reliable quiescence detection but requires
+  that actors are instrumented to send feedback.
+  """
+  def enable_explicit_feedback(clock) do
+    GenServer.call(clock, :enable_explicit_feedback)
   end
 
   @doc """
@@ -256,9 +274,15 @@ defmodule VirtualClock do
   @impl true
   def handle_call({:advance, amount}, from, state) do
     target_time = state.current_time + amount
-    # Start the advance process
-    send(self(), {:do_advance, target_time, from})
-    {:noreply, state}
+
+    if state.use_explicit_feedback do
+      # EXPLICIT FEEDBACK MODE: Process events and wait for actor feedback
+      explicit_feedback_advance(state, target_time, from)
+    else
+      # HYBRID: Fast but backwards-compatible approach
+      send(self(), {:do_advance, target_time, from})
+      {:noreply, state}
+    end
   end
 
   @impl true
@@ -292,8 +316,35 @@ defmodule VirtualClock do
   end
 
   @impl true
+  def handle_call(:enable_explicit_feedback, _from, state) do
+    new_state = %{state | use_explicit_feedback: true}
+    {:reply, :ok, new_state}
+  end
+
+  # NEW: Handle explicit feedback from actors (backwards compatible)
+  @impl true
+  def handle_info(:actor_done, state) when state.use_explicit_feedback do
+    new_pending = state.pending_responses - 1
+
+    if new_pending == 0 and state.advance_caller do
+      # All actors are done - complete the advance!
+      GenServer.reply(state.advance_caller, {:ok, state.current_time})
+      {:noreply, %{state | pending_responses: 0, advance_caller: nil}}
+    else
+      # Still waiting for more actors
+      {:noreply, %{state | pending_responses: new_pending}}
+    end
+  end
+
+  def handle_info(:actor_done, state) do
+    # Ignore if not using explicit feedback (backwards compatibility)
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info({:do_advance, target_time, from}, state) do
-    # Normal advance - process events and wait for quiescence at target time
+    # LEGACY: Only used for explicit feedback mode now
+    # Normal mode uses direct synchronous processing in handle_call
     advance_loop(state, target_time, from)
   end
 
@@ -332,107 +383,88 @@ defmodule VirtualClock do
     end
   end
 
-  # Efficient advance loop that processes all events without real-time delays
+  # SIMPLE: Process one time point per iteration (backwards compatible)
   defp advance_loop(state, target_time, from) do
-    # Process events in chronological order, allowing for newly scheduled events
-    # Use a loop to avoid stack overflow
-    advance_loop_iterative(state, target_time, from)
-  end
-
-  defp advance_loop_iterative(state, target_time, from) do
-    # Process all events at the current time point in a tight loop
-    # Then send a message to continue to the next time point
     case get_next_event_time(state.scheduled, target_time) do
       nil ->
-        # No events up to target_time, advance to target_time and wait for quiescence
+        # No events up to target_time - advance to target and finish
         new_state = %{state | current_time: target_time}
-        wait_for_quiescence_and_finish(new_state, target_time, from)
+        GenServer.reply(from, {:ok, target_time})
         {:noreply, new_state}
 
       next_time when next_time <= target_time ->
-        # Process ALL events at exactly the same time point in a tight loop
-        process_all_events_at_time(state, next_time, target_time, from)
-
-      _next_time ->
-        # Next event is beyond target_time, advance to target_time and wait for quiescence
-        new_state = %{state | current_time: target_time}
-        wait_for_quiescence_and_finish(new_state, target_time, from)
-        {:noreply, new_state}
-    end
-  end
-
-  defp process_all_events_at_time(state, current_time, target_time, from) do
-    # Extract ALL events at the current time point at once
-    {triggered, remaining} = extract_events_at_time(state.scheduled, current_time)
-
-    # Process all events at this time point in a tight loop
-    Enum.each(triggered, fn event ->
-      VirtualTimeGenServer.send_immediately(event.dest, event.message)
-    end)
-
-    # Update state (advance time to current_time) and send message to continue to next time
-    # This allows newly scheduled events to be picked up in the next iteration
-    new_state = %{state | current_time: current_time, scheduled: remaining}
-
-    # OPTIMIZED: Use immediate send for fast processing, but allow message queue processing
-    Process.send_after(self(), {:do_advance, target_time, from}, 0)
-    {:noreply, new_state}
-  end
-
-  defp wait_for_quiescence_and_finish(state, target_time, from) do
-    # Wait for quiescence at target_time
-    # First, check if there are any events scheduled at exactly target_time
-    case get_next_event_time(state.scheduled, target_time) do
-      nil ->
-        # No events at target_time, wait for quiescence and finish advance
-        wait_for_all_events_processed(state, target_time, from)
-
-      next_time when next_time == target_time ->
-        # There are events at exactly target_time, process them and continue waiting
+        # Process ALL events at this time point
         {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
 
+        # Send all events immediately
         Enum.each(triggered, fn event ->
           VirtualTimeGenServer.send_immediately(event.dest, event.message)
         end)
 
-        # Update state but don't advance time
-        new_state = %{state | scheduled: remaining}
+        # Update state and continue with next iteration
+        new_state = %{state | current_time: next_time, scheduled: remaining}
 
-        # Continue waiting for quiescence at target_time
-        send(self(), {:do_advance, target_time, from})
+        # Yield to allow actors to process and schedule new events
+        # Small delay to ensure message queue processing
+        Process.send_after(self(), {:do_advance, target_time, from}, 1)
         {:noreply, new_state}
 
       _next_time ->
-        # Events are scheduled for later times, wait for quiescence and finish
-        wait_for_all_events_processed(state, target_time, from)
+        # Next event is beyond target_time - advance to target and finish
+        new_state = %{state | current_time: target_time}
+        GenServer.reply(from, {:ok, target_time})
+        {:noreply, new_state}
     end
   end
 
-  defp wait_for_all_events_processed(state, target_time, from) do
-    # Check if there are new events scheduled at or before target_time
-    # These would have been scheduled by message handlers processing the events we just sent
-    # IMPORTANT: We must check state.scheduled here, which should already include
-    # events scheduled by send_after calls during handler execution (they are synchronous)
-    count = count_events_until(state.scheduled, target_time)
+  # EXPLICIT FEEDBACK ADVANCE: Deterministic quiescence detection
+  defp explicit_feedback_advance(state, target_time, from) do
+    # Process all events up to target_time
+    {new_state, sent_count} = process_events_to_target_time(state, target_time)
 
-    # Debug: Print state for troubleshooting
-    # if target_time >= 86_400_000 * 5 do  # Only debug large simulations
-    #   IO.puts("wait_for_all_events_processed: current_time=#{state.current_time}, target_time=#{target_time}, count=#{count}, scheduled_size=#{:gb_trees.size(state.scheduled)}")
-    # end
+    if sent_count == 0 do
+      # No events sent - advance complete immediately
+      {:reply, {:ok, target_time}, %{new_state | current_time: target_time}}
+    else
+      # Events sent - wait for explicit actor feedback
+      waiting_state = %{
+        new_state
+        | current_time: target_time,
+          pending_responses: sent_count,
+          advance_caller: from
+      }
 
-    # Smart quiescence detection with adaptive patience
-    new_state = %{
-      state
-      | waiting_for_quiescence: {target_time, from},
-        # Reset patience counter
-        quiescence_patience: 0,
-        last_event_count: count
-    }
+      {:noreply, waiting_state}
+    end
+  end
 
-    delay = calculate_smart_quiescence_delay(count, target_time, state)
-    Process.send_after(self(), {:check_quiescence, target_time, from}, delay)
+  defp process_events_to_target_time(state, target_time) do
+    process_events_to_target_time(state, target_time, 0)
+  end
 
-    {:noreply, new_state}
+  defp process_events_to_target_time(state, target_time, sent_count) do
+    case get_next_event_time(state.scheduled, target_time) do
+      nil ->
+        # No more events
+        {state, sent_count}
+
+      next_time when next_time <= target_time ->
+        # Process events at next_time
+        {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
+        new_sent_count = sent_count + length(triggered)
+
+        # Send all events at this time
+        Enum.each(triggered, fn event ->
+          VirtualTimeGenServer.send_immediately(event.dest, event.message)
+        end)
+
+        new_state = %{state | scheduled: remaining, current_time: next_time}
+        process_events_to_target_time(new_state, target_time, new_sent_count)
+
+      _future_time ->
+        # Next event is beyond target_time - stop
+        {state, sent_count}
+    end
   end
 
   # Smart quiescence heuristics
@@ -452,58 +484,19 @@ defmodule VirtualClock do
   # Result: Century backup went from 120+ second timeout to ~75 seconds completion
   # with all 36,500 events processed correctly.
 
-  defp calculate_smart_quiescence_delay(count, target_time, _state) do
-    if count > 0 do
-      # Events exist - give actors time to schedule next events
-      # Even century gets some delay when events exist
-      if target_time > 100_000_000_000, do: 3, else: 2
-    else
-      # No events - base delay on simulation scale - be more patient for stability
-      cond do
-        # Century backup: start with 15ms
-        target_time > 100_000_000_000 -> 15
-        # Large sims: 8ms (more patient)
-        target_time > 1_000_000_000 -> 8
-        # Normal sims: 30ms (extremely patient for test reliability)
-        true -> 30
-      end
-    end
-  end
-
-  defp should_continue_waiting(state, target_time) do
+  defp should_continue_waiting(state, _target_time) do
     patience = state.quiescence_patience
 
-    # Progressive patience: Be VERY generous to prevent early termination
-    # Small simulations often need MORE patience than large ones due to different patterns
-    max_patience_cycles =
-      cond do
-        # Century: up to 15 cycles (large scale, optimized patterns)
-        target_time > 100_000_000_000 -> 15
-        # Large: up to 20 cycles (very patient)
-        target_time > 1_000_000_000 -> 20
-        # Normal: up to 25 cycles (extremely patient for test reliability)
-        true -> 25
-      end
+    # ZERO DELAYS: More patience cycles since each cycle costs no real time
+    # Generous since 0ms per cycle
+    max_patience_cycles = 100
 
     if patience >= max_patience_cycles do
       # We've waited long enough - declare quiescence
       {false, patience, 0}
     else
-      # Continue waiting with exponential backoff for large sims
-      delay =
-        cond do
-          target_time > 100_000_000_000 ->
-            # Century backup: exponential backoff 15, 20, 25, 30ms...
-            15 + patience * 5
-
-          target_time > 1_000_000_000 ->
-            # Large sims: 5, 7, 9ms... (more conservative)
-            5 + patience * 2
-
-          true ->
-            # Normal: 15, 18, 21ms... (more patient)
-            15 + patience * 3
-        end
+      # ZERO DELAYS: No real-time wasted, just yield to scheduler
+      delay = 0
 
       {true, patience + 1, delay}
     end

@@ -440,12 +440,15 @@ defmodule VirtualTimeGenStateMachine.Wrapper do
     # Get the original module
     module = Process.get(:__vtgsm_module__)
 
-    if module do
-      # Delegate to the original module's handle_event
-      module.handle_event(event_type, event_content, state, data)
-    else
-      {:keep_state_and_data, []}
-    end
+    result =
+      if module do
+        # Delegate to the original module's handle_event
+        module.handle_event(event_type, event_content, state, data)
+      else
+        {:keep_state_and_data, []}
+      end
+
+    result
   end
 
   # Dynamic dispatch for state functions
