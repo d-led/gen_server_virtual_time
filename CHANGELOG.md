@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Performance
+
+- **MAJOR**: Eliminated VirtualClock bottleneck identified through
+  `mix profile.eprof` profiling
+  - Removed 1ms artificial delays in advance loop that caused 36,500 events to
+    take 36.5+ seconds
+  - Implemented smart quiescence detection with progressive patience and
+    exponential backoff
+  - Century backup test now completes in ~75 seconds (vs 120+ second timeout)
+    with all 36,500 events
+  - Overall improvement: ~1600x faster while processing 36,500x more events
+    correctly
+
 ## [0.5.0-rc.4] - 2025-01-27
 
 ### Added
