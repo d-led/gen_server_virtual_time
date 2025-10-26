@@ -464,8 +464,8 @@ defmodule VirtualClock do
         target_time > 100_000_000_000 -> 15
         # Large sims: 8ms (more patient)
         target_time > 1_000_000_000 -> 8
-        # Normal sims: 25ms (very patient for test stability)
-        true -> 25
+        # Normal sims: 30ms (extremely patient for test reliability)
+        true -> 30
       end
     end
   end
@@ -473,16 +473,16 @@ defmodule VirtualClock do
   defp should_continue_waiting(state, target_time) do
     patience = state.quiescence_patience
 
-    # Progressive patience: start aggressive, become more patient
-    # This prevents early termination while avoiding infinite waits
+    # Progressive patience: Be VERY generous to prevent early termination
+    # Small simulations often need MORE patience than large ones due to different patterns
     max_patience_cycles =
       cond do
-        # Century: up to 15 cycles (very patient for large scale)
+        # Century: up to 15 cycles (large scale, optimized patterns)
         target_time > 100_000_000_000 -> 15
-        # Large: up to 12 cycles (very patient)
-        target_time > 1_000_000_000 -> 12
-        # Normal: up to 10 cycles (very patient for test stability)
-        true -> 10
+        # Large: up to 20 cycles (very patient)
+        target_time > 1_000_000_000 -> 20
+        # Normal: up to 25 cycles (extremely patient for test reliability)
+        true -> 25
       end
 
     if patience >= max_patience_cycles do

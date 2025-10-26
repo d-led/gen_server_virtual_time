@@ -249,7 +249,8 @@ defmodule VirtualTimeGenStateMachineTest do
       # In real time, this would take 7 days = 604,800,000 ms = ~7 days
       # With virtual time, it completes in less than a second!
       # Increased tolerance for smart quiescence
-      assert elapsed_real_time < 5000, "Virtual time test completed in #{elapsed_real_time}ms"
+      # Increased tolerance for patient quiescence
+      assert elapsed_real_time < 6000, "Virtual time test completed in #{elapsed_real_time}ms"
 
       # But we simulated an entire week of activity
       assert count == 168, "Simulated 168 state transitions (one per hour for a week)"
