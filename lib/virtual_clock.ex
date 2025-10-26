@@ -499,10 +499,35 @@ defmodule VirtualClock do
 
   def handle_info({:ack_timeout, timed_out_pids}, state) do
     # Timeout for ack wait - remove timed out pids from pending
+    require Logger
+
+    # Collect info about each timed-out process
+    process_info =
+      Enum.map_join(timed_out_pids, ", ", fn pid ->
+        name =
+          case Process.info(pid, :registered_name) do
+            {:registered_name, n} when is_atom(n) -> "name=#{n}"
+            _ -> "pid=#{inspect(pid)}"
+          end
+
+        case Process.info(pid, :current_function) do
+          {:current_function, {mod, _, _}} -> "#{name} module=#{mod}"
+          _ -> name
+        end
+      end)
+
+    Logger.warning(
+      "VirtualClock ACK timeout: #{length(timed_out_pids)} actors failed to acknowledge in time. Processes: #{process_info}"
+    )
+
     new_pending = MapSet.difference(state.pending_acks, MapSet.new(timed_out_pids))
 
     # If we had an advance in progress and all acks are now received (or timed out), continue
     if MapSet.size(new_pending) == 0 and state.advance_caller do
+      Logger.warning(
+        "VirtualClock ACK timeout: Continuing advance after timeout at virtual time #{state.target_time}"
+      )
+
       send(self(), {:continue_advance_after_acks, state.advance_caller, state.target_time})
       {:noreply, %{state | pending_acks: new_pending, advance_caller: nil, target_time: nil}}
     else
@@ -529,7 +554,7 @@ defmodule VirtualClock do
     # Set up timeout for ack wait - only if we have pending acks
     ack_timeout_ref =
       if MapSet.size(state.pending_acks) > 0 do
-        Process.send_after(self(), {:ack_timeout, MapSet.to_list(state.pending_acks)}, 20)
+        Process.send_after(self(), {:ack_timeout, MapSet.to_list(state.pending_acks)}, 2000)
       else
         nil
       end
@@ -544,8 +569,8 @@ defmodule VirtualClock do
         new_state = %{state | current_time: target_time}
 
         if MapSet.size(new_state.pending_acks) > 0 do
-          # Still waiting for actors - store caller and wait for acks
-          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 20)
+          # Still waiting for actors - store caller and wait for acks with longer timeout
+          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 2000)
           {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
         else
           # No pending acks - advance complete!
@@ -575,7 +600,7 @@ defmodule VirtualClock do
         if MapSet.size(new_pending) > 0 do
           # Actors are processing - store caller and wait for all acks
           # Set up new timeout for the new acks
-          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_pending)}, 20)
+          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_pending)}, 2000)
           {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
         else
           # No actors to wait for - continue immediately
@@ -592,8 +617,8 @@ defmodule VirtualClock do
         new_state = %{state | current_time: target_time}
 
         if MapSet.size(new_state.pending_acks) > 0 do
-          # Still waiting for actors - store caller and wait for acks
-          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 20)
+          # Still waiting for actors - store caller and wait for acks with longer timeout
+          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 2000)
           {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
         else
           # No pending acks - advance complete!

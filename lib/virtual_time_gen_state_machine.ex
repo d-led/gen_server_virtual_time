@@ -437,98 +437,230 @@ defmodule VirtualTimeGenStateMachine.Wrapper do
   end
 
   def handle_event(event_type, event_content, state, data) do
-    # Get the original module
-    module = Process.get(:__vtgsm_module__)
-
-    result =
-      if module do
-        # Delegate to the original module's handle_event
-        module.handle_event(event_type, event_content, state, data)
-      else
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
         {:keep_state_and_data, []}
-      end
 
-    result
+      _ ->
+        # Get the original module
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module do
+            # Delegate to the original module's handle_event
+            module.handle_event(event_type, event_content, state, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
+    end
   end
 
   # Dynamic dispatch for state functions
   def closed(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :closed, 3) do
-      module.closed(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :closed, 3) do
+            module.closed(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def open(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :open, 3) do
-      module.open(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :open, 3) do
+            module.open(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def locked(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :locked, 3) do
-      module.locked(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :locked, 3) do
+            module.locked(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def waiting(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :waiting, 3) do
-      module.waiting(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :waiting, 3) do
+            module.waiting(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def working(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :working, 3) do
-      module.working(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :working, 3) do
+            module.working(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def aborting(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :aborting, 3) do
-      module.aborting(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :aborting, 3) do
+            module.aborting(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def idle(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :idle, 3) do
-      module.idle(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :idle, 3) do
+            module.idle(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
   def active(event_type, event_content, data) do
-    module = Process.get(:__vtgsm_module__)
+    # Handle delayed ack messages first
+    case {event_type, event_content} do
+      {:info, {:send_ack_to_clock, clock_pid}} ->
+        # Now send the actual ack - any send_after calls have been processed
+        send(clock_pid, {:actor_processed, self()})
+        {:keep_state_and_data, []}
 
-    if module && function_exported?(module, :active, 3) do
-      module.active(event_type, event_content, data)
-    else
-      {:keep_state_and_data, []}
+      _ ->
+        module = Process.get(:__vtgsm_module__)
+
+        result =
+          if module && function_exported?(module, :active, 3) do
+            module.active(event_type, event_content, data)
+          else
+            {:keep_state_and_data, []}
+          end
+
+        # Auto-send ack to VirtualClock AFTER processing event
+        send_ack_to_virtual_clock()
+
+        result
     end
   end
 
@@ -549,6 +681,22 @@ defmodule VirtualTimeGenStateMachine.Wrapper do
       module.code_change(old_vsn, state, data, extra)
     else
       {:ok, state, data}
+    end
+  end
+
+  # Send acknowledgment to VirtualClock that this actor finished processing
+  defp send_ack_to_virtual_clock do
+    # Only send ack if we're using virtual time (not real time)
+    case Process.get(:virtual_clock) do
+      # Real time mode - no ack needed
+      nil ->
+        :ok
+
+      clock_pid when is_pid(clock_pid) ->
+        # Send ack asynchronously AFTER any send_after calls in event handler
+        # This ensures the actor has completed all scheduling before we ack
+        send(self(), {:send_ack_to_clock, clock_pid})
+        :ok
     end
   end
 end
