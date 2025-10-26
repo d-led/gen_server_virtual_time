@@ -149,8 +149,8 @@ jobs:
           mix coveralls.github --import-cover cover
   
   quality:
-    name: Code Quality (ARM - Cost Optimized)
-    runs-on: ubuntu-latest-arm64
+    name: Code Quality
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
@@ -168,23 +168,22 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-arm64-mix-quality-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-quality-${{ hashFiles('**/mix.lock') }}
       
       - name: Cache Dialyzer PLTs
         uses: actions/cache@v4
         with:
           path: priv/plts
-          key: ${{ runner.os }}-arm64-dialyzer-1.18-27-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-dialyzer-1.18-27-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-arm64-dialyzer-1.18-27-
+            ${{ runner.os }}-dialyzer-1.18-27-
       
       - name: Install dependencies
         run: mix deps.get
       
-      - name: Run code quality checks on ARM
+      - name: Run code quality checks
         run: |
-          echo "🔍 Running code quality analysis on cost-optimized ARM64 runners"
-          echo "💰 Static analysis tools are perfect for ARM - ~40% cost savings!"
+          echo "🔍 Running code quality analysis"
           echo "📊 Checking: formatting, Credo analysis, Dialyzer type checking"
           echo ""
       
