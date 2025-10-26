@@ -75,40 +75,40 @@ defmodule VirtualTimeGenServer.Wrapper do
       _ ->
         # Skip acks for internal VirtualClock messages to avoid infinite loops
         unless match?({:actor_processed, _}, msg) do
-      result =
-        case module.handle_info(msg, state) do
-          {:noreply, new_state} ->
-            {:noreply, {module, new_state}}
+          result =
+            case module.handle_info(msg, state) do
+              {:noreply, new_state} ->
+                {:noreply, {module, new_state}}
 
-          {:noreply, new_state, {:continue, arg}} ->
-            {:noreply, {module, new_state}, {:continue, arg}}
+              {:noreply, new_state, {:continue, arg}} ->
+                {:noreply, {module, new_state}, {:continue, arg}}
 
-          {:noreply, new_state, timeout} ->
-            {:noreply, {module, new_state}, timeout}
+              {:noreply, new_state, timeout} ->
+                {:noreply, {module, new_state}, timeout}
 
-          {:stop, reason, new_state} ->
-            {:stop, reason, {module, new_state}}
-        end
+              {:stop, reason, new_state} ->
+                {:stop, reason, {module, new_state}}
+            end
 
-      # Auto-send ack to VirtualClock AFTER processing message (transparent to user)
-      send_ack_to_virtual_clock()
+          # Auto-send ack to VirtualClock AFTER processing message (transparent to user)
+          send_ack_to_virtual_clock()
 
-      result
-    else
-      # Just pass through internal VirtualClock messages
-      case module.handle_info(msg, state) do
-        {:noreply, new_state} ->
-          {:noreply, {module, new_state}}
+          result
+        else
+          # Just pass through internal VirtualClock messages
+          case module.handle_info(msg, state) do
+            {:noreply, new_state} ->
+              {:noreply, {module, new_state}}
 
-        {:noreply, new_state, {:continue, arg}} ->
-          {:noreply, {module, new_state}, {:continue, arg}}
+            {:noreply, new_state, {:continue, arg}} ->
+              {:noreply, {module, new_state}, {:continue, arg}}
 
-        {:noreply, new_state, timeout} ->
-          {:noreply, {module, new_state}, timeout}
+            {:noreply, new_state, timeout} ->
+              {:noreply, {module, new_state}, timeout}
 
-        {:stop, reason, new_state} ->
-          {:stop, reason, {module, new_state}}
-      end
+            {:stop, reason, new_state} ->
+              {:stop, reason, {module, new_state}}
+          end
         end
     end
   end
@@ -157,7 +157,10 @@ defmodule VirtualTimeGenServer.Wrapper do
   defp send_ack_to_virtual_clock do
     # Only send ack if we're using virtual time (not real time)
     case Process.get(:virtual_clock) do
-      nil -> :ok  # Real time mode - no ack needed
+      # Real time mode - no ack needed
+      nil ->
+        :ok
+
       clock_pid when is_pid(clock_pid) ->
         # IO.puts("DEBUG ACK: Actor #{inspect(self())} scheduling delayed ack to VirtualClock")
         # Send ack asynchronously AFTER any send_after calls in message handler
@@ -166,7 +169,6 @@ defmodule VirtualTimeGenServer.Wrapper do
         :ok
     end
   end
-
 
   # Message tracking helpers (only used in simulations)
   defp track_received_message(message, _type) do

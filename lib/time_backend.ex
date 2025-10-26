@@ -51,9 +51,9 @@ defmodule VirtualTimeBackend do
 
   @impl true
   def send_immediately(dest, message) do
-    clock = get_virtual_clock()
-    # Schedule for current virtual time (delay = 0)
-    VirtualClock.send_after(clock, dest, message, 0)
+    # Send immediately without scheduling - this is synchronous within virtual time
+    # If we schedule at current time, it causes infinite loops in advance processing
+    send(dest, message)
     :ok
   end
 

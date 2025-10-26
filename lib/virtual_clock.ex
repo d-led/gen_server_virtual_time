@@ -22,9 +22,12 @@ defmodule VirtualClock do
     @moduledoc false
     defstruct current_time: 0,
               scheduler_pid: nil,
-              pending_acks: MapSet.new(),  # Track which processes we're waiting for acks from
-              advance_caller: nil,         # Track who is waiting for advance to complete
-              target_time: nil             # Track the target time for current advance
+              # Track which processes we're waiting for acks from
+              pending_acks: MapSet.new(),
+              # Track who is waiting for advance to complete
+              advance_caller: nil,
+              # Track the target time for current advance
+              target_time: nil
   end
 
   defmodule ScheduledEvent do
@@ -77,42 +80,17 @@ defmodule VirtualClock do
       {:ok, %SchedulerState{clock_pid: clock_pid}}
     end
 
-  @impl true
-  def handle_call({:send_after, dest, message, delay}, from, state) do
-    # Get current time from VirtualClock asynchronously to avoid deadlock
-    GenServer.cast(state.clock_pid, {:get_time_for_scheduling, self(), from, dest, message, delay})
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:time_response_for_scheduling, current_time, original_from, dest, message, delay}, state) do
-    ref = make_ref()
-    trigger_time = current_time + delay
-
-    # IO.puts("DEBUG SCHEDULER: Scheduling event for #{inspect(dest)} at time #{trigger_time} (current: #{current_time}, delay: #{delay})")
-
-    event = %ScheduledEvent{
-      trigger_time: trigger_time,
-      dest: dest,
-      message: message,
-      ref: ref
-    }
-
-    new_scheduled =
-      case :gb_trees.lookup(trigger_time, state.scheduled) do
-        :none ->
-          :gb_trees.insert(trigger_time, [event], state.scheduled)
-        {:value, existing_events} ->
-          updated_events = [event | existing_events]
-          :gb_trees.update(trigger_time, updated_events, state.scheduled)
-      end
-
-    # Reply to original caller with the reference
-    GenServer.reply(original_from, ref)
-    {:noreply, %{state | scheduled: new_scheduled}}
-  end
-
     @impl true
+    def handle_call({:send_after, dest, message, delay}, from, state) do
+      # Get current time from VirtualClock asynchronously to avoid deadlock
+      GenServer.cast(
+        state.clock_pid,
+        {:get_time_for_scheduling, self(), from, dest, message, delay}
+      )
+
+      {:noreply, state}
+    end
+
     def handle_call({:cancel_timer, ref}, _from, state) do
       case find_and_remove_by_ref(state.scheduled, ref) do
         {new_scheduled, true} -> {:reply, :ok, %{state | scheduled: new_scheduled}}
@@ -120,38 +98,65 @@ defmodule VirtualClock do
       end
     end
 
-    @impl true
     def handle_call({:get_next_events_until, target_time}, _from, state) do
       case get_next_event_time(state.scheduled, target_time) do
         nil ->
           {:reply, {nil, []}, state}
+
         next_time when next_time <= target_time ->
           {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
           {:reply, {next_time, triggered}, %{state | scheduled: remaining}}
+
         _next_time ->
           {:reply, {nil, []}, state}
       end
     end
 
-    @impl true
     def handle_call(:scheduled_count, _from, state) do
       count = :gb_trees.size(state.scheduled)
       {:reply, count, state}
     end
 
     @impl true
-    def handle_cast({:count_events_until, until_time, reply_to}, state) do
-      count = count_events_until(state.scheduled, until_time)
-      # IO.puts("DEBUG SCHEDULER: Counting events until #{until_time}, found #{count} events")
-      GenServer.cast(reply_to, {:event_count_response, count, until_time})
-      {:noreply, state}
+    def handle_cast(
+          {:time_response_for_scheduling, current_time, original_from, dest, message, delay},
+          state
+        ) do
+      ref = make_ref()
+      trigger_time = current_time + delay
+
+      # IO.puts("DEBUG SCHEDULER: Scheduling event for #{inspect(dest)} at time #{trigger_time} (current: #{current_time}, delay: #{delay})")
+
+      event = %ScheduledEvent{
+        trigger_time: trigger_time,
+        dest: dest,
+        message: message,
+        ref: ref
+      }
+
+      new_scheduled =
+        case :gb_trees.lookup(trigger_time, state.scheduled) do
+          :none ->
+            :gb_trees.insert(trigger_time, [event], state.scheduled)
+
+          {:value, existing_events} ->
+            updated_events = [event | existing_events]
+            :gb_trees.update(trigger_time, updated_events, state.scheduled)
+        end
+
+      # Reply to original caller with the reference
+      GenServer.reply(original_from, ref)
+      {:noreply, %{state | scheduled: new_scheduled}}
     end
+
+
 
     # Helper functions for VirtualScheduler
     defp get_next_event_time(scheduled, target_time) do
       case :gb_trees.is_empty(scheduled) do
         true ->
           nil
+
         false ->
           {min_time, _event} = :gb_trees.smallest(scheduled)
           if min_time <= target_time, do: min_time, else: nil
@@ -162,6 +167,7 @@ defmodule VirtualClock do
       case :gb_trees.lookup(time, scheduled) do
         :none ->
           {[], scheduled}
+
         {:value, events} ->
           new_scheduled = :gb_trees.delete(time, scheduled)
           {events, new_scheduled}
@@ -176,20 +182,26 @@ defmodule VirtualClock do
       case :gb_trees.is_empty(scheduled) do
         true ->
           {new_scheduled, false}
+
         false ->
           {time, events, remaining} = :gb_trees.take_smallest(scheduled)
+
           case find_and_remove_from_list(events, ref) do
             {nil, updated_events} ->
               new_scheduled_with_events = :gb_trees.insert(time, updated_events, new_scheduled)
               find_and_remove_by_ref_recursive(remaining, ref, new_scheduled_with_events)
+
             {_removed_event, updated_events} ->
               final_scheduled =
                 if updated_events == [] do
                   merge_trees(remaining, new_scheduled)
                 else
-                  new_scheduled_with_remaining = :gb_trees.insert(time, updated_events, new_scheduled)
+                  new_scheduled_with_remaining =
+                    :gb_trees.insert(time, updated_events, new_scheduled)
+
                   merge_trees(remaining, new_scheduled_with_remaining)
                 end
+
               {final_scheduled, true}
           end
       end
@@ -197,7 +209,9 @@ defmodule VirtualClock do
 
     defp find_and_remove_from_list(events, ref) do
       case Enum.find_index(events, fn event -> event.ref == ref end) do
-        nil -> {nil, events}
+        nil ->
+          {nil, events}
+
         index ->
           {removed_event, updated_events} = List.pop_at(events, index)
           {removed_event, updated_events}
@@ -210,7 +224,9 @@ defmodule VirtualClock do
 
     defp merge_trees_recursive(tree1, tree2) do
       case :gb_trees.is_empty(tree1) do
-        true -> tree2
+        true ->
+          tree2
+
         false ->
           {key, value, remaining} = :gb_trees.take_smallest(tree1)
           new_tree2 = :gb_trees.insert(key, value, tree2)
@@ -218,23 +234,7 @@ defmodule VirtualClock do
       end
     end
 
-    defp count_events_until(scheduled, until_time) do
-      count_events_until_recursive(scheduled, until_time, 0)
-    end
 
-    defp count_events_until_recursive(scheduled, until_time, count) do
-      case :gb_trees.is_empty(scheduled) do
-        true -> count
-        false ->
-          {time, events, remaining} = :gb_trees.take_smallest(scheduled)
-          if time <= until_time do
-            new_count = count + length(events)
-            count_events_until_recursive(remaining, until_time, new_count)
-          else
-            count
-          end
-      end
-    end
   end
 
   # Client API
@@ -440,9 +440,9 @@ defmodule VirtualClock do
   def handle_call({:advance, amount}, from, state) do
     target_time = state.current_time + amount
     # Start the advance process immediately, then yield
-      send(self(), {:do_advance, target_time, from})
+    send(self(), {:do_advance, target_time, from})
     :erlang.yield()
-      {:noreply, state}
+    {:noreply, state}
   end
 
   @impl true
@@ -467,109 +467,28 @@ defmodule VirtualClock do
     advance_loop(state, target_time, from)
   end
 
-  @impl true
   def handle_info({:continue_advance_after_acks, from, target_time}, state) do
     # Continue advance after all acks received
     send(self(), {:do_advance, target_time, from})
     {:noreply, state}
   end
 
-  defp advance_loop(state, target_time, from) do
-    # Get next events from scheduler until target_time
-    case VirtualScheduler.get_next_events_until(state.scheduler_pid, target_time) do
-      {nil, []} ->
-        # No events up to target_time - advance to target and check quiescence
-        new_state = %{state | current_time: target_time}
-        wait_for_scheduler_quiescence(new_state, target_time, from)
+  def handle_info({:ack_timeout, timed_out_pids}, state) do
+    # Timeout for ack wait - remove timed out pids from pending
+    new_pending = MapSet.difference(state.pending_acks, MapSet.new(timed_out_pids))
 
-      {next_time, triggered} when next_time <= target_time ->
-        # Process events at next_time - track who we're sending to for acks
-        actor_pids = Enum.map(triggered, fn event ->
-          VirtualTimeGenServer.send_immediately(event.dest, event.message)
-          event.dest
-        end)
-
-        # Track pending acks and update time
-        new_pending = MapSet.new(actor_pids) |> MapSet.union(state.pending_acks)
-        new_state = %{state | current_time: next_time, pending_acks: new_pending}
-
-        # IO.puts("DEBUG: Sent #{length(actor_pids)} messages at time #{next_time}, pending_acks: #{MapSet.size(new_pending)}")
-
-        # Don't immediately continue - wait for acks first, then check scheduler
-        if MapSet.size(new_pending) > 0 do
-          # Actors are processing - store caller and wait for all acks
-          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
-        else
-          # No actors to wait for - continue immediately
-          send(self(), {:do_advance, target_time, from})
-          :erlang.yield()
-        {:noreply, new_state}
-        end
-
-      _future_events ->
-        # Next events are beyond target_time - advance to target and check quiescence
-        new_state = %{state | current_time: target_time}
-        wait_for_scheduler_quiescence(new_state, target_time, from)
-    end
-  end
-
-  defp wait_for_scheduler_quiescence(state, target_time, from) do
-    # Only check scheduler if no actors are still processing
-    if MapSet.size(state.pending_acks) > 0 do
-      # Still have actors processing - wait for them first
-      # IO.puts("DEBUG: Waiting for #{MapSet.size(state.pending_acks)} pending acks before checking scheduler")
-      {:noreply, %{state | advance_caller: from, target_time: target_time}}
+    # If we had an advance in progress and all acks are now received (or timed out), continue
+    if MapSet.size(new_pending) == 0 and state.advance_caller do
+      send(self(), {:continue_advance_after_acks, state.advance_caller, state.target_time})
+      {:noreply, %{state | pending_acks: new_pending, advance_caller: nil, target_time: nil}}
     else
-      # No pending acks - safe to check scheduler
-      # IO.puts("DEBUG: No pending acks, checking scheduler for events")
-      GenServer.cast(state.scheduler_pid, {:count_events_until, target_time, self()})
-      {:noreply, %{state | advance_caller: from, target_time: target_time}}
+      {:noreply, %{state | pending_acks: new_pending}}
     end
   end
 
-  @impl true
-  def handle_cast({:get_time_for_scheduling, scheduler_pid, original_from, dest, message, delay}, state) do
-    # Reply to scheduler with current time
-    GenServer.cast(scheduler_pid, {:time_response_for_scheduling, state.current_time, original_from, dest, message, delay})
-    {:noreply, state}
-  end
-
-  @impl true
-  def handle_cast({:event_count_response, count, target_time}, state) do
-    # Response from scheduler about event count
-    pending_acks = MapSet.size(state.pending_acks)
-    # IO.puts("DEBUG: Scheduler reports #{count} events, pending_acks: #{pending_acks}")
-
-    if count > 0 do
-      # More events found - continue processing
-      # IO.puts("DEBUG: More events found - continuing advance")
-      send(self(), {:do_advance, target_time, state.advance_caller})
-      :erlang.yield()
-      {:noreply, %{state | advance_caller: nil}}
-    else
-      # Check if we're still waiting for acks from actors
-      if pending_acks > 0 do
-        # Still waiting for actors to acknowledge - keep waiting
-        # IO.puts("DEBUG: No scheduler events, but waiting for #{pending_acks} acks")
-        {:noreply, state}
-      else
-        # No pending events and no pending acks - advance complete!
-        # IO.puts("DEBUG: Quiescence achieved at #{target_time}")
-        if state.advance_caller do
-          GenServer.reply(state.advance_caller, {:ok, target_time})
-        end
-        {:noreply, %{state | advance_caller: nil}}
-      end
-    end
-  end
-
-  # Handle acknowledgment from actors that they've finished processing
-  @impl true
   def handle_info({:actor_processed, actor_pid}, state) do
     new_pending = MapSet.delete(state.pending_acks, actor_pid)
     new_state = %{state | pending_acks: new_pending}
-
-    # IO.puts("DEBUG: Received ack from #{inspect(actor_pid)}, remaining: #{MapSet.size(new_pending)}")
 
     # If no more pending acks and someone is waiting for advance to complete
     if MapSet.size(new_pending) == 0 and state.advance_caller do
@@ -581,5 +500,100 @@ defmodule VirtualClock do
       {:noreply, new_state}
     end
   end
+
+  defp advance_loop(state, target_time, from) do
+    # Set up timeout for ack wait - only if we have pending acks
+    ack_timeout_ref = if MapSet.size(state.pending_acks) > 0 do
+      Process.send_after(self(), {:ack_timeout, MapSet.to_list(state.pending_acks)}, 20)
+    else
+      nil
+    end
+
+    # Get next events from scheduler until target_time
+    case VirtualScheduler.get_next_events_until(state.scheduler_pid, target_time) do
+      {nil, []} ->
+        # Cancel old timeout if any
+        if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
+
+        # No events up to target_time - advance to target and check if actors are done
+        new_state = %{state | current_time: target_time}
+
+        if MapSet.size(new_state.pending_acks) > 0 do
+          # Still waiting for actors - store caller and wait for acks
+          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 20)
+          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
+        else
+          # No pending acks - advance complete!
+          if from do
+            GenServer.reply(from, {:ok, target_time})
+          end
+          {:noreply, new_state}
+        end
+
+      {next_time, triggered} when next_time <= target_time ->
+        # Cancel old timeout if any
+        if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
+
+        # Process events at next_time - track who we're sending to for acks
+        actor_pids =
+          Enum.map(triggered, fn event ->
+            VirtualTimeGenServer.send_immediately(event.dest, event.message)
+            event.dest
+          end)
+
+        # Track pending acks and update time
+        new_pending = MapSet.new(actor_pids) |> MapSet.union(state.pending_acks)
+        new_state = %{state | current_time: next_time, pending_acks: new_pending}
+
+        # Don't immediately continue - wait for acks first, then check scheduler
+        if MapSet.size(new_pending) > 0 do
+          # Actors are processing - store caller and wait for all acks
+          # Set up new timeout for the new acks
+          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_pending)}, 20)
+          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
+        else
+          # No actors to wait for - continue immediately
+          send(self(), {:do_advance, target_time, from})
+          :erlang.yield()
+          {:noreply, new_state}
+        end
+
+      _future_events ->
+        # Cancel old timeout if any
+        if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
+
+        # Next events are beyond target_time - advance to target and check if actors are done
+        new_state = %{state | current_time: target_time}
+
+        if MapSet.size(new_state.pending_acks) > 0 do
+          # Still waiting for actors - store caller and wait for acks
+          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 20)
+          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
+        else
+          # No pending acks - advance complete!
+          if from do
+            GenServer.reply(from, {:ok, target_time})
+          end
+          {:noreply, new_state}
+        end
+    end
+  end
+
+
+
+  @impl true
+  def handle_cast(
+        {:get_time_for_scheduling, scheduler_pid, original_from, dest, message, delay},
+        state
+      ) do
+    # Reply to scheduler with current time
+    GenServer.cast(
+      scheduler_pid,
+      {:time_response_for_scheduling, state.current_time, original_from, dest, message, delay}
+    )
+
+    {:noreply, state}
+  end
+
 
 end

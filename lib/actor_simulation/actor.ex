@@ -86,6 +86,67 @@ defmodule ActorSimulation.Actor do
   end
 
   @impl true
+  def handle_call({:actor_call, from, msg}, _from_pid, state) do
+    # Handle synchronous call via GenServer.call
+    new_received_messages = [{from, {:call, msg}} | state.received_messages]
+
+    new_state = %{
+      state
+      | received_count: state.received_count + 1,
+        received_messages: new_received_messages
+    }
+
+    # Try pattern matching
+    result =
+      case Definition.match_message(state.definition, msg) do
+        {:matched, response} when is_function(response, 1) ->
+          response.(new_state.user_state)
+
+        {:matched, response} ->
+          {:reply, response, new_state.user_state}
+
+        nil ->
+          if state.definition.on_receive do
+            state.definition.on_receive.(msg, new_state.user_state)
+          else
+            {:reply, :ok, new_state.user_state}
+          end
+      end
+
+    case result do
+      {:reply, reply, user_state} ->
+        {:reply, reply, %{new_state | user_state: user_state}}
+
+      {:ok, user_state} ->
+        {:reply, :ok, %{new_state | user_state: user_state}}
+
+      {:send, messages_to_send, user_state} ->
+        # Send messages but also reply to caller
+        messages_to_send =
+          if is_list(messages_to_send), do: messages_to_send, else: [messages_to_send]
+
+        Enum.each(messages_to_send, fn
+          {target, message} ->
+            case Map.get(new_state.actors_map, target) do
+              nil ->
+                :ok
+
+              target_info ->
+                send_message(new_state, target, target_info, message)
+            end
+        end)
+
+        # Return :ok reply for the call
+        {:reply, :ok,
+         %{
+           new_state
+           | user_state: user_state,
+             sent_count: new_state.sent_count + length(messages_to_send)
+         }}
+    end
+  end
+
+  @impl true
   def handle_info(:send_tick, state) do
     # Send messages based on pattern
     messages = Definition.messages_for_pattern(state.definition.send_pattern)
@@ -353,18 +414,11 @@ defmodule ActorSimulation.Actor do
             end
 
           :simulated ->
-            # For simulated actors, use our custom protocol
-            ref = make_ref()
-
-            VirtualTimeGenServer.send_immediately(
-              target_info.pid,
-              {:actor_call, state.definition.name, ref, message}
-            )
-
-            receive do
-              {:actor_reply, ^ref, reply} -> reply
-            after
-              5000 -> :timeout
+            # For simulated actors, use GenServer.call (they are GenServers)
+            try do
+              GenServer.call(target_info.pid, {:actor_call, state.definition.name, message})
+            catch
+              :exit, _ -> :timeout
             end
         end
 
