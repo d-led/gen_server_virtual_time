@@ -550,11 +550,43 @@ defmodule VirtualClock do
     end
   end
 
+  # Check if a process should be tracked for ACKs
+  # Only GenServers using VirtualTimeGenServer or VirtualTimeGenStateMachine wrappers will ACK
+  defp should_track_for_ack?(pid) do
+    case Process.info(pid, :dictionary) do
+      {:dictionary, dict} when is_list(dict) ->
+        has_virtual_clock?(dict) && genserver_actor?(pid, dict)
+
+      _ ->
+        false
+    end
+  end
+
+  defp has_virtual_clock?(dict) do
+    Keyword.has_key?(dict, :virtual_clock)
+  end
+
+  defp genserver_actor?(pid, dict) do
+    case Keyword.get(dict, :"$initial_call") do
+      {VirtualTimeGenServer.Wrapper, _, _} -> true
+      {VirtualTimeGenStateMachine.Wrapper, _, _} -> true
+      _ -> check_current_function_for_gen_server(pid)
+    end
+  end
+
+  defp check_current_function_for_gen_server(pid) do
+    case Process.info(pid, :current_function) do
+      {:current_function, {mod, _, _}} -> mod in [:gen_server, :gen_statem]
+      _ -> false
+    end
+  end
+
   defp advance_loop(state, target_time, from) do
     # Calculate adaptive timeout based on time advance
     # For large advances, use longer timeout (max 30 seconds)
     time_advance = target_time - state.current_time
-    ack_timeout_ms = 
+
+    ack_timeout_ms =
       if time_advance > 100_000 do
         # For advances > 100s, use adaptive timeout
         min(trunc(time_advance / 1000), 30_000)
@@ -565,7 +597,11 @@ defmodule VirtualClock do
     # Set up timeout for ack wait - only if we have pending acks
     ack_timeout_ref =
       if MapSet.size(state.pending_acks) > 0 do
-        Process.send_after(self(), {:ack_timeout, MapSet.to_list(state.pending_acks)}, ack_timeout_ms)
+        Process.send_after(
+          self(),
+          {:ack_timeout, MapSet.to_list(state.pending_acks)},
+          ack_timeout_ms
+        )
       else
         nil
       end
@@ -582,8 +618,16 @@ defmodule VirtualClock do
         if MapSet.size(new_state.pending_acks) > 0 do
           # Still waiting for actors - store caller and wait for acks with adaptive timeout
           time_advance = target_time - state.current_time
-          ack_timeout_ms = if time_advance > 100_000, do: min(trunc(time_advance / 1000), 30_000), else: 2000
-          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, ack_timeout_ms)
+
+          ack_timeout_ms =
+            if time_advance > 100_000, do: min(trunc(time_advance / 1000), 30_000), else: 2000
+
+          Process.send_after(
+            self(),
+            {:ack_timeout, MapSet.to_list(new_state.pending_acks)},
+            ack_timeout_ms
+          )
+
           {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
         else
           # No pending acks - advance complete!
@@ -599,10 +643,17 @@ defmodule VirtualClock do
         if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
 
         # Process events at next_time - track who we're sending to for acks
-        actor_pids =
-          Enum.map(triggered, fn event ->
+        # Only track GenServer actors that will send ACKs, not regular processes
+        {actor_pids, _} =
+          Enum.reduce(triggered, {[], []}, fn event, {ack_actors, regular_processes} ->
+            # Send message immediately
             VirtualTimeGenServer.send_immediately(event.dest, event.message)
-            event.dest
+
+            if should_track_for_ack?(event.dest) do
+              {[event.dest | ack_actors], regular_processes}
+            else
+              {ack_actors, [event.dest | regular_processes]}
+            end
           end)
 
         # Track pending acks and update time
@@ -614,7 +665,10 @@ defmodule VirtualClock do
           # Actors are processing - store caller and wait for all acks
           # Set up adaptive timeout for the new acks
           time_advance = target_time - next_time
-          ack_timeout_ms = if time_advance > 100_000, do: min(trunc(time_advance / 1000), 30_000), else: 2000
+
+          ack_timeout_ms =
+            if time_advance > 100_000, do: min(trunc(time_advance / 1000), 30_000), else: 2000
+
           Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_pending)}, ack_timeout_ms)
           {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
         else

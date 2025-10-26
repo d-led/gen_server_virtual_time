@@ -18,18 +18,21 @@ and this project adheres to
 
 ### Added
 
-- Compilation warnings for global virtual clock operations to prevent race conditions
+- Compilation warnings for global virtual clock operations to prevent race
+  conditions
 
 ### Changed
 
 - Time backend is now internal and transparent to client code
-- VirtualTimeGenServer and VirtualTimeGenStateMachine functions now emit warnings when using global clock injection
+- VirtualTimeGenServer and VirtualTimeGenStateMachine functions now emit
+  warnings when using global clock injection
 
 ## [0.5.0-rc.2] - 2025-01-27
 
 ### Added
 
-- VirtualTimeGenStateMachine: `start_link/3`, `start/3`, `call/3`, `cast/2`, `stop/3` functions
+- VirtualTimeGenStateMachine: `start_link/3`, `start/3`, `call/3`, `cast/2`,
+  `stop/3` functions
 
 ### Fixed
 
@@ -46,13 +49,15 @@ and this project adheres to
 
 ### Added
 
-- Ractor (Rust) code generator with [Ractor](https://github.com/slawlor/ractor) framework
+- Ractor (Rust) code generator with [Ractor](https://github.com/slawlor/ractor)
+  framework
 - Single-file generator examples for Ractor and VLINGO
 - Documentation for Ractor generator
 
 ### Fixed
 
-- Separated generated interface code from customizable implementation code across all generators
+- Separated generated interface code from customizable implementation code
+  across all generators
 - Fixed Mermaid flowchart reports missing edges for dynamic sends
 
 ## [0.3.0] - 2025-10-14
@@ -92,7 +97,8 @@ and this project adheres to
 
 - Code generators for CAF (C++), Pony, Phony (Go), and VLINGO (Java)
 - Mermaid report generator module
-- Full GenServer callback support including `handle_continue/2` and call timeout handling
+- Full GenServer callback support including `handle_continue/2` and call timeout
+  handling
 - Termination conditions for simulations based on actor state
 - Enhanced Mermaid diagrams with sequence diagram features
 - Dining philosophers example
