@@ -111,7 +111,7 @@ defmodule RidiculousTimeTest do
       one_century_ms = 100 * 365 * 24 * 60 * 60 * 1000
 
       IO.puts("\n👴 Simulating a CENTURY of daily backups...")
-      IO.puts("   (36,500 individual events - this shows our event processing power!)")
+      IO.puts("   (36,500 individual events)")
       IO.puts("   (Note: Each backup is fully simulated, not analytically computed!)\n")
 
       start_time = System.monotonic_time(:millisecond)
