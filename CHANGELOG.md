@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.5.0-rc.5] - 2025-10-26
+
 ### Performance
 
 - Optimized VirtualClock event scheduling performance
