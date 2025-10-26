@@ -8,42 +8,27 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [0.5.0-rc.5] - 2025-10-26
+## [0.5.0] - 2025-10-27
+
+### Added
+
+- VirtualTimeGenStateMachine with full `:gen_statem` support
+- `start_link/3`, `start/3`, `call/3`, `cast/2`, `stop/3` functions for VirtualTimeGenStateMachine
+- Compilation warnings for global virtual clock operations to prevent race conditions
 
 ### Changed
 
 - Optimized VirtualClock event scheduling by using asynchronous operations
-
-## [0.5.0-rc.4] - 2025-01-27
-
-### Added
-
-- Compilation warnings for global virtual clock operations to prevent race
-  conditions
-
-### Changed
-
 - Time backend is now internal and transparent to client code
-- VirtualTimeGenServer and VirtualTimeGenStateMachine functions now emit
-  warnings when using global clock injection
-
-## [0.5.0-rc.2] - 2025-01-27
-
-### Added
-
-- VirtualTimeGenStateMachine: `start_link/3`, `start/3`, `call/3`, `cast/2`,
-  `stop/3` functions
+- VirtualTimeGenServer and VirtualTimeGenStateMachine functions now emit warnings when using global clock injection
+- Removed complex wrapper module causing callback conflicts
+- Now uses native Erlang `:gen_statem` directly
 
 ### Fixed
 
-- State enter callbacks now work correctly
+- State enter callbacks now work correctly in VirtualTimeGenStateMachine
 - Long-running simulations timeout issues resolved
 - Both `:handle_event_function` and `:state_functions` callback modes supported
-
-### Changed
-
-- Removed complex wrapper module causing callback conflicts
-- Now uses native Erlang `:gen_statem` directly
 
 ## [0.4.0] - 2025-10-15
 
