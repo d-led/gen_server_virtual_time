@@ -10,16 +10,11 @@ and this project adheres to
 
 ### Performance
 
-- **MAJOR**: Eliminated VirtualClock bottleneck identified through
-  `mix profile.eprof` profiling
-  - Fixed critical performance issue where 1ms delays accumulated linearly with
-    event count
-  - Optimized advance loop with reliable 1ms delay for consistent message
-    processing
-  - Resolves CI race conditions in rate-based and pipeline scenarios
-  - All 360 tests pass with consistent timing across different seeds
-  - Maintains full backwards compatibility and correctness
-  - Significant performance improvement while preserving reliability
+- Optimized VirtualClock event scheduling performance
+  - Replaced synchronous `GenServer.call` with asynchronous `GenServer.cast` for
+    `send_after` operations
+  - Reduced scheduler overhead using `Process.send_after(..., 0)` yielding
+  - Maintains full backwards compatibility
 
 ## [0.5.0-rc.4] - 2025-01-27
 
