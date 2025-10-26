@@ -1,0 +1,35 @@
+name: Century Backup Demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/century_backup_demo.exs'
+      - '.github/workflows/century-backup-demo.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/century_backup_demo.exs'
+      - '.github/workflows/century-backup-demo.yml'
+
+jobs:
+  demo:
+    name: Run Century Backup Demo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.19'
+          otp-version: '27'
+
+      - name: Make script executable
+        run: chmod +x century_backup_demo.exs
+
+      - name: Run century backup simulation
+        run: ./century_backup_demo.exs
+
