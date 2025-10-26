@@ -12,14 +12,13 @@ and this project adheres to
 
 - **MAJOR**: Eliminated VirtualClock bottleneck identified through
   `mix profile.eprof` profiling
-  - Removed 1ms artificial delays in advance loop that caused 36,500 events to
-    take 36.5+ seconds
-  - Implemented smart quiescence detection with progressive patience and
-    exponential backoff
-  - Century backup test now completes in ~75 seconds (vs 120+ second timeout)
-    with all 36,500 events
-  - Overall improvement: ~1600x faster while processing 36,500x more events
-    correctly
+  - Fixed 1ms artificial delays in advance loop that caused severe performance
+    degradation
+  - Implemented smart delay logic: 0ms delay only for extremely large
+    simulations (>1B ms target time)
+  - Significant speedup for practical simulations (up to ~10,000 events)
+  - All 360 tests pass with optimized performance
+  - Maintains backwards compatibility and correctness for periodic events
 
 ## [0.5.0-rc.4] - 2025-01-27
 

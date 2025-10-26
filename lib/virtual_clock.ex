@@ -383,7 +383,7 @@ defmodule VirtualClock do
     end
   end
 
-  # SIMPLE: Process one time point per iteration (backwards compatible)
+  # SIMPLE: Process one time point per iteration - reliable for periodic events
   defp advance_loop(state, target_time, from) do
     case get_next_event_time(state.scheduled, target_time) do
       nil ->
@@ -405,8 +405,9 @@ defmodule VirtualClock do
         new_state = %{state | current_time: next_time, scheduled: remaining}
 
         # Yield to allow actors to process and schedule new events
-        # Small delay to ensure message queue processing
-        Process.send_after(self(), {:do_advance, target_time, from}, 1)
+        # Use 0ms delay only for extremely large simulations (century scale)
+        delay = if target_time > 1_000_000_000, do: 0, else: 1
+        Process.send_after(self(), {:do_advance, target_time, from}, delay)
         {:noreply, new_state}
 
       _next_time ->
