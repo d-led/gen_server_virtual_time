@@ -13,14 +13,17 @@ and this project adheres to
 ### Added
 
 - VirtualTimeGenStateMachine with full `:gen_statem` support
-- `start_link/3`, `start/3`, `call/3`, `cast/2`, `stop/3` functions for VirtualTimeGenStateMachine
-- Compilation warnings for global virtual clock operations to prevent race conditions
+- `start_link/3`, `start/3`, `call/3`, `cast/2`, `stop/3` functions for
+  VirtualTimeGenStateMachine
+- Compilation warnings for global virtual clock operations to prevent race
+  conditions
 
 ### Changed
 
 - Optimized VirtualClock event scheduling by using asynchronous operations
 - Time backend is now internal and transparent to client code
-- VirtualTimeGenServer and VirtualTimeGenStateMachine functions now emit warnings when using global clock injection
+- VirtualTimeGenServer and VirtualTimeGenStateMachine functions now emit
+  warnings when using global clock injection
 - Removed complex wrapper module causing callback conflicts
 - Now uses native Erlang `:gen_statem` directly
 

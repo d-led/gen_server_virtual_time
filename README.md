@@ -4,7 +4,6 @@ Test time-based GenServers instantly. Simulate actor systems with virtual time.
 Model, simulate, analyze actor systems and generate boilerplate in various Actor
 Model implementations: in Java, Rust, Pony, Go and C++.
 
-
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
 [![CI](https://github.com/d-led/gen_server_virtual_time/workflows/CI/badge.svg)](https://github.com/d-led/gen_server_virtual_time/actions)
@@ -22,7 +21,10 @@ Model implementations: in Java, Rust, Pony, Go and C++.
 elixir scripts/century_backup_demo.exs
 ```
 
-Run the century backup demo to see virtual time in action - simulate 100 years of daily backups (36,525 backups) in milliseconds. [Source](scripts/century_backup_demo.exs). [Sample run](https://github.com/d-led/gen_server_virtual_time/actions/workflows/century-backup-demo.yml).
+Run the century backup demo to see virtual time in action - simulate 100 years
+of daily backups (36,525 backups) in milliseconds.
+[Source](scripts/century_backup_demo.exs).
+[Sample run](https://github.com/d-led/gen_server_virtual_time/actions/workflows/century-backup-demo.yml).
 
 ## 🚀 Code Generators
 

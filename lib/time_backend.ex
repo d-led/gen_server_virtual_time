@@ -4,9 +4,11 @@ defmodule TimeBackend do
   """
 
   @callback send_after(pid(), term(), non_neg_integer()) :: reference()
+  # delay_ms: delay in milliseconds
   @callback send_immediately(pid(), term()) :: :ok
   @callback cancel_timer(reference()) :: non_neg_integer() | false
   @callback sleep(non_neg_integer()) :: :ok
+  # duration_ms: duration in milliseconds
 end
 
 defmodule RealTimeBackend do
@@ -16,8 +18,8 @@ defmodule RealTimeBackend do
   @behaviour TimeBackend
 
   @impl true
-  def send_after(dest, message, delay) do
-    Process.send_after(dest, message, delay)
+  def send_after(dest, message, delay_ms) do
+    Process.send_after(dest, message, delay_ms)
   end
 
   @impl true
@@ -32,8 +34,8 @@ defmodule RealTimeBackend do
   end
 
   @impl true
-  def sleep(duration) do
-    Process.sleep(duration)
+  def sleep(duration_ms) do
+    Process.sleep(duration_ms)
   end
 end
 
@@ -44,9 +46,9 @@ defmodule VirtualTimeBackend do
   @behaviour TimeBackend
 
   @impl true
-  def send_after(dest, message, delay) do
+  def send_after(dest, message, delay_ms) do
     clock = get_virtual_clock()
-    VirtualClock.send_after(clock, dest, message, delay)
+    VirtualClock.send_after(clock, dest, message, delay_ms)
   end
 
   @impl true
@@ -64,10 +66,10 @@ defmodule VirtualTimeBackend do
   end
 
   @impl true
-  def sleep(duration) do
+  def sleep(duration_ms) do
     # Schedule a wake-up message in virtual time and wait for it
     ref = make_ref()
-    send_after(self(), {:__vtgs_sleep_done__, ref}, duration)
+    send_after(self(), {:__vtgs_sleep_done__, ref}, duration_ms)
 
     receive do
       {:__vtgs_sleep_done__, ^ref} -> :ok

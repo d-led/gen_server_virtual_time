@@ -222,12 +222,12 @@ defmodule VirtualTimeGenStateMachine do
   end
 
   @doc """
-  Sends a message to a process after a delay (in milliseconds).
+  Sends a message to a process after a delay in milliseconds.
   Uses the appropriate backend based on the current process configuration.
   """
-  def send_after(dest, message, delay) do
+  def send_after(dest, message, delay_ms) do
     backend = get_time_backend()
-    backend.send_after(dest, message, delay)
+    backend.send_after(dest, message, delay_ms)
   end
 
   @doc """
@@ -263,12 +263,12 @@ defmodule VirtualTimeGenStateMachine do
   end
 
   @doc """
-  Sleeps for the specified duration (in milliseconds).
+  Sleeps for the specified duration in milliseconds.
   Uses the appropriate backend based on the current process configuration.
   """
-  def sleep(duration) do
+  def sleep(duration_ms) do
     backend = get_time_backend()
-    backend.sleep(duration)
+    backend.sleep(duration_ms)
   end
 
   @doc """
@@ -400,11 +400,11 @@ defmodule VirtualTimeGenStateMachine do
       # Note: child_spec should be defined by the using module if needed
 
       @doc """
-      Sends a message to this process after a delay.
+      Sends a message to this process after a delay in milliseconds.
       Uses the appropriate backend based on the current process configuration.
       """
-      def send_after_self(message, delay) do
-        VirtualTimeGenStateMachine.send_after(self(), message, delay)
+      def send_after_self(message, delay_ms) do
+        VirtualTimeGenStateMachine.send_after(self(), message, delay_ms)
       end
     end
   end

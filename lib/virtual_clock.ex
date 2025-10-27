@@ -57,24 +57,24 @@ defmodule VirtualClock do
       GenServer.start_link(__MODULE__, clock_pid)
     end
 
-    def send_after(scheduler_pid, dest, message, delay) do
-      GenServer.call(scheduler_pid, {:send_after, dest, message, delay})
+    def send_after(scheduler_pid, dest, message, delay_ms) do
+      GenServer.call(scheduler_pid, {:send_after, dest, message, delay_ms})
     end
 
     def cancel_timer(scheduler_pid, ref) do
       GenServer.call(scheduler_pid, {:cancel_timer, ref})
     end
 
-    def get_next_events_until(scheduler_pid, target_time) do
-      GenServer.call(scheduler_pid, {:get_next_events_until, target_time})
+    def get_next_events_until(scheduler_pid, target_time_ms) do
+      GenServer.call(scheduler_pid, {:get_next_events_until, target_time_ms})
     end
 
     def get_current_time(scheduler_pid) do
       GenServer.call(scheduler_pid, :get_current_time)
     end
 
-    def set_current_time(scheduler_pid, new_time) do
-      GenServer.call(scheduler_pid, {:set_current_time, new_time})
+    def set_current_time(scheduler_pid, new_time_ms) do
+      GenServer.call(scheduler_pid, {:set_current_time, new_time_ms})
     end
 
     @impl true
@@ -83,11 +83,11 @@ defmodule VirtualClock do
     end
 
     @impl true
-    def handle_call({:send_after, dest, message, delay}, from, state) do
+    def handle_call({:send_after, dest, message, delay_ms}, from, state) do
       # Get current time from VirtualClock asynchronously to avoid deadlock
       GenServer.cast(
         state.clock_pid,
-        {:get_time_for_scheduling, self(), from, dest, message, delay}
+        {:get_time_for_scheduling, self(), from, dest, message, delay_ms}
       )
 
       {:noreply, state}
@@ -100,12 +100,12 @@ defmodule VirtualClock do
       end
     end
 
-    def handle_call({:get_next_events_until, target_time}, _from, state) do
-      case get_next_event_time(state.scheduled, target_time) do
+    def handle_call({:get_next_events_until, target_time_ms}, _from, state) do
+      case get_next_event_time(state.scheduled, target_time_ms) do
         nil ->
           {:reply, {nil, []}, state}
 
-        next_time when next_time <= target_time ->
+        next_time when next_time <= target_time_ms ->
           {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
           {:reply, {next_time, triggered}, %{state | scheduled: remaining}}
 
@@ -119,20 +119,20 @@ defmodule VirtualClock do
       {:reply, count, state}
     end
 
-    def handle_call({:scheduled_count_until, until_time}, _from, state) do
-      count = count_events_until(state.scheduled, until_time)
+    def handle_call({:scheduled_count_until, until_time_ms}, _from, state) do
+      count = count_events_until(state.scheduled, until_time_ms)
       {:reply, count, state}
     end
 
     @impl true
     def handle_cast(
-          {:time_response_for_scheduling, current_time, original_from, dest, message, delay},
+          {:time_response_for_scheduling, current_time, original_from, dest, message, delay_ms},
           state
         ) do
       ref = make_ref()
-      trigger_time = current_time + delay
+      trigger_time = current_time + delay_ms
 
-      # IO.puts("DEBUG SCHEDULER: Scheduling event for #{inspect(dest)} at time #{trigger_time} (current: #{current_time}, delay: #{delay})")
+      # IO.puts("DEBUG SCHEDULER: Scheduling event for #{inspect(dest)} at time #{trigger_time} (current: #{current_time}, delay: #{delay_ms})")
 
       event = %ScheduledEvent{
         trigger_time: trigger_time,
@@ -157,24 +157,24 @@ defmodule VirtualClock do
     end
 
     # Helper functions for VirtualScheduler
-    defp get_next_event_time(scheduled, target_time) do
+    defp get_next_event_time(scheduled, target_time_ms) do
       case :gb_trees.is_empty(scheduled) do
         true ->
           nil
 
         false ->
           {min_time, _event} = :gb_trees.smallest(scheduled)
-          if min_time <= target_time, do: min_time, else: nil
+          if min_time <= target_time_ms, do: min_time, else: nil
       end
     end
 
-    defp extract_events_at_time(scheduled, time) do
-      case :gb_trees.lookup(time, scheduled) do
+    defp extract_events_at_time(scheduled, time_ms) do
+      case :gb_trees.lookup(time_ms, scheduled) do
         :none ->
           {[], scheduled}
 
         {:value, events} ->
-          new_scheduled = :gb_trees.delete(time, scheduled)
+          new_scheduled = :gb_trees.delete(time_ms, scheduled)
           {events, new_scheduled}
       end
     end
@@ -239,11 +239,11 @@ defmodule VirtualClock do
       end
     end
 
-    defp count_events_until(scheduled, until_time) do
-      count_events_until_recursive(scheduled, until_time, 0)
+    defp count_events_until(scheduled, until_time_ms) do
+      count_events_until_recursive(scheduled, until_time_ms, 0)
     end
 
-    defp count_events_until_recursive(scheduled, until_time, count) do
+    defp count_events_until_recursive(scheduled, until_time_ms, count) do
       case :gb_trees.is_empty(scheduled) do
         true ->
           count
@@ -251,9 +251,9 @@ defmodule VirtualClock do
         false ->
           {time, events, remaining} = :gb_trees.take_smallest(scheduled)
 
-          if time <= until_time do
+          if time <= until_time_ms do
             new_count = count + length(events)
-            count_events_until_recursive(remaining, until_time, new_count)
+            count_events_until_recursive(remaining, until_time_ms, new_count)
           else
             count
           end
@@ -278,13 +278,13 @@ defmodule VirtualClock do
   end
 
   @doc """
-  Schedules a message to be sent after a delay in virtual time.
+  Schedules a message to be sent after a delay in virtual time (in milliseconds).
   Returns a reference that can be used to cancel the timer.
   """
-  def send_after(clock, dest, message, delay) do
+  def send_after(clock, dest, message, delay_ms) do
     # Delegate to the scheduler process for fair competition
     scheduler_pid = GenServer.call(clock, :get_scheduler)
-    VirtualScheduler.send_after(scheduler_pid, dest, message, delay)
+    VirtualScheduler.send_after(scheduler_pid, dest, message, delay_ms)
   end
 
   @doc """
@@ -297,7 +297,7 @@ defmodule VirtualClock do
   end
 
   @doc """
-  Advances the virtual clock by the specified amount.
+  Advances the virtual clock by the specified amount of milliseconds.
   All events scheduled up to the new time will be triggered.
 
   This ensures that:
@@ -313,13 +313,13 @@ defmodule VirtualClock do
       # Advance by 0 (process all events at current time and wait for quiescence)
       VirtualClock.advance(clock, 0)
   """
-  def advance(clock, amount) do
-    GenServer.call(clock, {:advance, amount}, :infinity)
+  def advance(clock, amount_ms) do
+    GenServer.call(clock, {:advance, amount_ms}, :infinity)
   end
 
   @doc """
   Advances the virtual clock to the next scheduled event.
-  Returns the time advanced, or 0 if no events are scheduled.
+  Returns the amount advanced in milliseconds, or 0 if no events are scheduled.
   """
   def advance_to_next(clock) do
     GenServer.call(clock, :advance_to_next)
@@ -347,10 +347,10 @@ defmodule VirtualClock do
       # Count events scheduled up to 5000ms
       VirtualClock.scheduled_count_until(clock, 5000)
   """
-  def scheduled_count_until(clock, until_time \\ nil) do
-    until_time = until_time || now(clock)
+  def scheduled_count_until(clock, until_time_ms \\ nil) do
+    until_time_ms = until_time_ms || now(clock)
     scheduler_pid = GenServer.call(clock, :get_scheduler)
-    GenServer.call(scheduler_pid, {:scheduled_count_until, until_time})
+    GenServer.call(scheduler_pid, {:scheduled_count_until, until_time_ms})
   end
 
   @doc """
@@ -358,9 +358,14 @@ defmodule VirtualClock do
   and no new events are being scheduled.
 
   Retries every 10ms for up to 1000ms (1 second) by default.
+
+  ## Parameters
+  - `clock`: The virtual clock process
+  - `timeout_ms`: Real-time timeout in milliseconds (default: 1000)
+  - `retry_interval_ms`: Retry interval in milliseconds (default: 10)
   """
-  def wait_for_quiescence(clock, timeout \\ 1000, retry_interval \\ 10) do
-    wait_for_quiescence_loop(clock, timeout, retry_interval, 0)
+  def wait_for_quiescence(clock, timeout_ms \\ 1000, retry_interval_ms \\ 10) do
+    wait_for_quiescence_loop(clock, timeout_ms, retry_interval_ms, 0)
   end
 
   @doc """
@@ -372,9 +377,9 @@ defmodule VirtualClock do
   ## Parameters
   - `clock`: The virtual clock process
   - `opts`: Keyword list of options:
-    - `:until_time` - Maximum virtual time to consider (default: current time)
-    - `:timeout` - Real-time timeout in milliseconds (default: 1000)
-    - `:retry_interval` - Retry interval in milliseconds (default: 10)
+    - `:until_time_ms` - Maximum virtual time in milliseconds to consider (default: current time)
+    - `:timeout_ms` - Real-time timeout in milliseconds (default: 1000)
+    - `:retry_interval_ms` - Retry interval in milliseconds (default: 10)
 
   ## Examples
 
@@ -382,25 +387,25 @@ defmodule VirtualClock do
       VirtualClock.wait_for_quiescence_until(clock)
 
       # Wait for quiescence up to a specific virtual time
-      VirtualClock.wait_for_quiescence_until(clock, until_time: 5000)
+      VirtualClock.wait_for_quiescence_until(clock, until_time_ms: 5000)
 
       # Wait with custom timeout and retry interval
       VirtualClock.wait_for_quiescence_until(clock,
-        until_time: 1000,
-        timeout: 500,
-        retry_interval: 5
+        until_time_ms: 1000,
+        timeout_ms: 500,
+        retry_interval_ms: 5
       )
   """
   def wait_for_quiescence_until(clock, opts \\ []) do
-    until_time = Keyword.get(opts, :until_time, now(clock))
-    timeout = Keyword.get(opts, :timeout, 1000)
-    retry_interval = Keyword.get(opts, :retry_interval, 10)
+    until_time_ms = Keyword.get(opts, :until_time_ms, now(clock))
+    timeout_ms = Keyword.get(opts, :timeout_ms, 1000)
+    retry_interval_ms = Keyword.get(opts, :retry_interval_ms, 10)
 
-    wait_for_quiescence_until_loop(clock, until_time, timeout, retry_interval, 0)
+    wait_for_quiescence_until_loop(clock, until_time_ms, timeout_ms, retry_interval_ms, 0)
   end
 
-  defp wait_for_quiescence_loop(clock, timeout, retry_interval, elapsed) do
-    if elapsed >= timeout do
+  defp wait_for_quiescence_loop(clock, timeout_ms, retry_interval_ms, elapsed) do
+    if elapsed >= timeout_ms do
       {:error, :timeout}
     else
       case scheduled_count(clock) do
@@ -408,29 +413,41 @@ defmodule VirtualClock do
           :ok
 
         _ ->
-          Process.sleep(retry_interval)
-          wait_for_quiescence_loop(clock, timeout, retry_interval, elapsed + retry_interval)
+          Process.sleep(retry_interval_ms)
+
+          wait_for_quiescence_loop(
+            clock,
+            timeout_ms,
+            retry_interval_ms,
+            elapsed + retry_interval_ms
+          )
       end
     end
   end
 
-  defp wait_for_quiescence_until_loop(clock, until_time, timeout, retry_interval, elapsed) do
-    if elapsed >= timeout do
+  defp wait_for_quiescence_until_loop(
+         clock,
+         until_time_ms,
+         timeout_ms,
+         retry_interval_ms,
+         elapsed
+       ) do
+    if elapsed >= timeout_ms do
       {:error, :timeout}
     else
-      case scheduled_count_until(clock, until_time) do
+      case scheduled_count_until(clock, until_time_ms) do
         0 ->
           :ok
 
         _ ->
-          Process.sleep(retry_interval)
+          Process.sleep(retry_interval_ms)
 
           wait_for_quiescence_until_loop(
             clock,
-            until_time,
-            timeout,
-            retry_interval,
-            elapsed + retry_interval
+            until_time_ms,
+            timeout_ms,
+            retry_interval_ms,
+            elapsed + retry_interval_ms
           )
       end
     end
@@ -461,8 +478,8 @@ defmodule VirtualClock do
   end
 
   @impl true
-  def handle_call({:advance, amount}, from, state) do
-    target_time = state.current_time + amount
+  def handle_call({:advance, amount_ms}, from, state) do
+    target_time = state.current_time + amount_ms
     # Start the advance process immediately, then yield
     send(self(), {:do_advance, target_time, from})
     :erlang.yield()
@@ -476,13 +493,13 @@ defmodule VirtualClock do
         {:reply, 0, state}
 
       {next_time, triggered} ->
-        amount = next_time - state.current_time
+        amount_ms = next_time - state.current_time
 
         Enum.each(triggered, fn event ->
           VirtualTimeGenServer.send_immediately(event.dest, event.message)
         end)
 
-        {:reply, amount, %{state | current_time: next_time}}
+        {:reply, amount_ms, %{state | current_time: next_time}}
     end
   end
 
@@ -584,12 +601,12 @@ defmodule VirtualClock do
   defp advance_loop(state, target_time, from) do
     # Calculate adaptive timeout based on time advance
     # For large advances, use longer timeout (max 30 seconds)
-    time_advance = target_time - state.current_time
+    time_advance_ms = target_time - state.current_time
 
     ack_timeout_ms =
-      if time_advance > 100_000 do
+      if time_advance_ms > 100_000 do
         # For advances > 100s, use adaptive timeout
-        min(trunc(time_advance / 1000), 30_000)
+        min(trunc(time_advance_ms / 1000), 30_000)
       else
         2000
       end
@@ -617,10 +634,12 @@ defmodule VirtualClock do
 
         if MapSet.size(new_state.pending_acks) > 0 do
           # Still waiting for actors - store caller and wait for acks with adaptive timeout
-          time_advance = target_time - state.current_time
+          time_advance_ms = target_time - state.current_time
 
           ack_timeout_ms =
-            if time_advance > 100_000, do: min(trunc(time_advance / 1000), 30_000), else: 2000
+            if time_advance_ms > 100_000,
+              do: min(trunc(time_advance_ms / 1000), 30_000),
+              else: 2000
 
           Process.send_after(
             self(),
@@ -664,10 +683,12 @@ defmodule VirtualClock do
         if MapSet.size(new_pending) > 0 do
           # Actors are processing - store caller and wait for all acks
           # Set up adaptive timeout for the new acks
-          time_advance = target_time - next_time
+          time_advance_ms = target_time - next_time
 
           ack_timeout_ms =
-            if time_advance > 100_000, do: min(trunc(time_advance / 1000), 30_000), else: 2000
+            if time_advance_ms > 100_000,
+              do: min(trunc(time_advance_ms / 1000), 30_000),
+              else: 2000
 
           Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_pending)}, ack_timeout_ms)
           {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
@@ -702,13 +723,13 @@ defmodule VirtualClock do
 
   @impl true
   def handle_cast(
-        {:get_time_for_scheduling, scheduler_pid, original_from, dest, message, delay},
+        {:get_time_for_scheduling, scheduler_pid, original_from, dest, message, delay_ms},
         state
       ) do
     # Reply to scheduler with current time
     GenServer.cast(
       scheduler_pid,
-      {:time_response_for_scheduling, state.current_time, original_from, dest, message, delay}
+      {:time_response_for_scheduling, state.current_time, original_from, dest, message, delay_ms}
     )
 
     {:noreply, state}
