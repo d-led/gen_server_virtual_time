@@ -27,9 +27,6 @@ jobs:
           elixir-version: '1.19'
           otp-version: '27'
 
-      - name: Make script executable
-        run: chmod +x century_backup_demo.exs
-
       - name: Run century backup simulation
-        run: ./century_backup_demo.exs
+        run: elixir ./scripts/century_backup_demo.exs
 
