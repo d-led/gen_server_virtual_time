@@ -699,9 +699,9 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
       This shows:
       - 6001 events processed (including initialization)
-      - 3001 messages created and processed
-      - #{sim_time_limit} seconds of simulated time at ~1000 messages/second
-      - ~5.5ms wallclock time
+      - 3001 messages created and processed at ~1000 messages/second simulated rate
+      - #{sim_time_limit} seconds of simulated time completed in ~5.5ms wallclock time
+      - OMNeT++ typically reports speeds of **400K+ ev/sec** and **200x real-time** speedup
       - **No console output** (suppressed for performance)
 
       ## High-Frequency Configuration
