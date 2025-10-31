@@ -9,11 +9,13 @@ This directory contains scripts for generating and validating OMNeT++ code from 
 Generates all OMNeT++ example projects.
 
 **Usage:**
+
 ```bash
 mix run scripts/generate_omnetpp_examples.exs
 ```
 
 **What it does:**
+
 - Generates 4 complete OMNeT++ projects:
   - `omnetpp_pubsub` - Publish-subscribe system
   - `omnetpp_pipeline` - Message pipeline
@@ -24,6 +26,7 @@ mix run scripts/generate_omnetpp_examples.exs
 - Exits with code 0 on success, 1 on failure
 
 **Output:**
+
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║  Generating OMNeT++ Example Projects                      ║
@@ -43,11 +46,13 @@ mix run scripts/generate_omnetpp_examples.exs
 Validates generated OMNeT++ code for correctness and completeness.
 
 **Usage:**
+
 ```bash
 mix run scripts/validate_omnetpp_output.exs
 ```
 
 **What it checks:**
+
 - ✅ Required files exist (NED, CMake, Conan, INI)
 - ✅ C++ files have proper structure:
   - Include guards in headers
@@ -64,6 +69,7 @@ mix run scripts/validate_omnetpp_output.exs
 - ✅ No timestamps in generated code (for clean version control)
 
 **Output:**
+
 ```
 ╔═══════════════════════════════════════════════════════════╗
 ║  Validating OMNeT++ Generated Code                        ║
@@ -90,6 +96,7 @@ These scripts are used in GitHub Actions to validate OMNeT++ code generation:
 ### Workflow: `omnetpp_generation.yml`
 
 **Triggers:**
+
 - Push to `main` branch (trunk-based development)
 - Pull requests to `main`
 - Changes to actor simulation code or generation scripts
@@ -97,6 +104,7 @@ These scripts are used in GitHub Actions to validate OMNeT++ code generation:
 **Jobs:**
 
 1. **test-generation** - Generates and validates code
+
    - Tests on multiple Elixir (1.17, 1.18) and OTP (26, 27) versions
    - Runs generation script
    - Validates output
@@ -230,10 +238,41 @@ mix run scripts/validate_omnetpp_output.exs 2>&1 | tee validation.log
 ### CI Failures
 
 Check the GitHub Actions logs:
+
 1. Go to repository → Actions tab
 2. Click on the failed workflow run
 3. Expand the failed step
 4. Download artifacts for detailed analysis
+
+## Testing with Act (Local CI Simulation)
+
+To test the OMNeT++ CI workflow locally using `act`:
+
+1. **Setup act** (if not installed):
+
+   ```bash
+   brew install act
+   ```
+
+2. **Create `~/.actrc`** for Intel emulation on ARM Macs:
+
+   ```bash
+   echo "--container-architecture=linux/amd64" > ~/.actrc
+   ```
+
+3. **Run the test script**:
+   ```bash
+   ./scripts/test_omnetpp_high_freq.sh
+   ```
+
+This will:
+
+- Generate OMNeT++ examples
+- Build the high-frequency simulation in Docker
+- Run 3000+ messages at 1ms intervals
+- Verify output suppression works
+
+**Note**: The full CI workflow with `act` has limitations (e.g., setup-beam actions), but the Docker-based OMNeT++ build/test works perfectly.
 
 ## Best Practices
 
@@ -249,4 +288,3 @@ Check the GitHub Actions logs:
 - [OMNETPP_COMPLETE.md](../OMNETPP_COMPLETE.md) - Implementation summary
 - [README.md](../README.md) - Main project documentation
 - [examples/omnetpp_demo.exs](../examples/omnetpp_demo.exs) - Interactive demo script
-

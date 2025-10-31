@@ -2,6 +2,34 @@ defmodule TerminationConditionTest do
   use ExUnit.Case, async: true
 
   describe "Termination conditions" do
+    test "expected_messages terminates simulation early" do
+      # Test the convenience expected_messages parameter
+      # Note: total_messages = sent + received, so with one producer sending
+      # to one consumer, we get 2 messages per cycle (1 sent + 1 received)
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:producer,
+          send_pattern: {:periodic, 100, :data},
+          targets: [:consumer]
+        )
+        |> ActorSimulation.add_actor(:consumer)
+        |> ActorSimulation.run(
+          max_duration: 10_000,
+          expected_messages: 10
+        )
+
+      stats = ActorSimulation.get_stats(simulation)
+
+      # Should have stopped early (around 500ms since we have 2 messages per 100ms cycle)
+      assert simulation.actual_duration < 1000
+      assert simulation.actual_duration >= 500
+
+      # Total messages should be at least 10 (but consumer received less)
+      assert stats.total_messages >= 10
+
+      ActorSimulation.stop(simulation)
+    end
+
     test "simulation stops when condition is met" do
       # Create a simple producer
       simulation =

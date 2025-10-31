@@ -197,6 +197,7 @@ defmodule ActorSimulation do
   - `:duration` - Maximum duration in milliseconds (default: 10,000)
   - `:terminate_when` - Function that takes simulation and returns true to stop
   - `:check_interval` - How often to check termination condition in ms (default: 100)
+  - `:expected_messages` - Integer count of expected messages to receive before terminating
 
   ## Boundary Condition Handling
 
@@ -220,11 +221,35 @@ defmodule ActorSimulation do
           Enum.all?(stats.actors, fn {_name, s} -> s.sent_count >= 10 end)
         end
       )
+
+      # Run until expected number of messages (convenience)
+      simulation = ActorSimulation.run(simulation,
+        max_duration: 10_000,
+        expected_messages: 1000
+      )
   """
   def run(simulation, opts \\ []) do
     duration = Keyword.get(opts, :duration) || Keyword.get(opts, :max_duration, 10_000)
     terminate_when = Keyword.get(opts, :terminate_when)
+    expected_messages = Keyword.get(opts, :expected_messages)
     check_interval = Keyword.get(opts, :check_interval, 100)
+
+    # If expected_messages is provided, create a terminate_when function for it
+    terminate_when =
+      cond do
+        expected_messages != nil and is_function(terminate_when) ->
+          raise ArgumentError,
+                "Cannot provide both expected_messages and terminate_when parameters"
+
+        expected_messages != nil ->
+          fn sim ->
+            stats = collect_current_stats(sim)
+            stats.total_messages >= expected_messages
+          end
+
+        true ->
+          terminate_when
+      end
 
     # Start all actors (only simulated actors need setup)
     # Trace collector is already injected at start_link time

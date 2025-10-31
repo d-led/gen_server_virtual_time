@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Cache OMNeT++ installation
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.opp_env
+          ~/.cache/opp_env
+        key: ${{ runner.os }}-omnetpp-6.2.0-${{ hashFiles('**/omnetpp.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-omnetpp-6.2.0-
+          ${{ runner.os }}-omnetpp-
+
+    - name: Install OMNeT++ via opp_env
+      run: |
+        pip install opp-env
+        opp_env init
+        opp_env install omnetpp-6.2.0
+      shell: bash
+
+    - name: Configure
+      run: |
+        mkdir -p build
+        cd build
+        cmake ..
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build .
+
+    - name: Run Demo Simulation
+      run: |
+        cd build
+        # Determine binary name: {project}.omnetpp.{os}
+        OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+        PROJECT_NAME=$(grep -o 'project([^)]*)' ../CMakeLists.txt | head -1 | sed 's/project(\([^ ]*\).*/\1/')
+        BINARY="${PROJECT_NAME}.omnetpp.${OS_NAME}"
+        # Run simulation with config from omnetpp.ini
+        if [ -f "../omnetpp.ini" ]; then
+          ./"${BINARY}" -u Cmdenv -c General -n ..
+        fi

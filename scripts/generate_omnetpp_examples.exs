@@ -16,14 +16,15 @@ defmodule OMNeTPPExampleGenerator do
     """
 
     examples = [
-      {:pubsub, &create_pubsub_simulation/0, "PubSubNetwork", 10},
-      {:pipeline, &create_pipeline_simulation/0, "PipelineNetwork", 5},
-      {:burst, &create_burst_simulation/0, "BurstNetwork", 30},
-      {:loadbalanced, &create_loadbalanced_simulation/0, "LoadBalancedSystem", 60}
+      {:pubsub, &create_pubsub_simulation/0, "PubSubNetwork", 10, []},
+      {:pipeline, &create_pipeline_simulation/0, "PipelineNetwork", 5, []},
+      {:burst, &create_burst_simulation/0, "BurstNetwork", 30, []},
+      {:loadbalanced, &create_loadbalanced_simulation/0, "LoadBalancedSystem", 60, []},
+      {:high_freq, &create_high_freq_simulation/0, "HighFreqNetwork", 3, [high_frequency: true, expected_messages: 3000]}
     ]
 
-    results = Enum.map(examples, fn {name, sim_fn, network_name, time_limit} ->
-      generate_example(name, sim_fn.(), network_name, time_limit)
+    results = Enum.map(examples, fn {name, sim_fn, network_name, time_limit, opts} ->
+      generate_example(name, sim_fn.(), network_name, time_limit, opts)
     end)
 
     # Summary
@@ -50,14 +51,13 @@ defmodule OMNeTPPExampleGenerator do
     end
   end
 
-  defp generate_example(name, simulation, network_name, time_limit) do
+  defp generate_example(name, simulation, network_name, time_limit, opts \\ []) do
     IO.puts "\n📚 Generating: #{name}"
     IO.puts "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     try do
       {:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
-        network_name: network_name,
-        sim_time_limit: time_limit)
+        [network_name: network_name, sim_time_limit: time_limit] ++ opts)
 
       output_dir = "examples/omnetpp_#{name}"
       :ok = ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
@@ -122,6 +122,16 @@ defmodule OMNeTPPExampleGenerator do
     |> ActorSimulation.add_actor(:server2, targets: [:database])
     |> ActorSimulation.add_actor(:server3, targets: [:database])
     |> ActorSimulation.add_actor(:database)
+  end
+
+  defp create_high_freq_simulation do
+    # High-frequency simulation with 1ms delays (1000 msg/s)
+    # Expected to process 3000 messages, with 3 second time limit
+    ActorSimulation.new()
+    |> ActorSimulation.add_actor(:producer,
+      send_pattern: {:periodic, 100, :data},
+      targets: [:consumer])
+    |> ActorSimulation.add_actor(:consumer)
   end
 end
 
