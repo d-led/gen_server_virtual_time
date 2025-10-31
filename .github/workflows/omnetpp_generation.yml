@@ -251,8 +251,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Reduced matrix for faster CI - only test one example
-        example: [omnetpp_burst]
+        # Test both regular and high-frequency examples
+        example: [omnetpp_burst, omnetpp_high_freq]
         # example: [omnetpp_pubsub, omnetpp_pipeline, omnetpp_burst, omnetpp_loadbalanced]
     
     steps:
