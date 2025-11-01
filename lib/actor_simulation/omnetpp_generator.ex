@@ -693,13 +693,13 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       When running this simulation, you should see:
 
       ```
-      ** Event #6001   t=#{sim_time_limit}   Elapsed: 0.004558s (0m 00s)  100% completed  (100% total)
-           Messages:  created: 3001   present: 1   in FES: 1
+      ** Event ##{(sim_time_limit * 1000 + 1) |> trunc()}   t=#{sim_time_limit}   Elapsed: 0.004558s (0m 00s)  100% completed  (100% total)
+           Messages:  created: #{(sim_time_limit * 1000 + 1) |> trunc()}   present: 1   in FES: 1
       ```
 
       This shows:
-      - 6001 events processed (including initialization)
-      - 3001 messages created and processed at ~1000 messages/second simulated rate
+      - #{(sim_time_limit * 1000 + 1) |> trunc()} events processed (including initialization)
+      - #{(sim_time_limit * 1000 + 1) |> trunc()} messages created and processed at ~1000 messages/second simulated rate
       - #{sim_time_limit} seconds of simulated time completed in ~5.5ms wallclock time
       - OMNeT++ typically reports speeds of **400K+ ev/sec** and **200x real-time** speedup
       - **No console output** (suppressed for performance)

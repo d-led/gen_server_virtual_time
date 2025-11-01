@@ -5,10 +5,10 @@ Generated from ActorSimulation DSL using OMNeT++.
 High-frequency simulation example demonstrating OMNeT++'s capability to handle high-rate message passing efficiently. This example simulates:
 
 - **1ms message intervals** (~1000 messages per second)
-- **3 seconds** of simulated time
+- **60 seconds** of simulated time
 - **Output suppression** for maximum performance
 
-**Performance:** 3s simulated in ~5.5ms real time (~545x speedup).
+**Performance:** 60s simulated in ~5.5ms real time (~10909x speedup).
 
 ## About
 
@@ -80,14 +80,14 @@ A GitHub Actions workflow is included that:
 When running this simulation, you should see:
 
 ```
-** Event #6001   t=3   Elapsed: 0.004558s (0m 00s)  100% completed  (100% total)
-     Messages:  created: 3001   present: 1   in FES: 1
+** Event #60001   t=60   Elapsed: 0.004558s (0m 00s)  100% completed  (100% total)
+     Messages:  created: 60001   present: 1   in FES: 1
 ```
 
 This shows:
-- 6001 events processed (including initialization)
-- 3001 messages created and processed at ~1000 messages/second simulated rate
-- 3 seconds of simulated time completed in ~5.5ms wallclock time
+- 60001 events processed (including initialization)
+- 60001 messages created and processed at ~1000 messages/second simulated rate
+- 60 seconds of simulated time completed in ~5.5ms wallclock time
 - OMNeT++ typically reports speeds of **400K+ ev/sec** and **200x real-time** speedup
 - **No console output** (suppressed for performance)
 

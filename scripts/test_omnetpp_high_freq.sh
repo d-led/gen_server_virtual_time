@@ -42,7 +42,7 @@ docker run --rm --platform linux/amd64 \
     cmake --build . --config Release
     
     echo ""
-    echo "🚀 Running high-frequency simulation (1ms intervals, 3s duration)..."
+    echo "🚀 Running high-frequency simulation (1ms intervals, 60s duration)..."
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     cd ..

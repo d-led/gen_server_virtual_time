@@ -20,7 +20,7 @@ defmodule OMNeTPPExampleGenerator do
       {:pipeline, &create_pipeline_simulation/0, "PipelineNetwork", 5, []},
       {:burst, &create_burst_simulation/0, "BurstNetwork", 30, []},
       {:loadbalanced, &create_loadbalanced_simulation/0, "LoadBalancedSystem", 60, []},
-      {:high_freq, &create_high_freq_simulation/0, "HighFreqNetwork", 3, [high_frequency: true, expected_messages: 3000]}
+      {:high_freq, &create_high_freq_simulation/0, "HighFreqNetwork", 60, [high_frequency: true, expected_messages: 60000]}
     ]
 
     results = Enum.map(examples, fn {name, sim_fn, network_name, time_limit, opts} ->
