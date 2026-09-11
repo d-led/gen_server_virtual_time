@@ -1,0 +1,11 @@
+version: 3
+
+# The generated example projects are build output, not part of what we publish:
+# `files:` in mix.exs ships lib and the metadata files only. Scanning them pulls
+# in the dependencies of code we never distribute - the VLINGO XOOM examples
+# declare io.vlingo.xoom:xoom-actors, whose MPL-2.0 licence FOSSA flags for
+# review on every revision. Keep the dashboard focused on what actually ships.
+paths:
+  exclude:
+    - generated
+    - examples

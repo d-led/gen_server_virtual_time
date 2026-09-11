@@ -601,12 +601,13 @@ defmodule VirtualClock do
 
   # How a destination acknowledges a delivery:
   #
-  #   * `:token` - a VirtualTimeGenServer actor. The delivery is tagged with a
-  #     fresh token, and only that exact token is accepted as the
-  #     acknowledgement. An unrelated message the actor happens to handle can
-  #     therefore never satisfy a pending delivery.
-  #   * `:pid` - a VirtualTimeGenStateMachine actor, which acknowledges every
-  #     message it handles with its own pid.
+  #   * `:token` - an actor using the VirtualTimeGenServer or
+  #     VirtualTimeGenStateMachine wrapper. The delivery is tagged with a fresh
+  #     token, and only that exact token is accepted as the acknowledgement. An
+  #     unrelated message the actor happens to handle can therefore never
+  #     satisfy a pending delivery.
+  #   * `:pid` - a gen_server process that is not one of our wrappers, and so
+  #     acknowledges with its own pid.
   #   * `:none` - anything else (plain processes); never tracked.
   defp ack_mode(pid) do
     case Process.info(pid, :dictionary) do
@@ -621,7 +622,7 @@ defmodule VirtualClock do
   defp actor_ack_mode(pid, dict) do
     case Keyword.get(dict, :"$initial_call") do
       {VirtualTimeGenServer.Wrapper, _, _} -> :token
-      {VirtualTimeGenStateMachine.Wrapper, _, _} -> :pid
+      {VirtualTimeGenStateMachine.Wrapper, _, _} -> :token
       _ -> if gen_server_process?(pid), do: :pid, else: :none
     end
   end

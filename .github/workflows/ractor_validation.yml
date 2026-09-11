@@ -23,10 +23,10 @@ jobs:
         example: [ractor_pubsub, ractor_pipeline, ractor_burst, ractor_loadbalanced]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Setup Rust
-      uses: actions-rust-lang/setup-rust-toolchain@v1
+      uses: actions-rust-lang/setup-rust-toolchain@v2
       with:
         toolchain: stable
         components: rustfmt, clippy
@@ -96,7 +96,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
@@ -141,7 +141,7 @@ jobs:
           echo "================================================"
       
       - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           toolchain: stable
       
@@ -157,7 +157,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Create test script
         run: |
@@ -228,7 +228,7 @@ jobs:
           echo "✓ Created test script"
       
       - name: Upload test script
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ractor-test-script
           path: scripts/test_ractor_demo.sh

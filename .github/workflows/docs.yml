@@ -36,7 +36,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
@@ -45,7 +45,7 @@ jobs:
           otp-version: ${{ env.OTP_VERSION }}
       
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             deps
@@ -71,14 +71,14 @@ jobs:
           echo "✅ Documentation builds without warnings"
       
       - name: Upload documentation
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: documentation
           path: doc/
           retention-days: 7
       
       - name: Upload EPUB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: documentation-epub
           path: doc/GenServerVirtualTime.epub
@@ -93,7 +93,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
@@ -102,7 +102,7 @@ jobs:
           otp-version: ${{ env.OTP_VERSION }}
       
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             deps
@@ -118,7 +118,7 @@ jobs:
         run: mix test --only diagram_generation
       
       - name: Upload diagrams
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sequence-diagrams
           path: generated/examples/*.html
@@ -130,7 +130,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Check Markdown links
         uses: gaurav-nelson/github-action-markdown-link-check@v1

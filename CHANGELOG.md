@@ -21,11 +21,20 @@ and this project adheres to
 ### Changed
 
 - Minimum Elixir version is now 1.15 (required by `ex_doc ~> 0.40`)
-- CI matrix updated to Elixir 1.15/1.17/1.18 with OTP 25/26/27
+- CI matrix reduced to Elixir 1.19/1.20 with OTP 28/29, and the other five
+  workflows aligned, which still pinned Elixir 1.15/1.18 and OTP 25/27
+- GitHub Actions updated to their current majors (`checkout` v7, `cache` v6,
+  `upload-artifact` v7, `download-artifact` v8, `setup-java` v6, `setup-go` v7,
+  the Pages actions, `action-junit-report` v6, `action-gh-release` v3 and
+  `setup-rust-toolchain` v2), which also clears the Node 20 deprecation notices
 - Updated all dependencies, including `ex_doc` 0.38 → 0.40, `credo` 1.7.13 →
   1.7.19, `dialyxir` 1.4.6 → 1.4.8, `castore` 1.0.15 → 1.0.21
 - Consolidated four duplicated message-dispatch blocks in `ActorSimulation.Actor`
-  into shared helpers
+  into shared helpers, and nine duplicated acknowledgement clauses in
+  `VirtualTimeGenStateMachine.Wrapper` into shared delivery handling
+- FOSSA no longer scans `generated/` or `examples/`: they are build output whose
+  transitive dependencies (for example `io.vlingo.xoom:xoom-actors`, MPL-2.0)
+  are not part of what is published
 - README and documentation index restructured to lead with install and runnable
   examples
 
@@ -36,6 +45,9 @@ and this project adheres to
   message they handled, so an unrelated message could satisfy the wait for a
   delivered event and let the clock advance while the event was still queued -
   which made simulations intermittently under-count their messages
+- `VirtualTimeGenStateMachine` actors use the same token protocol, so a
+  `:gen_statem` actor can no longer be advanced past an event it has not
+  processed
 - `ActorSimulation.run/2` now reads actor statistics until they settle. A single
   pass could sample a downstream actor before an upstream one had forwarded to
   it, so a finished simulation could report zero messages for the last actor in

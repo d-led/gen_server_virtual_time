@@ -23,7 +23,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
@@ -32,7 +32,7 @@ jobs:
           otp-version: ${{ matrix.otp }}
       
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             deps
@@ -166,7 +166,7 @@ jobs:
       
       - name: Archive generated code
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: omnetpp-generated-code-elixir-${{ matrix.elixir }}-otp-${{ matrix.otp }}
           path: |
@@ -199,7 +199,7 @@ jobs:
       
       - name: Upload validation report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: validation-report-elixir-${{ matrix.elixir }}-otp-${{ matrix.otp }}
           path: validation_report.md
@@ -212,10 +212,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
       
       - name: Compare generated code across versions
         run: |
@@ -253,10 +253,10 @@ jobs:
         # example: [omnetpp_pubsub, omnetpp_pipeline, omnetpp_burst, omnetpp_loadbalanced]
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Download generated code artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         pattern: omnetpp-generated-code-*
         merge-multiple: true

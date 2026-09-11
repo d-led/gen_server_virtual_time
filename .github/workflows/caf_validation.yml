@@ -23,7 +23,7 @@ jobs:
         example: [caf_pubsub, caf_pipeline, caf_burst, caf_loadbalanced]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Install build tools
       run: |

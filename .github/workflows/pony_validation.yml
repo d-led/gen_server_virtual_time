@@ -22,7 +22,7 @@ jobs:
         example: [pony_pubsub, pony_pipeline, pony_burst, pony_loadbalanced]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Install Pony toolchain (Ubuntu)
       run: |
