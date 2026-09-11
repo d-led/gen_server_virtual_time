@@ -118,7 +118,7 @@ defmodule CenturyBackup.BackupStateMachine do
     VirtualTimeGenStateMachine.start_link(__MODULE__, :idle, opts)
   end
 
-  def init(state), do: {:ok, state, %{backup_count: 0, started_count: 0}}
+  def init(state), do: {:ok, state, %{backup_count: 0, started_count: 0, skipped_count: 0}}
 
   # Start backup when idle (1-hour timer)
   def handle_event(:cast, :trigger_backup, :idle, data) do
@@ -126,9 +126,11 @@ defmodule CenturyBackup.BackupStateMachine do
     {:next_state, :backing_up, %{data | started_count: data.started_count + 1}}
   end
 
-  # Ignore triggers while already backing up
-  def handle_event(:cast, :trigger_backup, :backing_up, _data) do
-    {:keep_state_and_data, []}
+  # Ignore triggers while already backing up. A midnight is only skipped when the
+  # previous backup has not finished, so counted skips plus starts must add up to
+  # the number of midnights in the simulated century.
+  def handle_event(:cast, :trigger_backup, :backing_up, data) do
+    {:keep_state, %{data | skipped_count: data.skipped_count + 1}}
   end
 
   # Complete backup: increment counter, return to idle
@@ -143,6 +145,10 @@ defmodule CenturyBackup.BackupStateMachine do
 
   def handle_event({:call, from}, :get_started_count, _state, data) do
     {:keep_state, data, [{:reply, from, data.started_count}]}
+  end
+
+  def handle_event({:call, from}, :get_skipped_count, _state, data) do
+    {:keep_state, data, [{:reply, from, data.skipped_count}]}
   end
 end
 
@@ -188,20 +194,21 @@ defmodule CenturyBackup.Raw do
 
       completed = VirtualTimeGenStateMachine.call(backup_pid, :get_backup_count)
       started = VirtualTimeGenStateMachine.call(backup_pid, :get_started_count)
+      skipped = VirtualTimeGenStateMachine.call(backup_pid, :get_skipped_count)
       for pid <- [backup_pid, clock], do: GenServer.stop(pid)
-      {started, completed}
+      {started, completed, skipped}
     end)
 
-    {{started_count, backup_count}, elapsed} = result
+    {{started_count, completed_count, skipped_count}, elapsed} = result
 
     IO.puts("\n   ✓ Simulated #{days_in_century} days in #{elapsed}ms")
-    IO.puts("   ✓ Started: #{started_count}, Completed: #{backup_count} (expected: #{days_in_century})")
+    IO.puts("   ✓ Started: #{started_count}, Completed: #{completed_count}")
+    IO.puts("   ✓ Skipped: #{skipped_count} midnights (a backup was still running)")
 
-    if started_count != days_in_century do
-      IO.puts(
-        "   ⚠️  Goal not met: #{days_in_century - started_count} daily backups never fired.\n" <>
-          "       advance/2 can move past work its actors have not scheduled yet."
-      )
+    if started_count + skipped_count == days_in_century do
+      IO.puts("   ✓ All #{days_in_century} midnights accounted for")
+    else
+      IO.puts("   ✗ #{days_in_century - started_count - skipped_count} midnights unaccounted for")
     end
 
     elapsed

@@ -40,7 +40,8 @@ generators that turn those models into runnable projects in six languages.
    VirtualClock.advance(clock, 10_000)   # 10 virtual seconds, ~10ms real
    ```
 
-4. Run the century demo (about a minute) —
+4. Run the century demo — 100 years of daily backups in seconds (a minute or two
+   on a busy machine) —
    [source](scripts/century_backup_demo.exs),
    [sample run](https://github.com/d-led/gen_server_virtual_time/actions/workflows/century-backup-demo.yml):
 

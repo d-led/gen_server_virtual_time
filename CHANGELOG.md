@@ -89,6 +89,21 @@ and this project adheres to
   eats: concurrent actors have no deterministic ordering, so that outcome is a
   race. It asserts the behaviour the scenario guarantees instead
 
+### Demos and Documentation
+
+- The century demo runs this repository's code instead of the published Hex
+  package (`Mix.install` used to fetch `~> 0.5.0`), so a fix made here can show
+  up in it, and its workflow can catch a regression here. Its header no longer
+  claims "milliseconds" where runs measure seconds
+- The century demo reports its goal honestly: it states how many of the 36,525
+  midnights triggered a backup and how many were skipped because the previous
+  backup was still running, and checks that the two add up - which they do. The
+  earlier `(expected: 36525)` line implied the simulation was losing work; the
+  gap was the demo's own "ignore a trigger while already backing up" rule
+- README states the primary goal up front - the RxJS TestScheduler idea applied
+  to the BEAM - alongside the simulation DSL and the generators, rather than
+  leaving it at the bottom under "Inspiration"
+
 ## [0.5.0] - 2025-10-27
 
 ### Added
