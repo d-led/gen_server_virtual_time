@@ -8,7 +8,7 @@ defmodule GenServerVirtualTime.MixProject do
     [
       app: :gen_server_virtual_time,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 

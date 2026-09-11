@@ -28,8 +28,8 @@ This project follows a simple code of conduct:
 
 ### Prerequisites
 
-- Elixir 1.15 or later (CI also tests 1.17 and 1.18)
-- OTP 25 or later
+- Elixir 1.19 or later (CI verifies 1.19 and 1.20)
+- OTP 28 or later
 - Git
 - A GitHub account
 

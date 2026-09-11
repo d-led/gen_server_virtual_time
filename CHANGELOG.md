@@ -20,7 +20,9 @@ and this project adheres to
 
 ### Changed
 
-- Minimum Elixir version is now 1.15 (required by `ex_doc ~> 0.40`)
+- Minimum Elixir version is now 1.19, and minimum OTP 28, matching the
+  versions CI verifies. (1.15 was the previous floor, needed by `ex_doc ~>
+  0.40`.)
 - CI matrix reduced to Elixir 1.19/1.20 with OTP 28/29, and the other five
   workflows aligned, which still pinned Elixir 1.15/1.18 and OTP 25/27
 - GitHub Actions updated to their current majors (`checkout` v7, `cache` v6,
