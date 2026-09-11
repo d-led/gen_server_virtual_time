@@ -1,6 +1,8 @@
 defmodule VirtualClockTest do
   use ExUnit.Case, async: true
 
+  doctest VirtualClock
+
   describe "VirtualClock" do
     test "starts with time at 0" do
       {:ok, clock} = VirtualClock.start_link()
@@ -50,10 +52,34 @@ defmodule VirtualClockTest do
       {:ok, clock} = VirtualClock.start_link()
 
       ref = VirtualClock.send_after(clock, self(), :cancelled, 1000)
-      assert VirtualClock.cancel_timer(clock, ref) == :ok
+
+      assert VirtualClock.cancel_timer(clock, ref) == 1000
 
       VirtualClock.advance(clock, 1000)
       refute_receive :cancelled, 10
+    end
+
+    test "cancelling an unknown timer reports false" do
+      {:ok, clock} = VirtualClock.start_link()
+      ref = VirtualClock.send_after(clock, self(), :cancelled, 1000)
+
+      VirtualClock.cancel_timer(clock, ref)
+
+      assert VirtualClock.cancel_timer(clock, ref) == false
+    end
+
+    test "counts every scheduled event, including events sharing a due time" do
+      {:ok, clock} = VirtualClock.start_link()
+
+      VirtualClock.send_after(clock, self(), :at_same_time, 500)
+      VirtualClock.send_after(clock, self(), :at_same_time, 500)
+      VirtualClock.send_after(clock, self(), :later, 900)
+
+      assert VirtualClock.scheduled_count(clock) == 3
+
+      VirtualClock.advance(clock, 500)
+
+      assert VirtualClock.scheduled_count(clock) == 1
     end
 
     test "advance_to_next jumps to next event" do

@@ -618,26 +618,44 @@ defmodule ActorSimulation do
     end
   end
 
+  # Actors forward messages to one another, so a single pass over the actors map
+  # can sample a downstream actor before an upstream one has forwarded to it.
+  # Each pass makes every actor drain its mailbox (reading stats is a call), so
+  # repeating until the totals stop changing observes the settled system.
   defp collect_stats(simulation) do
     # Get the actual duration that was simulated
     actual_duration = Map.get(simulation, :actual_duration, 0)
 
-    stats =
-      Enum.reduce(simulation.actors, simulation.stats, fn {name, actor_info}, stats ->
-        case actor_info.type do
-          :simulated ->
-            actor_stats = Actor.get_stats(actor_info.pid)
-            Stats.add_actor_stats(stats, name, actor_stats)
-
-          :real_process ->
-            # Get stats from VirtualTimeGenServer's built-in tracking
-            real_stats = GenServer.call(actor_info.pid, :__vtgs_get_stats__)
-            Stats.add_actor_stats(stats, name, real_stats)
-        end
-      end)
-
+    stats = settled_stats(simulation, nil)
     # Set the time range for rate calculations
     %{stats | start_time: 0, end_time: actual_duration}
+  end
+
+  defp settled_stats(simulation, previous_total, passes_left \\ 10) do
+    stats = read_actor_stats(simulation)
+
+    if stats.total_messages == previous_total or passes_left <= 1 do
+      stats
+    else
+      settled_stats(simulation, stats.total_messages, passes_left - 1)
+    end
+  end
+
+  defp read_actor_stats(simulation) do
+    Enum.reduce(simulation.actors, Stats.new(), fn {name, actor_info}, stats ->
+      case actor_info.type do
+        :simulated ->
+          Stats.add_actor_stats(stats, name, Actor.get_stats(actor_info.pid))
+
+        :real_process ->
+          # Get stats from VirtualTimeGenServer's built-in tracking
+          Stats.add_actor_stats(
+            stats,
+            name,
+            GenServer.call(actor_info.pid, :__vtgs_get_stats__)
+          )
+      end
+    end)
   end
 
   defp collect_trace do

@@ -36,9 +36,6 @@ defmodule VirtualTimeGenServer.Wrapper do
             {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
           end
 
-        # Auto-send ack to VirtualClock after processing message (transparent to user)
-        send_ack_to_virtual_clock()
-
         result
     end
   end
@@ -51,66 +48,26 @@ defmodule VirtualTimeGenServer.Wrapper do
       VirtualTimeGenServer.generate_incoming_trace_event(request, :cast)
     end
 
-    result =
-      case module.handle_cast(request, state) do
-        {:noreply, new_state} -> {:noreply, {module, new_state}}
-        {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-        {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
-      end
+    case module.handle_cast(request, state) do
+      {:noreply, new_state} -> {:noreply, {module, new_state}}
+      {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
+      {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
+    end
+  end
 
-    # Auto-send ack to VirtualClock AFTER processing message (transparent to user)
-    send_ack_to_virtual_clock()
-
+  # A delivery from the VirtualClock. The token identifies this exact delivery;
+  # acknowledging it is what lets the clock move past the event's timestamp.
+  def handle_info({:__vtgs_delivered__, token, msg}, {module, state}) do
+    result = delegate_info(msg, {module, state})
+    send_ack_to_virtual_clock(token)
     result
   end
 
+  # Anything else an actor receives (calls, casts, messages from other actors)
+  # is not a clock delivery, so it must not be acknowledged - an acknowledgement
+  # here would let the clock advance while the delivered event is still queued.
   def handle_info(msg, {module, state}) do
-    # Handle delayed ack messages first
-    case msg do
-      {:send_ack_to_clock, clock_pid} ->
-        # Now send the actual ack - any send_after calls have been processed
-        send(clock_pid, {:actor_processed, self()})
-        {:noreply, {module, state}}
-
-      _ ->
-        # Skip acks for internal VirtualClock messages to avoid infinite loops
-        if match?({:actor_processed, _}, msg) do
-          # Just pass through internal VirtualClock messages
-          case module.handle_info(msg, state) do
-            {:noreply, new_state} ->
-              {:noreply, {module, new_state}}
-
-            {:noreply, new_state, {:continue, arg}} ->
-              {:noreply, {module, new_state}, {:continue, arg}}
-
-            {:noreply, new_state, timeout} ->
-              {:noreply, {module, new_state}, timeout}
-
-            {:stop, reason, new_state} ->
-              {:stop, reason, {module, new_state}}
-          end
-        else
-          result =
-            case module.handle_info(msg, state) do
-              {:noreply, new_state} ->
-                {:noreply, {module, new_state}}
-
-              {:noreply, new_state, {:continue, arg}} ->
-                {:noreply, {module, new_state}, {:continue, arg}}
-
-              {:noreply, new_state, timeout} ->
-                {:noreply, {module, new_state}, timeout}
-
-              {:stop, reason, new_state} ->
-                {:stop, reason, {module, new_state}}
-            end
-
-          # Auto-send ack to VirtualClock AFTER processing message (transparent to user)
-          send_ack_to_virtual_clock()
-
-          result
-        end
-    end
+    delegate_info(msg, {module, state})
   end
 
   def handle_continue(arg, {module, state}) do
@@ -154,19 +111,31 @@ defmodule VirtualTimeGenServer.Wrapper do
   end
 
   # Send acknowledgment to VirtualClock that this actor finished processing
-  defp send_ack_to_virtual_clock do
+  defp send_ack_to_virtual_clock(token) do
     # Only send ack if we're using virtual time (not real time)
     case Process.get(:virtual_clock) do
-      # Real time mode - no ack needed
-      nil ->
-        :ok
-
       clock_pid when is_pid(clock_pid) ->
-        # IO.puts("DEBUG ACK: Actor #{inspect(self())} scheduling delayed ack to VirtualClock")
-        # Send ack asynchronously AFTER any send_after calls in message handler
-        # This ensures the actor has completed all scheduling before we ack
-        send(self(), {:send_ack_to_clock, clock_pid})
+        send(clock_pid, {:actor_processed, self(), token})
+
+      _ ->
         :ok
+    end
+  end
+
+  # Delegates a message to the wrapped module, re-wrapping its state.
+  defp delegate_info(msg, {module, state}) do
+    case module.handle_info(msg, state) do
+      {:noreply, new_state} ->
+        {:noreply, {module, new_state}}
+
+      {:noreply, new_state, {:continue, arg}} ->
+        {:noreply, {module, new_state}, {:continue, arg}}
+
+      {:noreply, new_state, timeout} ->
+        {:noreply, {module, new_state}, timeout}
+
+      {:stop, reason, new_state} ->
+        {:stop, reason, {module, new_state}}
     end
   end
 

@@ -281,5 +281,37 @@ defmodule TerminationConditionTest do
 
       ActorSimulation.stop(simulation)
     end
+
+    test "rejects combining expected_messages with terminate_when" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:producer,
+          send_pattern: {:periodic, 100, :data},
+          targets: [:consumer]
+        )
+        |> ActorSimulation.add_actor(:consumer)
+
+      assert_raise ArgumentError,
+                   "Cannot provide both expected_messages and terminate_when parameters",
+                   fn ->
+                     ActorSimulation.run(simulation,
+                       max_duration: 1_000,
+                       expected_messages: 10,
+                       terminate_when: fn _sim -> true end
+                     )
+                   end
+    end
+
+    test "quiescence stops immediately when no actor has a send pattern" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:idle)
+        |> ActorSimulation.run(max_duration: 5_000, terminate_when: :quiescence)
+
+      assert simulation.actual_duration == 0
+      assert VirtualClock.scheduled_count(simulation.clock) == 0
+
+      ActorSimulation.stop(simulation)
+    end
   end
 end

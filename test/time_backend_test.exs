@@ -1,12 +1,16 @@
 defmodule TimeBackendTest do
   use ExUnit.Case, async: true
 
+  import WaitUntil
+
   describe "RealTimeBackend" do
     test "sends messages after specified delay" do
       ref = RealTimeBackend.send_after(self(), :hello, 50)
       assert is_reference(ref)
 
-      assert_receive :hello, 100
+      # Generous bound: the behaviour under test is that the message arrives,
+      # not that a loaded machine delivers it within 100ms.
+      assert_receive :hello, 1_000
     end
 
     test "cancels timers before they fire" do
@@ -19,7 +23,7 @@ defmodule TimeBackendTest do
 
     test "returns false when canceling already-fired timer" do
       ref = RealTimeBackend.send_after(self(), :fired, 10)
-      assert_receive :fired, 100
+      assert_receive :fired, 1_000
 
       result = RealTimeBackend.cancel_timer(ref)
       assert result == false
@@ -54,10 +58,18 @@ defmodule TimeBackendTest do
     test "cancels virtual timers", %{clock: clock} do
       ref = VirtualTimeBackend.send_after(self(), :wont_arrive, 100)
 
-      assert :ok == VirtualTimeBackend.cancel_timer(ref)
+      assert VirtualTimeBackend.cancel_timer(ref) == 100
 
       VirtualClock.advance(clock, 100)
       refute_receive :wont_arrive, 10
+    end
+
+    test "cancelling an unknown timer reports false", %{clock: _clock} do
+      ref = VirtualTimeBackend.send_after(self(), :wont_arrive, 100)
+
+      VirtualTimeBackend.cancel_timer(ref)
+
+      assert VirtualTimeBackend.cancel_timer(ref) == false
     end
 
     test "sleeps in virtual time without blocking real execution", %{clock: clock} do
@@ -67,12 +79,13 @@ defmodule TimeBackendTest do
       _sleeper =
         spawn(fn ->
           Process.put(:virtual_clock, clock)
-          send(parent, :before_sleep)
           VirtualTimeBackend.sleep(1000)
           send(parent, :after_sleep)
         end)
 
-      assert_receive :before_sleep, 100
+      # Wait until the sleep has actually registered its wake-up: advancing the
+      # clock before that would leave the sleeper waiting forever.
+      wait_until(fn -> VirtualClock.scheduled_count(clock) == 1 end)
 
       # Sleep is waiting, not completed yet
       refute_receive :after_sleep, 50
@@ -127,7 +140,7 @@ defmodule TimeBackendTest do
       assert is_reference(ref_virtual)
 
       # Cleanup
-      assert_receive :test1, 50
+      assert_receive :test1, 1_000
       VirtualClock.advance(clock, 10)
       assert_receive :test2, 10
     end

@@ -343,3 +343,4 @@ examples/*/*.sca
 
 # Dialyzer PLT files
 /priv/plts/
+tmp/

@@ -1,8 +1,8 @@
 # GenServerVirtualTime
 
-Test time-based GenServers instantly. Simulate actor systems with virtual time.
-Model, simulate, analyze actor systems and generate boilerplate in various Actor
-Model implementations: in Java, Rust, Pony, Go and C++.
+Test time-based GenServers instantly — no waiting, no flaky timing. Simulate
+actor systems with virtual time, then generate the same system in C++, Go, Pony,
+Rust, Java or OMNeT++.
 
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
@@ -10,25 +10,52 @@ Model implementations: in Java, Rust, Pony, Go and C++.
 [![Coverage Status](https://coveralls.io/repos/github/d-led/gen_server_virtual_time/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/d-led/gen_server_virtual_time?branch=main)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time.svg?type=shield&issueType=license)](https://app.fossa.com/projects/git%2Bgithub.com%2Fd-led%2Fgen_server_virtual_time?ref=badge_shield&issueType=license)
 
-> **🎬
-> [View Live Examples & Reports](https://d-led.github.io/gen_server_virtual_time/)**
-> • **📊
-> [Interactive Flowchart Reports](https://d-led.github.io/gen_server_virtual_time/reports/)**
+> **🎬 [Live examples & reports](https://d-led.github.io/gen_server_virtual_time/)**
+> • **📊 [Flowchart reports](https://d-led.github.io/gen_server_virtual_time/reports/)**
 
-## 🌟 Try It: Simulate a Century in Seconds
+## ⚡ Start here
 
-```bash
-elixir scripts/century_backup_demo.exs
-```
+1. Add the dependency:
 
-Run the century backup demo to see virtual time in action - simulate 100 years
-of daily backups (36,525 backups) in milliseconds.
-[Source](scripts/century_backup_demo.exs).
-[Sample run](https://github.com/d-led/gen_server_virtual_time/actions/workflows/century-backup-demo.yml).
+   ```elixir
+   def deps do
+     [{:gen_server_virtual_time, "~> 0.5.0"}]
+   end
+   ```
+
+2. Swap `use GenServer` for `use VirtualTimeGenServer` — nothing else changes.
+
+3. Point a clock at it, then jump time:
+
+   ```elixir
+   {:ok, clock} = VirtualClock.start_link()
+   {:ok, server} = VirtualTimeGenServer.start_link(MyServer, :ok, virtual_clock: clock)
+
+   VirtualClock.advance(clock, 10_000)   # 10 virtual seconds, ~10ms real
+   ```
+
+4. Run the century demo to see it end to end (~2 seconds) —
+   [source](scripts/century_backup_demo.exs),
+   [sample run](https://github.com/d-led/gen_server_virtual_time/actions/workflows/century-backup-demo.yml):
+
+   ```bash
+   elixir scripts/century_backup_demo.exs
+   ```
+
+## 🧭 Which page do I need?
+
+| I want to…                                      | Go to                                                                        |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| Test a GenServer with timers                    | [100 seconds in milliseconds](#test-100-seconds-of-behavior-in-milliseconds) |
+| Test a state machine with timeouts               | [State machine example](#test-state-machines-with-virtual-time)              |
+| Simulate actors talking to each other           | [Actor simulation](#simulate-message-passing-systems)                        |
+| Draw a sequence diagram of the message flow     | [Visualize with sequence diagrams](#visualize-with-sequence-diagrams)        |
+| Generate C++ / Go / Pony / Rust / Java / OMNeT++ | [Code generators](#-code-generators)                                          |
+| Understand how the clock works                  | [VirtualClock design](docs/virtual_clock_design.md)                          |
 
 ## 🚀 Code Generators
 
-Generate production-ready actor system implementations from high-level DSL:
+Generate a working actor system, with build files, CI and tests, from the DSL:
 
 | Generator   | Language | Framework                                               | Output                                       |
 | ----------- | -------- | ------------------------------------------------------- | -------------------------------------------- |
@@ -39,13 +66,8 @@ Generate production-ready actor system implementations from high-level DSL:
 | **VLINGO**  | Java     | [VLINGO XOOM](https://docs.vlingo.io/)                  | Protocol actors, Maven, JUnit 5              |
 | **OMNeT++** | C++      | [OMNeT++](https://omnetpp.org/)                         | Discrete-event simulation, NED files, CMake  |
 
-All generators include:
-
-- ✅ Complete build configuration (CMake/Maven/Go modules/Corral)
-- ✅ CI/CD pipeline definitions (GitHub Actions)
-- ✅ Callback interfaces for custom behavior
-- ✅ Comprehensive test suites
-- ✅ Production-ready project structure
+Every generator emits the same five things: build config, a CI workflow,
+callback interfaces for your code, a test suite, and a runnable project layout.
 
 ## Show Me The Code
 
@@ -306,19 +328,9 @@ File.write!("report.html", html)
 # simulation = ActorSimulation.new(trace: true)
 ```
 
-## Installation
+## Why virtual time?
 
-```elixir
-def deps do
-  [
-    {:gen_server_virtual_time, "~> 0.5.0"}
-  ]
-end
-```
-
-## Why Virtual Time?
-
-| Problem              | Real Time   | Virtual Time |
+| Problem              | Real time   | Virtual time |
 | -------------------- | ----------- | ------------ |
 | Test 1 hour behavior | 1 hour wait | ~10 seconds  |
 | Flaky timing issues  | Common      | None         |
@@ -326,39 +338,27 @@ end
 | Deterministic        | No          | Yes          |
 | Speedup              | 1x          | 10-100x      |
 
-## Core Features
+## What you get
 
-**VirtualTimeGenServer** - Test real GenServers with virtual time
+| Module                        | Use it to                                            |
+| ----------------------------- | ---------------------------------------------------- |
+| `VirtualTimeGenServer`        | Test real GenServers with timers                     |
+| `VirtualTimeGenStateMachine`  | Test state machines with timeouts                    |
+| `ActorSimulation`             | Prototype distributed systems, with stats and traces |
+| `ActorSimulation.*Generator`  | Export the same system to another language           |
 
-- Drop-in replacement: `use VirtualTimeGenServer` instead of `use GenServer`
-- All standard callbacks: `handle_call`, `handle_cast`, `handle_info`
-- Fast: simulate hours in seconds
+Both wrappers are drop-in replacements: `use VirtualTimeGenServer` instead of
+`use GenServer`, `use VirtualTimeGenStateMachine` instead of
+`use GenStateMachine`. Every standard callback keeps working — `handle_call`,
+`handle_cast`, `handle_info`, `handle_continue`, `handle_event`, timeouts.
 
-**VirtualTimeGenStateMachine** - Test state machines with virtual time
+The simulation DSL gives you send patterns (`:periodic`, `:rate`, `:burst`),
+declarative `on_match` handlers, process-in-the-loop (mix real GenServers with
+simulated actors), and built-in statistics and tracing.
 
-- Drop-in replacement: `use VirtualTimeGenStateMachine` instead of
-  `use GenStateMachine`
-- All standard callbacks: `handle_event`, state transitions, timeouts
-- Fast: simulate complex state transitions instantly
-
-**Actor Simulation DSL** - Prototype distributed systems
-
-- Pattern matching: declarative message handlers
-- Send patterns: periodic, rate-based, burst
-- Process-in-the-loop: mix real GenServers with simulated actors
-- Statistics & tracing built-in
-
-**Code Generation** - Export to production
-
-- **OMNeT++**: Industry-standard network simulation in C++
-- **CAF**: Production actor systems with callback interfaces
-- **Pony**: Capabilities-secure, data-race free actors
-- **Phony**: Pony-inspired Go actor library
-- **Ractor**: Gen_server-inspired Rust actors with supervision
-- **VLINGO XOOM**: Type-safe Java actors with scheduling
-- **Tests included**: Catch2, PonyTest, Go tests, Cargo tests, JUnit 5 with CI
-  pipelines
-- **Fast prototyping**: 10-100x faster in Elixir, then scale in production
+Generators ship the tests too: Catch2, PonyTest, Go tests, Cargo tests, and
+JUnit 5, each with a CI workflow. Prototype in Elixir at 10-100x speed, then
+scale in production.
 
 ## Quick API Reference
 
@@ -475,50 +475,47 @@ ActorSimulation.new()
 
 Similar to hardware-in-the-loop testing, but for processes.
 
-## Code Generation Demos
+## Generate a project
 
-```bash
-# OMNeT++ network simulations
-mix run examples/omnetpp_demo.exs
-cd examples/omnetpp_pubsub
-# View the generated network topology in PubSubNetwork.ned
+1. Generate the example projects for the language you want:
 
-# CAF actor systems (C++)
-mix run examples/caf_demo.exs
-cd examples/caf_pubsub
-# Edit publisher_callbacks_impl.cpp to add your custom code
+   ```bash
+   mix run scripts/generate_omnetpp_examples.exs   # C++ / OMNeT++
+   mix run scripts/generate_caf_examples.exs       # C++ / CAF
+   mix run scripts/generate_pony_examples.exs      # Pony
+   mix run scripts/generate_phony_examples.exs     # Go / Phony
+   mix run examples/ractor_demo.exs                # Rust / Ractor
+   mix run scripts/generate_vlingo_sample.exs      # Java / VLINGO XOOM
+   ```
 
-# VLINGO XOOM Actors (Java)
-mix run scripts/generate_vlingo_sample.exs
-cd generated/vlingo_loadbalanced
-mvn test  # Run JUnit 5 tests
+2. Build the output with its own toolchain. Each generated project ships a
+   `README.md` with the exact commands:
 
-# Pony (capabilities-secure)
-mix run examples/pony_demo.exs
-cd generated/pony_loadbalanced
-
-# Phony (Go)
-mix run examples/phony_demo.exs
-cd generated/phony_burst
-
-# Ractor (Rust)
-mix run examples/ractor_demo.exs
-cd generated/ractor_pipeline
-cargo test
-```
+   | Generated project               | Toolchain     |
+   | ------------------------------- | ------------- |
+   | `examples/omnetpp_pubsub`       | CMake + Conan |
+   | `examples/caf_pubsub`           | CMake + Conan |
+   | `examples/pony_pubsub`          | Pony + Corral |
+   | `examples/phony_pubsub`         | Go modules    |
+   | `examples/ractor_pipeline`      | Cargo         |
+   | `generated/vlingo_loadbalanced` | Maven         |
 
 ## Documentation
 
-- [OMNeT++ Code Generation](docs/omnetpp_generator.md) - Export to OMNeT++ C++
-- [CAF Code Generation](docs/caf_generator.md) - Export to CAF with callbacks
-- [Pony Generator](docs/pony_generator.md) - Capabilities-secure actors
-- [Phony Generator](docs/phony_generator.md) - Go actor systems
-- [Ractor Generator](docs/ractor_generator.md) - Rust gen_server-inspired actors
-  (NEW!)
-- [VLINGO XOOM Generator](docs/vlingo_generator.md) - Type-safe Java actors
-- [API Documentation](https://hexdocs.pm/gen_server_virtual_time) - Complete API
-  reference
-- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+- [Generators overview](docs/generators.md) — links every generator guide
+  ([OMNeT++](docs/omnetpp_generator.md),
+  [CAF](docs/caf_generator.md),
+  [Pony](docs/pony_generator.md),
+  [Phony](docs/phony_generator.md),
+  [Ractor](docs/ractor_generator.md),
+  [VLINGO XOOM](docs/vlingo_generator.md))
+- [VirtualClock design](docs/virtual_clock_design.md) — how the clock schedules
+  and orders events
+- [Local clock injection](docs/local_clock_injection_feature.md) — isolated,
+  race-free tests
+- [Flowchart reports](docs/flowchart_reports.md) — topology diagrams with stats
+- [API reference](https://hexdocs.pm/gen_server_virtual_time) ·
+  [Contributing guide](CONTRIBUTING.md)
 
 ## Performance
 

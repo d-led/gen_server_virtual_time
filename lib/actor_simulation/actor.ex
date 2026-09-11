@@ -122,19 +122,8 @@ defmodule ActorSimulation.Actor do
 
       {:send, messages_to_send, user_state} ->
         # Send messages but also reply to caller
-        messages_to_send =
-          if is_list(messages_to_send), do: messages_to_send, else: [messages_to_send]
-
-        Enum.each(messages_to_send, fn
-          {target, message} ->
-            case Map.get(new_state.actors_map, target) do
-              nil ->
-                :ok
-
-              target_info ->
-                send_message(new_state, target, target_info, message)
-            end
-        end)
+        messages_to_send = normalize_messages(messages_to_send)
+        dispatch_messages(new_state, messages_to_send)
 
         # Return :ok reply for the call
         {:reply, :ok,
@@ -180,35 +169,7 @@ defmodule ActorSimulation.Actor do
   def handle_info({:delayed_send, messages_to_send}, state) do
     # Handle delayed sends (from send_after return value)
     # This simulates processing time in virtual time
-    Enum.each(messages_to_send, fn
-      {target, message} ->
-        target_info =
-          if target == state.definition.name do
-            %{pid: self(), type: :simulated}
-          else
-            Map.get(state.actors_map, target)
-          end
-
-        case target_info do
-          nil -> :ok
-          info -> send_message(state, target, info, message)
-        end
-
-      message when is_tuple(message) and tuple_size(message) == 2 ->
-        {target, msg} = message
-
-        target_info =
-          if target == state.definition.name do
-            %{pid: self(), type: :simulated}
-          else
-            Map.get(state.actors_map, target)
-          end
-
-        case target_info do
-          nil -> :ok
-          info -> send_message(state, target, info, msg)
-        end
-    end)
+    dispatch_messages(state, messages_to_send)
 
     sent_count = length(messages_to_send)
 
@@ -268,40 +229,8 @@ defmodule ActorSimulation.Actor do
 
       {:send, messages_to_send, user_state} ->
         # Send response messages
-        messages_to_send =
-          if is_list(messages_to_send), do: messages_to_send, else: [messages_to_send]
-
-        Enum.each(messages_to_send, fn
-          {target, message} ->
-            # Handle self-messages
-            target_info =
-              if target == new_state.definition.name do
-                %{pid: self(), type: :simulated}
-              else
-                Map.get(new_state.actors_map, target)
-              end
-
-            case target_info do
-              nil -> :ok
-              info -> send_message(new_state, target, info, message)
-            end
-
-          message when is_tuple(message) and tuple_size(message) == 2 ->
-            {target, msg} = message
-
-            # Handle self-messages
-            target_info =
-              if target == new_state.definition.name do
-                %{pid: self(), type: :simulated}
-              else
-                Map.get(new_state.actors_map, target)
-              end
-
-            case target_info do
-              nil -> :ok
-              info -> send_message(new_state, target, info, msg)
-            end
-        end)
+        messages_to_send = normalize_messages(messages_to_send)
+        dispatch_messages(new_state, messages_to_send)
 
         sent_count = length(messages_to_send)
 
@@ -364,19 +293,8 @@ defmodule ActorSimulation.Actor do
 
       {:send, messages_to_send, user_state} ->
         # Send messages but also reply to caller
-        messages_to_send =
-          if is_list(messages_to_send), do: messages_to_send, else: [messages_to_send]
-
-        Enum.each(messages_to_send, fn
-          {target, message} ->
-            case Map.get(new_state.actors_map, target) do
-              nil ->
-                :ok
-
-              target_info ->
-                send_message(new_state, target, target_info, message)
-            end
-        end)
+        messages_to_send = normalize_messages(messages_to_send)
+        dispatch_messages(new_state, messages_to_send)
 
         # Send default :ok reply to caller
         case Map.get(new_state.actors_map, from) do
@@ -397,6 +315,30 @@ defmodule ActorSimulation.Actor do
   end
 
   # Private helpers
+
+  # A `{:send, messages, state}` response may carry a single pair or a list of
+  # pairs; normalize both shapes to a list of `{target, message}`.
+  defp normalize_messages(messages), do: List.wrap(messages)
+
+  # Resolves a target actor name to its runtime info. An actor's own name
+  # resolves to itself, so actors can message themselves.
+  defp resolve_target(state, target) do
+    if target == state.definition.name do
+      %{pid: self(), type: :simulated}
+    else
+      Map.get(state.actors_map, target)
+    end
+  end
+
+  # Delivers `{target, message}` pairs, silently ignoring unknown targets.
+  defp dispatch_messages(state, messages) do
+    Enum.each(messages, fn {target, message} ->
+      case resolve_target(state, target) do
+        nil -> :ok
+        target_info -> send_message(state, target, target_info, message)
+      end
+    end)
+  end
 
   defp send_message(state, target_name, target_info, msg) do
     case msg do

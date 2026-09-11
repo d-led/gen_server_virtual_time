@@ -1,6 +1,8 @@
 defmodule VirtualTimeGenServer.EdgeCasesTest do
   use ExUnit.Case, async: true
 
+  import WaitUntil
+
   # Test server with various callback return types
   defmodule TestServer do
     use VirtualTimeGenServer
@@ -154,7 +156,9 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
         send(parent, {:result, result})
       end)
 
-      assert_receive {:result, {:timeout, _}}, 200
+      # Generous bound: the call itself times out after 100ms real time, and
+      # relaying that exit back should not depend on how busy the machine is.
+      assert_receive {:result, {:timeout, _}}, 2_000
       GenServer.stop(server)
     end
 
@@ -167,7 +171,7 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
         send(parent, {:result, result})
       end)
 
-      assert_receive {:result, {:timeout, _}}, 200
+      assert_receive {:result, {:timeout, _}}, 2_000
       GenServer.stop(server)
     end
 
@@ -338,29 +342,19 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
 
   describe "VirtualTimeGenServer terminate callback" do
     test "terminate is called with reason" do
-      # Create a separate process to receive the notification
-      parent = self()
-
-      notifier =
-        spawn(fn ->
-          receive do
-            msg -> send(parent, {:forwarded, msg})
-          after
-            200 -> :timeout
-          end
-        end)
+      test_pid = self()
 
       Process.flag(:trap_exit, true)
       {:ok, server} = TestServer.start_link()
 
-      # Update state to include notification pid
+      # Ask the server to notify this test process when it terminates
       :sys.replace_state(server, fn {module, state} ->
-        {module, Map.put(state, :notify, notifier)}
+        {module, Map.put(state, :notify, test_pid)}
       end)
 
       GenServer.stop(server, :shutdown)
 
-      assert_receive {:forwarded, {:terminated, :shutdown}}, 200
+      assert_receive {:terminated, :shutdown}, 200
       Process.flag(:trap_exit, false)
     end
   end
@@ -409,6 +403,8 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     end
 
     test "send_after with zero delay", %{clock: clock} do
+      VirtualTimeGenServer.set_virtual_clock(clock, :i_know_what_i_am_doing, "test")
+
       VirtualTimeGenServer.send_after(self(), :immediate, 0)
 
       VirtualClock.advance(clock, 0)
@@ -428,10 +424,8 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     test "cancel_timer returns time remaining", %{clock: clock} do
       VirtualTimeGenServer.set_virtual_clock(clock, :i_know_what_i_am_doing, "test")
       ref = VirtualTimeGenServer.send_after(self(), :msg, 1000)
-      result = VirtualTimeGenServer.cancel_timer(ref)
 
-      # VirtualTimeGenServer.cancel_timer returns :ok or false
-      assert result == :ok or result == false
+      assert VirtualTimeGenServer.cancel_timer(ref) == 1000
     end
 
     test "sleep with virtual time", %{clock: clock} do
@@ -444,6 +438,10 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
         VirtualTimeGenServer.sleep(500)
         send(parent, :slept)
       end)
+
+      # Wait for the sleep to register its wake-up before advancing: advancing
+      # first would leave the sleeper waiting forever.
+      wait_until(fn -> VirtualClock.scheduled_count(clock) == 1 end)
 
       refute_receive :slept, 50
 

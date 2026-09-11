@@ -34,11 +34,13 @@ jobs:
     
     strategy:
       matrix:
-        elixir: ['1.14', '1.15', '1.16']
-        otp: ['25', '26']
-        exclude:
-          - elixir: '1.14'
-            otp: '26'
+        # Deliberately small: the versions we actually support.
+        # Explicit pairs, because OTP support is per Elixir minor.
+        include:
+          - elixir: '1.19'
+            otp: '28'
+          - elixir: '1.20'
+            otp: '29'
     
     env:
       MIX_ENV: test
@@ -109,8 +111,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.18'
-          otp-version: '27'
+          elixir-version: '1.20'
+          otp-version: '29'
       
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -159,8 +161,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.18'
-          otp-version: '27'
+          elixir-version: '1.20'
+          otp-version: '29'
       
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -200,8 +202,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.18'
-          otp-version: '27'
+          elixir-version: '1.20'
+          otp-version: '29'
       
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -242,8 +244,8 @@ jobs:
       - name: Setup Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: '1.18'
-          otp-version: '27'
+          elixir-version: '1.20'
+          otp-version: '29'
       
       - name: Install dependencies
         run: mix deps.get

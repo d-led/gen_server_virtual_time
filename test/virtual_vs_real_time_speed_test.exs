@@ -33,15 +33,16 @@ defmodule VirtualVsRealTimeSpeedTest do
       # Measure how long assert_receive takes with real time
       real_time_elapsed =
         measure_time(fn ->
-          # This will actually wait for 100ms in real time (just like GenServer)
-          assert_receive :received_message, 200
+          # This actually waits for 100ms in real time, just like GenServer. The
+          # receive timeout is generous so a loaded machine slows the test down
+          # instead of failing it.
+          assert_receive :received_message, 2_000
         end)
 
-      # With real time, this should take approximately 100ms (like GenServer)
-      # At least 80ms (allowing some tolerance)
+      # The message cannot arrive before the 100ms delay has elapsed: that is
+      # what shows real time is in use. There is deliberately no upper bound -
+      # how promptly a loaded machine delivers is not this test's business.
       assert real_time_elapsed >= 80
-      # But not too much more than 100ms
-      assert real_time_elapsed <= 150
 
       # Clean up
       GenServer.stop(sender)

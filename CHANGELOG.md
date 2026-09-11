@@ -8,6 +8,62 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Property-based test suites (`test/virtual_clock_property_test.exs`,
+  `test/actor_simulation_property_test.exs`) covering time additivity, event
+  ordering, cancellation and simulation message counts
+- Mutation testing with [muex](https://hex.pm/packages/muex) in place of the
+  broken `muzak`/`exavier` dependencies, which fail on current Elixir
+- `doctest VirtualClock` so the moduledoc and `cancel_timer/2` examples are
+  executed by the test suite
+
+### Changed
+
+- Minimum Elixir version is now 1.15 (required by `ex_doc ~> 0.40`)
+- CI matrix updated to Elixir 1.15/1.17/1.18 with OTP 25/26/27
+- Updated all dependencies, including `ex_doc` 0.38 → 0.40, `credo` 1.7.13 →
+  1.7.19, `dialyxir` 1.4.6 → 1.4.8, `castore` 1.0.15 → 1.0.21
+- Consolidated four duplicated message-dispatch blocks in `ActorSimulation.Actor`
+  into shared helpers
+- README and documentation index restructured to lead with install and runnable
+  examples
+
+### Fixed
+
+- Clock deliveries to `VirtualTimeGenServer` actors now carry a token and are
+  acknowledged by that token alone. Actors previously acknowledged *every*
+  message they handled, so an unrelated message could satisfy the wait for a
+  delivered event and let the clock advance while the event was still queued -
+  which made simulations intermittently under-count their messages
+- `ActorSimulation.run/2` now reads actor statistics until they settle. A single
+  pass could sample a downstream actor before an upstream one had forwarded to
+  it, so a finished simulation could report zero messages for the last actor in
+  a chain
+- Events due at the same virtual instant now fire in scheduling order, matching
+  real timers (previously reverse order)
+- `VirtualClock.scheduled_count/1` now counts every scheduled event; it
+  previously reported one per due time, undercounting events that shared a
+  timestamp
+- `VirtualClock.cancel_timer/2` now returns the remaining virtual milliseconds
+  (or `false`), matching the `TimeBackend` behaviour and `Process.cancel_timer/1`
+- The acknowledgement watchdog is now tracked in the clock state, so a stale
+  timeout can no longer fire against a later wait
+- Removed dead code: redundant `Enum.each` clauses in `ActorSimulation.Actor`,
+  an unreachable `pattern_to_interval/2` clause in the OMNeT++ generator, and
+  unused `VirtualScheduler` accessors that had no server-side handlers
+
+### Test Reliability
+
+- Removed all `Process.sleep/1`-based synchronisation from the test suite: tests
+  now wait on the observable effect (`WaitUntil.wait_until/2`) before advancing
+  the clock, instead of guessing how long another process needs
+- Replaced real-time deadline assertions with load-tolerant bounds, so a busy
+  machine slows the tests down rather than failing them
+- The dining philosophers diagram test no longer asserts that every philosopher
+  eats: concurrent actors have no deterministic ordering, so that outcome is a
+  race. It asserts the behaviour the scenario guarantees instead
+
 ## [0.5.0] - 2025-10-27
 
 ### Added

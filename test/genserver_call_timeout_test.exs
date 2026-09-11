@@ -75,6 +75,11 @@ defmodule GenServerCallTimeoutTest do
         {:ok, %{pending_ops: %{}}}
       end
 
+      # Synchronisation barrier: a call sent after a cast is handled after it.
+      def handle_call(:sync, _from, state) do
+        {:reply, :ok, state}
+      end
+
       def handle_cast({:start_slow_op, caller}, state) do
         # Schedule result delivery
         VirtualTimeGenServer.send_after(self(), {:complete_op, caller}, 2000)
@@ -94,11 +99,11 @@ defmodule GenServerCallTimeoutTest do
       # Use test-local virtual clock instead of global to avoid race conditions
       {:ok, server} = AsyncServer.start_link(virtual_clock: clock)
 
-      # Start async operation
+      # Start async operation, then synchronise: a call sent after the cast is
+      # handled after it, so the delayed reply is guaranteed to be scheduled
+      # before we advance the clock.
       GenServer.cast(server, {:start_slow_op, self()})
-
-      # Small delay to ensure cast is processed before advancing
-      Process.sleep(10)
+      :ok = GenServer.call(server, :sync)
 
       # Advance virtual time
       VirtualClock.advance(clock, 2000)

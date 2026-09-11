@@ -1,6 +1,8 @@
 defmodule VirtualTimeGenServerTest do
   use ExUnit.Case, async: true
 
+  import WaitUntil
+
   # A simple ticker GenServer for testing
   defmodule TickerServer do
     use VirtualTimeGenServer
@@ -81,8 +83,9 @@ defmodule VirtualTimeGenServerTest do
       count = TickerServer.get_count(server)
       elapsed = System.monotonic_time(:millisecond) - start_time
 
-      # Test completed in milliseconds, not seconds
-      assert elapsed < 100
+      # Simulating 500ms of virtual time must not cost 500ms of real time.
+      # (A tight millisecond budget would measure the machine, not the code.)
+      assert elapsed < 500
       # But we simulated 500ms of time
       assert count == 5
 
@@ -343,15 +346,14 @@ defmodule VirtualTimeGenServerTest do
         "testing real_time option overrides global clock"
       )
 
-      # Sleep for real time
+      # The server must tick on the wall clock: the virtual clock is never
+      # advanced, so ticks can only arrive if real time is really in use.
       start_time = System.monotonic_time(:millisecond)
-      Process.sleep(150)
-      count = TickerServer.get_count(server)
+      wait_until(fn -> TickerServer.get_count(server) >= 2 end, 2_000)
       elapsed = System.monotonic_time(:millisecond) - start_time
 
-      # Should have real ticks, not virtual
-      assert elapsed >= 100
-      assert count >= 2
+      # Two ticks 50ms apart cannot both arrive instantly.
+      assert elapsed >= 50
 
       GenServer.stop(server)
     end
@@ -468,10 +470,12 @@ defmodule VirtualTimeGenServerTest do
       VirtualClock.advance(clock, 500)
       assert TickerServer.get_count(virtual_server) == 5
 
-      # Real server continues on real time
-      Process.sleep(150)
-      real_count = TickerServer.get_count(real_server)
-      assert real_count >= 2
+      # Real server continues on real time, independently of the virtual clock
+      real_started = System.monotonic_time(:millisecond)
+      wait_until(fn -> TickerServer.get_count(real_server) >= 2 end, 2_000)
+      real_elapsed = System.monotonic_time(:millisecond) - real_started
+
+      assert real_elapsed >= 50
 
       GenServer.stop(virtual_server)
       GenServer.stop(real_server)

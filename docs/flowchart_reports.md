@@ -346,6 +346,6 @@ See full API documentation:
 ## Learn More
 
 - [Mermaid Flowchart Syntax](https://mermaid.js.org/syntax/flowchart.html)
-- [ActorSimulation Documentation](./README.md)
-- [Sequence Diagrams Guide](./sequence_diagrams.md)
+- [Project README](README.md)
+- [Sequence diagrams](README.md#visualize-with-sequence-diagrams)
 - [Live Examples](https://d-led.github.io/gen_server_virtual_time/examples/)

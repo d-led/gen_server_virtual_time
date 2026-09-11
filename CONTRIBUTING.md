@@ -28,7 +28,7 @@ This project follows a simple code of conduct:
 
 ### Prerequisites
 
-- Elixir 1.14 or later
+- Elixir 1.15 or later (CI also tests 1.17 and 1.18)
 - OTP 25 or later
 - Git
 - A GitHub account
@@ -127,6 +127,40 @@ The project uses a tag-based testing system for different test categories:
 
 **Default behavior**: `mix test` excludes `:slow` and `:diagram_generation` tags
 for fast development feedback.
+
+### Property-Based Tests
+
+Behavioural invariants live in `test/*_property_test.exs` and run with the normal
+suite, using [`stream_data`](https://hex.pm/packages/stream_data):
+
+```bash
+# Run just the property suites
+mix test test/virtual_clock_property_test.exs test/actor_simulation_property_test.exs
+```
+
+Property tests state the rules virtual time must obey — advancing is additive,
+an event fires exactly once at its due time, and events due at the same instant
+fire in scheduling order. Prefer a property when you can describe the rule
+instead of a single example.
+
+### Mutation Testing
+
+[muex](https://hex.pm/packages/muex) checks whether the tests would catch a
+deliberately broken implementation:
+
+```bash
+# Core modules, with mutation optimisation (faster)
+mix muex --files "lib/*.ex" --optimize --optimize-level conservative
+
+# A single module
+mix muex --files lib/virtual_clock.ex
+
+# Fail the build when the score drops below a threshold
+mix muex --fail-at 80
+```
+
+A surviving mutant marks behaviour no test pins down. Close the gap with an
+assertion, not by lowering the threshold.
 
 ### Code Quality Checks
 

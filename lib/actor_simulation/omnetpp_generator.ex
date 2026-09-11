@@ -284,13 +284,13 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       nil ->
         "    // No send pattern defined\n"
 
-      {:self_message, delay_ms, _message} ->
-        delay_sec = if high_frequency, do: 0.001, else: delay_ms / 1000.0
+      {:self_message, _delay_ms, _message} ->
+        interval = pattern_to_interval(definition.send_pattern, high_frequency)
 
         """
             // One-shot self-message after delay
             selfMsg = new cMessage("selfMsg");
-            scheduleAt(simTime() + #{delay_sec}, selfMsg);
+            scheduleAt(simTime() + #{interval}, selfMsg);
         """
 
       pattern ->

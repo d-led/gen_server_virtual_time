@@ -8,7 +8,7 @@ defmodule GenServerVirtualTime.MixProject do
     [
       app: :gen_server_virtual_time,
       version: @version,
-      elixir: "~> 1.14",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
@@ -54,8 +54,7 @@ defmodule GenServerVirtualTime.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test,
-        muzak: :test,
-        "exavier.test": :test
+        muex: :test
       ]
     ]
   end
@@ -80,9 +79,11 @@ defmodule GenServerVirtualTime.MixProject do
       # Testing (optional, for coverage reports)
       {:excoveralls, "~> 0.18", only: :test, runtime: false},
 
+      # Property-based testing
+      {:stream_data, "~> 1.2", only: :test, runtime: false},
+
       # Mutation testing
-      {:muzak, "~> 1.1", only: :test, runtime: false},
-      {:exavier, "~> 0.3.0", only: :test, runtime: false},
+      {:muex, "~> 0.9", only: [:dev, :test], runtime: false},
 
       # Benchmarking
       {:benchee, "~> 1.5", only: :dev, runtime: false},
@@ -122,6 +123,9 @@ defmodule GenServerVirtualTime.MixProject do
         {"CHANGELOG.md", [title: "Changelog"]},
         {"CONTRIBUTING.md", [title: "Contributing"]},
         {"LICENSE", [title: "License"]},
+        {"docs/virtual_clock_design.md", [title: "VirtualClock Design"]},
+        {"docs/local_clock_injection_feature.md", [title: "Local Clock Injection"]},
+        {"docs/flowchart_reports.md", [title: "Flowchart Reports"]},
         {"docs/generators.md", [title: "Code Generators Overview"]},
         {"docs/omnetpp_generator.md", [title: "OMNeT++ Generator"]},
         {"docs/caf_generator.md", [title: "CAF Generator"]},
@@ -136,6 +140,11 @@ defmodule GenServerVirtualTime.MixProject do
           "CHANGELOG.md",
           "CONTRIBUTING.md",
           "LICENSE"
+        ],
+        "Virtual Time": [
+          "docs/virtual_clock_design.md",
+          "docs/local_clock_injection_feature.md",
+          "docs/flowchart_reports.md"
         ],
         "Code Generators": [
           "docs/generators.md",

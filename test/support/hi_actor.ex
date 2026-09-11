@@ -7,7 +7,6 @@ defmodule HiActor do
   """
 
   use VirtualTimeGenServer
-  require Logger
 
   defstruct [:name, :targets, :all_actors]
 

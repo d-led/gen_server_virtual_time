@@ -27,7 +27,9 @@ defmodule VirtualClock do
               # Track who is waiting for advance to complete
               advance_caller: nil,
               # Track the target time for current advance
-              target_time: nil
+              target_time: nil,
+              # Pending ack watchdog, cancelled when the wait completes
+              ack_timeout_ref: nil
   end
 
   defmodule ScheduledEvent do
@@ -69,14 +71,6 @@ defmodule VirtualClock do
       GenServer.call(scheduler_pid, {:get_next_events_until, target_time_ms})
     end
 
-    def get_current_time(scheduler_pid) do
-      GenServer.call(scheduler_pid, :get_current_time)
-    end
-
-    def set_current_time(scheduler_pid, new_time_ms) do
-      GenServer.call(scheduler_pid, {:set_current_time, new_time_ms})
-    end
-
     @impl true
     def init(clock_pid) do
       {:ok, %SchedulerState{clock_pid: clock_pid}}
@@ -95,8 +89,11 @@ defmodule VirtualClock do
 
     def handle_call({:cancel_timer, ref}, _from, state) do
       case find_and_remove_by_ref(state.scheduled, ref) do
-        {new_scheduled, true} -> {:reply, :ok, %{state | scheduled: new_scheduled}}
-        {new_scheduled, false} -> {:reply, false, %{state | scheduled: new_scheduled}}
+        {:found, trigger_time, new_scheduled} ->
+          {:reply, {:ok, trigger_time}, %{state | scheduled: new_scheduled}}
+
+        {:not_found, new_scheduled} ->
+          {:reply, :not_found, %{state | scheduled: new_scheduled}}
       end
     end
 
@@ -105,18 +102,14 @@ defmodule VirtualClock do
         nil ->
           {:reply, {nil, []}, state}
 
-        next_time when next_time <= target_time_ms ->
+        next_time ->
           {triggered, remaining} = extract_events_at_time(state.scheduled, next_time)
           {:reply, {next_time, triggered}, %{state | scheduled: remaining}}
-
-        _next_time ->
-          {:reply, {nil, []}, state}
       end
     end
 
     def handle_call(:scheduled_count, _from, state) do
-      count = :gb_trees.size(state.scheduled)
-      {:reply, count, state}
+      {:reply, count_events_until(state.scheduled, :infinity), state}
     end
 
     def handle_call({:scheduled_count_until, until_time_ms}, _from, state) do
@@ -164,10 +157,16 @@ defmodule VirtualClock do
 
         false ->
           {min_time, _event} = :gb_trees.smallest(scheduled)
-          if min_time <= target_time_ms, do: min_time, else: nil
+          if within_horizon?(min_time, target_time_ms), do: min_time, else: nil
       end
     end
 
+    defp within_horizon?(_time, :infinity), do: true
+    defp within_horizon?(time, until_time_ms), do: time <= until_time_ms
+
+    # Events at the same instant are prepended on insert (cheap), so the stored
+    # list is newest-first. Reverse it so events due at the same time fire in
+    # the order they were scheduled, exactly like real timers.
     defp extract_events_at_time(scheduled, time_ms) do
       case :gb_trees.lookup(time_ms, scheduled) do
         :none ->
@@ -175,7 +174,7 @@ defmodule VirtualClock do
 
         {:value, events} ->
           new_scheduled = :gb_trees.delete(time_ms, scheduled)
-          {events, new_scheduled}
+          {Enum.reverse(events), new_scheduled}
       end
     end
 
@@ -186,7 +185,7 @@ defmodule VirtualClock do
     defp find_and_remove_by_ref_recursive(scheduled, ref, new_scheduled) do
       case :gb_trees.is_empty(scheduled) do
         true ->
-          {new_scheduled, false}
+          {:not_found, new_scheduled}
 
         false ->
           {time, events, remaining} = :gb_trees.take_smallest(scheduled)
@@ -198,19 +197,15 @@ defmodule VirtualClock do
 
             {_removed_event, updated_events} ->
               final_scheduled =
-                if updated_events == [] do
-                  merge_trees(remaining, new_scheduled)
-                else
-                  new_scheduled_with_remaining =
-                    :gb_trees.insert(time, updated_events, new_scheduled)
+                merge_trees(remaining, tree_at(time, updated_events, new_scheduled))
 
-                  merge_trees(remaining, new_scheduled_with_remaining)
-                end
-
-              {final_scheduled, true}
+              {:found, time, final_scheduled}
           end
       end
     end
+
+    defp tree_at(_time, [], tree), do: tree
+    defp tree_at(time, events, tree), do: :gb_trees.insert(time, events, tree)
 
     defp find_and_remove_from_list(events, ref) do
       case Enum.find_index(events, fn event -> event.ref == ref end) do
@@ -251,9 +246,8 @@ defmodule VirtualClock do
         false ->
           {time, events, remaining} = :gb_trees.take_smallest(scheduled)
 
-          if time <= until_time_ms do
-            new_count = count + length(events)
-            count_events_until_recursive(remaining, until_time_ms, new_count)
+          if within_horizon?(time, until_time_ms) do
+            count_events_until_recursive(remaining, until_time_ms, count + length(events))
           else
             count
           end
@@ -289,11 +283,23 @@ defmodule VirtualClock do
 
   @doc """
   Cancels a scheduled timer.
+
+  Mirrors `Process.cancel_timer/1`: returns the remaining virtual time in
+  milliseconds until the cancelled event would have fired, or `false` if no
+  event is scheduled under that reference.
+
+  ## Examples
+
+      iex> {:ok, clock} = VirtualClock.start_link()
+      iex> ref = VirtualClock.send_after(clock, self(), :later, 500)
+      iex> VirtualClock.cancel_timer(clock, ref)
+      500
+      iex> VirtualClock.cancel_timer(clock, ref)
+      false
+
   """
   def cancel_timer(clock, ref) do
-    # Delegate to the scheduler process
-    scheduler_pid = GenServer.call(clock, :get_scheduler)
-    VirtualScheduler.cancel_timer(scheduler_pid, ref)
+    GenServer.call(clock, {:cancel_timer, ref})
   end
 
   @doc """
@@ -478,6 +484,17 @@ defmodule VirtualClock do
   end
 
   @impl true
+  def handle_call({:cancel_timer, ref}, _from, state) do
+    case VirtualScheduler.cancel_timer(state.scheduler_pid, ref) do
+      {:ok, trigger_time} ->
+        {:reply, max(trigger_time - state.current_time, 0), state}
+
+      :not_found ->
+        {:reply, false, state}
+    end
+  end
+
+  @impl true
   def handle_call({:advance, amount_ms}, from, state) do
     target_time = state.current_time + amount_ms
     # Start the advance process immediately, then yield
@@ -514,30 +531,17 @@ defmodule VirtualClock do
     {:noreply, state}
   end
 
-  def handle_info({:ack_timeout, timed_out_pids}, state) do
-    # Timeout for ack wait - remove timed out pids from pending
+  def handle_info({:ack_timeout, timed_out_acks}, state) do
+    # Timeout for ack wait - remove the timed-out deliveries from pending
     require Logger
 
-    # Collect info about each timed-out process
-    process_info =
-      Enum.map_join(timed_out_pids, ", ", fn pid ->
-        name =
-          case Process.info(pid, :registered_name) do
-            {:registered_name, n} when is_atom(n) -> "name=#{n}"
-            _ -> "pid=#{inspect(pid)}"
-          end
-
-        case Process.info(pid, :current_function) do
-          {:current_function, {mod, _, _}} -> "#{name} module=#{mod}"
-          _ -> name
-        end
-      end)
+    process_info = Enum.map_join(timed_out_acks, ", ", &describe_ack/1)
 
     Logger.warning(
-      "VirtualClock ACK timeout: #{length(timed_out_pids)} actors failed to acknowledge in time. Processes: #{process_info}"
+      "VirtualClock ACK timeout: #{length(timed_out_acks)} deliveries were not acknowledged in time. Deliveries: #{process_info}"
     )
 
-    new_pending = MapSet.difference(state.pending_acks, MapSet.new(timed_out_pids))
+    new_pending = MapSet.difference(state.pending_acks, MapSet.new(timed_out_acks))
 
     # If we had an advance in progress and all acks are now received (or timed out), continue
     if MapSet.size(new_pending) == 0 and state.advance_caller do
@@ -546,179 +550,191 @@ defmodule VirtualClock do
       )
 
       send(self(), {:continue_advance_after_acks, state.advance_caller, state.target_time})
-      {:noreply, %{state | pending_acks: new_pending, advance_caller: nil, target_time: nil}}
+
+      {:noreply,
+       %{
+         state
+         | pending_acks: new_pending,
+           advance_caller: nil,
+           target_time: nil,
+           ack_timeout_ref: nil
+       }}
     else
-      {:noreply, %{state | pending_acks: new_pending}}
+      {:noreply, %{state | pending_acks: new_pending, ack_timeout_ref: nil}}
+    end
+  end
+
+  # Token acknowledgement from a VirtualTimeGenServer actor. Only a token the
+  # clock is actually waiting for counts; anything else is ignored, which is
+  # what makes the wait immune to unrelated actor traffic.
+  def handle_info({:actor_processed, _actor_pid, token}, state) do
+    if MapSet.member?(state.pending_acks, token) do
+      continue_or_wait(%{state | pending_acks: MapSet.delete(state.pending_acks, token)})
+    else
+      {:noreply, state}
     end
   end
 
   def handle_info({:actor_processed, actor_pid}, state) do
     new_pending = MapSet.delete(state.pending_acks, actor_pid)
-    new_state = %{state | pending_acks: new_pending}
+    continue_or_wait(%{state | pending_acks: new_pending})
+  end
 
-    # If no more pending acks and someone is waiting for advance to complete
-    if MapSet.size(new_pending) == 0 and state.advance_caller do
-      # We need to continue advancing to the target time!
-      # All acks received - continue advancing
+  # Resume the advance once every outstanding acknowledgement has arrived, or
+  # keep waiting if some deliveries are still being processed.
+  defp continue_or_wait(state) do
+    if MapSet.size(state.pending_acks) == 0 and state.advance_caller do
+      cancel_ack_timeout(state)
       send(self(), {:continue_advance_after_acks, state.advance_caller, state.target_time})
-      {:noreply, %{new_state | advance_caller: nil, target_time: nil}}
+      {:noreply, %{state | advance_caller: nil, target_time: nil, ack_timeout_ref: nil}}
     else
-      {:noreply, new_state}
+      {:noreply, state}
     end
   end
 
-  # Check if a process should be tracked for ACKs
-  # Only GenServers using VirtualTimeGenServer or VirtualTimeGenStateMachine wrappers will ACK
-  defp should_track_for_ack?(pid) do
+  defp cancel_ack_timeout(%{ack_timeout_ref: nil}), do: :ok
+
+  defp cancel_ack_timeout(%{ack_timeout_ref: ref}) do
+    Process.cancel_timer(ref)
+    :ok
+  end
+
+  # How a destination acknowledges a delivery:
+  #
+  #   * `:token` - a VirtualTimeGenServer actor. The delivery is tagged with a
+  #     fresh token, and only that exact token is accepted as the
+  #     acknowledgement. An unrelated message the actor happens to handle can
+  #     therefore never satisfy a pending delivery.
+  #   * `:pid` - a VirtualTimeGenStateMachine actor, which acknowledges every
+  #     message it handles with its own pid.
+  #   * `:none` - anything else (plain processes); never tracked.
+  defp ack_mode(pid) do
     case Process.info(pid, :dictionary) do
       {:dictionary, dict} when is_list(dict) ->
-        has_virtual_clock?(dict) && genserver_actor?(pid, dict)
+        if Keyword.has_key?(dict, :virtual_clock), do: actor_ack_mode(pid, dict), else: :none
 
       _ ->
-        false
+        :none
     end
   end
 
-  defp has_virtual_clock?(dict) do
-    Keyword.has_key?(dict, :virtual_clock)
-  end
-
-  defp genserver_actor?(pid, dict) do
+  defp actor_ack_mode(pid, dict) do
     case Keyword.get(dict, :"$initial_call") do
-      {VirtualTimeGenServer.Wrapper, _, _} -> true
-      {VirtualTimeGenStateMachine.Wrapper, _, _} -> true
-      _ -> check_current_function_for_gen_server(pid)
+      {VirtualTimeGenServer.Wrapper, _, _} -> :token
+      {VirtualTimeGenStateMachine.Wrapper, _, _} -> :pid
+      _ -> if gen_server_process?(pid), do: :pid, else: :none
     end
   end
 
-  defp check_current_function_for_gen_server(pid) do
+  defp gen_server_process?(pid) do
     case Process.info(pid, :current_function) do
       {:current_function, {mod, _, _}} -> mod in [:gen_server, :gen_statem]
       _ -> false
     end
   end
 
+  # Pending acknowledgements are keyed either by destination pid (actors that
+  # acknowledge every message) or by delivery token (actors that acknowledge
+  # only the deliveries addressed to them).
+  defp describe_ack(pid) when is_pid(pid) do
+    name =
+      case Process.info(pid, :registered_name) do
+        {:registered_name, n} when is_atom(n) -> "name=#{n}"
+        _ -> "pid=#{inspect(pid)}"
+      end
+
+    case Process.info(pid, :current_function) do
+      {:current_function, {mod, _, _}} -> "#{name} module=#{mod}"
+      _ -> name
+    end
+  end
+
+  defp describe_ack(token) when is_reference(token), do: "delivery=#{inspect(token)}"
+
   defp advance_loop(state, target_time, from) do
-    # Calculate adaptive timeout based on time advance
-    # For large advances, use longer timeout (max 30 seconds)
-    time_advance_ms = target_time - state.current_time
+    # Cancel any timeout left over from the previous step of this advance.
+    if state.ack_timeout_ref, do: Process.cancel_timer(state.ack_timeout_ref)
 
-    ack_timeout_ms =
-      if time_advance_ms > 100_000 do
-        # For advances > 100s, use adaptive timeout
-        min(trunc(time_advance_ms / 1000), 30_000)
-      else
-        2000
-      end
-
-    # Set up timeout for ack wait - only if we have pending acks
-    ack_timeout_ref =
-      if MapSet.size(state.pending_acks) > 0 do
-        Process.send_after(
-          self(),
-          {:ack_timeout, MapSet.to_list(state.pending_acks)},
-          ack_timeout_ms
-        )
-      else
-        nil
-      end
-
-    # Get next events from scheduler until target_time
     case VirtualScheduler.get_next_events_until(state.scheduler_pid, target_time) do
+      # Nothing left to deliver up to the target: jump to the target and finish,
+      # unless actors are still working through what we already delivered.
       {nil, []} ->
-        # Cancel old timeout if any
-        if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
-
-        # No events up to target_time - advance to target and check if actors are done
-        new_state = %{state | current_time: target_time}
-
-        if MapSet.size(new_state.pending_acks) > 0 do
-          # Still waiting for actors - store caller and wait for acks with adaptive timeout
-          time_advance_ms = target_time - state.current_time
-
-          ack_timeout_ms =
-            if time_advance_ms > 100_000,
-              do: min(trunc(time_advance_ms / 1000), 30_000),
-              else: 2000
-
-          Process.send_after(
-            self(),
-            {:ack_timeout, MapSet.to_list(new_state.pending_acks)},
-            ack_timeout_ms
-          )
-
-          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
-        else
-          # No pending acks - advance complete!
-          if from do
-            GenServer.reply(from, {:ok, target_time})
-          end
-
-          {:noreply, new_state}
-        end
+        state
+        |> jump_to(target_time)
+        |> wait_for_acks_or_finish(from, target_time)
 
       {next_time, triggered} when next_time <= target_time ->
-        # Cancel old timeout if any
-        if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
-
-        # Process events at next_time - track who we're sending to for acks
-        # Only track GenServer actors that will send ACKs, not regular processes
-        {actor_pids, _} =
-          Enum.reduce(triggered, {[], []}, fn event, {ack_actors, regular_processes} ->
-            # Send message immediately
-            VirtualTimeGenServer.send_immediately(event.dest, event.message)
-
-            if should_track_for_ack?(event.dest) do
-              {[event.dest | ack_actors], regular_processes}
-            else
-              {ack_actors, [event.dest | regular_processes]}
-            end
-          end)
-
-        # Track pending acks and update time
-        new_pending = MapSet.new(actor_pids) |> MapSet.union(state.pending_acks)
+        new_pending = deliver_events(triggered, state.pending_acks)
         new_state = %{state | current_time: next_time, pending_acks: new_pending}
 
-        # Don't immediately continue - wait for acks first, then check scheduler
         if MapSet.size(new_pending) > 0 do
-          # Actors are processing - store caller and wait for all acks
-          # Set up adaptive timeout for the new acks
-          time_advance_ms = target_time - next_time
-
-          ack_timeout_ms =
-            if time_advance_ms > 100_000,
-              do: min(trunc(time_advance_ms / 1000), 30_000),
-              else: 2000
-
-          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_pending)}, ack_timeout_ms)
-          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
+          # Wait for the actors to process what we just delivered before moving on.
+          {:noreply, arm_ack_timeout(new_state, from, target_time, target_time - next_time)}
         else
-          # No actors to wait for - continue immediately
+          # Nobody to wait for - carry on with the next instant immediately.
           send(self(), {:do_advance, target_time, from})
           :erlang.yield()
           {:noreply, new_state}
         end
 
       _future_events ->
-        # Cancel old timeout if any
-        if ack_timeout_ref, do: Process.cancel_timer(ack_timeout_ref)
-
-        # Next events are beyond target_time - advance to target and check if actors are done
-        new_state = %{state | current_time: target_time}
-
-        if MapSet.size(new_state.pending_acks) > 0 do
-          # Still waiting for actors - store caller and wait for acks with longer timeout
-          Process.send_after(self(), {:ack_timeout, MapSet.to_list(new_state.pending_acks)}, 2000)
-          {:noreply, %{new_state | advance_caller: from, target_time: target_time}}
-        else
-          # No pending acks - advance complete!
-          if from do
-            GenServer.reply(from, {:ok, target_time})
-          end
-
-          {:noreply, new_state}
-        end
+        # Everything left is beyond the target: jump to it and finish.
+        state
+        |> jump_to(target_time)
+        |> wait_for_acks_or_finish(from, target_time)
     end
+  end
+
+  defp jump_to(state, target_time), do: %{state | current_time: target_time}
+
+  # Records which destinations must acknowledge before the clock may move past
+  # this instant, tagging each delivery so only that exact acknowledgement counts.
+  defp deliver_events(triggered, pending) do
+    Enum.reduce(triggered, pending, fn event, acc ->
+      case ack_mode(event.dest) do
+        :token ->
+          token = make_ref()
+          send(event.dest, {:__vtgs_delivered__, token, event.message})
+          MapSet.put(acc, token)
+
+        :pid ->
+          VirtualTimeGenServer.send_immediately(event.dest, event.message)
+          MapSet.put(acc, event.dest)
+
+        :none ->
+          VirtualTimeGenServer.send_immediately(event.dest, event.message)
+          acc
+      end
+    end)
+  end
+
+  defp wait_for_acks_or_finish(state, from, target_time) do
+    if MapSet.size(state.pending_acks) > 0 do
+      remaining_ms = target_time - state.current_time
+      {:noreply, arm_ack_timeout(state, from, target_time, remaining_ms)}
+    else
+      if from, do: GenServer.reply(from, {:ok, target_time})
+      {:noreply, state}
+    end
+  end
+
+  # Arms the watchdog for the current wait and remembers who to answer once every
+  # acknowledgement has arrived.
+  defp arm_ack_timeout(state, from, target_time, remaining_ms) do
+    ref =
+      Process.send_after(
+        self(),
+        {:ack_timeout, MapSet.to_list(state.pending_acks)},
+        ack_timeout_ms(remaining_ms)
+      )
+
+    %{state | advance_caller: from, target_time: target_time, ack_timeout_ref: ref}
+  end
+
+  # Long advances get a longer budget, capped at 30s, so that a simulation of
+  # hours does not abort while its actors are still working.
+  defp ack_timeout_ms(remaining_ms) do
+    if remaining_ms > 100_000, do: min(trunc(remaining_ms / 1000), 30_000), else: 2_000
   end
 
   @impl true
