@@ -34,7 +34,7 @@ Rust, Java or OMNeT++.
    VirtualClock.advance(clock, 10_000)   # 10 virtual seconds, ~10ms real
    ```
 
-4. Run the century demo to see it end to end (~2 seconds) —
+4. Run the century demo (about a minute) —
    [source](scripts/century_backup_demo.exs),
    [sample run](https://github.com/d-led/gen_server_virtual_time/actions/workflows/century-backup-demo.yml):
 

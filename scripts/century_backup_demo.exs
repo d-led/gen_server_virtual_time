@@ -21,7 +21,12 @@
 #   1. ActorSimulation DSL - Declarative, concise
 #   2. Raw GenServer/StateMachine - Explicit, detailed
 #
-# Both achieve the same result: simulating 36,525 daily backups in milliseconds.
+# Both cover 36,525 days of simulated time in seconds, not the 100 years they
+# represent.
+#
+# NOTE: This script runs *this repository's* code when it sits inside the repo,
+# so it demonstrates what lib/ actually does rather than whatever is on Hex. A
+# standalone copy falls back to the published package.
 #
 # IMPORTANT: The GenServer and StateMachine implementations (Approach 2) use
 # the same code that would run in production - just without virtual time injection.
@@ -29,8 +34,16 @@
 #
 # ------------------------------------------------------------------------------
 
+project_root = Path.expand("../", __DIR__)
+
+# Prefer the local project so the demo exercises the working tree; a copy of this
+# script outside the repository falls back to the published package.
 Mix.install([
-  {:gen_server_virtual_time, "~> 0.5.0"}
+  if File.exists?(Path.join(project_root, "mix.exs")) do
+    {:gen_server_virtual_time, path: project_root}
+  else
+    {:gen_server_virtual_time, "~> 0.5.0"}
+  end
 ])
 
 defmodule TimeHelper do
@@ -183,6 +196,13 @@ defmodule CenturyBackup.Raw do
 
     IO.puts("\n   ✓ Simulated #{days_in_century} days in #{elapsed}ms")
     IO.puts("   ✓ Started: #{started_count}, Completed: #{backup_count} (expected: #{days_in_century})")
+
+    if started_count != days_in_century do
+      IO.puts(
+        "   ⚠️  Goal not met: #{days_in_century - started_count} daily backups never fired.\n" <>
+          "       advance/2 can move past work its actors have not scheduled yet."
+      )
+    end
 
     elapsed
   end
