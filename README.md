@@ -4,6 +4,12 @@ Test time-based GenServers instantly — no waiting, no flaky timing. Simulate
 actor systems with virtual time, then generate the same system in C++, Go, Pony,
 Rust, Java or OMNeT++.
 
+This is the [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler)
+idea applied to the BEAM: the clock is yours to advance, so a test describes the
+timeline it wants instead of sleeping through it. Same purpose for `GenServer`
+and `:gen_statem`, plus an actor-simulation DSL for modelling whole systems and
+generators that turn those models into runnable projects in six languages.
+
 [![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time.svg)](https://hex.pm/packages/gen_server_virtual_time)
 [![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time)
 [![CI](https://github.com/d-led/gen_server_virtual_time/workflows/CI/badge.svg)](https://github.com/d-led/gen_server_virtual_time/actions)
