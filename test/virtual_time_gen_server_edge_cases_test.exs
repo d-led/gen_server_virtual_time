@@ -105,9 +105,7 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     test "init with continue" do
       {:ok, server} = TestServer.start_link(mode: :with_continue)
 
-      # Give continue callback time to execute
-      Process.sleep(10)
-
+      # handle_continue runs before the next message is handled
       state = GenServer.call(server, :get_state)
       assert state.initialized == true
 
@@ -212,19 +210,17 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     end
 
     test "cast causes stop", %{server: server} do
+      ref = Process.monitor(server)
       GenServer.cast(server, :stop)
 
-      # Give it time to stop
-      Process.sleep(10)
-      refute Process.alive?(server)
+      assert_receive {:DOWN, ^ref, :process, ^server, :normal}, 2_000
     end
 
     test "cast modifies state", %{server: server} do
       GenServer.cast(server, {:append, :item1})
       GenServer.cast(server, {:append, :item2})
 
-      Process.sleep(10)
-
+      # The call is handled after both casts
       state = GenServer.call(server, :get_state)
       assert :item1 in state.data
       assert :item2 in state.data
@@ -240,8 +236,10 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     end
 
     test "handles timeout message", %{server: server} do
-      # Server was started with timeout, wait for it
-      Process.sleep(150)
+      # A gen_server timeout is reset by every message the server handles, so it
+      # cannot be polled: calling in would stop it ever firing. Wait without
+      # touching the server, with generous slack over its 100ms timeout.
+      Process.sleep(300)
 
       state = GenServer.call(server, :get_state)
       assert state.timed_out == true
@@ -250,17 +248,17 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     end
 
     test "info message causes stop", %{server: server} do
+      ref = Process.monitor(server)
       send(server, :stop)
 
-      Process.sleep(10)
-      refute Process.alive?(server)
+      assert_receive {:DOWN, ^ref, :process, ^server, :normal}, 2_000
     end
 
     test "info with continue", %{server: server} do
       send(server, :continue)
 
-      Process.sleep(10)
-
+      # The call cannot overtake the message, and the continuation runs before
+      # it is handled
       state = GenServer.call(server, :get_state)
       assert state.continued == true
 
@@ -295,8 +293,8 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
       end
 
       {:ok, server} = ChainServer.start_link()
-      Process.sleep(10)
 
+      # The continuation chain runs to completion before the next message
       state = GenServer.call(server, :get_state)
       assert state.step1 == true
       assert state.step2 == true
@@ -330,7 +328,9 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
       end
 
       {:ok, server} = TimeoutContinueServer.start_link()
-      Process.sleep(100)
+
+      # As above: the 50ms timeout cannot be polled, so wait with slack
+      Process.sleep(300)
 
       state = GenServer.call(server, :get_state)
       assert state.setup_done == true
@@ -470,9 +470,10 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
       # Test that it works without terminate/code_change/handle_continue
       assert GenServer.call(server, :ping) == :pong
 
-      # Trigger continue (should be no-op since handle_continue not implemented)
+      # Trigger continue (should be no-op since handle_continue not implemented).
+      # The ping that follows is a call, so it confirms the send was handled.
       send(server, :test)
-      Process.sleep(10)
+      assert GenServer.call(server, :ping) == :pong
 
       # Test code_change fallback
       :sys.suspend(server)
@@ -529,8 +530,7 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
       GenServer.call(server, :test_message)
       GenServer.cast(server, :test_cast)
 
-      Process.sleep(10)
-
+      # The stats call is handled after the cast above
       stats = GenServer.call(server, :get_internal_stats)
       # Should have tracked the received messages (excluding internal stats queries)
       assert stats.received_count >= 1

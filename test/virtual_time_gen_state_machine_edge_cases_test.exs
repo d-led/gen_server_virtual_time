@@ -36,12 +36,12 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       }
     end
 
-    def send_after_test(server, delay) do
-      VirtualTimeGenStateMachine.send_after(server, :timeout_msg, delay)
+    def schedule_timeout(server, delay) do
+      VirtualTimeGenStateMachine.call(server, {:schedule_timeout, delay})
     end
 
-    def cancel_timer_test(ref) do
-      VirtualTimeGenStateMachine.cancel_timer(ref)
+    def cancel_timeout(server, ref) do
+      VirtualTimeGenStateMachine.call(server, {:cancel_timeout, ref})
     end
 
     def sleep_test(duration) do
@@ -66,6 +66,20 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
     @impl true
     def handle_event(:info, :timeout_msg, _state, data) do
       {:keep_state, %{data | count: data.count + 1}}
+    end
+
+    @impl true
+    def handle_event({:call, from}, {:schedule_timeout, delay}, _state, _data) do
+      # Scheduled from inside the server, so it uses the server's own clock.
+      # Scheduling from a test process would use *that* process's backend,
+      # which is real time unless the test set it up first.
+      ref = VirtualTimeGenStateMachine.send_after(self(), :timeout_msg, delay)
+      {:keep_state_and_data, [{:reply, from, ref}]}
+    end
+
+    @impl true
+    def handle_event({:call, from}, {:cancel_timeout, ref}, _state, _data) do
+      {:keep_state_and_data, [{:reply, from, VirtualTimeGenStateMachine.cancel_timer(ref)}]}
     end
 
     @impl true
@@ -190,8 +204,9 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
 
       TestSM.cast_test(server)
 
-      # Give it a moment to process
-      Process.sleep(10)
+      # call_test/1 is a synchronous call handled after the cast, and it reports
+      # the count the cast increments
+      assert TestSM.call_test(server) == 1
 
       GenServer.stop(server)
     end
@@ -209,24 +224,25 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       {:ok, server} = TestSM.start_link(virtual_clock: clock)
       assert Process.alive?(server)
 
+      ref = Process.monitor(server)
       TestSM.stop_test(server)
 
-      # Give it a moment to stop
-      Process.sleep(10)
-      refute Process.alive?(server)
+      assert_receive {:DOWN, ^ref, :process, ^server, :normal}, 2_000
     end
 
     test "send_after/3 schedules message in virtual time", %{clock: clock} do
       {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
-      # Schedule a message
-      TestSM.send_after_test(server, 100)
+      TestSM.schedule_timeout(server, 100)
 
-      # Advance virtual time
+      # Not due yet
+      assert TestSM.call_test(server) == 0
+
+      # advance/2 returns once the actor has acknowledged, so the scheduled
+      # message has been handled by the time it returns
       VirtualClock.advance(clock, 100)
 
-      # Give it a moment to process
-      Process.sleep(10)
+      assert TestSM.call_test(server) == 1
 
       GenServer.stop(server)
     end
@@ -234,13 +250,15 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
     test "cancel_timer/1 cancels scheduled timer", %{clock: clock} do
       {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
-      # Schedule and immediately cancel
-      ref = TestSM.send_after_test(server, 100)
-      TestSM.cancel_timer_test(ref)
+      ref = TestSM.schedule_timeout(server, 100)
 
-      # Advance virtual time - message should not fire
+      # Cancelling reports the remaining virtual time, like Process.cancel_timer/1
+      assert TestSM.cancel_timeout(server, ref) == 100
+
+      # Advancing past the deadline must not deliver the cancelled message
       VirtualClock.advance(clock, 100)
-      Process.sleep(10)
+
+      assert TestSM.call_test(server) == 0
 
       GenServer.stop(server)
     end
@@ -347,16 +365,18 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       {:ok, server2} = TestSM.start_link(virtual_clock: clock2)
 
       # Schedule messages on both
-      TestSM.send_after_test(server1, 100)
-      TestSM.send_after_test(server2, 100)
+      TestSM.schedule_timeout(server1, 100)
+      TestSM.schedule_timeout(server2, 100)
 
-      # Advance only clock1
+      # Only clock1 advances, so only server1's timer fires
       VirtualClock.advance(clock1, 100)
-      Process.sleep(10)
+      assert TestSM.call_test(server1) == 1
+      assert TestSM.call_test(server2) == 0
 
-      # Advance clock2
+      # Now clock2 catches up, leaving server1 where it was
       VirtualClock.advance(clock2, 100)
-      Process.sleep(10)
+      assert TestSM.call_test(server2) == 1
+      assert TestSM.call_test(server1) == 1
 
       GenServer.stop(server1)
       GenServer.stop(server2)
@@ -495,12 +515,13 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
 
       {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
-      # Test the send_after_self helper
+      # send_after_self/2 schedules to the *calling* process, so the message
+      # lands in this test process's own mailbox
       TestSM.send_after_self(:test_msg, 100)
+      refute_received :test_msg
 
-      # Advance virtual time
       VirtualClock.advance(clock, 100)
-      Process.sleep(10)
+      assert_received :test_msg
 
       GenServer.stop(server)
     end
@@ -509,29 +530,24 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
   describe "Performance and timing" do
     test "virtual time is significantly faster than real time" do
       {:ok, clock} = VirtualClock.start_link()
-
-      VirtualTimeGenStateMachine.set_virtual_clock(
-        clock,
-        :i_know_what_i_am_doing,
-        "testing time backend configuration"
-      )
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
 
       start_time = System.monotonic_time(:millisecond)
 
-      {:ok, server} = TestSM.start_link(virtual_clock: clock)
-
-      # Schedule multiple timers
+      # Ten timers spread across one virtual second
       for i <- 1..10 do
-        TestSM.send_after_test(server, i * 100)
+        TestSM.schedule_timeout(server, i * 100)
       end
 
-      # Advance virtual time by 1 second
       VirtualClock.advance(clock, 1000)
 
       elapsed = System.monotonic_time(:millisecond) - start_time
 
-      # Should complete in reasonable time (accounting for 10 timers * 2s ACK timeout)
-      assert elapsed < 25_000
+      # Every timer fired ...
+      assert TestSM.call_test(server) == 10
+      # ... and simulating a full second cost less real time than the second it
+      # simulated. (A tighter millisecond budget would measure the machine.)
+      assert elapsed < 1000
 
       GenServer.stop(server)
     end

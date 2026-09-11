@@ -108,9 +108,7 @@ defmodule GenServerCallbacksTest do
       TestServer.async_increment(server)
       TestServer.async_increment(server)
 
-      # Give time for messages to process
-      Process.sleep(10)
-
+      # get_state/1 is a call, so it is handled after the casts above
       state = TestServer.get_state(server)
       assert state.count == 3
 
@@ -127,15 +125,12 @@ defmodule GenServerCallbacksTest do
       TestServer.schedule_work(server, 1000)
 
       # Immediately check - work not done yet
-      Process.sleep(10)
       state = TestServer.get_state(server)
       assert state.count == 0
 
-      # Advance virtual time
+      # Advance virtual time. advance/2 returns only once the actor has
+      # acknowledged the delivery, so the work is done by the time it returns.
       VirtualClock.advance(clock, 1000)
-
-      # Give time for processing
-      Process.sleep(10)
 
       # Now work should be done
       state = TestServer.get_state(server)
@@ -154,21 +149,11 @@ defmodule GenServerCallbacksTest do
       TestServer.schedule_work(server, 200)
       TestServer.schedule_work(server, 300)
 
-      # Advance to each event and let it process
-      # First event at 100ms
+      # Advance to each event. advance/2 waits for the actor to acknowledge, so
+      # each event has been processed by the time it returns.
       VirtualClock.advance(clock, 100)
-      # Give time for processing
-      Process.sleep(10)
-
-      # Second event at 200ms
       VirtualClock.advance(clock, 100)
-      # Give time for processing
-      Process.sleep(10)
-
-      # Third event at 300ms
       VirtualClock.advance(clock, 100)
-      # Give time for processing
-      Process.sleep(10)
 
       state = TestServer.get_state(server)
       # All 3 should have triggered
@@ -184,10 +169,9 @@ defmodule GenServerCallbacksTest do
       {:ok, clock} = VirtualClock.start_link()
       {:ok, server} = TestServer.start_link(virtual_clock: clock)
 
-      # Immediate send
+      # Immediate send. Both messages come from this process, so the call below
+      # cannot overtake the send.
       send(server, :immediate_message)
-
-      Process.sleep(10)
 
       state = TestServer.get_state(server)
       assert :immediate_message in state.messages_received
@@ -199,11 +183,19 @@ defmodule GenServerCallbacksTest do
       {:ok, clock} = VirtualClock.start_link()
       {:ok, server} = TestServer.start_link(initial_count: 0, virtual_clock: clock)
 
+      # Schedule through this process's backend. It must be the virtual clock
+      # for the test to mean what it says: a plain test process uses real time
+      # by default, which would quietly exercise a different code path.
+      VirtualTimeGenServer.set_virtual_clock(
+        clock,
+        :i_know_what_i_am_doing,
+        "zero-delay scheduling in virtual time"
+      )
+
       VirtualTimeGenServer.send_after(server, :work, 0)
 
-      # Should be scheduled in virtual clock at current time
+      # A zero delay is due at the current time, so a zero advance delivers it
       VirtualClock.advance(clock, 0)
-      Process.sleep(10)
 
       state = TestServer.get_state(server)
       assert :work in state.messages_received
@@ -224,9 +216,8 @@ defmodule GenServerCallbacksTest do
       # Async cast
       # count = 6
       GenServer.cast(server, :increment)
-      Process.sleep(5)
 
-      # Schedule delayed work
+      # Both of these are calls, so they are handled after the cast
       TestServer.schedule_work(server, 500)
 
       # Check state before delay
@@ -235,7 +226,6 @@ defmodule GenServerCallbacksTest do
 
       # Advance time
       VirtualClock.advance(clock, 500)
-      Process.sleep(10)
 
       # Check state after delay
       state = TestServer.get_state(server)

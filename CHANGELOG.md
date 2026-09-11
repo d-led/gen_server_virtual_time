@@ -71,9 +71,20 @@ and this project adheres to
 
 - Removed all `Process.sleep/1`-based synchronisation from the test suite: tests
   now wait on the observable effect (`WaitUntil.wait_until/2`) before advancing
-  the clock, instead of guessing how long another process needs
+  the clock, instead of guessing how long another process needs. The four
+  remaining sleeps are deliberate and documented: two gen_server timeouts, which
+  cannot be polled because any message resets them, and two `:slow` tests that
+  exist to show real time *is* slow
 - Replaced real-time deadline assertions with load-tolerant bounds, so a busy
   machine slows the tests down rather than failing them
+- Fixed tests that claimed to use virtual time but did not: they scheduled
+  timers from the test process, which uses that process's backend - real time by
+  default - so the clock advance did nothing and the assertions were vacuous.
+  They now schedule from inside the server, which is the documented pattern, and
+  assert the resulting state
+- Gave assertions to tests that had none (they slept and then stopped the
+  server): cancellation, per-instance clocks, `send_after_self/2` and the
+  "virtual time is faster than real time" claim now check what they claim
 - The dining philosophers diagram test no longer asserts that every philosopher
   eats: concurrent actors have no deterministic ordering, so that outcome is a
   race. It asserts the behaviour the scenario guarantees instead

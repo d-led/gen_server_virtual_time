@@ -61,10 +61,10 @@ defmodule IndependentVirtualTimesTest do
       assert TickerServer.get_count(server1) == 0
       assert TickerServer.get_count(server2) == 0
 
-      # Advance clock1 by 200ms (should trigger 2 callbacks)
+      # Advance clock1 by 200ms (should trigger 2 callbacks). advance/2 returns
+      # once the actor has acknowledged the delivery, so no settling delay is
+      # needed before reading the count.
       VirtualClock.advance(clock1, 200)
-      # Allow messages to be processed
-      Process.sleep(10)
 
       # Server1 should have ticked 2 times (200ms / 100ms interval)
       # Server2 should still be at 0 (its clock wasn't advanced)
@@ -73,8 +73,6 @@ defmodule IndependentVirtualTimesTest do
 
       # Advance clock2 by 200ms (should trigger 2 callbacks)
       VirtualClock.advance(clock2, 200)
-      # Allow messages to be processed
-      Process.sleep(10)
 
       # Server1 should still be at 2 (its clock wasn't advanced)
       # Server2 should now have ticked 2 times (200ms / 100ms interval)
@@ -83,8 +81,6 @@ defmodule IndependentVirtualTimesTest do
 
       # Advance clock1 by another 200ms (should trigger 2 more callbacks)
       VirtualClock.advance(clock1, 200)
-      # Allow messages to be processed
-      Process.sleep(10)
 
       # Server1 should now have 4 ticks total (400ms / 100ms interval)
       # Server2 should still be at 2 (its clock wasn't advanced)
@@ -122,7 +118,6 @@ defmodule IndependentVirtualTimesTest do
 
       # Advance clock_a by 150ms (3 ticks)
       VirtualClock.advance(clock_a, 150)
-      Process.sleep(10)
 
       # Only server_a should have ticked
       assert TickerServer.get_count(server_a) == 3
@@ -130,7 +125,6 @@ defmodule IndependentVirtualTimesTest do
 
       # Advance clock_b by 250ms (5 ticks)
       VirtualClock.advance(clock_b, 250)
-      Process.sleep(10)
 
       # Server_a unchanged, server_b should have ticked
       assert TickerServer.get_count(server_a) == 3
@@ -138,7 +132,6 @@ defmodule IndependentVirtualTimesTest do
 
       # Advance clock_a by 100ms (2 more ticks)
       VirtualClock.advance(clock_a, 100)
-      Process.sleep(10)
 
       # Server_a should now have 5 ticks, server_b unchanged
       assert TickerServer.get_count(server_a) == 5

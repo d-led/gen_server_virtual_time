@@ -47,9 +47,8 @@ defmodule HandleContinueTest do
 
       {:ok, server} = ContinueServer.start_link(:use_continue, virtual_clock: clock)
 
-      # Give time for continue to execute
-      Process.sleep(10)
-
+      # handle_continue runs before the next message, so this call cannot
+      # overtake the continuation that init started
       step = GenServer.call(server, :get_step)
       assert step == :setup_complete
 
@@ -61,9 +60,9 @@ defmodule HandleContinueTest do
 
       {:ok, server} = ContinueServer.start_link(:normal, virtual_clock: clock)
 
-      # Trigger continue chain
+      # Trigger continue chain. The continuation runs before the next message is
+      # handled, so get_step/1 already sees the finished chain.
       GenServer.call(server, :trigger_continue)
-      Process.sleep(20)
 
       step = GenServer.call(server, :get_step)
       assert step == :all_done
@@ -73,8 +72,6 @@ defmodule HandleContinueTest do
 
     test "works without virtual time too" do
       {:ok, server} = ContinueServer.start_link(:use_continue)
-
-      Process.sleep(10)
 
       step = GenServer.call(server, :get_step)
       assert step == :setup_complete

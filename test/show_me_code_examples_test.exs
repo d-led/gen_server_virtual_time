@@ -29,15 +29,13 @@ defmodule ShowMeCodeExamplesTest do
       # Use test-local virtual clock instead of global to avoid race conditions
 
       {:ok, server} = MyServer.start_link(%{count: 0}, virtual_clock: clock)
-      # 10s virtual, fast real
+      # 10s virtual, fast real. advance/2 returns once the server has
+      # acknowledged the last delivery, so every tick has been processed.
       VirtualClock.advance(clock, 10_000)
 
-      # Let messages process
-      Process.sleep(20)
-
+      # One tick per virtual second, counted precisely
       count = GenServer.call(server, :get_count)
-      # Should have ~10 work items
-      assert count >= 5
+      assert count == 10
 
       GenServer.stop(clock)
     end
