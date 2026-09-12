@@ -193,7 +193,7 @@ defmodule ActorSimulation.RactorGenerator do
         "    fn on_#{msg_name}(&self);"
       end)
 
-    if length(messages) > 0 do
+    if messages != [] do
       """
       /// #{type_name}Callbacks defines the callback trait
       /// Implement this trait to customize actor behavior
@@ -233,7 +233,7 @@ defmodule ActorSimulation.RactorGenerator do
         """
       end)
 
-    if length(messages) > 0 do
+    if messages != [] do
       """
       // Generated from ActorSimulation DSL
       // Default callback implementation for: #{name}
@@ -295,7 +295,7 @@ defmodule ActorSimulation.RactorGenerator do
 
     # Always include at least one variant to avoid empty enum
     variants =
-      if length(messages) > 0 do
+      if messages != [] do
         Enum.map_join(messages, "\n", fn msg ->
           msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
           "    #{msg_name},"
@@ -432,7 +432,7 @@ defmodule ActorSimulation.RactorGenerator do
   defp generate_match_arms(name, definition, enable_callbacks) do
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
 
-    if length(messages) > 0 do
+    if messages != [] do
       Enum.map_join(messages, "\n", fn msg ->
         msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
         type_name = GeneratorUtils.to_pascal_case(name)

@@ -21,7 +21,7 @@ defmodule CAFGeneratorTest do
         )
 
       assert is_list(files)
-      assert length(files) > 0
+      assert files != []
 
       filenames = Enum.map(files, fn {name, _content} -> name end)
 

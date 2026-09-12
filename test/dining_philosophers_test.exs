@@ -94,7 +94,7 @@ defmodule DiningPhilosophersTest do
       trace = ActorSimulation.get_trace(simulation)
 
       # Should have traces of philosopher-fork interactions
-      assert length(trace) > 0
+      assert trace != []
 
       # Check that we have messages between philosophers and forks
       fork_messages =
@@ -103,7 +103,7 @@ defmodule DiningPhilosophersTest do
             String.contains?(to_string(event.from), "philosopher")
         end)
 
-      assert length(fork_messages) > 0
+      assert fork_messages != []
 
       ActorSimulation.stop(simulation)
     end

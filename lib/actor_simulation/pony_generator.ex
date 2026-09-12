@@ -368,7 +368,7 @@ defmodule ActorSimulation.PonyGenerator do
       end)
 
     methods_str =
-      if length(methods) > 0 do
+      if methods != [] do
         Enum.join(methods, "\n")
       else
         "  fun ref on_message()"
@@ -388,7 +388,7 @@ defmodule ActorSimulation.PonyGenerator do
       end)
 
     impl_methods_str =
-      if length(impl_methods) > 0 do
+      if impl_methods != [] do
         Enum.join(impl_methods, "\n")
       else
         """

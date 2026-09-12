@@ -168,7 +168,7 @@ defmodule ActorSimulation.CAFGenerator do
     target_names = Enum.map(definition.targets, &actor_snake_case/1)
 
     target_members =
-      if length(target_names) > 0 do
+      if target_names != [] do
         """
             std::vector<caf::actor> targets_;
             int send_count_ = 0;
@@ -218,7 +218,7 @@ defmodule ActorSimulation.CAFGenerator do
       end
 
     # Only initialize targets_ if actor has targets
-    has_targets = length(definition.targets) > 0
+    has_targets = definition.targets != []
     targets_init = if has_targets, do: ", targets_(targets)", else: ""
 
     # Suppress warning for unused targets parameter when not needed
@@ -286,7 +286,7 @@ defmodule ActorSimulation.CAFGenerator do
         """
       end)
 
-    if length(handlers) > 0 do
+    if handlers != [] do
       Enum.join(handlers, ",\n")
     else
       """
@@ -344,7 +344,7 @@ defmodule ActorSimulation.CAFGenerator do
   end
 
   defp generate_send_impl(definition) do
-    if length(definition.targets) > 0 do
+    if definition.targets != [] do
       """
         for (auto& target : targets_) {
           // CAF 1.0: Use mail API instead of send
@@ -372,7 +372,7 @@ defmodule ActorSimulation.CAFGenerator do
       end)
 
     methods_str =
-      if length(methods) > 0 do
+      if methods != [] do
         Enum.join(methods, "\n")
       else
         "    virtual void on_message();"
@@ -413,7 +413,7 @@ defmodule ActorSimulation.CAFGenerator do
       end)
 
     methods_str =
-      if length(methods) > 0 do
+      if methods != [] do
         Enum.join(methods, "\n")
       else
         """
@@ -494,7 +494,7 @@ defmodule ActorSimulation.CAFGenerator do
       Enum.map(actors, fn {name, def} ->
         actor_name = actor_snake_case(name)
 
-        if length(def.targets) > 0 do
+        if def.targets != [] do
           target_refs = Enum.map_join(def.targets, ", ", &actor_snake_case/1)
 
           "  // Re-spawn #{actor_name} with proper targets\n  #{actor_name} = system.spawn<#{actor_name}_actor>(std::vector<actor>{#{target_refs}});"

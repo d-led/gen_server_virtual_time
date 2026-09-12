@@ -232,7 +232,7 @@ defmodule ActorSimulation.PhonyGenerator do
       end)
 
     imports_section =
-      if length(messages) > 0 do
+      if messages != [] do
         "import (\n\t\"fmt\"\n)\n"
       else
         ""

@@ -59,7 +59,7 @@ defmodule HiActor do
     # Randomly choose a target and send :hi back (excluding sender)
     available_targets = Enum.reject(state.all_actors, fn target -> target == from end)
 
-    if length(available_targets) > 0 do
+    if available_targets != [] do
       target = Enum.random(available_targets)
 
       # Send :hi message to random target
@@ -81,7 +81,7 @@ defmodule HiActor do
     # Choose a random target from available targets (stats tracked automatically)
     available_targets = state.targets
 
-    if length(available_targets) > 0 do
+    if available_targets != [] do
       target = Enum.random(available_targets)
 
       # Send :hi message to random target

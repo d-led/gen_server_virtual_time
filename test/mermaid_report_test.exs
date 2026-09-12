@@ -645,7 +645,7 @@ defmodule MermaidReportTest do
       # Function to randomly select a target (excluding self)
       random_target = fn sender, targets ->
         available_targets = Enum.reject(targets, fn target -> target == sender end)
-        if length(available_targets) > 0 do
+        if available_targets != [] do
           Enum.random(available_targets)
         else
           nil
@@ -725,7 +725,7 @@ defmodule MermaidReportTest do
       random_target = fn sender, targets ->
         available_targets = Enum.reject(targets, fn target -> target == sender end)
 
-        if length(available_targets) > 0 do
+        if available_targets != [] do
           Enum.random(available_targets)
         else
           nil
@@ -861,7 +861,7 @@ defmodule MermaidReportTest do
 
           # Received :hi, send random response
           available_targets = Enum.reject(state.all_actors, &(&1 == from))
-          if length(available_targets) > 0 do
+          if available_targets != [] do
             target = Enum.random(available_targets)
             VirtualTimeGenServer.cast(target, {:hi, state.name})
           end

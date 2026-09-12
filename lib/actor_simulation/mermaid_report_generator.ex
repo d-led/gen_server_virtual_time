@@ -165,7 +165,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
     actor_stats = get_actor_stats(stats, name)
 
     # Determine if this is a source, sink, or processor based on behavior
-    has_targets = length(targets) > 0
+    has_targets = targets != []
     has_stats = actor_stats != nil
     sent_count = if has_stats, do: actor_stats.sent_count, else: 0
     received_count = if has_stats, do: actor_stats.received_count, else: 0
@@ -497,7 +497,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
         extract_message_label(definition.send_pattern)
 
       # Actors that forward messages via on_receive
-      definition.on_receive && definition.targets && length(definition.targets) > 0 ->
+      definition.on_receive && definition.targets not in [nil, []] ->
         # Try to infer the forwarded message type from common patterns
         case definition.initial_state do
           %{next: _} ->
@@ -994,7 +994,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
   defp determine_type_from_runtime_stats(actor_stats, definition) do
     actual_sent = actor_stats.sent_count
     actual_received = actor_stats.received_count
-    has_targets = length(definition.targets || []) > 0
+    has_targets = definition.targets not in [nil, []]
 
     cond do
       actual_sent > 0 && actual_received > 0 && has_targets -> :processor
@@ -1006,7 +1006,7 @@ defmodule ActorSimulation.MermaidReportGenerator do
 
   defp determine_type_from_definition(definition) do
     targets = definition.targets || []
-    has_targets = length(targets) > 0
+    has_targets = targets != []
     can_receive = definition.on_receive != nil || definition.on_match != []
     can_send = definition.send_pattern != nil || (can_receive && has_targets)
 

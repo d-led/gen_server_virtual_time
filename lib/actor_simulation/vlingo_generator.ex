@@ -164,7 +164,7 @@ defmodule ActorSimulation.VlingoGenerator do
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
 
     methods =
-      if length(messages) > 0 do
+      if messages != [] do
         Enum.map_join(messages, "\n", fn msg ->
           msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_camel_case()
           "  void #{msg_name}();"
@@ -211,7 +211,7 @@ defmodule ActorSimulation.VlingoGenerator do
   end
 
   defp generate_target_code(targets, class_name) do
-    if length(targets) > 0 do
+    if targets != [] do
       field = """
         private final List<#{class_name}Protocol> targets;
       """
@@ -229,7 +229,7 @@ defmodule ActorSimulation.VlingoGenerator do
   end
 
   defp generate_method_implementations(messages, definition, enable_callbacks) do
-    if length(messages) > 0 do
+    if messages != [] do
       Enum.map_join(messages, "\n\n", fn msg ->
         generate_message_method(msg, definition, enable_callbacks)
       end)
@@ -250,7 +250,7 @@ defmodule ActorSimulation.VlingoGenerator do
   end
 
   defp generate_imports_and_implements(definition) do
-    has_targets = length(definition.targets) > 0
+    has_targets = definition.targets != []
 
     list_import =
       if has_targets, do: "import java.util.List;\nimport java.util.ArrayList;", else: ""
@@ -443,7 +443,7 @@ defmodule ActorSimulation.VlingoGenerator do
       end
 
     send_to_targets =
-      if length(definition.targets) > 0 do
+      if definition.targets != [] do
         """
             // Send to all targets
             for (var target : targets) {
@@ -467,7 +467,7 @@ defmodule ActorSimulation.VlingoGenerator do
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
 
     methods =
-      if length(messages) > 0 do
+      if messages != [] do
         Enum.map_join(messages, "\n", fn msg ->
           msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
           "  void on#{msg_name}();"
@@ -502,7 +502,7 @@ defmodule ActorSimulation.VlingoGenerator do
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
 
     methods =
-      if length(messages) > 0 do
+      if messages != [] do
         Enum.map_join(messages, "\n\n", fn msg ->
           msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
           # If actor has send_pattern, it's the sender (publisher)
@@ -555,13 +555,13 @@ defmodule ActorSimulation.VlingoGenerator do
         # Determine parameters based on constructor needs
         params =
           cond do
-            enable_callbacks && length(definition.targets) > 0 ->
+            enable_callbacks && definition.targets != [] ->
               "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
 
             enable_callbacks ->
               "(#{class_name}Callbacks) null"
 
-            length(definition.targets) > 0 ->
+            definition.targets != [] ->
               "new java.util.ArrayList<>()"
 
             true ->
@@ -620,13 +620,13 @@ defmodule ActorSimulation.VlingoGenerator do
     # Determine test parameters based on what the constructor expects
     test_params =
       cond do
-        enable_callbacks && length(definition.targets) > 0 ->
+        enable_callbacks && definition.targets != [] ->
           "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
 
         enable_callbacks ->
           "(#{class_name}Callbacks) null"
 
-        length(definition.targets) > 0 ->
+        definition.targets != [] ->
           "new java.util.ArrayList<>()"
 
         true ->
@@ -635,7 +635,7 @@ defmodule ActorSimulation.VlingoGenerator do
 
     # Generate test methods for each message
     message_tests =
-      if length(messages) > 0 do
+      if messages != [] do
         Enum.map_join(messages, "\n\n", fn msg ->
           msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_camel_case()
 

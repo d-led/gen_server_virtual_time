@@ -39,6 +39,10 @@ and this project adheres to
   are not part of what is published
 - README and documentation index restructured to lead with install and runnable
   examples
+- Replaced `length(x) > 0` with `x != []` throughout, which is what Credo's
+  expensive-empty-enum check asks for. Every expression was verified to hold a
+  list, and the two where it may be `nil` use `not in [nil, []]` to keep the
+  original short-circuit behaviour. Credo now reports no issues, down from 42
 
 ### Fixed
 

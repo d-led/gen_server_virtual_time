@@ -193,7 +193,7 @@ defmodule ProcessInLoopTest do
             event.type == :send
         end)
 
-      assert length(hello_messages) >= 1
+      assert hello_messages != []
 
       ActorSimulation.stop(simulation)
     end
