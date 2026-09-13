@@ -45,6 +45,9 @@ jobs:
         run: |
           mix deps.get --only prod
           MIX_ENV=dev mix deps.get --only dev
+          # The test step below runs in the test env, which needs its own deps:
+          # stream_data and junit_formatter are only fetched for :test.
+          MIX_ENV=test mix deps.get --only test
 
       - name: Compile project
         run: |
