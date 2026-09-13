@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-13
+
+**Breaking changes:** the minimum Elixir is now 1.19 with OTP 28, and
+`VirtualClock.cancel_timer/2` returns the remaining virtual time, or `false`,
+where it previously returned `:ok`. Events scheduled for the same instant now
+fire in the order they were scheduled rather than the reverse. A virtual time
+that used to be silently truncated at the end of a long advance is no longer
+truncated, so a simulation can now report more messages than before.
+
 ### Added
 
 - Property-based test suites (`test/virtual_clock_property_test.exs`,
