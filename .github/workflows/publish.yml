@@ -52,6 +52,10 @@ jobs:
           MIX_ENV=dev mix compile
 
       - name: Run tests
+        env:
+          # The workflow-level MIX_ENV is prod, under which test/support is not
+          # compiled, so any test that imports a support module fails to compile.
+          MIX_ENV: test
         run: mix test --exclude slow --exclude omnetpp
 
       - name: Build documentation
