@@ -49,7 +49,7 @@ defmodule Mix.Tasks.Templates.Upgrade.HttpTest do
     end
 
     test "stay anonymous when no token is available" do
-      with_env("GH_TOKEN", nil, fn ->
+      without_tokens(fn ->
         refute Enum.any?(Http.headers(), fn {name, _value} -> name == ~c"authorization" end)
       end)
     end
@@ -96,6 +96,12 @@ defmodule Mix.Tasks.Templates.Upgrade.HttpTest do
     end)
 
     "http://127.0.0.1:#{:httpd.info(httpd) |> Keyword.fetch!(:port)}"
+  end
+
+  # A CI runner is likely to have a token in its environment, so "no token" has to
+  # be arranged rather than assumed.
+  defp without_tokens(fun) do
+    with_env("GH_TOKEN", nil, fn -> with_env("GITHUB_TOKEN", nil, fun) end)
   end
 
   defp with_env(name, value, fun) do
