@@ -708,11 +708,14 @@ defmodule MermaidReportTest do
         )
         |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds to get many interactions
 
-      # Generate sequence diagram
-      html = ActorSimulation.generate_sequence_diagram(simulation,
-        title: "Random Hi Messages - 7 Actors",
-        model_source: model_source
-      )
+      # Draw the message flow
+      mermaid = ActorSimulation.trace_to_mermaid(simulation, enhanced: true)
+
+      {:ok, _path} =
+        ActorSimulation.write_flowchart_report(simulation, "random_hi_report.html",
+          title: "Random Hi Messages - 7 Actors",
+          model_source: model_source
+        )
       """
 
       # Set random seed for reproducible results

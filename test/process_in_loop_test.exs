@@ -212,6 +212,12 @@ defmodule ProcessInLoopTest do
         )
         |> ActorSimulation.run(duration: 200)
 
+      mermaid = ActorSimulation.trace_to_mermaid(simulation)
+
+      assert mermaid =~ "sequenceDiagram"
+      assert mermaid =~ "client->>server: :request"
+      assert mermaid =~ "server->>client: :response"
+
       ActorSimulation.stop(simulation)
     end
 

@@ -63,9 +63,9 @@ defmodule DocumentationTest do
 
       stats = ActorSimulation.get_stats(simulation)
 
-      # Publisher sends to 3 subscribers
-      assert stats.actors[:publisher].sent_count > 0
-      assert stats.actors[:subscriber1].received_count > 0
+      # Publisher ticks 100 times at 100/sec for 1s, once per subscriber
+      assert stats.actors[:publisher].sent_count == 300
+      assert stats.actors[:subscriber1].received_count == 100
 
       ActorSimulation.stop(simulation)
     end
@@ -200,6 +200,11 @@ defmodule DocumentationTest do
         )
         |> ActorSimulation.add_actor(:server)
         |> ActorSimulation.run(duration: 200)
+
+      mermaid = ActorSimulation.trace_to_mermaid(simulation)
+
+      assert mermaid =~ "sequenceDiagram"
+      assert mermaid =~ "client->>server: :ping"
 
       ActorSimulation.stop(simulation)
     end

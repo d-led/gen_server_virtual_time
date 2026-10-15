@@ -82,12 +82,8 @@ defmodule RidiculousTimeTest do
       elapsed = System.monotonic_time(:millisecond) - start_time
       stats = ActorSimulation.get_stats(simulation)
 
-      # 10 years * 12 months = 120 heartbeats (may get 121 due to timing)
-      _expected_heartbeats = 120
-
-      # Use very lenient assertions for async execution
-      assert stats.actors[:heartbeat_monitor].sent_count >= 1
-      assert stats.actors[:heartbeat_monitor].sent_count <= 200
+      # 10 years of monthly heartbeats: 3650 days / 30 days
+      assert stats.actors[:heartbeat_monitor].sent_count == 121
 
       # Should complete in seconds, not a decade!
       assert elapsed < 20_000, "A decade should simulate in under 20 seconds!"
