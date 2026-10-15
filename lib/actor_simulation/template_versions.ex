@@ -130,7 +130,8 @@ defmodule ActorSimulation.TemplateVersions do
   def all, do: for({key, _source} <- sources(), do: {key, get(key)})
 
   @doc """
-  The major component of `key`'s version.
+  The major component of `key`'s version, or `nil` when the pin is not a version
+  at all (a release channel, or a Go pseudo-version).
 
   Templates that must name a major (a CMake package major, a JS library major)
   use this instead of repeating the digit, so the major cannot drift away from
@@ -140,9 +141,17 @@ defmodule ActorSimulation.TemplateVersions do
 
       iex> ActorSimulation.TemplateVersions.major(:caf)
       "1"
+
+      iex> ActorSimulation.TemplateVersions.major(:ponyc_channel)
+      nil
   """
-  @spec major(atom()) :: String.t()
-  def major(key), do: key |> get() |> String.split(".") |> hd()
+  @spec major(atom()) :: String.t() | nil
+  def major(key) do
+    case Regex.run(~r/^\d+/, get(key)) do
+      [digits] -> digits
+      nil -> nil
+    end
+  end
 
   @doc """
   Where each pin comes from, in the order the table should be presented.

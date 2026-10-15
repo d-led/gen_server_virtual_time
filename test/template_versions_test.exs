@@ -62,6 +62,26 @@ defmodule ActorSimulation.TemplateVersionsTest do
                ]
     end
 
+    test "every kind of source describes itself for the report" do
+      describe = &TemplateVersions.describe/1
+
+      assert describe.({:conan_center, "caf", :latest_within_major}) == "conan center: caf"
+      assert describe.({:crates_io, "ractor", :version}) == "crates.io: ractor"
+      assert describe.({:go_module, "github.com/x/y", :raw}) == "go module: github.com/x/y"
+      assert describe.({:maven_central, "g:a", :latest_within_major}) == "maven central: g:a"
+      assert describe.({:github_release, "o/r", :version}) == "github release: o/r"
+      assert describe.({:github_release, "o/r", :major}) == "github release: o/r, major only"
+      assert describe.({:github_release, "o/r", :major_tag}) == "github release: o/r"
+      assert describe.({:github_tags, "o/r", :major}) == "github tags: o/r, major only"
+      assert describe.({:github_tags, "o/r", :version}) == "github tags: o/r"
+      assert describe.({:manual, "a reason", :none}) == "manual: a reason"
+    end
+
+    test "a pin that is not a version has no major" do
+      assert TemplateVersions.major(:ponyc_channel) == nil
+      assert TemplateVersions.major(:caf) == "1"
+    end
+
     test "an unknown key is an error rather than a silent default" do
       assert_raise KeyError, fn -> TemplateVersions.get(:no_such_dependency) end
     end
