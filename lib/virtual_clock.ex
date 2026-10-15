@@ -491,8 +491,6 @@ defmodule VirtualClock do
   # Server callbacks
 
   @impl true
-  def init(:ok), do: init({:ok, []})
-
   def init({:ok, opts}) do
     # Set low priority so actor processes get scheduled first when we yield
     # This works in combination with yielding for reliable message ordering
