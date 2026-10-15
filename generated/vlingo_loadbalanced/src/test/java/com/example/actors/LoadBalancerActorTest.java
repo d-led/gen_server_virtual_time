@@ -40,7 +40,7 @@ public class LoadBalancerActorTest {
   }
 
   @Test
-  public void testDistributeworkMessage() {
+  public void testDistributeWorkMessage() {
     // Act
     actor.distributeWork();
 
