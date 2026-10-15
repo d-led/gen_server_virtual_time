@@ -87,6 +87,10 @@ jobs:
   generate-diagrams:
     name: Generate Sequence Diagrams
     runs-on: ubuntu-latest
+    # The workflow runs in dev, but this job runs tests, which need the test-only
+    # dependencies (stream_data, excoveralls).
+    env:
+      MIX_ENV: test
     if: |
       contains(github.event.head_commit.message, '[diagrams]') ||
       github.event_name == 'pull_request'
