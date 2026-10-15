@@ -47,48 +47,58 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
   use Mix.Task
 
-  # :httpc and :public_key are only needed by this maintainer task, so the library
-  # itself does not declare the :inets, :ssl and :public_key applications. Both
-  # ship with OTP.
-  @compile {:no_warn_undefined, [:httpc, :public_key]}
-
   @requirements ["compile"]
 
   alias ActorSimulation.TemplateVersions, as: Versions
   alias ActorSimulation.TemplateVersions.Upgrade
+  alias Mix.Tasks.Templates.Upgrade.Http
 
   @impl Mix.Task
-  def run(args) do
+  def run(args), do: run(args, &Http.get/1, Upgrade.module_path())
+
+  @doc """
+  Runs the task against `fetch`, the table kept in `path`, and `run_script` for
+  regenerating the checked-in examples.
+
+  Mix calls `run/1`; this arity exists so the task can be exercised without the
+  network, without rewriting the real table, and without rebuilding examples.
+  """
+  def run(args, fetch, path, run_script \\ &run_script/1) do
     {opts, _argv, _invalid} =
       OptionParser.parse(args,
         strict: [check: :boolean, examples: :boolean, offline: :boolean],
         aliases: [c: :check]
       )
 
-    plan = build_plan(opts)
+    plan = build_plan(opts, fetch)
 
     report(plan)
 
     if opts[:check] do
-      check(plan)
+      check(plan, path)
     else
-      write_plan(plan)
+      write_plan(plan, path)
     end
 
-    if opts[:examples], do: regenerate_examples()
+    if opts[:examples], do: regenerate_examples(run_script)
   end
 
-  defp build_plan(offline: true), do: Upgrade.plan(fn _url -> {:error, :offline} end)
-  defp build_plan(_opts), do: Upgrade.plan(&http_fetch/1)
+  defp build_plan(opts, fetch) do
+    if opts[:offline] do
+      Upgrade.plan(fn _url -> {:error, :offline} end)
+    else
+      Upgrade.plan(fetch)
+    end
+  end
 
-  defp check(plan) do
+  defp check(plan, path) do
     if Upgrade.drift?(plan) do
       Mix.raise("""
 
       #{Enum.count(plan, &(&1.status == :update))} template version(s) are out of date.
 
       Run `mix templates.upgrade` to update
-      #{Upgrade.module_path()}, then
+      #{path}, then
       `mix templates.upgrade --examples` to regenerate the checked-in projects.
       """)
     else
@@ -96,8 +106,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
     end
   end
 
-  defp write_plan(plan) do
-    path = Upgrade.module_path()
+  defp write_plan(plan, path) do
     source = File.read!(path)
     updated = Upgrade.rewrite(source, Upgrade.apply_plan(plan))
 
@@ -109,7 +118,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
     end
   end
 
-  defp regenerate_examples do
+  defp regenerate_examples(run_script) do
     scripts = ~w(
       generate_omnetpp_examples
       generate_caf_examples
@@ -122,7 +131,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
     Enum.each(scripts, fn script ->
       Mix.shell().info("\n$ mix run scripts/#{script}.exs")
 
-      case mix_run_script(script) do
+      case run_script.(script) do
         0 -> :ok
         status -> Mix.raise("scripts/#{script}.exs exited with #{status}")
       end
@@ -131,7 +140,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
     Mix.shell().info("\nRegenerated the checked-in example projects.")
   end
 
-  defp mix_run_script(script) do
+  defp run_script(script) do
     {output, status} = System.cmd("mix", ["run", "scripts/#{script}.exs"], stderr_to_stdout: true)
     Mix.shell().info(output)
     status
@@ -176,57 +185,14 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
   defp comment(%{status: :update, source: source}), do: Versions.describe(source)
   defp comment(%{status: :manual, note: note}), do: note
-  defp comment(%{status: :unresolved, note: note}), do: note
+
+  # Say where the version would have come from, and then why it did not: a
+  # maintainer reading an unresolved row needs both.
+  defp comment(%{status: :unresolved, source: source, note: note}) do
+    "#{Versions.describe(source)} — #{note}"
+  end
+
   defp comment(_up_to_date_entry), do: ""
 
   defp label(key), do: Atom.to_string(key)
-
-  # --- HTTP ---
-
-  defp http_fetch(url) do
-    {:ok, _} = Application.ensure_all_started(:inets)
-    {:ok, _} = Application.ensure_all_started(:ssl)
-
-    request = {String.to_charlist(url), headers()}
-
-    case :httpc.request(:get, request, http_options(), body_format: :binary) do
-      {:ok, {{_version, 200, _reason}, _headers, body}} ->
-        {:ok, body}
-
-      {:ok, {{_version, status, reason}, _headers, _body}} ->
-        {:error, {status, to_string(reason)}}
-
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
-
-  defp headers do
-    [
-      {~c"user-agent", ~c"gen_server_virtual_time templates.upgrade"},
-      {~c"accept", ~c"application/vnd.github+json"}
-    ] ++ auth_header()
-  end
-
-  defp auth_header do
-    case System.get_env("GH_TOKEN") || System.get_env("GITHUB_TOKEN") do
-      nil -> []
-      token -> [{~c"authorization", String.to_charlist("Bearer #{token}")}]
-    end
-  end
-
-  defp http_options do
-    [
-      timeout: 30_000,
-      connect_timeout: 15_000,
-      ssl: [
-        verify: :verify_peer,
-        cacerts: :public_key.cacerts_get(),
-        depth: 4,
-        customize_hostname_check: [
-          match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-        ]
-      ]
-    ]
-  end
 end
