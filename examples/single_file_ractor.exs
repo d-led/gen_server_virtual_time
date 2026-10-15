@@ -12,7 +12,7 @@
 # All from one portable Elixir script!
 
 Mix.install([
-  # Use path for local development, or "~> 0.6.0" when published
+  # Use path for local development, or "~> 0.6.1" when published
   {:gen_server_virtual_time, path: Path.join(__DIR__, "..")}
 ])
 

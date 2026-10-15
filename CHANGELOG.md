@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-15
+
 ### Added
 
 - `mix templates.upgrade`, a maintainer task that asks each upstream for its
@@ -85,6 +87,12 @@ and this project adheres to
   and its script runner as arguments, so its report, its `--check` and its example
   regeneration are exercised without the network, without touching the real table
   and without rebuilding the checked-in projects
+- CI: the sequence-diagram job ran `mix test` in the documentation workflow's
+  `dev` environment, where the test-only dependencies are not loaded, so
+  compiling the test files failed there; it now runs in the test environment, as
+  the other test steps already did. One property test filtered a generator down to
+  the handful of pins that are versions, which StreamData refuses on Elixir 1.19;
+  it now enumerates that subset and asserts it is not empty
 
 ## [0.6.0] - 2026-09-13
 
@@ -307,9 +315,21 @@ truncated, so a simulation can now report more messages than before.
 - Message tracing and Mermaid diagram generation
 
 [Unreleased]:
-  https://github.com/d-led/gen_server_virtual_time/compare/v0.2.0...HEAD
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.6.1...HEAD
+[0.6.1]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.6.0...v0.6.1
+[0.6.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.5.0...v0.6.0
+[0.5.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.4.0...v0.5.0
+[0.4.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.2.4...v0.4.0
+[0.3.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.2.3...v0.3.0
 [0.2.4]:
   https://github.com/d-led/gen_server_virtual_time/compare/v0.2.3...v0.2.4
+[0.2.3]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.2.2...v0.2.3
 [0.2.0]:
   https://github.com/d-led/gen_server_virtual_time/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/d-led/gen_server_virtual_time/releases/tag/v0.1.0
