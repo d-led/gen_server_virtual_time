@@ -16,11 +16,12 @@ mix run scripts/generate_omnetpp_examples.exs
 
 **What it does:**
 
-- Generates 4 complete OMNeT++ projects:
+- Generates 5 complete OMNeT++ projects:
   - `omnetpp_pubsub` - Publish-subscribe system
   - `omnetpp_pipeline` - Message pipeline
   - `omnetpp_burst` - Bursty traffic pattern
   - `omnetpp_loadbalanced` - Load-balanced system
+  - `omnetpp_high_freq` - High-frequency messaging
 - Creates all necessary files (NED, C++, CMake, etc.)
 - Reports generation status and file counts
 - Exits with code 0 on success, 1 on failure
@@ -105,7 +106,6 @@ These scripts are used in GitHub Actions to validate OMNeT++ code generation:
 
 1. **test-generation** - Generates and validates code
 
-   - Tests on multiple Elixir (1.17, 1.18) and OTP (26, 27) versions
    - Runs generation script
    - Validates output
    - Checks for timestamps
@@ -113,8 +113,7 @@ These scripts are used in GitHub Actions to validate OMNeT++ code generation:
    - Uploads artifacts
 
 2. **verify-consistency** - Ensures consistency
-   - Compares generated code across different versions
-   - Verifies identical output regardless of Elixir/OTP version
+   - Verifies the generated output matches what is checked into `examples/`
 
 **Validation Checks:**
 

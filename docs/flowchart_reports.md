@@ -101,25 +101,24 @@ ActorSimulation.generate_flowchart_report(simulation,
 
 ## Node Shapes
 
-Actors are automatically assigned shapes based on their behavior:
+Actors are automatically assigned shapes based on their behaviour:
 
-| Shape                | Behavior                   | Visual                   |
-| -------------------- | -------------------------- | ------------------------ |
-| Stadium `([...])`    | Source (sends only)        | Rounded pill shape       |
-| Asymmetric `>...]`   | Sink (receives only)       | Trapezoid pointing right |
-| Rounded `(...)`      | Processor (send & receive) | Rounded rectangle        |
-| Rectangle `[...]`    | Passive (no send pattern)  | Square corners           |
-| Subroutine `[[...]]` | Real process               | Double brackets          |
+| Shape               | Behaviour                      | Visual              |
+| ------------------- | ------------------------------ | ------------------- |
+| Stadium `([...])`   | Source (sends, never receives) | Rounded pill shape  |
+| Rounded `(...)`     | Processor (sends and receives) | Rounded rectangle   |
+| Rectangle `[...]`   | Sink or passive (receives only, or no send pattern, or a real process) | Square corners |
 
 ## Color Coding
 
-When `style_by_activity: true` (default), nodes are colored by message activity:
+With `style_by_activity: true` (the default), nodes are coloured by their total
+message activity — `sent_count + received_count` — and real processes are
+coloured the same way as simulated actors:
 
 - **Gray** - Inactive (0 messages)
-- **Light Blue** - Low activity (< 10 messages)
-- **Green** - Medium activity (10-49 messages)
-- **Orange** - High activity (50+ messages)
-- **Blue** - Real processes (special indicator)
+- **Light Blue** - Low activity (fewer than 10 messages)
+- **Green** - Medium activity (10 to 49 messages)
+- **Orange** - High activity (50 or more messages, drawn with a thicker border)
 
 ## Examples
 

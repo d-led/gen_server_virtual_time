@@ -1,9 +1,12 @@
 defmodule VirtualTimeGenStateMachine do
   @moduledoc """
-  A behavior module for GenStateMachine with virtual time support.
+  Use `VirtualTimeGenStateMachine` instead of `:gen_statem` to test timeouts and
+  timers without waiting for them.
 
-  This module wraps GenStateMachine and provides a `send_after/3` function that can
-  work with either real time (production) or virtual time (testing).
+  This module wraps OTP's `:gen_statem` and provides `send_after/3`, which
+  schedules against either real time (production) or a virtual clock (testing).
+  The callback contract is `:gen_statem`'s: `init/1`, `handle_event/4` or state
+  functions, `terminate/3`, and so on.
 
   ## Example
 
@@ -11,7 +14,7 @@ defmodule VirtualTimeGenStateMachine do
         use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
 
         def start_link(opts) do
-          GenStateMachine.start_link(__MODULE__, :off, opts)
+          VirtualTimeGenStateMachine.start_link(__MODULE__, :off, opts)
         end
 
         @impl true
@@ -40,16 +43,15 @@ defmodule VirtualTimeGenStateMachine do
         end
       end
 
-  ## Testing with Virtual Time
+  ## Testing with a local virtual clock
 
       test "state machine with timers" do
         {:ok, clock} = VirtualClock.start_link()
-        VirtualTimeGenStateMachine.set_virtual_clock(clock)
 
-        {:ok, server} = MyStateMachine.start_link([])
+        {:ok, server} = MyStateMachine.start_link(virtual_clock: clock)
 
         # Trigger state transition
-        GenStateMachine.cast(server, :flip)
+        VirtualTimeGenStateMachine.cast(server, :flip)
 
         # Advance virtual time - timer fires instantly
         VirtualClock.advance(clock, 100)

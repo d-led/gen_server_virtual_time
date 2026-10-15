@@ -241,7 +241,7 @@ The generated `pom.xml` includes:
 Generated projects include a GitHub Actions workflow that:
 
 - Tests on Ubuntu, macOS, and Windows
-- Tests with Java 11, 17, and 21
+- Tests with Java 11 and 21
 - Runs JUnit 5 tests with Surefire
 - Publishes test results
 - Validates compilation

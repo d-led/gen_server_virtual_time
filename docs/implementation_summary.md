@@ -1,5 +1,11 @@
 # Four Code Generators - Implementation Complete
 
+> **Historical record.** This page describes the state of the project when
+> release 0.2.0 was being prepared: the generator count, test count and file
+> references below are from that time and are not maintained. For what the
+> project does today see the [documentation index](index.md), and for what
+> changed see the [changelog](../CHANGELOG.md).
+
 ## What We Built
 
 Four production-ready code generators that transform ActorSimulation DSL into:

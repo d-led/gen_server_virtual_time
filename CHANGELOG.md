@@ -8,6 +8,65 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `mix templates.upgrade`, a maintainer task that asks each upstream for its
+  latest release and reports or rewrites the versions the code generators pin.
+  `--check` fails when a pin is behind, `--examples` regenerates the checked-in
+  example projects afterwards, `--offline` skips the network
+- `ActorSimulation.TemplateVersions`, the single table of third-party versions a
+  generated project pins, together with `sources/0`, which records where each
+  version comes from and how much of it we take (`:latest_within_major` never
+  moves a generated project across a breaking major on its own)
+- `scripts/generate_ractor_examples.exs`, so all six generators have a
+  regeneration script
+- `benchmarks/virtual_time_speedup.exs`, which measures the real speed-up the
+  README quotes, so the performance table is reproducible rather than inherited
+- Tests for the clock lifecycle: a stopped or killed clock must not leave its
+  scheduler process behind
+
+### Changed
+
+- Code generators no longer hardcode dependency versions in their templates.
+  They read `ActorSimulation.TemplateVersions`, which is why the generated
+  projects' pins are now reviewed in one place
+- Generator dependency pins brought up to date: CAF 1.0.2 → 1.1.0, Catch2 3.7.1 →
+  3.16.0, OMNeT++ 6.2.0 → 6.4.0, Ractor 0.15 → 0.16.5, tokio-test 0.4 → 0.4.6,
+  JUnit 5.10.0 → 5.14.4, Maven plugins, Prism 1.29.0 → 1.30.0, and the GitHub
+  Actions the generated CI workflows pin (`checkout` v3 → v7, `cache` v3 → v6,
+  `setup-go` v4 → v7, `setup-java` v3 → v6, `setup-python` v4 → v7,
+  `setup-rust-toolchain` v1 → v2). Generated CAF projects install Conan with
+  `conan-io/setup-conan` instead of an unpinned `pip install conan`
+- Generated projects now refer to this repository instead of a `yourusername`
+  placeholder, and their README prerequisites follow the version table
+- All dependencies and their requirement floors are current; the library itself
+  still depends on nothing but `:logger` — the upgrade tooling lives in `dev/`
+  and is not packaged
+- Documentation corrected against the code: the README's speed-up table is now
+  measured, `wrap_mermaid_html/1` (which never existed) is replaced with the real
+  report API, the state machine documentation names `VirtualTimeGenStateMachine`
+  rather than a dependency the library does not use, and the flowchart shape and
+  colour tables match what the report generator emits
+- `docs/index.md` is now published on HexDocs, and its links resolve there
+
+### Fixed
+
+- A `VirtualClock` leaked its scheduler process: the two were linked, and a
+  process that is not trapping exits ignores an exit signal whose reason is
+  `:normal`, so every stopped clock left a process behind. The scheduler now
+  watches its clock. This made long benchmark runs fail with "Too many processes"
+- The generated CAF main did not initialise the atom type ID block it declares
+  (`CAF_MAIN(caf::id_block::ActorSimulation)`), which is undefined behaviour: the
+  generated demo crashed with SIGSEGV as soon as it sent a message
+- Generated CAF actors without a send pattern now handle the message atom their
+  upstream actually sends, and call their declared `on_message` callback, so a
+  generated pub/sub project delivers messages instead of dropping them
+- Examples and templates regenerated from the upgraded generators; `test/output/`
+  (stale generated reports that no test wrote) removed
+- Tests that asserted nothing, asserted their own fixtures, compared a list
+  against `[]`, or claimed virtual-time behaviour without attaching a clock now
+  assert the behaviour their names describe
+
 ## [0.6.0] - 2026-09-13
 
 **Breaking changes:** the minimum Elixir is now 1.19 with OTP 28, and
@@ -41,8 +100,8 @@ truncated, so a simulation can now report more messages than before.
 - Updated all dependencies, including `ex_doc` 0.38 → 0.40, `credo` 1.7.13 →
   1.7.19, `dialyxir` 1.4.6 → 1.4.8, `castore` 1.0.15 → 1.0.21
 - Consolidated four duplicated message-dispatch blocks in `ActorSimulation.Actor`
-  into shared helpers, and nine duplicated acknowledgement clauses in
-  `VirtualTimeGenStateMachine.Wrapper` into shared delivery handling
+  into shared helpers, and nine duplicated acknowledgement clauses in the
+  `VirtualTimeGenStateMachine` wrapper into shared delivery handling
 - FOSSA no longer scans `generated/` or `examples/`: they are build output whose
   transitive dependencies (for example `io.vlingo.xoom:xoom-actors`, MPL-2.0)
   are not part of what is published

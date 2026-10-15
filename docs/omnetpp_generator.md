@@ -98,7 +98,7 @@ make
 
 To build and run generated code, you need:
 
-1. **OMNeT++ 6.0+** - Install from [omnetpp.org](https://omnetpp.org/)
+1. **OMNeT++ 6.4+** - Install from [omnetpp.org](https://omnetpp.org/)
 2. **CMake 3.15+** - For build configuration
 3. **C++17 compiler** - GCC 7+, Clang 5+, or MSVC 2017+
 4. **Conan (optional)** - For dependency management

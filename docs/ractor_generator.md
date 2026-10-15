@@ -178,7 +178,7 @@ One-shot delayed message (1 second delay) using `tokio::time::sleep`.
   project_name: "my_actors",      # Cargo package name
   enable_callbacks: true,          # Generate callback traits
   rust_edition: "2021",            # Rust edition (2015, 2018, 2021)
-  ractor_version: "0.12"           # Ractor crate version
+  ractor_version: "0.16.5"        # Ractor crate version (see TemplateVersions)
 )
 ```
 
