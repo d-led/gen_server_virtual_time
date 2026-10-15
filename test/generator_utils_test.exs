@@ -51,8 +51,10 @@ defmodule ActorSimulation.GeneratorUtilsTest do
     end
 
     test "preserves existing PascalCase" do
-      # Splits by delimiters
-      assert GeneratorUtils.to_pascal_case("MyActor") == "Myactor"
+      # An identifier that is already PascalCase comes back unchanged, so
+      # converting twice cannot mangle it.
+      assert GeneratorUtils.to_pascal_case("MyActor") == "MyActor"
+      assert GeneratorUtils.to_pascal_case("HTTPServer") == "HTTPServer"
     end
   end
 
