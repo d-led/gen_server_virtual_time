@@ -25,7 +25,7 @@ defmodule ActorSimulation.TemplateVersionsPropertyTest do
   end
 
   property "a pin that starts with a digit reports a numeric major that is its prefix" do
-    check all({key, pin} <- pin(), String.match?(pin, ~r/^\d/)) do
+    check all({key, pin} <- member_of(pins_starting_with_a_digit())) do
       major = TemplateVersions.major(key)
 
       assert major =~ ~r/^\d+$/, "#{key}'s major is not numeric: #{inspect(major)}"
@@ -58,13 +58,29 @@ defmodule ActorSimulation.TemplateVersionsPropertyTest do
 
   defp pin, do: member_of(TemplateVersions.all())
 
+  # Pins that are versions: the rest are channels, tags and pseudo-versions.
+  defp pins_starting_with_a_digit do
+    Enum.filter(TemplateVersions.all(), fn {_key, pin} -> String.match?(pin, ~r/^\d/) end)
+  end
+
   # Every source whose transform is this one. Enumerating the subset rather than
   # filtering the whole table keeps the properties exhaustive and cheap.
   defp source_with(transform) do
-    TemplateVersions.sources()
-    |> Enum.filter(fn {_key, {_kind, _target, source_transform}} ->
+    member_of(source_entries(transform))
+  end
+
+  defp source_entries(transform) do
+    Enum.filter(TemplateVersions.sources(), fn {_key, {_kind, _target, source_transform}} ->
       source_transform == transform
     end)
-    |> member_of()
+  end
+
+  # A property over an empty list passes without checking anything, so the subsets
+  # the properties enumerate are asserted to be there.
+  test "the subsets the properties enumerate are not empty" do
+    assert pins_starting_with_a_digit() != []
+    assert source_entries(:latest_within_major) != []
+    assert source_entries(:major) != []
+    assert source_entries(:major_tag) != []
   end
 end
