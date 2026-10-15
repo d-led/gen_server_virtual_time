@@ -46,7 +46,9 @@ and this project adheres to
   measured, `wrap_mermaid_html/1` (which never existed) is replaced with the real
   report API, the state machine documentation names `VirtualTimeGenStateMachine`
   rather than a dependency the library does not use, and the flowchart shape and
-  colour tables match what the report generator emits
+  colour tables match what the report generator emits. The README also says what
+  is deterministic about a run: the clock, not the order in which tracing records
+  messages that share one virtual instant
 - `docs/index.md` is now published on HexDocs, and its links resolve there
 
 ### Fixed
@@ -63,9 +65,26 @@ and this project adheres to
   generated pub/sub project delivers messages instead of dropping them
 - Examples and templates regenerated from the upgraded generators; `test/output/`
   (stale generated reports that no test wrote) removed
+- `GeneratorUtils.to_pascal_case/1` mangled an identifier that was already
+  PascalCase (`"MyActor"` → `"Myactor"`), so a generated project could not be
+  regenerated from its own output. It now uppercases the first character of each
+  word and leaves the rest alone
+- `GeneratorUtils.pattern_interval/1` raised on `{:self_message, delay, message}`,
+  a pattern the DSL otherwise accepts, so a generator could not read the interval
+  of a self-messaging actor
+- `ActorSimulation.TemplateVersions.major/1` answered with the first
+  dot-separated field of whatever the pin happened to be, so a release channel or
+  a Go pseudo-version produced a nonsense major for the templates that
+  interpolate it. A pin that is not a version now reports no major
 - Tests that asserted nothing, asserted their own fixtures, compared a list
   against `[]`, or claimed virtual-time behaviour without attaching a clock now
   assert the behaviour their names describe
+- The pure parts of the library — actor definitions, the statistics aggregation,
+  the identifier conversions and the version table — are now specified by
+  property tests, and `mix templates.upgrade` takes its fetcher, its table path
+  and its script runner as arguments, so its report, its `--check` and its example
+  regeneration are exercised without the network, without touching the real table
+  and without rebuilding the checked-in projects
 
 ## [0.6.0] - 2026-09-13
 

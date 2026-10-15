@@ -355,6 +355,12 @@ File.write!("report.html", html)
 The throughput figure is measured, not estimated: run
 `mix run benchmarks/virtual_time_speedup.exs` to reproduce it on your machine.
 
+The clock is what is deterministic: the same run produces the same message
+counts, the same timestamps and the same order for events at different instants.
+Tracing is an observation of a run rather than part of that guarantee, so when
+several messages fall on the same instant, a sequence diagram may record them in
+the order the actors happened to be scheduled.
+
 ## What you get
 
 | Module                        | Use it to                                            |
