@@ -18,6 +18,14 @@ defmodule VirtualClock do
   """
   use GenServer
 
+  # How long the clock waits for an actor to acknowledge a delivery before giving
+  # up on it. The wait is otherwise purely event driven, so this budget only
+  # matters when an actor has stopped responding; it is generous on purpose,
+  # because a slow machine must never make the clock move on while a delivery is
+  # still being handled — that would silently drop the delivery and change the
+  # outcome of a simulation.
+  @default_ack_timeout_ms 30_000
+
   defmodule State do
     @moduledoc false
     defstruct current_time: 0,
@@ -29,7 +37,10 @@ defmodule VirtualClock do
               # Track the target time for current advance
               target_time: nil,
               # Pending ack watchdog, cancelled when the wait completes
-              ack_timeout_ref: nil
+              ack_timeout_ref: nil,
+              # Real-time budget for one delivery acknowledgement; init/1 fills it
+              # in from the clock's options.
+              ack_timeout_ms: nil
   end
 
   defmodule ScheduledEvent do
@@ -73,7 +84,17 @@ defmodule VirtualClock do
 
     @impl true
     def init(clock_pid) do
+      # The link to the clock is not enough to clean up after it: exit signals with
+      # reason :normal are ignored by a process that is not trapping exits, so a
+      # clock stopped with GenServer.stop/1 would leave its scheduler running
+      # forever. Watch the clock instead, so the scheduler always follows it.
+      Process.monitor(clock_pid)
       {:ok, %SchedulerState{clock_pid: clock_pid}}
+    end
+
+    @impl true
+    def handle_info({:DOWN, _ref, :process, _clock_pid, _reason}, state) do
+      {:stop, :normal, state}
     end
 
     @impl true
@@ -259,9 +280,17 @@ defmodule VirtualClock do
 
   @doc """
   Starts a new virtual clock.
+
+  ## Options
+
+    * `:ack_timeout_ms` - how long to wait for each delivery acknowledgement
+      before giving up on it (default: #{@default_ack_timeout_ms}ms). This is a
+      real-time safety net against an actor that stopped responding, not a
+      performance budget: the clock waits for acknowledgements, it does not race
+      them.
   """
   def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, :ok, opts)
+    GenServer.start_link(__MODULE__, {:ok, opts}, opts)
   end
 
   @doc """
@@ -462,7 +491,9 @@ defmodule VirtualClock do
   # Server callbacks
 
   @impl true
-  def init(:ok) do
+  def init(:ok), do: init({:ok, []})
+
+  def init({:ok, opts}) do
     # Set low priority so actor processes get scheduled first when we yield
     # This works in combination with yielding for reliable message ordering
     Process.flag(:priority, :low)
@@ -470,7 +501,12 @@ defmodule VirtualClock do
     # Start the scheduler process at normal priority for fair competition
     {:ok, scheduler_pid} = VirtualScheduler.start_link(self())
 
-    {:ok, %State{scheduler_pid: scheduler_pid}}
+    state = %State{
+      scheduler_pid: scheduler_pid,
+      ack_timeout_ms: Keyword.get(opts, :ack_timeout_ms, @default_ack_timeout_ms)
+    }
+
+    {:ok, state}
   end
 
   @impl true
@@ -670,7 +706,7 @@ defmodule VirtualClock do
 
         if MapSet.size(new_pending) > 0 do
           # Wait for the actors to process what we just delivered before moving on.
-          {:noreply, arm_ack_timeout(new_state, from, target_time, target_time - next_time)}
+          {:noreply, arm_ack_timeout(new_state, from, target_time)}
         else
           # Nobody to wait for - carry on with the next instant immediately.
           send(self(), {:do_advance, target_time, from})
@@ -711,8 +747,7 @@ defmodule VirtualClock do
 
   defp wait_for_acks_or_finish(state, from, target_time) do
     if MapSet.size(state.pending_acks) > 0 do
-      remaining_ms = target_time - state.current_time
-      {:noreply, arm_ack_timeout(state, from, target_time, remaining_ms)}
+      {:noreply, arm_ack_timeout(state, from, target_time)}
     else
       if from, do: GenServer.reply(from, {:ok, target_time})
       {:noreply, state}
@@ -721,21 +756,15 @@ defmodule VirtualClock do
 
   # Arms the watchdog for the current wait and remembers who to answer once every
   # acknowledgement has arrived.
-  defp arm_ack_timeout(state, from, target_time, remaining_ms) do
+  defp arm_ack_timeout(state, from, target_time) do
     ref =
       Process.send_after(
         self(),
         {:ack_timeout, MapSet.to_list(state.pending_acks)},
-        ack_timeout_ms(remaining_ms)
+        state.ack_timeout_ms
       )
 
     %{state | advance_caller: from, target_time: target_time, ack_timeout_ref: ref}
-  end
-
-  # Long advances get a longer budget, capped at 30s, so that a simulation of
-  # hours does not abort while its actors are still working.
-  defp ack_timeout_ms(remaining_ms) do
-    if remaining_ms > 100_000, do: min(trunc(remaining_ms / 1000), 30_000), else: 2_000
   end
 
   @impl true
