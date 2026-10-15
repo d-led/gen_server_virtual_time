@@ -55,6 +55,9 @@ defmodule Mix.Tasks.Templates.UpgradeTest do
       output = run_task(["--check"], &upstream_holds_current/1, path)
 
       assert output =~ "Templates are up to date"
+
+      # A row that never moves still says where it is current according to.
+      assert output =~ ~r/^caf\s+#{TemplateVersions.get(:caf)}\s+1\.\S+\s+conan center: caf/m
     end
 
     test "fails the build when a pin is behind, without writing", %{path: path} do

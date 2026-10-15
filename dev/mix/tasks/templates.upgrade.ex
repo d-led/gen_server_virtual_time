@@ -39,9 +39,13 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
   ## Example output
 
-      caF             1.0.2   -> 1.1.0    conan center: caf
-      checkout_action v7      -> v7       up to date
-      cmake_minimum   3.15               manual: minimum CMake the templates require
+      Template versions (lib/actor_simulation/template_versions.ex)
+
+      key              current  latest  upstream
+      ──────────────────────────────────────────────────────────────────────
+      caf              1.1.0    1.1.0   conan center: caf
+      cmake_minimum    3.15     —       manual: minimum CMake the templates require
+      omnetpp          6.4.0    —       github release: omnetpp/omnetpp — could not read …
 
   """
 
@@ -180,7 +184,9 @@ defmodule Mix.Tasks.Templates.Upgrade do
   defp width(plan, value_of),
     do: plan |> Enum.map(value_of) |> Enum.max_by(&String.length/1) |> String.length()
 
-  defp latest(%{status: :update, latest: latest}), do: latest
+  # The version upstream reports, so a row that is already current reads
+  # "1.1.0  1.1.0" rather than leaving its latest column blank.
+  defp latest(%{status: status, latest: latest}) when status in [:update, :current], do: latest
   defp latest(_entry), do: nil
 
   defp comment(%{status: :update, source: source}), do: Versions.describe(source)
@@ -192,7 +198,10 @@ defmodule Mix.Tasks.Templates.Upgrade do
     "#{Versions.describe(source)} — #{note}"
   end
 
-  defp comment(_up_to_date_entry), do: ""
+  # A pin that needs nothing says where it is current *according to*, which is the
+  # question a maintainer asks of a row that never moves.
+  defp comment(%{status: status, source: source}) when status in [:update, :current],
+    do: Versions.describe(source)
 
   defp label(key), do: Atom.to_string(key)
 end
