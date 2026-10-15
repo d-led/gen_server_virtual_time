@@ -7,7 +7,7 @@
 # from a simple ActorSimulation DSL - all in one portable script!
 
 Mix.install([
-  # Use path for local development, or "~> 0.2.0" when generators are published
+  # Use path for local development, or "~> 0.6.0" when generators are published
   {:gen_server_virtual_time, path: Path.join(__DIR__, "..")}
 ])
 

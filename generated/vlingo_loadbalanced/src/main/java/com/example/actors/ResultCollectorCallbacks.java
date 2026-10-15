@@ -1,13 +1,16 @@
 // Generated from ActorSimulation DSL
 // Callback interface for: result_collector
+// DO NOT EDIT - This file is auto-generated
 //
-// IMPLEMENT THIS INTERFACE to add custom behavior!
+// This interface defines the contract for ResultCollector callbacks.
+// Customize behavior by editing ResultCollectorCallbacksImpl.java
 
 package com.example.actors;
 
 /**
  * Callback interface for ResultCollector actor.
- * Implement this interface to customize actor behavior.
+ * This is the contract - do not modify this interface.
+ * Customize behavior in ResultCollectorCallbacksImpl instead.
  */
 public interface ResultCollectorCallbacks {
   void onAggregateResults();
