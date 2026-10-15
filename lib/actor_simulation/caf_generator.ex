@@ -1,4 +1,6 @@
 defmodule ActorSimulation.CAFGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates C++ Actor Framework (CAF) code from ActorSimulation DSL.
 
@@ -40,7 +42,8 @@ defmodule ActorSimulation.CAFGenerator do
 
   - `:project_name` (required) - Name of the C++ project
   - `:enable_callbacks` (default: true) - Generate callback interfaces
-  - `:caf_version` (default: "1.0.2") - CAF version for Conan
+  - `:caf_version` - CAF version for Conan, defaulting to
+    `ActorSimulation.TemplateVersions.get(:caf)`
 
   ## Returns
 
@@ -49,7 +52,7 @@ defmodule ActorSimulation.CAFGenerator do
   def generate(simulation, opts \\ []) do
     project_name = Keyword.fetch!(opts, :project_name)
     enable_callbacks = Keyword.get(opts, :enable_callbacks, true)
-    caf_version = Keyword.get(opts, :caf_version, "1.0.2")
+    caf_version = Keyword.get(opts, :caf_version, TemplateVersions.get(:caf))
 
     actors = simulation.actors
 
@@ -289,10 +292,19 @@ defmodule ActorSimulation.CAFGenerator do
     if handlers != [] do
       Enum.join(handlers, ",\n")
     else
+      # An actor without a send pattern receives whatever its upstream sends:
+      # `send_to_targets/0` posts `msg_atom`, so that is what it must handle.
+      default_callback =
+        if enable_callbacks do
+          "      callbacks_->on_message();\n"
+        else
+          ""
+        end
+
       """
-          [=](event_atom) {
-            // Default message handler
-            send_to_targets();
+          [=](msg_atom) {
+            // Default message handler: a message forwarded from upstream
+      #{default_callback}      send_to_targets();
             schedule_next_send();
           }
       """
@@ -477,7 +489,9 @@ defmodule ActorSimulation.CAFGenerator do
       return 0;
     }
 
-    CAF_MAIN()
+    // The custom atoms in atoms.hpp are only usable once their type ID block is
+    // registered, which is what the argument to CAF_MAIN does.
+    CAF_MAIN(caf::id_block::ActorSimulation)
     """
   end
 
@@ -531,8 +545,8 @@ defmodule ActorSimulation.CAFGenerator do
     using namespace caf;
 
     // Simple compilation tests - verifying that generated code compiles
-    // Note: CAF 1.0 requires init_global_meta_objects<>() before creating actor_system
-    // This is handled by CAF_MAIN() in the main application
+    // The executable itself never creates an actor_system, so the atoms' type ID
+    // block is registered by CAF_MAIN(caf::id_block::ActorSimulation) in main.cpp
 
     TEST_CASE("Headers compile successfully", "[compilation]") {
       // Just verify that all headers can be included without errors
@@ -563,10 +577,10 @@ defmodule ActorSimulation.CAFGenerator do
     sources_str = Enum.join(["  main.cpp" | sources], "\n")
 
     """
-    cmake_minimum_required(VERSION 3.15)
+    cmake_minimum_required(VERSION #{TemplateVersions.get(:cmake_minimum)})
     project(#{project_name} CXX)
 
-    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD #{TemplateVersions.get(:cpp_standard)})
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
     # Detect OS for binary naming: {example}.caf.{os}
@@ -584,7 +598,7 @@ defmodule ActorSimulation.CAFGenerator do
     find_package(CAF REQUIRED COMPONENTS core io)
 
     # Find Catch2 for testing
-    find_package(Catch2 3 REQUIRED)
+    find_package(Catch2 #{TemplateVersions.major(:catch2)} REQUIRED)
 
     # Source files
     set(SOURCES
@@ -643,7 +657,7 @@ defmodule ActorSimulation.CAFGenerator do
     """
     [requires]
     caf/#{caf_version}
-    catch2/3.7.1
+    catch2/#{TemplateVersions.get(:catch2)}
 
     [generators]
     CMakeDeps
@@ -673,10 +687,10 @@ defmodule ActorSimulation.CAFGenerator do
             build_type: [Debug, Release]
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@#{TemplateVersions.get(:checkout_action)}
 
         - name: Cache Conan packages
-          uses: actions/cache@v3
+          uses: actions/cache@#{TemplateVersions.get(:cache_action)}
           with:
             path: ~/.conan2
             key: ${{ runner.os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
@@ -685,8 +699,10 @@ defmodule ActorSimulation.CAFGenerator do
               ${{ runner.os }}-conan-
 
         - name: Install Conan
+          uses: conan-io/setup-conan@#{TemplateVersions.get(:setup_conan_action)}
+
+        - name: Configure Conan profile
           run: |
-            pip install conan
             conan profile detect --force
 
         - name: Install dependencies
@@ -733,7 +749,7 @@ defmodule ActorSimulation.CAFGenerator do
 
         - name: Publish Test Results
           if: always()
-          uses: EnricoMi/publish-unit-test-result-action@v2
+          uses: EnricoMi/publish-unit-test-result-action@#{TemplateVersions.get(:publish_test_results_action)}
           with:
             files: |
               build/test-results.xml
@@ -754,13 +770,13 @@ defmodule ActorSimulation.CAFGenerator do
 
     - Type-safe actor implementations
     - Callback interfaces for custom behavior
-    - Modern C++17 code
+    - Modern C++#{TemplateVersions.get(:cpp_standard)} code
     - Production-ready build system
 
     ## Prerequisites
 
-    - CMake 3.15+
-    - C++17 compiler (GCC 7+, Clang 5+, MSVC 2019+)
+    - CMake #{TemplateVersions.get(:cmake_minimum)}+
+    - C++#{TemplateVersions.get(:cpp_standard)} compiler (GCC 7+, Clang 5+, MSVC 2019+)
     - Conan package manager
     - CAF library (installed via Conan)
 
@@ -826,7 +842,7 @@ defmodule ActorSimulation.CAFGenerator do
 
     - [CAF Documentation](https://actor-framework.readthedocs.io/)
     - [CAF GitHub](https://github.com/actor-framework/actor-framework)
-    - [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
 
     ## License
 

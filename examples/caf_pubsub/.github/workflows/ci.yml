@@ -15,10 +15,10 @@ jobs:
         build_type: [Debug, Release]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
 
     - name: Cache Conan packages
-      uses: actions/cache@v3
+      uses: actions/cache@v6
       with:
         path: ~/.conan2
         key: ${{ runner.os }}-conan-${{ matrix.build_type }}-${{ hashFiles('**/conanfile.txt') }}
@@ -27,8 +27,10 @@ jobs:
           ${{ runner.os }}-conan-
 
     - name: Install Conan
+      uses: conan-io/setup-conan@v1
+
+    - name: Configure Conan profile
       run: |
-        pip install conan
         conan profile detect --force
 
     - name: Install dependencies

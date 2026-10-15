@@ -81,7 +81,7 @@ This project includes a GitHub Actions workflow that:
 
 - [CAF Documentation](https://actor-framework.readthedocs.io/)
 - [CAF GitHub](https://github.com/actor-framework/actor-framework)
-- [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+- [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
 
 ## License
 

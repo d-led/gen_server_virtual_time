@@ -10,8 +10,8 @@
 using namespace caf;
 
 // Simple compilation tests - verifying that generated code compiles
-// Note: CAF 1.0 requires init_global_meta_objects<>() before creating actor_system
-// This is handled by CAF_MAIN() in the main application
+// The executable itself never creates an actor_system, so the atoms' type ID
+// block is registered by CAF_MAIN(caf::id_block::ActorSimulation) in main.cpp
 
 TEST_CASE("Headers compile successfully", "[compilation]") {
   // Just verify that all headers can be included without errors

@@ -1,6 +1,6 @@
 [requires]
-caf/1.0.2
-catch2/3.7.1
+caf/1.1.0
+catch2/3.16.0
 
 [generators]
 CMakeDeps
