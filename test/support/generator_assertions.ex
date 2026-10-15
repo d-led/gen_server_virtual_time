@@ -16,7 +16,7 @@ defmodule GeneratorAssertions do
   Returns `files` so it can be used mid-pipeline.
   """
   def assert_file_plan(files) do
-    assert [_ | _] = files, "expected a non-empty file plan, got: #{inspect(files)}"
+    if files == [], do: flunk("expected a non-empty file plan, got: #{inspect(files)}")
 
     Enum.each(files, fn
       {name, content} ->
