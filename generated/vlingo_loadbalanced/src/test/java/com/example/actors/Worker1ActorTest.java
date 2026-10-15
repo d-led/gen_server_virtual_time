@@ -40,7 +40,7 @@ public class Worker1ActorTest {
   }
 
   @Test
-  public void testProcesstaskMessage() {
+  public void testProcessTaskMessage() {
     // Act
     actor.processTask();
 

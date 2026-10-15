@@ -78,7 +78,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 
 # Run tests
-./test_actors
+./MyActors_test
 ```
 
 ## Installation Requirements
@@ -193,16 +193,15 @@ TEST_CASE("Source actor sends messages", "[source]") {
 Run tests:
 
 ```bash
-./test_actors
+./MyActors_test
 ```
 
 ## CI Integration
 
 Generated `.github/workflows/ci.yml` validates:
 
-- ✅ Code compiles on Linux, macOS, Windows
-- ✅ All tests pass
-- ✅ Multiple compiler versions (GCC, Clang, MSVC)
+- ✅ Code compiles on Linux and macOS
+- ✅ All tests pass, in Debug and Release configurations
 
 ## Limitations
 

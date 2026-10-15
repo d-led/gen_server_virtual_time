@@ -20,8 +20,7 @@ defmodule CAFGeneratorTest do
           project_name: "SimpleActors"
         )
 
-      assert is_list(files)
-      assert files != []
+      GeneratorAssertions.assert_file_plan(files)
 
       filenames = Enum.map(files, fn {name, _content} -> name end)
 

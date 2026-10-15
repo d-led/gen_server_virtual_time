@@ -74,7 +74,7 @@ This project includes a GitHub Actions workflow that:
 
 - [Phony GitHub](https://github.com/Arceliar/phony)
 - [Go Modules](https://go.dev/blog/using-go-modules)
-- [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+- [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
 
 ## License
 

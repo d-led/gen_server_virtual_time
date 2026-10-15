@@ -11,8 +11,8 @@ name = "pipeline_actors"
 path = "src/main.rs"
 
 [dependencies]
-ractor = "0.15"
+ractor = "0.16.5"
 tokio = { version = "1", features = ["full"] }
 
 [dev-dependencies]
-tokio-test = "0.4"
+tokio-test = "0.4.6"

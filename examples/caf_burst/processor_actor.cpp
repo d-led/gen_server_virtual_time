@@ -14,8 +14,9 @@ caf::behavior processor_actor::make_behavior() {
   schedule_next_send();
 
   return {
-    [=](event_atom) {
-      // Default message handler
+    [=](msg_atom) {
+      // Default message handler: a message forwarded from upstream
+      callbacks_->on_message();
       send_to_targets();
       schedule_next_send();
     }

@@ -4,6 +4,7 @@ defmodule PhonyGeneratorTest do
 
   alias ActorSimulation
   alias ActorSimulation.PhonyGenerator
+  alias ActorSimulation.TemplateVersions
 
   describe "generate/2" do
     test "generates complete Phony (Go) project files" do
@@ -20,8 +21,7 @@ defmodule PhonyGeneratorTest do
           project_name: "simple_actors"
         )
 
-      assert is_list(files)
-      assert files != []
+      GeneratorAssertions.assert_file_plan(files)
 
       filenames = Enum.map(files, fn {name, _content} -> name end)
 
@@ -76,7 +76,7 @@ defmodule PhonyGeneratorTest do
       {_name, gomod} = Enum.find(files, fn {name, _} -> name == "go.mod" end)
 
       assert gomod =~ "module test_actors"
-      assert gomod =~ "go 1.21"
+      assert gomod =~ "go #{TemplateVersions.get(:go)}"
       assert gomod =~ "github.com/Arceliar/phony"
     end
 

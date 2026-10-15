@@ -73,8 +73,9 @@ Generate a working actor system, with build files, CI and tests, from the DSL:
 | **VLINGO**  | Java     | [VLINGO XOOM](https://docs.vlingo.io/)                  | Protocol actors, Maven, JUnit 5              |
 | **OMNeT++** | C++      | [OMNeT++](https://omnetpp.org/)                         | Discrete-event simulation, NED files, CMake  |
 
-Every generator emits the same five things: build config, a CI workflow,
-callback interfaces for your code, a test suite, and a runnable project layout.
+Every generator emits build config, a CI workflow, a test suite and a runnable
+project layout. All but OMNeT++ also emit callback interfaces, so you can
+customise behaviour without editing generated files.
 
 ## Show Me The Code
 
@@ -113,7 +114,7 @@ defmodule SwitchStateMachine do
   use VirtualTimeGenStateMachine, callback_mode: :handle_event_function
 
   def start_link(opts) do
-    GenStateMachine.start_link(__MODULE__, :off, opts)
+    VirtualTimeGenStateMachine.start_link(__MODULE__, :off, opts)
   end
 
   def init(_) do
@@ -133,22 +134,25 @@ defmodule SwitchStateMachine do
   def handle_event(:info, :timeout, state, data) do
     {:keep_state, %{data | timeout_fired: true}}
   end
+
+  def timeout_fired?(server) do
+    VirtualTimeGenStateMachine.call(server, :timeout_fired?)
+  end
 end
 
 test "state machine transitions and timers" do
   {:ok, clock} = VirtualClock.start_link()
-  VirtualTimeGenStateMachine.set_virtual_clock(clock)
 
-  {:ok, sm} = SwitchStateMachine.start_link([])
+  {:ok, sm} = SwitchStateMachine.start_link(virtual_clock: clock)
 
   # Trigger transition and schedule timeout
-  GenStateMachine.cast(sm, :flip)
+  VirtualTimeGenStateMachine.cast(sm, :flip)
 
   # Advance virtual time - timeout fires instantly
-  VirtualClock.advance(clock, 100)  # ~10ms real time ⚡
+  VirtualClock.advance(clock, 100)
 
   # Check timeout fired
-  assert get_state(sm).timeout_fired == true
+  assert SwitchStateMachine.timeout_fired?(sm)
 end
 ```
 
@@ -293,10 +297,13 @@ simulation = ActorSimulation.new(trace: true)
     on_match: [{:ping, fn s -> {:reply, :pong, s} end}])
 |> ActorSimulation.run(duration: 1000)
 
-# Generate Mermaid sequence diagram
+# The message flow as a Mermaid sequence diagram
 mermaid = ActorSimulation.trace_to_mermaid(simulation, enhanced: true)
-File.write!("diagram.html", ActorSimulation.wrap_mermaid_html(mermaid))
-# Open in browser to see message flows!
+File.write!("diagram.mmd", mermaid)
+
+# Or a standalone HTML report: topology, stats and the model source
+{:ok, _path} = ActorSimulation.write_flowchart_report(simulation, "report.html",
+  title: "Client / server")
 ```
 
 ### Generate flowchart reports with statistics
@@ -337,13 +344,22 @@ File.write!("report.html", html)
 
 ## Why virtual time?
 
-| Problem              | Real time   | Virtual time |
-| -------------------- | ----------- | ------------ |
-| Test 1 hour behavior | 1 hour wait | ~10 seconds  |
-| Flaky timing issues  | Common      | None         |
-| Precise assertions   | `>= 10`     | `== 10`      |
-| Deterministic        | No          | Yes          |
-| Speedup              | 1x          | 10-100x      |
+| Problem              | Real time   | Virtual time          |
+| -------------------- | ----------- | --------------------- |
+| Test 1 hour behavior | 1 hour wait | ~33 ms (measured)     |
+| Flaky timing issues  | Common      | None: the clock is a value you advance |
+| Precise assertions   | `>= 10`     | `== 10`               |
+| Deterministic        | No          | Yes                   |
+| Throughput           | 1x          | ~60,000 virtual events per real second |
+
+The throughput figure is measured, not estimated: run
+`mix run benchmarks/virtual_time_speedup.exs` to reproduce it on your machine.
+
+The clock is what is deterministic: the same run produces the same message
+counts, the same timestamps and the same order for events at different instants.
+Tracing is an observation of a run rather than part of that guarantee, so when
+several messages fall on the same instant, a sequence diagram may record them in
+the order the actors happened to be scheduled.
 
 ## What you get
 
@@ -526,15 +542,20 @@ Similar to hardware-in-the-loop testing, but for processes.
 
 ## Performance
 
-Processing rate: ~6,000 virtual events per real second (M1 MacBook Pro)
+A simulation ticking once per virtual second replays a virtual hour in tens of
+milliseconds — roughly 60,000 virtual events per real second on an Apple Silicon
+laptop. Scale it by events, not by simulated time: a 1 ms ticker produces 1000x
+more events for the same virtual duration.
 
-| Simulated Time | Real Time | Speedup |
-| -------------- | --------- | ------- |
-| 1 second       | ~10ms     | 100x    |
-| 10 seconds     | ~100ms    | 100x    |
-| 1 minute       | ~6s       | 10x     |
-| 10 minutes     | ~60s      | 10x     |
-| 1 hour         | ~6 min    | 10x     |
+| Simulated time | Real time (measured) |
+| -------------- | -------------------- |
+| 1 second       | ~1 ms                |
+| 1 minute       | ~1 ms                |
+| 10 minutes     | ~5 ms                |
+| 1 hour         | ~33 ms               |
+
+Reproduce with `mix run benchmarks/virtual_time_speedup.exs`; the numbers move
+with the machine, the order of magnitude does not.
 
 ## Inspiration
 

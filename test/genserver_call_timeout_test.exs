@@ -36,15 +36,10 @@ defmodule GenServerCallTimeoutTest do
 
       {:ok, server} = SlowServer.start_link(virtual_clock: clock)
 
-      # This timeout is in REAL time, not virtual time
-      # So it will timeout in 100ms real time even if we advance virtual time
-      assert_raise RuntimeError, fn ->
-        try do
-          GenServer.call(server, :slow_operation, 100)
-        catch
-          :exit, {:timeout, _} -> raise RuntimeError, "Timeout as expected"
-        end
-      end
+      # This timeout is in REAL time, not virtual time: advancing the virtual
+      # clock must not rescue a call whose timeout has already expired.
+      assert catch_exit(GenServer.call(server, :slow_operation, 100)) ==
+               {:timeout, {GenServer, :call, [server, :slow_operation, 100]}}
 
       GenServer.stop(clock)
     end

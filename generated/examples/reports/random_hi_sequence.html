@@ -9,9 +9,9 @@
   <meta charset="utf-8">
   <title>Random Hi Messages - 7 Actors</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -192,11 +192,11 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">7<span class="unit">ms</span></div>
+      <div class="value">149<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">428.6x</div>
+      <div class="value">20.1x</div>
     </div>
     <div class="summary-card warning">
   <div class="label">Termination</div>
@@ -213,68 +213,68 @@
       <div class="mermaid">
 flowchart LR
     alice("alice<br/>
-📤 Sent: 199<br/>
-📥 Recv: 169")
+📤 Sent: 6010<br/>
+📥 Recv: 5920")
     bob("bob<br/>
-📤 Sent: 223<br/>
-📥 Recv: 193")
+📤 Sent: 6007<br/>
+📥 Recv: 5935")
     charlie("charlie<br/>
-📤 Sent: 249<br/>
-📥 Recv: 225")
+📤 Sent: 6052<br/>
+📥 Recv: 5992")
     diana("diana<br/>
-📤 Sent: 260<br/>
-📥 Recv: 236")
+📤 Sent: 6025<br/>
+📥 Recv: 5977")
     eve("eve<br/>
-📤 Sent: 278<br/>
-📥 Recv: 260")
+📤 Sent: 6138<br/>
+📥 Recv: 6096")
     frank("frank<br/>
-📤 Sent: 278<br/>
-📥 Recv: 260")
+📤 Sent: 6456<br/>
+📥 Recv: 6420")
     grace("grace<br/>
-📤 Sent: 373<br/>
-📥 Recv: 355")
-    bob -->|:hi<br/>every 250ms| alice
-    diana -->|:hi<br/>every 350ms| alice
-    charlie -->|:hi<br/>every 300ms| alice
-    bob -->|:hi<br/>every 250ms| charlie
-    eve -->|:hi<br/>every 400ms| grace
-    charlie -->|:hi<br/>every 300ms| grace
+📤 Sent: 6483<br/>
+📥 Recv: 6447")
+    frank -->|:hi<br/>every 450ms| diana
     eve -->|:hi<br/>every 400ms| charlie
-    frank -->|:hi<br/>every 450ms| bob
-    charlie -->|:hi<br/>every 300ms| frank
-    bob -->|:hi<br/>every 250ms| diana
-    grace -->|:hi<br/>every 500ms| frank
-    grace -->|:hi<br/>every 500ms| eve
+    grace -->|:hi<br/>every 500ms| charlie
+    diana -->|:hi<br/>every 350ms| frank
     diana -->|:hi<br/>every 350ms| eve
-    grace -->|:hi<br/>every 500ms| diana
-    grace -->|:hi<br/>every 500ms| bob
-    diana -->|:hi<br/>every 350ms| grace
-    alice -->|:hi<br/>every 200ms| eve
-    grace -->|:hi<br/>every 500ms| alice
+    charlie -->|:hi<br/>every 300ms| grace
+    frank -->|:hi<br/>every 450ms| bob
+    alice -->|:hi<br/>every 200ms| charlie
+    bob -->|:hi<br/>every 250ms| eve
+    eve -->|:hi<br/>every 400ms| frank
+    bob -->|:hi<br/>every 250ms| alice
+    eve -->|:hi<br/>every 400ms| alice
+    charlie -->|:hi<br/>every 300ms| eve
     charlie -->|:hi<br/>every 300ms| diana
     eve -->|:hi<br/>every 400ms| bob
-    eve -->|:hi<br/>every 400ms| diana
-    eve -->|:hi<br/>every 400ms| frank
-    alice -->|:hi<br/>every 200ms| charlie
-    bob -->|:hi<br/>every 250ms| grace
-    frank -->|:hi<br/>every 450ms| eve
-    alice -->|:hi<br/>every 200ms| diana
-    alice -->|:hi<br/>every 200ms| grace
-    charlie -->|:hi<br/>every 300ms| eve
-    bob -->|:hi<br/>every 250ms| frank
-    diana -->|:hi<br/>every 350ms| charlie
-    charlie -->|:hi<br/>every 300ms| bob
+    grace -->|:hi<br/>every 500ms| frank
+    grace -->|:hi<br/>every 500ms| bob
+    diana -->|:hi<br/>every 350ms| alice
     frank -->|:hi<br/>every 450ms| alice
-    eve -->|:hi<br/>every 400ms| alice
-    frank -->|:hi<br/>every 450ms| diana
-    alice -->|:hi<br/>every 200ms| bob
     frank -->|:hi<br/>every 450ms| grace
-    diana -->|:hi<br/>every 350ms| frank
-    frank -->|:hi<br/>every 450ms| charlie
+    bob -->|:hi<br/>every 250ms| frank
+    alice -->|:hi<br/>every 200ms| diana
+    bob -->|:hi<br/>every 250ms| diana
     diana -->|:hi<br/>every 350ms| bob
-    grace -->|:hi<br/>every 500ms| charlie
+    grace -->|:hi<br/>every 500ms| eve
+    grace -->|:hi<br/>every 500ms| alice
+    alice -->|:hi<br/>every 200ms| eve
+    charlie -->|:hi<br/>every 300ms| alice
+    diana -->|:hi<br/>every 350ms| grace
+    frank -->|:hi<br/>every 450ms| eve
+    frank -->|:hi<br/>every 450ms| charlie
+    charlie -->|:hi<br/>every 300ms| bob
+    bob -->|:hi<br/>every 250ms| grace
+    alice -->|:hi<br/>every 200ms| bob
+    charlie -->|:hi<br/>every 300ms| frank
+    eve -->|:hi<br/>every 400ms| diana
+    grace -->|:hi<br/>every 500ms| diana
+    alice -->|:hi<br/>every 200ms| grace
     alice -->|:hi<br/>every 200ms| frank
-    bob -->|:hi<br/>every 250ms| eve
+    eve -->|:hi<br/>every 400ms| grace
+    bob -->|:hi<br/>every 250ms| charlie
+    diana -->|:hi<br/>every 350ms| charlie
     style alice fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style bob fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style charlie fill:#fff3e0,stroke:#f57c00,stroke-width:3px
@@ -328,65 +328,65 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>alice</strong></td>
-  <td class="metric">199</td>
-  <td class="metric">169</td>
-  <td class="metric">66.33 msg/s</td>
-  <td class="metric">56.33 msg/s</td>
-  <td><span class="badge high">368 total</span></td>
+  <td class="metric">6010</td>
+  <td class="metric">5920</td>
+  <td class="metric">2003.33 msg/s</td>
+  <td class="metric">1973.33 msg/s</td>
+  <td><span class="badge high">11930 total</span></td>
 </tr>
 
 <tr>
   <td><strong>bob</strong></td>
-  <td class="metric">223</td>
-  <td class="metric">193</td>
-  <td class="metric">74.33 msg/s</td>
-  <td class="metric">64.33 msg/s</td>
-  <td><span class="badge high">416 total</span></td>
+  <td class="metric">6007</td>
+  <td class="metric">5935</td>
+  <td class="metric">2002.33 msg/s</td>
+  <td class="metric">1978.33 msg/s</td>
+  <td><span class="badge high">11942 total</span></td>
 </tr>
 
 <tr>
   <td><strong>charlie</strong></td>
-  <td class="metric">249</td>
-  <td class="metric">225</td>
-  <td class="metric">83.0 msg/s</td>
-  <td class="metric">75.0 msg/s</td>
-  <td><span class="badge high">474 total</span></td>
+  <td class="metric">6052</td>
+  <td class="metric">5992</td>
+  <td class="metric">2017.33 msg/s</td>
+  <td class="metric">1997.33 msg/s</td>
+  <td><span class="badge high">12044 total</span></td>
 </tr>
 
 <tr>
   <td><strong>diana</strong></td>
-  <td class="metric">260</td>
-  <td class="metric">236</td>
-  <td class="metric">86.67 msg/s</td>
-  <td class="metric">78.67 msg/s</td>
-  <td><span class="badge high">496 total</span></td>
+  <td class="metric">6025</td>
+  <td class="metric">5977</td>
+  <td class="metric">2008.33 msg/s</td>
+  <td class="metric">1992.33 msg/s</td>
+  <td><span class="badge high">12002 total</span></td>
 </tr>
 
 <tr>
   <td><strong>eve</strong></td>
-  <td class="metric">278</td>
-  <td class="metric">260</td>
-  <td class="metric">92.67 msg/s</td>
-  <td class="metric">86.67 msg/s</td>
-  <td><span class="badge high">538 total</span></td>
+  <td class="metric">6138</td>
+  <td class="metric">6096</td>
+  <td class="metric">2046.0 msg/s</td>
+  <td class="metric">2032.0 msg/s</td>
+  <td><span class="badge high">12234 total</span></td>
 </tr>
 
 <tr>
   <td><strong>frank</strong></td>
-  <td class="metric">278</td>
-  <td class="metric">260</td>
-  <td class="metric">92.67 msg/s</td>
-  <td class="metric">86.67 msg/s</td>
-  <td><span class="badge high">538 total</span></td>
+  <td class="metric">6456</td>
+  <td class="metric">6420</td>
+  <td class="metric">2152.0 msg/s</td>
+  <td class="metric">2140.0 msg/s</td>
+  <td><span class="badge high">12876 total</span></td>
 </tr>
 
 <tr>
   <td><strong>grace</strong></td>
-  <td class="metric">373</td>
-  <td class="metric">355</td>
-  <td class="metric">124.33 msg/s</td>
-  <td class="metric">118.33 msg/s</td>
-  <td><span class="badge high">728 total</span></td>
+  <td class="metric">6483</td>
+  <td class="metric">6447</td>
+  <td class="metric">2161.0 msg/s</td>
+  <td class="metric">2149.0 msg/s</td>
+  <td><span class="badge high">12930 total</span></td>
 </tr>
 
     </tbody>
@@ -394,7 +394,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 3558 •
+    Total messages: 85958 •
     Duration: 3000ms •
     Actors: 7
   </div>
@@ -417,7 +417,7 @@ all_actors = [:alice, :bob, :charlie, :diana, :eve, :frank, :grace]
 # Function to randomly select a target (excluding self)
 random_target = fn sender, targets ->
   available_targets = Enum.reject(targets, fn target -> target == sender end)
-  if length(available_targets) > 0 do
+  if available_targets != [] do
     Enum.random(available_targets)
   else
     nil
@@ -480,11 +480,14 @@ simulation =
   )
   |> ActorSimulation.run(duration: 3000)  # Run for 3 seconds to get many interactions
 
-# Generate sequence diagram
-html = ActorSimulation.generate_sequence_diagram(simulation,
-  title: "Random Hi Messages - 7 Actors",
-  model_source: model_source
-)
+# Draw the message flow
+mermaid = ActorSimulation.trace_to_mermaid(simulation, enhanced: true)
+
+{:ok, _path} =
+  ActorSimulation.write_flowchart_report(simulation, "random_hi_report.html",
+    title: "Random Hi Messages - 7 Actors",
+    model_source: model_source
+  )
 </code></pre>
   </div>
 </div>

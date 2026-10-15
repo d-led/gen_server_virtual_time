@@ -40,7 +40,7 @@ public class ResultCollectorActorTest {
   }
 
   @Test
-  public void testAggregateresultsMessage() {
+  public void testAggregateResultsMessage() {
     // Act
     actor.aggregateResults();
 

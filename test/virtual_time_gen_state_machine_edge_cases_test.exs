@@ -263,11 +263,24 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       GenServer.stop(server)
     end
 
-    test "sleep/1 function exists and can be called" do
-      # Test that sleep function exists and can be called
-      # The actual sleep behavior is tested in the time backend tests
-      # We just verify the function exists and doesn't crash immediately
-      assert is_function(&TestSM.sleep_test/1)
+    test "sleep/1 suspends the caller until virtual time reaches the deadline" do
+      {:ok, clock} = VirtualClock.start_link()
+      parent = self()
+
+      spawn_link(fn ->
+        VirtualTimeGenStateMachine.set_virtual_clock(clock, :i_know_what_i_am_doing, "sleep test")
+        send(parent, {:sleeping, self()})
+        TestSM.sleep_test(1000)
+        send(parent, :awake)
+      end)
+
+      assert_receive {:sleeping, sleeper}
+      refute_receive :awake, 50
+
+      VirtualClock.advance(clock, 1000)
+
+      assert_receive :awake, 500
+      refute Process.alive?(sleeper)
     end
   end
 
@@ -478,12 +491,13 @@ defmodule VirtualTimeGenStateMachineEdgeCasesTest do
       assert result == {:ok, :state, %{}, {:continue, :init}}
     end
 
-    test "stop function exists and can be called" do
-      # Test that stop function exists and can be called
-      # The actual stop behavior is complex to test reliably
-      assert is_function(&VirtualTimeGenStateMachine.stop/1)
-      assert is_function(&VirtualTimeGenStateMachine.stop/2)
-      assert is_function(&VirtualTimeGenStateMachine.stop/3)
+    test "stop/1 stops the state machine normally" do
+      {:ok, clock} = VirtualClock.start_link()
+      {:ok, server} = TestSM.start_link(virtual_clock: clock)
+      monitor = Process.monitor(server)
+
+      assert VirtualTimeGenStateMachine.stop(server) == :ok
+      assert_receive {:DOWN, ^monitor, :process, ^server, :normal}, 500
     end
   end
 

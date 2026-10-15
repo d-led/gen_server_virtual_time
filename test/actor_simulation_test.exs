@@ -39,10 +39,10 @@ defmodule ActorSimulationTest do
       producer_stats = stats.actors[:producer]
       consumer_stats = stats.actors[:consumer]
 
-      # Producer should send ~10 messages (1000ms / 100ms interval)
-      assert producer_stats.sent_count >= 8
+      # Producer sends one message per 100ms interval over 1000ms
+      assert producer_stats.sent_count == 10
 
-      # Consumer should receive ~10 messages
+      # Consumer receives all of them
       assert consumer_stats.received_count == 10
 
       ActorSimulation.stop(simulation)
@@ -65,7 +65,7 @@ defmodule ActorSimulationTest do
       stats = ActorSimulation.get_stats(simulation)
 
       # Producer1: 10 messages (1000/100)
-      assert stats.actors[:producer1].sent_count >= 5
+      assert stats.actors[:producer1].sent_count == 10
 
       # Producer2: 5 messages (1000/200)
       assert stats.actors[:producer2].sent_count == 5
@@ -90,16 +90,9 @@ defmodule ActorSimulationTest do
 
       stats = ActorSimulation.get_stats(simulation)
 
-      # At 10 messages/second for 2 seconds should be ~20 messages
-      # But boundary conditions may cause slight variations (19-21 messages)
-      assert stats.actors[:producer].sent_count >= 19,
-             "Expected at least 19 messages from producer, got #{stats.actors[:producer].sent_count}"
-
-      assert stats.actors[:producer].sent_count <= 21,
-             "Expected at most 21 messages from producer, got #{stats.actors[:producer].sent_count}"
-
-      assert stats.actors[:consumer].received_count >= 19,
-             "Expected at least 19 messages received, got #{stats.actors[:consumer].received_count}"
+      # At 10 messages/second for 2 seconds: exactly 20
+      assert stats.actors[:producer].sent_count == 20
+      assert stats.actors[:consumer].received_count == 20
 
       ActorSimulation.stop(simulation)
     end
@@ -151,8 +144,8 @@ defmodule ActorSimulationTest do
 
       stats = ActorSimulation.get_stats(simulation)
 
-      # Producer sends 5 requests (allow for ACK timeout missing 1)
-      assert stats.actors[:producer].sent_count >= 4
+      # Producer sends one request per 100ms interval over 500ms
+      assert stats.actors[:producer].sent_count == 5
 
       # Consumer receives 5 requests and sends 5 responses
       assert stats.actors[:consumer].received_count == 5
@@ -256,10 +249,9 @@ defmodule ActorSimulationTest do
       elapsed = System.monotonic_time(:millisecond) - start_time
       stats = ActorSimulation.get_stats(simulation)
 
-      # Should have sent ~100 messages (10/sec * 10 sec)
-      # Allow some variance due to timing
-      assert stats.actors[:high_freq_producer].sent_count >= 95
-      assert stats.actors[:consumer].received_count >= 95
+      # Should have sent 100 messages (10/sec * 10 sec)
+      assert stats.actors[:high_freq_producer].sent_count == 100
+      assert stats.actors[:consumer].received_count == 100
 
       # But the test completes much faster than real time (10 seconds)
       assert elapsed < 10_000, "Should complete faster than the 10 seconds of real time simulated"
@@ -287,14 +279,14 @@ defmodule ActorSimulationTest do
 
       # Check producer stats
       producer = stats.actors[:producer]
-      assert producer.sent_count > 0
+      assert producer.sent_count == 10
       assert producer.received_count == 0
       assert is_list(producer.sent_messages)
 
       # Check consumer stats
       consumer = stats.actors[:consumer]
       assert consumer.sent_count == 0
-      assert consumer.received_count > 0
+      assert consumer.received_count == 10
       assert is_list(consumer.received_messages)
 
       ActorSimulation.stop(simulation)

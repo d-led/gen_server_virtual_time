@@ -10,7 +10,7 @@ Documentation for developers working on the GenServerVirtualTime library.
 
 ## Testing & Coverage
 
-- **[test_coverage_improvements.md](test_coverage_improvements.md)** - Test
+- **[test_coverage_improvements.md](../agent/test_coverage_improvements.md)** - Test
   coverage improvements, spec-style testing approach, and testing best practices
 
 ## Virtual Clock Configuration: Global vs Local

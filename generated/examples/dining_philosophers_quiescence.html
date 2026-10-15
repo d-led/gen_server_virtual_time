@@ -19,10 +19,10 @@
   <h2>📊 Sequence Diagram</h2>
   <div class="mermaid">
     sequenceDiagram
-    philosopher_2->>philosopher_2: :start_eating
-    philosopher_1->>philosopher_1: :start_eating
     philosopher_0->>philosopher_0: :start_eating
-    Note over philosopher_2,philosopher_1: ⚡ Terminated at t=100ms (goal achieved)
+    philosopher_1->>philosopher_1: :start_eating
+    philosopher_2->>philosopher_2: :start_eating
+    Note over philosopher_0,philosopher_1: ⚡ Terminated at t=100ms (goal achieved)
   </div>
 
   <h2>💻 Source Code</h2>

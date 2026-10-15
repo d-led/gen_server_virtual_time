@@ -9,9 +9,9 @@
   <meta charset="utf-8">
   <title>Real Actors - VirtualTimeGenServer</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -192,11 +192,11 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">19<span class="unit">ms</span></div>
+      <div class="value">16<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">157.9x</div>
+      <div class="value">187.5x</div>
     </div>
     <div class="summary-card warning">
   <div class="label">Termination</div>
@@ -212,55 +212,55 @@
     <div class="diagram-container">
       <div class="mermaid">
 flowchart LR
-    alice("alice<br/>📤 Sent: 888<br/>📥 Recv: 879")
-    bob("bob<br/>📤 Sent: 1026<br/>📥 Recv: 1015")
-    charlie("charlie<br/>📤 Sent: 1004<br/>📥 Recv: 993")
-    diana("diana<br/>📤 Sent: 929<br/>📥 Recv: 918")
-    eve("eve<br/>📤 Sent: 956<br/>📥 Recv: 946")
-    frank("frank<br/>📤 Sent: 1058<br/>📥 Recv: 1048")
-    grace("grace<br/>📤 Sent: 1010<br/>📥 Recv: 1000")
-    bob -->|:message| alice
-    diana -->|:message| alice
-    charlie -->|:message| alice
-    bob -->|:message| charlie
-    eve -->|:message| grace
-    charlie -->|:message| grace
+    alice("alice<br/>📤 Sent: 5679<br/>📥 Recv: 5668")
+    bob("bob<br/>📤 Sent: 5950<br/>📥 Recv: 5938")
+    charlie("charlie<br/>📤 Sent: 5963<br/>📥 Recv: 5951")
+    diana("diana<br/>📤 Sent: 5849<br/>📥 Recv: 5838")
+    eve("eve<br/>📤 Sent: 5823<br/>📥 Recv: 5812")
+    frank("frank<br/>📤 Sent: 5830<br/>📥 Recv: 5819")
+    grace("grace<br/>📤 Sent: 5603<br/>📥 Recv: 5591")
+    frank -->|:message| diana
     eve -->|:message| charlie
-    frank -->|:message| bob
-    charlie -->|:message| frank
-    bob -->|:message| diana
-    grace -->|:message| frank
-    grace -->|:message| eve
+    grace -->|:message| charlie
+    diana -->|:message| frank
     diana -->|:message| eve
-    grace -->|:message| diana
-    grace -->|:message| bob
-    diana -->|:message| grace
-    alice -->|:message| eve
-    grace -->|:message| alice
+    charlie -->|:message| grace
+    frank -->|:message| bob
+    alice -->|:message| charlie
+    bob -->|:message| eve
+    eve -->|:message| frank
+    bob -->|:message| alice
+    eve -->|:message| alice
+    charlie -->|:message| eve
     charlie -->|:message| diana
     eve -->|:message| bob
-    eve -->|:message| diana
-    eve -->|:message| frank
-    alice -->|:message| charlie
-    bob -->|:message| grace
-    frank -->|:message| eve
-    alice -->|:message| diana
-    alice -->|:message| grace
-    charlie -->|:message| eve
-    bob -->|:message| frank
-    diana -->|:message| charlie
-    charlie -->|:message| bob
+    grace -->|:message| frank
+    grace -->|:message| bob
+    diana -->|:message| alice
     frank -->|:message| alice
-    eve -->|:message| alice
-    frank -->|:message| diana
-    alice -->|:message| bob
     frank -->|:message| grace
-    diana -->|:message| frank
-    frank -->|:message| charlie
+    bob -->|:message| frank
+    alice -->|:message| diana
+    bob -->|:message| diana
     diana -->|:message| bob
-    grace -->|:message| charlie
+    grace -->|:message| eve
+    grace -->|:message| alice
+    alice -->|:message| eve
+    charlie -->|:message| alice
+    diana -->|:message| grace
+    frank -->|:message| eve
+    frank -->|:message| charlie
+    charlie -->|:message| bob
+    bob -->|:message| grace
+    alice -->|:message| bob
+    charlie -->|:message| frank
+    eve -->|:message| diana
+    grace -->|:message| diana
+    alice -->|:message| grace
     alice -->|:message| frank
-    bob -->|:message| eve
+    eve -->|:message| grace
+    bob -->|:message| charlie
+    diana -->|:message| charlie
     style alice fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style bob fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style charlie fill:#fff3e0,stroke:#f57c00,stroke-width:3px
@@ -314,65 +314,65 @@ flowchart LR
     <tbody>
       <tr>
   <td><strong>alice</strong></td>
-  <td class="metric">888</td>
-  <td class="metric">879</td>
-  <td class="metric">296.0 msg/s</td>
-  <td class="metric">293.0 msg/s</td>
-  <td><span class="badge high">1767 total</span></td>
+  <td class="metric">5679</td>
+  <td class="metric">5668</td>
+  <td class="metric">1893.0 msg/s</td>
+  <td class="metric">1889.33 msg/s</td>
+  <td><span class="badge high">11347 total</span></td>
 </tr>
 
 <tr>
   <td><strong>bob</strong></td>
-  <td class="metric">1026</td>
-  <td class="metric">1015</td>
-  <td class="metric">342.0 msg/s</td>
-  <td class="metric">338.33 msg/s</td>
-  <td><span class="badge high">2041 total</span></td>
+  <td class="metric">5950</td>
+  <td class="metric">5938</td>
+  <td class="metric">1983.33 msg/s</td>
+  <td class="metric">1979.33 msg/s</td>
+  <td><span class="badge high">11888 total</span></td>
 </tr>
 
 <tr>
   <td><strong>charlie</strong></td>
-  <td class="metric">1004</td>
-  <td class="metric">993</td>
-  <td class="metric">334.67 msg/s</td>
-  <td class="metric">331.0 msg/s</td>
-  <td><span class="badge high">1997 total</span></td>
+  <td class="metric">5963</td>
+  <td class="metric">5951</td>
+  <td class="metric">1987.67 msg/s</td>
+  <td class="metric">1983.67 msg/s</td>
+  <td><span class="badge high">11914 total</span></td>
 </tr>
 
 <tr>
   <td><strong>diana</strong></td>
-  <td class="metric">929</td>
-  <td class="metric">918</td>
-  <td class="metric">309.67 msg/s</td>
-  <td class="metric">306.0 msg/s</td>
-  <td><span class="badge high">1847 total</span></td>
+  <td class="metric">5849</td>
+  <td class="metric">5838</td>
+  <td class="metric">1949.67 msg/s</td>
+  <td class="metric">1946.0 msg/s</td>
+  <td><span class="badge high">11687 total</span></td>
 </tr>
 
 <tr>
   <td><strong>eve</strong></td>
-  <td class="metric">956</td>
-  <td class="metric">946</td>
-  <td class="metric">318.67 msg/s</td>
-  <td class="metric">315.33 msg/s</td>
-  <td><span class="badge high">1902 total</span></td>
+  <td class="metric">5823</td>
+  <td class="metric">5812</td>
+  <td class="metric">1941.0 msg/s</td>
+  <td class="metric">1937.33 msg/s</td>
+  <td><span class="badge high">11635 total</span></td>
 </tr>
 
 <tr>
   <td><strong>frank</strong></td>
-  <td class="metric">1058</td>
-  <td class="metric">1048</td>
-  <td class="metric">352.67 msg/s</td>
-  <td class="metric">349.33 msg/s</td>
-  <td><span class="badge high">2106 total</span></td>
+  <td class="metric">5830</td>
+  <td class="metric">5819</td>
+  <td class="metric">1943.33 msg/s</td>
+  <td class="metric">1939.67 msg/s</td>
+  <td><span class="badge high">11649 total</span></td>
 </tr>
 
 <tr>
   <td><strong>grace</strong></td>
-  <td class="metric">1010</td>
-  <td class="metric">1000</td>
-  <td class="metric">336.67 msg/s</td>
-  <td class="metric">333.33 msg/s</td>
-  <td><span class="badge high">2010 total</span></td>
+  <td class="metric">5603</td>
+  <td class="metric">5591</td>
+  <td class="metric">1867.67 msg/s</td>
+  <td class="metric">1863.67 msg/s</td>
+  <td><span class="badge high">11194 total</span></td>
 </tr>
 
     </tbody>
@@ -380,7 +380,7 @@ flowchart LR
 
   <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 6px;">
     <strong>Summary:</strong>
-    Total messages: 13670 •
+    Total messages: 81314 •
     Duration: 3000ms •
     Actors: 7
   </div>
@@ -427,7 +427,7 @@ defmodule HiActor do
 
     # Received :hi, send random response
     available_targets = Enum.reject(state.all_actors, &(&1 == from))
-    if length(available_targets) > 0 do
+    if available_targets != [] do
       target = Enum.random(available_targets)
       VirtualTimeGenServer.cast(target, {:hi, state.name})
     end

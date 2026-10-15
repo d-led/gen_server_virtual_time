@@ -11,10 +11,18 @@ defmodule VirtualTimeGenStateMachineTest do
 
     def flip(server) do
       VirtualTimeGenStateMachine.cast(server, :flip)
+      # A cast is asynchronous, and flipping schedules a timer relative to the
+      # clock, so wait until it has been handled before time is allowed to move.
+      VirtualTimeGenStateMachine.call(server, :get_count)
+      :ok
     end
 
     def get_count(server) do
       VirtualTimeGenStateMachine.call(server, :get_count)
+    end
+
+    def get_timeout_count(server) do
+      VirtualTimeGenStateMachine.call(server, :get_timeout_count)
     end
 
     @impl true
@@ -37,6 +45,11 @@ defmodule VirtualTimeGenStateMachineTest do
     @impl true
     def handle_event({:call, from}, :get_count, _state, data) do
       {:keep_state_and_data, [{:reply, from, data.count}]}
+    end
+
+    @impl true
+    def handle_event({:call, from}, :get_timeout_count, _state, data) do
+      {:keep_state_and_data, [{:reply, from, data.timeout_count}]}
     end
 
     @impl true
@@ -184,57 +197,40 @@ defmodule VirtualTimeGenStateMachineTest do
       assert VirtualTimeGenStateMachine.call(server, :get_count) == 1
     end
 
-    test "timers fire in virtual time", %{clock: clock} do
+    test "a timer fires when virtual time reaches it, and not before", %{clock: clock} do
       {:ok, server} = SwitchSM.start_link(:off, virtual_clock: clock)
 
-      start_time = System.monotonic_time(:millisecond)
-
-      # Flip to :on state - this schedules a timeout in 100ms
+      # Flipping to :on schedules a timeout 100ms ahead
       SwitchSM.flip(server)
+      assert SwitchSM.get_timeout_count(server) == 0
 
-      # Advance virtual time - timer fires instantly
-      VirtualClock.advance(clock, 100)
+      VirtualClock.advance(clock, 99)
+      assert SwitchSM.get_timeout_count(server) == 0
 
-      elapsed = System.monotonic_time(:millisecond) - start_time
+      VirtualClock.advance(clock, 1)
+      assert SwitchSM.get_timeout_count(server) == 1
 
-      # Test completed instantly
-      assert elapsed < 100
-
-      # Timer fired and updated state
       GenServer.stop(server)
     end
 
-    test "can simulate long time periods instantly", %{clock: clock} do
-      {:ok, server} = SwitchSM.start_link(:off)
+    test "a long timeline is replayed without waiting for it", %{clock: clock} do
+      {:ok, server} = SwitchSM.start_link(:off, virtual_clock: clock)
 
-      start_time = System.monotonic_time(:millisecond)
-
-      # Simulate 10 seconds of timers
       for _ <- 1..10 do
         SwitchSM.flip(server)
         VirtualClock.advance(clock, 100)
         SwitchSM.flip(server)
       end
 
-      elapsed = System.monotonic_time(:millisecond) - start_time
-      count = SwitchSM.get_count(server)
-
-      # Test completed quickly
-      # Increased tolerance for smart quiescence detection
-      assert elapsed < 500
-      # But simulated 20 state transitions
-      assert count == 10
+      assert SwitchSM.get_count(server) == 10
+      assert SwitchSM.get_timeout_count(server) == 10
+      assert VirtualClock.now(clock) == 1000
 
       GenServer.stop(server)
     end
 
-    test "simulates an entire week of activity in milliseconds", %{clock: clock} do
-      {:ok, server} = SwitchSM.start_link(:off)
-
-      start_time = System.monotonic_time(:millisecond)
-
-      # Simulate a full week (7 days = 604,800,000 milliseconds)
-      # with hourly check-ins (24 hours * 7 days = 168 check-ins)
+    test "a week of hourly activity is replayed in one virtual hour at a time", %{clock: clock} do
+      {:ok, server} = SwitchSM.start_link(:off, virtual_clock: clock)
       ms_per_hour = 3_600_000
 
       for _hour <- 1..168 do
@@ -243,22 +239,9 @@ defmodule VirtualTimeGenStateMachineTest do
         SwitchSM.flip(server)
       end
 
-      elapsed_real_time = System.monotonic_time(:millisecond) - start_time
-      count = SwitchSM.get_count(server)
-
-      # In real time, this would take 7 days = 604,800,000 ms = ~7 days
-      # With virtual time, it completes in less than a second!
-      # Increased tolerance for smart quiescence
-      # Increased tolerance for patient quiescence
-      assert elapsed_real_time < 6000, "Virtual time test completed in #{elapsed_real_time}ms"
-
-      # But we simulated an entire week of activity
-      assert count == 168, "Simulated 168 state transitions (one per hour for a week)"
-
-      # Demonstrate the time that would have passed in real world
-      ms_simulated = 168 * ms_per_hour
-      days_simulated = div(ms_simulated, 86_400_000)
-      assert days_simulated == 7, "Simulated #{days_simulated} days of activity"
+      assert SwitchSM.get_count(server) == 168
+      assert SwitchSM.get_timeout_count(server) == 168
+      assert div(VirtualClock.now(clock), 86_400_000) == 7
 
       GenServer.stop(server)
     end
@@ -295,23 +278,18 @@ defmodule VirtualTimeGenStateMachineTest do
       GenServer.stop(door)
     end
 
-    test "auto-close timer works with virtual time", %{clock: clock} do
+    test "the auto-close timer closes the door when its time comes", %{clock: clock} do
       {:ok, door} = DoorSM.start_link(virtual_clock: clock)
 
-      start_time = System.monotonic_time(:millisecond)
-
-      # Open the door - schedules auto-close in 1000ms
+      # Opening the door schedules an auto-close 1000ms ahead
       DoorSM.open(door)
       assert DoorSM.get_state(door) == :open
 
-      # Manually send the auto-close message to verify the state handler works
-      send(door, :auto_close)
+      VirtualClock.advance(clock, 999)
+      assert DoorSM.get_state(door) == :open
+
+      VirtualClock.advance(clock, 1)
       assert DoorSM.get_state(door) == :closed
-
-      elapsed = System.monotonic_time(:millisecond) - start_time
-
-      # Test completed instantly
-      assert elapsed < 100
 
       GenServer.stop(door)
     end
@@ -362,7 +340,9 @@ defmodule VirtualTimeGenStateMachineTest do
       # Advance only clock1
       VirtualClock.advance(clock1, 100)
 
-      # Only server1's timer fired
+      assert SwitchSM.get_timeout_count(server1) == 1
+      assert SwitchSM.get_timeout_count(server2) == 0
+
       GenServer.stop(server1)
       GenServer.stop(server2)
     end

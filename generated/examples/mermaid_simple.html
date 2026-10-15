@@ -120,10 +120,10 @@
     <div class="mermaid">
 sequenceDiagram
     client->>server: :request
-    client->>server: :request
+    server->>client: :response
     client->>server: :request
     server->>client: :response
-    server->>client: :response
+    client->>server: :request
     server->>client: :response
     </div>
   </div>

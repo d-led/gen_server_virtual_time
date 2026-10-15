@@ -60,8 +60,15 @@ defmodule ActorSimulation.GeneratorUtils do
   def to_pascal_case(string) when is_binary(string) do
     string
     |> String.split(~r/[_-]/)
-    |> Enum.map_join("", &String.capitalize/1)
+    |> Enum.map_join("", &capitalize_word/1)
   end
+
+  # Uppercases the first character and leaves the rest of the word alone. An
+  # identifier that is already PascalCase has to come back unchanged, otherwise
+  # converting twice mangles it: `String.capitalize/1` turns "MyActor" into
+  # "Myactor".
+  defp capitalize_word(<<first::utf8, rest::binary>>), do: String.upcase(<<first::utf8>>) <> rest
+  defp capitalize_word(""), do: ""
 
   @doc """
   Converts an atom or string to camelCase.
@@ -109,10 +116,14 @@ defmodule ActorSimulation.GeneratorUtils do
 
       iex> GeneratorUtils.pattern_interval({:rate, 10, :msg})
       100
+
+      iex> GeneratorUtils.pattern_interval({:self_message, 250, :timeout})
+      250
   """
   def pattern_interval({:periodic, interval_ms, _message}), do: interval_ms
   def pattern_interval({:rate, per_second, _message}), do: div(1000, per_second)
   def pattern_interval({:burst, _count, interval_ms, _message}), do: interval_ms
+  def pattern_interval({:self_message, delay_ms, _message}), do: delay_ms
   def pattern_interval(nil), do: nil
 
   @doc """
@@ -199,7 +210,7 @@ defmodule ActorSimulation.GeneratorUtils do
     ## Learn More
 
     - [#{framework}](#{framework_url})
-    - [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
     """
   end
 end

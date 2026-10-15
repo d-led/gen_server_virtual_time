@@ -126,10 +126,10 @@ sequenceDiagram
     activate responder
     requester->>responder: :get_data
     deactivate responder
+    notifier-->>listener: :notify
     activate responder
     requester->>responder: :get_data
     deactivate responder
-    notifier-->>listener: :notify
     </div>
   </div>
 

@@ -3,6 +3,9 @@
 This library includes **six production-ready code generators** that translate
 ActorSimulation DSL into different languages and frameworks.
 
+Each snippet pins the version that was current when this page was written; check
+[Hex](https://hex.pm/packages/gen_server_virtual_time) for the latest.
+
 ## Single-File Script Examples
 
 Following
@@ -13,7 +16,7 @@ you can generate complete projects with just `Mix.install`!
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:sender,
@@ -31,7 +34,7 @@ ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_out/")
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:worker,
@@ -50,7 +53,7 @@ ActorSimulation.CAFGenerator.write_to_directory(files, "caf_out/")
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:sender,
@@ -69,7 +72,7 @@ ActorSimulation.PonyGenerator.write_to_directory(files, "pony_out/")
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:worker,
@@ -88,7 +91,7 @@ ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:producer,
@@ -107,7 +110,7 @@ ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_out/")
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.2.0"}])
+Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:publisher,

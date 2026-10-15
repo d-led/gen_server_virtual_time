@@ -31,4 +31,6 @@ int caf_main(actor_system& system) {
   return 0;
 }
 
-CAF_MAIN()
+// The custom atoms in atoms.hpp are only usable once their type ID block is
+// registered, which is what the argument to CAF_MAIN does.
+CAF_MAIN(caf::id_block::ActorSimulation)

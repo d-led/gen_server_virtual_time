@@ -133,7 +133,10 @@ defmodule DiagramGenerationTest do
       filename = Path.join(@output_dir, "mermaid_pipeline.html")
       File.write!(filename, html)
 
-      IO.puts("\n✅ Generated Mermaid pipeline: #{filename}")
+      # api forwards to auth, which forwards to database, which answers api
+      assert mermaid =~ "api->>auth: {:check_auth, :user123}"
+      assert mermaid =~ "auth->>database: {:check_auth, :user123}"
+      assert mermaid =~ "database->>api: {:auth_ok, :token456}"
 
       ActorSimulation.stop(simulation)
     end

@@ -17,8 +17,8 @@ defmodule VirtualClockCoreBenchmarks do
       %{
         "VirtualClock.advance (1 second)" => fn -> advance_one_second() end,
         "VirtualClock.advance (1 minute)" => fn -> advance_one_minute() end,
-        "VirtualClock.schedule_event" => fn -> schedule_single_event() end,
-        "VirtualClock.schedule_multiple_events" => fn -> schedule_multiple_events() end,
+        "VirtualClock.send_after (1 event)" => fn -> schedule_single_event() end,
+        "VirtualClock.send_after (100 events)" => fn -> schedule_multiple_events() end,
         "Periodic ticking GenServer (5 ticks)" => fn -> periodic_ticking_benchmark() end,
         "ActorSimulation.simple (10 events)" => fn -> simple_actor_simulation() end
       },
@@ -33,7 +33,7 @@ defmodule VirtualClockCoreBenchmarks do
 
     IO.puts("\n🏆 Core Benchmark Results:")
     IO.puts("   - VirtualClock.advance: Core time advancement performance")
-    IO.puts("   - VirtualClock.schedule_event: Event scheduling performance")
+    IO.puts("   - VirtualClock.send_after: Event scheduling performance")
     IO.puts("   - VirtualTimeGenServer: GenServer with virtual time performance")
     IO.puts("   - ActorSimulation: Simple actor simulation performance")
     IO.puts("\n📊 Check _build/benchmarks/results.html for detailed HTML report")

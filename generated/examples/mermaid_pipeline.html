@@ -123,13 +123,13 @@ sequenceDiagram
     auth->>database: {:check_auth, :user123}
     database->>api: {:auth_ok, :token456}
     api->>auth: {:check_auth, :user123}
-    api->>auth: {:check_auth, :user123}
     auth->>database: {:check_auth, :user123}
     api->>auth: {:check_auth, :user123}
-    auth->>database: {:check_auth, :user123}
+    database->>api: {:auth_ok, :token456}
     auth->>database: {:check_auth, :user123}
     database->>api: {:auth_ok, :token456}
-    database->>api: {:auth_ok, :token456}
+    api->>auth: {:check_auth, :user123}
+    auth->>database: {:check_auth, :user123}
     database->>api: {:auth_ok, :token456}
     </div>
   </div>

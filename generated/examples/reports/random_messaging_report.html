@@ -9,9 +9,9 @@
   <meta charset="utf-8">
   <title>Random Messaging Network</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -192,11 +192,11 @@
     </div>
     <div class="summary-card">
       <div class="label">Real Time</div>
-      <div class="value">2<span class="unit">ms</span></div>
+      <div class="value">1<span class="unit">ms</span></div>
     </div>
     <div class="summary-card success">
       <div class="label">Speedup</div>
-      <div class="value">1.0e3x</div>
+      <div class="value">2.0e3x</div>
     </div>
     <div class="summary-card warning">
   <div class="label">Termination</div>
@@ -233,48 +233,48 @@ flowchart TB
     actor6("actor6<br/>
 📤 Sent: 30<br/>
 📥 Recv: 44")
-    actor1 -->|:hi<br/>every 347ms| actor0
-    actor2 -->|:hi<br/>every 236ms| actor5
-    actor6 -->|:hi<br/>every 358ms| actor0
-    actor5 -->|:hi<br/>every 441ms| actor2
-    actor4 -->|:hi<br/>every 197ms| actor6
-    actor5 -->|:hi<br/>every 441ms| actor0
-    actor0 -->|:hi<br/>every 271ms| actor2
-    actor2 -->|:hi<br/>every 236ms| actor1
-    actor4 -->|:hi<br/>every 197ms| actor3
-    actor4 -->|:hi<br/>every 197ms| actor0
-    actor6 -->|:hi<br/>every 358ms| actor3
-    actor1 -->|:hi<br/>every 347ms| actor4
     actor1 -->|:hi<br/>every 347ms| actor3
-    actor5 -->|:hi<br/>every 441ms| actor3
-    actor5 -->|:hi<br/>every 441ms| actor1
-    actor1 -->|:hi<br/>every 347ms| actor6
+    actor5 -->|:hi<br/>every 441ms| actor2
+    actor1 -->|:hi<br/>every 347ms| actor0
     actor6 -->|:hi<br/>every 358ms| actor5
-    actor3 -->|:hi<br/>every 191ms| actor6
-    actor2 -->|:hi<br/>every 236ms| actor4
-    actor4 -->|:hi<br/>every 197ms| actor5
-    actor2 -->|:hi<br/>every 236ms| actor6
-    actor3 -->|:hi<br/>every 191ms| actor1
-    actor4 -->|:hi<br/>every 197ms| actor1
-    actor2 -->|:hi<br/>every 236ms| actor0
-    actor0 -->|:hi<br/>every 271ms| actor6
-    actor5 -->|:hi<br/>every 441ms| actor4
+    actor6 -->|:hi<br/>every 358ms| actor3
+    actor2 -->|:hi<br/>every 236ms| actor1
+    actor1 -->|:hi<br/>every 347ms| actor4
     actor3 -->|:hi<br/>every 191ms| actor0
-    actor0 -->|:hi<br/>every 271ms| actor1
-    actor1 -->|:hi<br/>every 347ms| actor5
-    actor0 -->|:hi<br/>every 271ms| actor5
-    actor0 -->|:hi<br/>every 271ms| actor4
-    actor1 -->|:hi<br/>every 347ms| actor2
-    actor3 -->|:hi<br/>every 191ms| actor2
-    actor6 -->|:hi<br/>every 358ms| actor1
-    actor3 -->|:hi<br/>every 191ms| actor4
-    actor2 -->|:hi<br/>every 236ms| actor3
-    actor3 -->|:hi<br/>every 191ms| actor5
-    actor6 -->|:hi<br/>every 358ms| actor2
-    actor6 -->|:hi<br/>every 358ms| actor4
-    actor5 -->|:hi<br/>every 441ms| actor6
+    actor4 -->|:hi<br/>every 197ms| actor1
+    actor4 -->|:hi<br/>every 197ms| actor3
     actor4 -->|:hi<br/>every 197ms| actor2
+    actor6 -->|:hi<br/>every 358ms| actor4
+    actor2 -->|:hi<br/>every 236ms| actor3
+    actor1 -->|:hi<br/>every 347ms| actor2
+    actor2 -->|:hi<br/>every 236ms| actor6
+    actor6 -->|:hi<br/>every 358ms| actor0
+    actor6 -->|:hi<br/>every 358ms| actor1
+    actor0 -->|:hi<br/>every 271ms| actor2
+    actor5 -->|:hi<br/>every 441ms| actor4
+    actor4 -->|:hi<br/>every 197ms| actor6
+    actor2 -->|:hi<br/>every 236ms| actor5
+    actor5 -->|:hi<br/>every 441ms| actor0
+    actor1 -->|:hi<br/>every 347ms| actor5
+    actor5 -->|:hi<br/>every 441ms| actor3
+    actor1 -->|:hi<br/>every 347ms| actor6
+    actor4 -->|:hi<br/>every 197ms| actor5
+    actor2 -->|:hi<br/>every 236ms| actor0
+    actor3 -->|:hi<br/>every 191ms| actor5
+    actor5 -->|:hi<br/>every 441ms| actor6
+    actor3 -->|:hi<br/>every 191ms| actor4
+    actor3 -->|:hi<br/>every 191ms| actor2
+    actor0 -->|:hi<br/>every 271ms| actor4
+    actor0 -->|:hi<br/>every 271ms| actor6
+    actor0 -->|:hi<br/>every 271ms| actor5
     actor0 -->|:hi<br/>every 271ms| actor3
+    actor0 -->|:hi<br/>every 271ms| actor1
+    actor3 -->|:hi<br/>every 191ms| actor1
+    actor5 -->|:hi<br/>every 441ms| actor1
+    actor3 -->|:hi<br/>every 191ms| actor6
+    actor6 -->|:hi<br/>every 358ms| actor2
+    actor4 -->|:hi<br/>every 197ms| actor0
+    actor2 -->|:hi<br/>every 236ms| actor4
     style actor1 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style actor2 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style actor0 fill:#fff3e0,stroke:#f57c00,stroke-width:3px
