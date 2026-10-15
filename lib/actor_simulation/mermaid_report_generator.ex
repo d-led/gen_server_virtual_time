@@ -1,4 +1,6 @@
 defmodule ActorSimulation.MermaidReportGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates Mermaid-based flowchart simulation reports with statistics.
 
@@ -590,10 +592,10 @@ defmodule ActorSimulation.MermaidReportGenerator do
     #{generator_comment}<head>
       <meta charset="utf-8">
       <title>#{title}</title>
-      <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-      <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/mermaid@#{TemplateVersions.get(:mermaid)}/dist/mermaid.min.js"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/#{TemplateVersions.get(:prism)}/themes/prism.min.css" rel="stylesheet" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/#{TemplateVersions.get(:prism)}/components/prism-core.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/#{TemplateVersions.get(:prism)}/plugins/autoloader/prism-autoloader.min.js"></script>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

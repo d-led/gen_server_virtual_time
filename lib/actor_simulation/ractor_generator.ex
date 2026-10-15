@@ -1,4 +1,6 @@
 defmodule ActorSimulation.RactorGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates Rust code using the Ractor actor library from ActorSimulation DSL.
 
@@ -40,8 +42,10 @@ defmodule ActorSimulation.RactorGenerator do
 
   - `:project_name` (required) - Name of the Cargo package (snake_case)
   - `:enable_callbacks` (default: true) - Generate callback traits
-  - `:rust_edition` (default: "2021") - Rust edition for Cargo.toml
-  - `:ractor_version` (default: "0.15") - Ractor crate version
+  - `:rust_edition` - Rust edition for Cargo.toml, defaulting to
+    `ActorSimulation.TemplateVersions.get(:rust_edition)`
+  - `:ractor_version` - Ractor crate version, defaulting to
+    `ActorSimulation.TemplateVersions.get(:ractor)`
 
   ## Returns
 
@@ -50,8 +54,8 @@ defmodule ActorSimulation.RactorGenerator do
   def generate(simulation, opts \\ []) do
     project_name = Keyword.fetch!(opts, :project_name)
     enable_callbacks = Keyword.get(opts, :enable_callbacks, true)
-    rust_edition = Keyword.get(opts, :rust_edition, "2021")
-    ractor_version = Keyword.get(opts, :ractor_version, "0.15")
+    rust_edition = Keyword.get(opts, :rust_edition, TemplateVersions.get(:rust_edition))
+    ractor_version = Keyword.get(opts, :ractor_version, TemplateVersions.get(:ractor))
 
     actors = simulation.actors
 
@@ -633,10 +637,10 @@ defmodule ActorSimulation.RactorGenerator do
 
     [dependencies]
     ractor = "#{ractor_version}"
-    tokio = { version = "1", features = ["full"] }
+    tokio = { version = "#{TemplateVersions.get(:tokio)}", features = ["full"] }
 
     [dev-dependencies]
-    tokio-test = "0.4"
+    tokio-test = "#{TemplateVersions.get(:tokio_test)}"
     """
   end
 
@@ -660,10 +664,10 @@ defmodule ActorSimulation.RactorGenerator do
             rust: [stable, beta]
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@#{TemplateVersions.get(:checkout_action)}
 
         - name: Setup Rust
-          uses: actions-rust-lang/setup-rust-toolchain@v1
+          uses: actions-rust-lang/setup-rust-toolchain@#{TemplateVersions.get(:setup_rust_toolchain_action)}
           with:
             toolchain: \${{ matrix.rust }}
             cache: true

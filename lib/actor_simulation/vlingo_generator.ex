@@ -1,4 +1,6 @@
 defmodule ActorSimulation.VlingoGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates VLINGO XOOM Actors code from ActorSimulation DSL.
 
@@ -39,7 +41,8 @@ defmodule ActorSimulation.VlingoGenerator do
 
   - `:project_name` (required) - Name of the Java project (kebab-case)
   - `:group_id` (default: "com.example") - Maven group ID
-  - `:vlingo_version` (default: "1.11.1") - VLINGO XOOM version
+  - `:vlingo_version` - VLINGO XOOM version, defaulting to
+    `ActorSimulation.TemplateVersions.get(:vlingo)`
   - `:enable_callbacks` (default: true) - Generate callback interfaces
 
   ## Returns
@@ -49,7 +52,7 @@ defmodule ActorSimulation.VlingoGenerator do
   def generate(simulation, opts \\ []) do
     project_name = Keyword.fetch!(opts, :project_name)
     group_id = Keyword.get(opts, :group_id, "com.example")
-    vlingo_version = Keyword.get(opts, :vlingo_version, "1.11.1")
+    vlingo_version = Keyword.get(opts, :vlingo_version, TemplateVersions.get(:vlingo))
     enable_callbacks = Keyword.get(opts, :enable_callbacks, true)
 
     actors = simulation.actors
@@ -742,11 +745,11 @@ defmodule ActorSimulation.VlingoGenerator do
       <description>Generated from ActorSimulation DSL using VLINGO XOOM Actors</description>
 
       <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>#{TemplateVersions.get(:java_release)}</maven.compiler.source>
+        <maven.compiler.target>#{TemplateVersions.get(:java_release)}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vlingo.version>#{vlingo_version}</vlingo.version>
-        <junit.version>5.10.0</junit.version>
+        <junit.version>#{TemplateVersions.get(:junit)}</junit.version>
       </properties>
 
       <dependencies>
@@ -778,9 +781,9 @@ defmodule ActorSimulation.VlingoGenerator do
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.11.0</version>
+            <version>#{TemplateVersions.get(:maven_compiler_plugin)}</version>
             <configuration>
-              <release>11</release>
+              <release>#{TemplateVersions.get(:java_release)}</release>
               <compilerArgs>
                 <arg>-Xlint:unchecked</arg>
               </compilerArgs>
@@ -791,7 +794,7 @@ defmodule ActorSimulation.VlingoGenerator do
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.1.2</version>
+            <version>#{TemplateVersions.get(:maven_surefire_plugin)}</version>
             <configuration>
               <includes>
                 <include>**/*Test.java</include>
@@ -805,7 +808,7 @@ defmodule ActorSimulation.VlingoGenerator do
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
-            <version>3.1.0</version>
+            <version>#{TemplateVersions.get(:maven_exec_plugin)}</version>
             <configuration>
               <mainClass>#{group_id}.Main</mainClass>
             </configuration>
@@ -815,7 +818,7 @@ defmodule ActorSimulation.VlingoGenerator do
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.6.0</version>
+            <version>#{TemplateVersions.get(:maven_assembly_plugin)}</version>
             <configuration>
               <archive>
                 <manifest>
@@ -876,13 +879,13 @@ defmodule ActorSimulation.VlingoGenerator do
           fail-fast: false
           matrix:
             os: [ubuntu-latest, macos-latest, windows-latest]
-            java: ['11', '17', '21']
+            java: ['#{TemplateVersions.get(:java_release)}', '21']
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@#{TemplateVersions.get(:checkout_action)}
 
         - name: Set up JDK ${{ matrix.java }}
-          uses: actions/setup-java@v3
+          uses: actions/setup-java@#{TemplateVersions.get(:setup_java_action)}
           with:
             java-version: ${{ matrix.java }}
             distribution: 'temurin'
@@ -899,7 +902,7 @@ defmodule ActorSimulation.VlingoGenerator do
 
         - name: Publish Test Results
           if: always()
-          uses: EnricoMi/publish-unit-test-result-action@v2
+          uses: EnricoMi/publish-unit-test-result-action@#{TemplateVersions.get(:publish_test_results_action)}
           with:
             files: |
               target/surefire-reports/*.xml
@@ -936,7 +939,7 @@ defmodule ActorSimulation.VlingoGenerator do
 
     ## Prerequisites
 
-    - **Java 11+** (Java 17 or 21 recommended)
+    - **Java #{TemplateVersions.get(:java_release)}+** (Java 17 or 21 recommended)
     - **Maven 3.6+**
 
     ## Building
@@ -1012,7 +1015,7 @@ defmodule ActorSimulation.VlingoGenerator do
     - [VLINGO XOOM Documentation](https://docs.vlingo.io/)
     - [VLINGO XOOM Actors Guide](https://docs.vlingo.io/xoom-actors)
     - [VLINGO XOOM GitHub](https://github.com/vlingo)
-    - [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
 
     ## License
 

@@ -1,4 +1,6 @@
 defmodule ActorSimulation.PonyGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates Pony actor code from ActorSimulation DSL.
 
@@ -569,26 +571,26 @@ defmodule ActorSimulation.PonyGenerator do
             os: [ubuntu-latest, macos-latest]
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@#{TemplateVersions.get(:checkout_action)}
 
         - name: Install Pony
           run: |
             if [ "$RUNNER_OS" == "Linux" ]; then
               sudo apt-get update
               sudo apt-get install -y ponyup
-              ponyup update ponyc release
+              ponyup update ponyc #{TemplateVersions.get(:ponyc_channel)}
             elif [ "$RUNNER_OS" == "macOS" ]; then
               brew install ponyup
-              ponyup update ponyc release
+              ponyup update ponyc #{TemplateVersions.get(:ponyc_channel)}
             fi
           shell: bash
 
         - name: Install Corral
           run: |
-            ponyup update corral release
+            ponyup update corral #{TemplateVersions.get(:corral_channel)}
 
         - name: Cache Corral packages
-          uses: actions/cache@v3
+          uses: actions/cache@#{TemplateVersions.get(:cache_action)}
           with:
             path: |
               _corral
@@ -715,7 +717,7 @@ defmodule ActorSimulation.PonyGenerator do
     - [Pony Tutorial](https://tutorial.ponylang.io/)
     - [Pony Standard Library](https://stdlib.ponylang.io/)
     - [Pony GitHub](https://github.com/ponylang/ponyc)
-    - [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
 
     ## License
 

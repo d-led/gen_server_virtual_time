@@ -1,4 +1,6 @@
 defmodule ActorSimulation.PhonyGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates Go code using the Phony actor library from ActorSimulation DSL.
 
@@ -39,7 +41,8 @@ defmodule ActorSimulation.PhonyGenerator do
 
   - `:project_name` (required) - Name of the Go module (snake_case)
   - `:enable_callbacks` (default: true) - Generate callback interfaces
-  - `:go_version` (default: "1.21") - Go version for go.mod
+  - `:go_version` - Go version for go.mod, defaulting to
+    `ActorSimulation.TemplateVersions.get(:go)`
 
   ## Returns
 
@@ -48,7 +51,7 @@ defmodule ActorSimulation.PhonyGenerator do
   def generate(simulation, opts \\ []) do
     project_name = Keyword.fetch!(opts, :project_name)
     enable_callbacks = Keyword.get(opts, :enable_callbacks, true)
-    go_version = Keyword.get(opts, :go_version, "1.21")
+    go_version = Keyword.get(opts, :go_version, TemplateVersions.get(:go))
 
     actors = simulation.actors
 
@@ -429,7 +432,7 @@ defmodule ActorSimulation.PhonyGenerator do
 
     go #{go_version}
 
-    require github.com/Arceliar/phony v0.0.0-20220903101357-530938a4b13d
+    require github.com/Arceliar/phony #{TemplateVersions.get(:phony)}
     """
   end
 
@@ -450,13 +453,13 @@ defmodule ActorSimulation.PhonyGenerator do
           fail-fast: false
           matrix:
             os: [ubuntu-latest, macos-latest, windows-latest]
-            go-version: ['1.21', '1.22']
+            go-version: ['#{TemplateVersions.get(:go)}', stable]
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@#{TemplateVersions.get(:checkout_action)}
 
         - name: Set up Go
-          uses: actions/setup-go@v4
+          uses: actions/setup-go@#{TemplateVersions.get(:setup_go_action)}
           with:
             go-version: ${{ matrix.go-version }}
             cache: true
@@ -517,7 +520,7 @@ defmodule ActorSimulation.PhonyGenerator do
 
     ## Prerequisites
 
-    - **Go 1.21+**
+    - **Go #{TemplateVersions.get(:go)}+**
     - **Git** (for go modules)
 
     ## Building
@@ -571,7 +574,7 @@ defmodule ActorSimulation.PhonyGenerator do
 
     - [Phony GitHub](https://github.com/Arceliar/phony)
     - [Go Modules](https://go.dev/blog/using-go-modules)
-    - [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
 
     ## License
 

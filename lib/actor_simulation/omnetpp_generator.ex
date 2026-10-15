@@ -1,4 +1,6 @@
 defmodule ActorSimulation.OMNeTPPGenerator do
+  alias ActorSimulation.TemplateVersions
+
   @moduledoc """
   Generates OMNeT++ C++ simulation code from ActorSimulation DSL.
 
@@ -394,10 +396,10 @@ defmodule ActorSimulation.OMNeTPPGenerator do
       |> Enum.map_join("\n", fn name -> "    #{camelize(name)}.cc" end)
 
     """
-    cmake_minimum_required(VERSION 3.15)
+    cmake_minimum_required(VERSION #{TemplateVersions.get(:cmake_minimum)})
     project(#{network_name})
 
-    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD #{TemplateVersions.get(:cpp_standard)})
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
     # Detect OS for binary naming: {example}.omnetpp.{os}
@@ -548,29 +550,29 @@ defmodule ActorSimulation.OMNeTPPGenerator do
             os: [ubuntu-latest, macos-latest]
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@#{TemplateVersions.get(:checkout_action)}
 
         - name: Set up Python
-          uses: actions/setup-python@v4
+          uses: actions/setup-python@#{TemplateVersions.get(:setup_python_action)}
           with:
             python-version: '3.x'
 
         - name: Cache OMNeT++ installation
-          uses: actions/cache@v3
+          uses: actions/cache@#{TemplateVersions.get(:cache_action)}
           with:
             path: |
               ~/.opp_env
               ~/.cache/opp_env
-            key: ${{ runner.os }}-omnetpp-6.2.0-${{ hashFiles('**/omnetpp.ini') }}
+            key: ${{ runner.os }}-omnetpp-#{TemplateVersions.get(:omnetpp)}-${{ hashFiles('**/omnetpp.ini') }}
             restore-keys: |
-              ${{ runner.os }}-omnetpp-6.2.0-
+              ${{ runner.os }}-omnetpp-#{TemplateVersions.get(:omnetpp)}-
               ${{ runner.os }}-omnetpp-
 
         - name: Install OMNeT++ via opp_env
           run: |
             pip install opp-env
             opp_env init
-            opp_env install omnetpp-6.2.0
+            opp_env install omnetpp-#{TemplateVersions.get(:omnetpp)}
           shell: bash
 
         - name: Configure
@@ -640,9 +642,9 @@ defmodule ActorSimulation.OMNeTPPGenerator do
 
     ## Prerequisites
 
-    - **OMNeT++ 6.0+** - [Install OMNeT++](https://omnetpp.org/download/)
-    - **CMake 3.15+**
-    - **C++17 compatible compiler**
+    - **OMNeT++ #{TemplateVersions.major(:omnetpp)}.0+** - [Install OMNeT++](https://omnetpp.org/download/)
+    - **CMake #{TemplateVersions.get(:cmake_minimum)}+**
+    - **C++#{TemplateVersions.get(:cpp_standard)} compatible compiler**
 
     ## Building
 

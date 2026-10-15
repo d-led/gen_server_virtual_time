@@ -3,6 +3,7 @@ defmodule VlingoGeneratorTest do
   doctest ActorSimulation.VlingoGenerator
 
   alias ActorSimulation
+  alias ActorSimulation.TemplateVersions
   alias ActorSimulation.VlingoGenerator
 
   describe "generate/2" do
@@ -21,8 +22,7 @@ defmodule VlingoGeneratorTest do
           group_id: "com.example"
         )
 
-      assert is_list(files)
-      assert files != []
+      GeneratorAssertions.assert_file_plan(files)
 
       filenames = Enum.map(files, fn {name, _content} -> name end)
 
@@ -217,7 +217,7 @@ defmodule VlingoGeneratorTest do
       assert ci =~ "ubuntu-latest"
       assert ci =~ "macos-latest"
       assert ci =~ "windows-latest"
-      assert ci =~ "setup-java@v3"
+      assert ci =~ "actions/setup-java@#{TemplateVersions.get(:setup_java_action)}"
       assert ci =~ "java-version:"
       assert ci =~ "mvn clean compile"
       assert ci =~ "mvn test"

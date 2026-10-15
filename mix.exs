@@ -32,7 +32,7 @@ defmodule GenServerVirtualTime.MixProject do
       test_paths: ["test"],
       elixirc_paths: elixirc_paths(Mix.env()),
       dialyzer: [
-        plt_add_apps: [:mix],
+        plt_add_apps: [:mix, :jason, :inets, :ssl, :public_key],
         plt_core_path: "priv/plts",
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
         ignore_warnings: ".dialyzer_ignore.exs"
@@ -42,9 +42,16 @@ defmodule GenServerVirtualTime.MixProject do
 
   # Run "mix help compile.app" to learn about applications.
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [extra_applications: [:logger] ++ tooling_applications()]
+  end
+
+  # `mix templates.upgrade` (see dev/) asks package registries for the latest
+  # releases with :httpc over TLS, which needs :inets, :ssl and :public_key on the
+  # code path. Only maintainer environments declare them, and only `dev/` uses
+  # them, so the published library — built with MIX_ENV=prod — depends on :logger
+  # alone.
+  defp tooling_applications do
+    if Mix.env() == :prod, do: [], else: [:inets, :ssl, :public_key]
   end
 
   def cli do
@@ -59,17 +66,18 @@ defmodule GenServerVirtualTime.MixProject do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "dev"]
+  defp elixirc_paths(:dev), do: ["lib", "dev"]
   defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       # Test reporting
-      {:junit_formatter, "~> 3.3", only: :test, runtime: false},
+      {:junit_formatter, "~> 3.4", only: :test, runtime: false},
 
       # Documentation
-      {:ex_doc, "~> 0.31", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:castore, "~> 1.0", only: :dev, runtime: false},
 
       # Code quality (optional, for development)
@@ -80,10 +88,13 @@ defmodule GenServerVirtualTime.MixProject do
       {:excoveralls, "~> 0.18", only: :test, runtime: false},
 
       # Property-based testing
-      {:stream_data, "~> 1.2", only: :test, runtime: false},
+      {:stream_data, "~> 1.4", only: :test, runtime: false},
 
       # Mutation testing
-      {:muex, "~> 0.9", only: [:dev, :test], runtime: false},
+      {:muex, "~> 0.11", only: [:dev, :test], runtime: false},
+
+      # JSON for `mix templates.upgrade` and the generator tests
+      {:jason, "~> 1.4", only: [:dev, :test], runtime: false},
 
       # Benchmarking
       {:benchee, "~> 1.5", only: :dev, runtime: false},
@@ -118,8 +129,11 @@ defmodule GenServerVirtualTime.MixProject do
       main: "readme",
       source_ref: "v#{@version}",
       source_url: @source_url,
+      # Maintainer tooling lives in dev/ and is not shipped, so it is not published
+      filter_modules: ~r/^(?!Mix\.Tasks\.Templates|ActorSimulation\.TemplateVersions\.Upgrade)/,
       extras: [
         {"README.md", [title: "Overview"]},
+        {"docs/index.md", [title: "Documentation Index"]},
         {"CHANGELOG.md", [title: "Changelog"]},
         {"CONTRIBUTING.md", [title: "Contributing"]},
         {"LICENSE", [title: "License"]},
@@ -137,6 +151,7 @@ defmodule GenServerVirtualTime.MixProject do
       groups_for_extras: [
         Project: [
           "README.md",
+          "docs/index.md",
           "CHANGELOG.md",
           "CONTRIBUTING.md",
           "LICENSE"
@@ -158,6 +173,7 @@ defmodule GenServerVirtualTime.MixProject do
       ],
       groups_for_modules: [
         Core: [
+          GenServerVirtualTime,
           VirtualClock,
           VirtualTimeGenServer,
           VirtualTimeGenStateMachine,
@@ -173,11 +189,13 @@ defmodule GenServerVirtualTime.MixProject do
           ActorSimulation.MermaidReportGenerator
         ],
         "Code Generators": [
+          ActorSimulation.TemplateVersions,
           ActorSimulation.GeneratorUtils,
           ActorSimulation.OMNeTPPGenerator,
           ActorSimulation.CAFGenerator,
           ActorSimulation.PonyGenerator,
           ActorSimulation.PhonyGenerator,
+          ActorSimulation.RactorGenerator,
           ActorSimulation.VlingoGenerator
         ]
       ]

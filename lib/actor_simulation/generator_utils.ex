@@ -199,7 +199,7 @@ defmodule ActorSimulation.GeneratorUtils do
     ## Learn More
 
     - [#{framework}](#{framework_url})
-    - [ActorSimulation DSL](https://github.com/yourusername/gen_server_virtual_time)
+    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
     """
   end
 end
