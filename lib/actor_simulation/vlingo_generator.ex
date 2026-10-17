@@ -65,7 +65,7 @@ defmodule ActorSimulation.VlingoGenerator do
       |> add_test_files(actors, group_id, package_path, enable_callbacks)
       |> add_pom_file(project_name, group_id, vlingo_version)
       |> add_ci_pipeline(project_name)
-      |> add_readme(project_name)
+      |> add_readme(actors, project_name)
 
     {:ok, files}
   end
@@ -144,7 +144,161 @@ defmodule ActorSimulation.VlingoGenerator do
         [{test_file, test_content}]
       end)
 
-    test_files ++ files
+    # The clock the tests own, for the projects whose actors wait for time.
+    clock_files =
+      if Enum.any?(simulated, fn {_name, definition} -> interval_of(definition) != :none end) do
+        clock = generate_manual_scheduler(group_id)
+        [{"src/test/java/#{package_path}/ManualScheduler.java", clock}]
+      else
+        []
+      end
+
+    clock_files ++ test_files ++ files
+  end
+
+  # interval_of answers how far apart the sends of an actor are, in milliseconds, or
+  # :none when the actor does not send on a clock.
+  defp interval_of(%{send_pattern: {:periodic, interval_ms, _message}}), do: interval_ms
+  defp interval_of(%{send_pattern: {:rate, per_second, _message}}), do: div(1000, per_second)
+  defp interval_of(%{send_pattern: {:burst, _count, interval_ms, _message}}), do: interval_ms
+  defp interval_of(%{send_pattern: {:self_message, delay_ms, _message}}), do: delay_ms
+  defp interval_of(_definition), do: :none
+
+  # The clock a test owns: a Scheduler that fires nothing until the test says how
+  # much time has passed, and then fires what is due on the test's thread.
+  defp generate_manual_scheduler(group_id) do
+    """
+    // Generated from ActorSimulation DSL
+    // A scheduler whose time is the test's.
+
+    package #{group_id};
+
+    import io.vlingo.xoom.common.Cancellable;
+    import io.vlingo.xoom.common.Scheduled;
+    import io.vlingo.xoom.common.Scheduler;
+
+    import java.util.ArrayList;
+    import java.util.List;
+
+    /**
+     * A Scheduler whose time is the test's: no timer is due until the test says how
+     * much time has passed, and a timer that falls due fires on the test's thread, in
+     * the order the timers are due. That is what makes a test of an actor that waits
+     * for time a test of what the actor does, rather than a test of how fast the
+     * machine is.
+     */
+    public class ManualScheduler extends Scheduler {
+
+      private final List<Timer> timers = new ArrayList<>();
+      private long now;
+
+      @Override
+      public <T> Cancellable schedule(
+          final Scheduled<T> scheduled, final T data, final long delay, final long interval) {
+        return arm(scheduled, data, delay, interval);
+      }
+
+      @Override
+      public <T> Cancellable scheduleOnce(
+          final Scheduled<T> scheduled, final T data, final long delay, final long time) {
+        // The scheduler this one stands in for makes the wait the sum of the two, as
+        // a one-shot has no interval to repeat on.
+        return arm(scheduled, data, delay + time, 0L);
+      }
+
+      /** now answers the time this scheduler has been advanced to, in milliseconds. */
+      public synchronized long now() {
+        return now;
+      }
+
+      /**
+       * advanceBy lets millis of time pass, firing everything that falls due on the
+       * way, timer by timer, in the order the timers are due.
+       */
+      public void advanceBy(final long millis) {
+        final long target = nowMillis() + millis;
+
+        while (true) {
+          final Timer due = takeDueBy(target);
+
+          if (due == null) {
+            break;
+          }
+
+          setNow(due.dueAt);
+          due.fire();
+
+          if (due.interval > 0 && !due.cancelled) {
+            due.dueAt += due.interval;
+
+            synchronized (this) {
+              timers.add(due);
+            }
+          }
+        }
+
+        setNow(target);
+      }
+
+      private synchronized long nowMillis() {
+        return now;
+      }
+
+      private synchronized void setNow(final long millis) {
+        now = millis;
+      }
+
+      private synchronized <T> Cancellable arm(
+          final Scheduled<T> scheduled, final T data, final long delay, final long interval) {
+        final Timer timer = new Timer(scheduled, data, now + delay, interval);
+        timers.add(timer);
+
+        return () -> cancel(timer);
+      }
+
+      private synchronized boolean cancel(final Timer timer) {
+        return timers.remove(timer);
+      }
+
+      /** takeDueBy answers and removes the timer that is due first, if it is due by then. */
+      private synchronized Timer takeDueBy(final long target) {
+        Timer first = null;
+
+        for (final Timer candidate : timers) {
+          if (candidate.dueAt <= target && (first == null || candidate.dueAt < first.dueAt)) {
+            first = candidate;
+          }
+        }
+
+        if (first != null) {
+          timers.remove(first);
+        }
+
+        return first;
+      }
+
+      /** A timer of the manual scheduler: when it is due, and what to tell when it is. */
+      private static final class Timer {
+        final Scheduled<Object> scheduled;
+        final Object data;
+        final long interval;
+        long dueAt;
+        boolean cancelled;
+
+        @SuppressWarnings("unchecked")
+        Timer(final Scheduled<?> scheduled, final Object data, final long dueAt, final long interval) {
+          this.scheduled = (Scheduled<Object>) scheduled;
+          this.data = data;
+          this.dueAt = dueAt;
+          this.interval = interval;
+        }
+
+        void fire() {
+          scheduled.intervalSignal(scheduled, data);
+        }
+      }
+    }
+    """
   end
 
   defp add_pom_file(files, project_name, group_id, vlingo_version) do
@@ -157,8 +311,8 @@ defmodule ActorSimulation.VlingoGenerator do
     [{".github/workflows/ci.yml", content} | files]
   end
 
-  defp add_readme(files, project_name) do
-    content = generate_readme(project_name)
+  defp add_readme(files, actors, project_name) do
+    content = generate_readme(project_name, actors)
     [{"README.md", content} | files]
   end
 
@@ -237,11 +391,21 @@ defmodule ActorSimulation.VlingoGenerator do
         generate_message_method(msg, definition, enable_callbacks)
       end)
     else
+      processing =
+        if enable_callbacks do
+          """
+            callbacks.onProcess();
+          """
+        else
+          """
+            logger().info(getClass().getSimpleName() + " processing...");
+          """
+        end
+
       """
         @Override
         public void process() {
-          logger().info(getClass().getSimpleName() + " processing...");
-          // Send to targets
+      #{processing}      // Send to targets
           sendToTargets();
         }
 
@@ -296,6 +460,22 @@ defmodule ActorSimulation.VlingoGenerator do
     {list_import, scheduled_import, scheduled_implements} =
       generate_imports_and_implements(definition)
 
+    timed? = scheduled_implements != ""
+
+    # A test that owns the time passes its own scheduler; production passes nothing
+    # and gets the stage's, so the actor waits on the wall clock as before.
+    scheduler_param = if timed?, do: ", io.vlingo.xoom.common.Scheduler timers", else: ""
+
+    scheduler_init =
+      if timed? do
+        """
+
+            final io.vlingo.xoom.common.Scheduler clock = (timers != null) ? timers : scheduler();
+        """
+      else
+        ""
+      end
+
     """
     // Generated from ActorSimulation DSL
     // Actor implementation for: #{name}
@@ -316,8 +496,8 @@ defmodule ActorSimulation.VlingoGenerator do
        * Constructor for #{class_name}Actor.
        */
       @SuppressWarnings("unchecked")
-      public #{class_name}Actor(#{format_constructor_params(callback_param, target_param)}) {
-    #{callback_init}#{target_init}#{self_message_init}  }
+      public #{class_name}Actor(#{format_constructor_params(callback_param, target_param)}#{scheduler_param}) {
+    #{callback_init}#{target_init}#{scheduler_init}#{self_message_init}  }
 
     #{method_impls}
     #{interval_signal_method}
@@ -336,7 +516,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
             // Schedule one-shot self-message
-            scheduler().scheduleOnce(
+            clock.scheduleOnce(
               selfAs(Scheduled.class),
               null,
               0L,
@@ -348,7 +528,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
             // Schedule periodic message sending
-            scheduler().schedule(
+            clock.schedule(
               selfAs(Scheduled.class),
               null,
               #{interval_ms}L,
@@ -362,7 +542,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
             // Schedule rate-based message sending
-            scheduler().schedule(
+            clock.schedule(
               selfAs(Scheduled.class),
               null,
               #{interval_ms}L,
@@ -374,7 +554,7 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
             // Schedule burst message sending
-            scheduler().schedule(
+            clock.schedule(
               selfAs(Scheduled.class),
               null,
               #{interval_ms}L,
@@ -414,6 +594,18 @@ defmodule ActorSimulation.VlingoGenerator do
         """
 
       {:burst, _, _, _} when messages != [] ->
+        [first_msg | _] = messages
+        msg_name = GeneratorUtils.message_name(first_msg) |> GeneratorUtils.to_camel_case()
+
+        """
+
+          @Override
+          public void intervalSignal(io.vlingo.xoom.common.Scheduled<Object> scheduled, Object data) {
+            #{msg_name}();
+          }
+        """
+
+      {:self_message, _, _} when messages != [] ->
         [first_msg | _] = messages
         msg_name = GeneratorUtils.message_name(first_msg) |> GeneratorUtils.to_camel_case()
 
@@ -571,6 +763,15 @@ defmodule ActorSimulation.VlingoGenerator do
               ""
           end
 
+        # A timed actor also takes its scheduler, and production lets it have the
+        # stage's, which is the wall clock.
+        params =
+          if interval_of(definition) != :none and params != "" do
+            params <> ", (io.vlingo.xoom.common.Scheduler) null"
+          else
+            params
+          end
+
         """
         #{class_name}Protocol #{snake_name} = world.actorFor(
               #{class_name}Protocol.class,
@@ -590,27 +791,39 @@ defmodule ActorSimulation.VlingoGenerator do
     import io.vlingo.xoom.actors.World;
 
     /**
-     * Main class to start the VLINGO XOOM actor system.
+     * Main class to start the VLINGO XOOM actor system on the wall clock.
      */
     public class Main {
-      public static void main(String[] args) {
+      /** How long the actors run: long enough to see them work, short enough for a demo. */
+      private static final long RUN_MILLIS = 300L;
+
+      /** No scheduler is given, so the actors wait on the wall clock. */
+      public static void main(String[] args) throws InterruptedException {
         System.out.println("Starting VLINGO XOOM actor system...");
 
         final World world = World.startWithDefaults("#{project_name}");
+
+        // The world's scheduler has threads of its own, and terminating the world
+        // does not stop them, so a program that is done closes the scheduler too.
+        final io.vlingo.xoom.common.Scheduler timers = world.stage().scheduler();
 
         try {
           // Spawn all actors
     #{spawn_code}
 
-          System.out.println("Actor system started. Press Ctrl+C to exit.");
-
-          // Keep running
-          Thread.currentThread().join();
-        } catch (InterruptedException e) {
-          System.out.println("System interrupted, shutting down...");
+          System.out.println("Running for " + RUN_MILLIS + "ms...");
+          Thread.sleep(RUN_MILLIS);
         } finally {
           world.terminate();
+          timers.close();
         }
+
+        System.out.println("Stopped.");
+
+        // The actor world leaves threads of its own behind even after it is
+        // terminated and its scheduler closed, so a demo that is over says so to the
+        // JVM instead of waiting for them.
+        System.exit(0);
       }
     }
     """
@@ -619,66 +832,19 @@ defmodule ActorSimulation.VlingoGenerator do
   defp generate_test_class(name, definition, group_id, enable_callbacks) do
     class_name = GeneratorUtils.to_pascal_case(name)
     messages = GeneratorUtils.extract_messages(definition.send_pattern)
+    interval = interval_of(definition)
 
-    # Determine test parameters based on what the constructor expects
-    test_params =
-      cond do
-        enable_callbacks && definition.targets != [] ->
-          "(#{class_name}Callbacks) null, new java.util.ArrayList<>()"
+    if interval != :none and enable_callbacks do
+      generate_timed_test_class(class_name, messages, definition, group_id, interval)
+    else
+      generate_plain_test_class(class_name, messages, definition, group_id, enable_callbacks)
+    end
+  end
 
-        enable_callbacks ->
-          "(#{class_name}Callbacks) null"
-
-        definition.targets != [] ->
-          "new java.util.ArrayList<>()"
-
-        true ->
-          ""
-      end
-
-    # Generate test methods for each message
-    message_tests =
-      if messages != [] do
-        Enum.map_join(messages, "\n\n", fn msg ->
-          msg_name = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_camel_case()
-
-          """
-            @Test
-            public void test#{GeneratorUtils.to_pascal_case(msg_name)}Message() {
-              // Act
-              actor.#{msg_name}();
-
-              // Wait a bit for async processing
-              try {
-                Thread.sleep(100);
-              } catch (InterruptedException e) {
-                fail("Test interrupted");
-              }
-
-              // Assert - actor should handle message without errors
-              assertTrue(true, "Message handled successfully");
-            }
-          """
-        end)
-      else
-        """
-          @Test
-          public void testProcess() {
-            // Act
-            actor.process();
-
-            // Wait a bit for async processing
-            try {
-              Thread.sleep(100);
-            } catch (InterruptedException e) {
-              fail("Test interrupted");
-            }
-
-            // Assert
-            assertTrue(true, "Process completed successfully");
-          }
-        """
-      end
+  # The test of an actor that waits: the actor is handed a clock the test owns, and
+  # the test says how much time has passed instead of waiting for it.
+  defp generate_timed_test_class(class_name, messages, definition, group_id, interval_ms) do
+    target_param = if definition.targets != [], do: ", new ArrayList<>()", else: ""
 
     """
     // Generated from ActorSimulation DSL
@@ -686,28 +852,54 @@ defmodule ActorSimulation.VlingoGenerator do
 
     package #{group_id};
 
+    import static org.junit.jupiter.api.Assertions.assertEquals;
+    import static org.junit.jupiter.api.Assertions.assertNotNull;
+    import static org.junit.jupiter.api.Assertions.assertTrue;
+
     import io.vlingo.xoom.actors.Definition;
     import io.vlingo.xoom.actors.World;
-    import io.vlingo.xoom.actors.testkit.AccessSafely;
-    import org.junit.jupiter.api.*;
-
-    import static org.junit.jupiter.api.Assertions.*;
+    import io.vlingo.xoom.actors.testkit.TestUntil;
+    import java.util.ArrayList;
+    import java.util.concurrent.atomic.AtomicInteger;
+    import org.junit.jupiter.api.AfterEach;
+    import org.junit.jupiter.api.BeforeEach;
+    import org.junit.jupiter.api.Test;
 
     /**
-     * Test class for #{class_name}Actor.
+     * Test class for #{class_name}Actor. The time the actor waits in is this test's:
+     * the scheduler it is handed is a ManualScheduler, so nothing is due until the
+     * test says how much time has passed.
      */
     public class #{class_name}ActorTest {
+      private static final long INTERVAL_MILLIS = #{interval_ms}L;
+      private static final long BOUND_MILLIS = 1000L;
+
       private World world;
+      private ManualScheduler clock;
       private #{class_name}Protocol actor;
+      private final AtomicInteger sent = new AtomicInteger();
+      private final TestUntil handled = TestUntil.happenings(1);
+
+      private void count() {
+        sent.incrementAndGet();
+        handled.happened();
+      }
 
       @BeforeEach
       public void setUp() {
+        clock = new ManualScheduler();
         world = World.startWithDefaults("test-world");
-        actor = world.actorFor(
-          #{class_name}Protocol.class,
-          Definition.has(#{class_name}Actor.class,
-            Definition.parameters(#{test_params}))
-        );
+
+        final #{class_name}Callbacks counting = new #{class_name}Callbacks() {
+    #{counting_callbacks(messages)}
+        };
+
+        actor =
+            world.actorFor(
+                #{class_name}Protocol.class,
+                Definition.has(
+                    #{class_name}Actor.class,
+                    Definition.parameters(counting#{target_param}, clock)));
       }
 
       @AfterEach
@@ -722,9 +914,182 @@ defmodule ActorSimulation.VlingoGenerator do
         assertNotNull(actor, "Actor should be created");
       }
 
-    #{message_tests}
+      @Test
+      public void testTheActorSendsWhenTheTestSaysItsIntervalHasPassed() {
+        // The actor arms its timer in its constructor, which runs when its first
+        // message is handled: the test waits for that delivery, and for no time.
+        handled.resetHappeningsTo(1);
+        actor.#{first_message(messages)}();
+        assertTrue(
+            handled.completesWithin(BOUND_MILLIS), "the actor did not handle its first message");
+
+        final int before = sent.get();
+
+        clock.advanceBy(INTERVAL_MILLIS - 1);
+        assertEquals(before, sent.get(), "the actor sent before its interval was up");
+
+        handled.resetHappeningsTo(1);
+        clock.advanceBy(1);
+        assertTrue(
+            handled.completesWithin(BOUND_MILLIS), "the send the clock made due was not handled");
+        assertEquals(before + 1, sent.get(), "the actor did not send when its interval was up");
+      }
     }
     """
+  end
+
+  defp generate_plain_test_class(class_name, messages, definition, group_id, enable_callbacks) do
+    if enable_callbacks do
+      target_param = if definition.targets != [], do: ", new ArrayList<>()", else: ""
+
+      """
+      // Generated from ActorSimulation DSL
+      // JUnit 5 tests for #{class_name}Actor
+
+      package #{group_id};
+
+      import static org.junit.jupiter.api.Assertions.assertEquals;
+      import static org.junit.jupiter.api.Assertions.assertNotNull;
+      import static org.junit.jupiter.api.Assertions.assertTrue;
+
+      import io.vlingo.xoom.actors.Definition;
+      import io.vlingo.xoom.actors.World;
+      import io.vlingo.xoom.actors.testkit.TestUntil;
+      import java.util.ArrayList;
+      import java.util.concurrent.atomic.AtomicInteger;
+      import org.junit.jupiter.api.AfterEach;
+      import org.junit.jupiter.api.BeforeEach;
+      import org.junit.jupiter.api.Test;
+
+      /**
+       * Test class for #{class_name}Actor.
+       */
+      public class #{class_name}ActorTest {
+        private static final long BOUND_MILLIS = 1000L;
+
+        private World world;
+        private #{class_name}Protocol actor;
+        private final AtomicInteger sent = new AtomicInteger();
+        private final TestUntil handled = TestUntil.happenings(1);
+
+        private void count() {
+          sent.incrementAndGet();
+          handled.happened();
+        }
+
+        @BeforeEach
+        public void setUp() {
+          world = World.startWithDefaults("test-world");
+
+          final #{class_name}Callbacks counting = new #{class_name}Callbacks() {
+      #{counting_callbacks(messages)}
+          };
+
+          actor =
+              world.actorFor(
+                  #{class_name}Protocol.class,
+                  Definition.has(
+                      #{class_name}Actor.class, Definition.parameters(counting#{target_param})));
+        }
+
+        @AfterEach
+        public void tearDown() {
+          if (world != null) {
+            world.terminate();
+          }
+        }
+
+        @Test
+        public void testActorCreation() {
+          assertNotNull(actor, "Actor should be created");
+        }
+
+        @Test
+        public void testTheActorHandlesItsMessage() {
+          handled.resetHappeningsTo(1);
+          actor.#{first_message(messages)}();
+          assertTrue(handled.completesWithin(BOUND_MILLIS), "the actor did not handle the message");
+          assertEquals(1, sent.get(), "the actor handled the message once");
+        }
+      }
+      """
+    else
+      """
+      // Generated from ActorSimulation DSL
+      // JUnit 5 tests for #{class_name}Actor
+
+      package #{group_id};
+
+      import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+      import io.vlingo.xoom.actors.Definition;
+      import io.vlingo.xoom.actors.World;
+      import org.junit.jupiter.api.AfterEach;
+      import org.junit.jupiter.api.BeforeEach;
+      import org.junit.jupiter.api.Test;
+
+      /**
+       * Test class for #{class_name}Actor. Without callbacks there is nothing to
+       * observe from outside, so the test holds the actor to being created.
+       */
+      public class #{class_name}ActorTest {
+        private World world;
+        private #{class_name}Protocol actor;
+
+        @BeforeEach
+        public void setUp() {
+          world = World.startWithDefaults("test-world");
+          actor =
+              world.actorFor(
+                  #{class_name}Protocol.class,
+                  Definition.has(#{class_name}Actor.class, Definition.parameters()));
+        }
+
+        @AfterEach
+        public void tearDown() {
+          if (world != null) {
+            world.terminate();
+          }
+        }
+
+        @Test
+        public void testActorCreation() {
+          assertNotNull(actor, "Actor should be created");
+        }
+      }
+      """
+    end
+  end
+
+  # counting_callbacks counts what the actor does and tells the test when it did it:
+  # the mailbox is still asynchronous, so the test needs to hear about a delivery,
+  # and TestUntil bounds that wait without waiting for time.
+  defp counting_callbacks([]) do
+    """
+          @Override
+          public void onProcess() {
+            count();
+          }
+    """
+  end
+
+  defp counting_callbacks(messages) do
+    Enum.map_join(messages, "\n", fn msg ->
+      msg_pascal = GeneratorUtils.message_name(msg) |> GeneratorUtils.to_pascal_case()
+
+      """
+            @Override
+            public void on#{msg_pascal}() {
+              count();
+            }
+      """
+    end)
+  end
+
+  defp first_message([]), do: "process"
+
+  defp first_message(messages) do
+    messages |> hd() |> GeneratorUtils.message_name() |> GeneratorUtils.to_camel_case()
   end
 
   defp generate_pom(project_name, group_id, vlingo_version) do
@@ -810,7 +1175,14 @@ defmodule ActorSimulation.VlingoGenerator do
             <artifactId>exec-maven-plugin</artifactId>
             <version>#{TemplateVersions.get(:maven_exec_plugin)}</version>
             <configuration>
-              <mainClass>#{group_id}.Main</mainClass>
+              <!-- A forked JVM, not exec:java: VLINGO compiles an actor's proxy at
+                   runtime, and that compiler needs the project's classpath. -->
+              <executable>java</executable>
+              <arguments>
+                <argument>-classpath</argument>
+                <classpath />
+                <argument>#{group_id}.Main</argument>
+              </arguments>
             </configuration>
           </plugin>
 
@@ -908,118 +1280,88 @@ defmodule ActorSimulation.VlingoGenerator do
               target/surefire-reports/*.xml
             check_name: "Test Results (Java ${{ matrix.java }}, ${{ matrix.os }})"
 
-        - name: Run application (with timeout)
-          shell: bash
-          run: |
-            timeout 10 mvn exec:java || true
+        - name: Run the application
+          run: mvn -B -q compile exec:exec
     """
   end
 
-  defp generate_readme(project_name) do
+  defp generate_readme(project_name, actors) do
+    clock_section =
+      actors
+      |> GeneratorUtils.simulated_actors()
+      |> Enum.find(fn {_name, definition} -> interval_of(definition) != :none end)
+      |> case do
+        nil -> ""
+        timed -> generate_readme_clock_section(timed)
+      end
+
     """
     # #{project_name}
 
-    Generated from ActorSimulation DSL using VLINGO XOOM Actors.
+    Generated from the [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time) with
+    [VLINGO XOOM Actors](https://docs.vlingo.io/xoom-actors).
 
-    ## About
-
-    This project uses [VLINGO XOOM Actors](https://docs.vlingo.io/xoom-actors), a Java actor framework that provides:
-
-    - **Type Safety** - Protocol-based messaging with interfaces
-    - **Reactive Foundation** - Built for distributed, event-driven systems
-    - **Scheduler Integration** - Built-in scheduling for periodic tasks
-    - **Production Ready** - Battle-tested in enterprise applications
-
-    The code is generated from a high-level Elixir DSL and provides:
-    - Type-safe actor implementations
-    - Protocol interfaces for messaging
-    - Callback interfaces for customization
-    - JUnit 5 test suites
-    - Production-ready code
-
-    ## Prerequisites
-
-    - **Java #{TemplateVersions.get(:java_release)}+** (Java 17 or 21 recommended)
-    - **Maven 3.6+**
-
-    ## Building
+    ## Run it
 
     ```bash
-    # Build the project
-    mvn clean compile
-
-    # Package as JAR
-    mvn package
+    mvn test                     # the tests, which own time: none of them waits for a timer
+    mvn compile exec:exec        # the same actors on the wall clock, briefly, then it stops
     ```
 
-    ## Running
+    Requires Java #{TemplateVersions.get(:java_release)}+ and Maven 3.6+.
 
-    ```bash
-    # Run with Maven
-    mvn exec:java
+    ## What is where
 
-    # Or run the packaged JAR
-    java -jar target/#{project_name}-1.0-SNAPSHOT-jar-with-dependencies.jar
+    | file | what |
+    |------|------|
+    | `src/main/java/**/Main.java` | the actors on the wall clock, for a moment |
+    | `src/main/java/**/*Actor.java` | the generated actors, each taking its `Scheduler` |
+    | `src/main/java/**/*Protocol.java` | the messages an actor takes |
+    | `src/main/java/**/*CallbacksImpl.java` | **your behaviour goes here** |
+    | `src/test/java/**/ManualScheduler.java` | the clock the tests own |
+    | `src/test/java/**/*ActorTest.java` | the tests |
+
+    #{clock_section}## Learn more
+
+    - [VLINGO XOOM documentation](https://docs.vlingo.io/xoom-actors)
+    - [The ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
+    """
+  end
+
+  defp generate_readme_clock_section({name, definition}) do
+    class_name = GeneratorUtils.to_pascal_case(name)
+    messages = GeneratorUtils.extract_messages(definition.send_pattern)
+    message = first_message(messages)
+    interval_ms = interval_of(definition)
+    target_param = if definition.targets != [], do: ", new ArrayList<>()", else: ""
+
+    """
+    ## The time the actors wait in belongs to the tests
+
+    An actor that sends every #{interval_ms}ms would make a test of it take as long as the test runs.
+    The generated actors take their `Scheduler` as a constructor argument, so a test hands them one
+    whose time it controls, and says how much time has passed:
+
+    ```java
+    clock = new ManualScheduler();
+    actor =
+        world.actorFor(
+            #{class_name}Protocol.class,
+            Definition.has(
+                #{class_name}Actor.class, Definition.parameters(counting#{target_param}, clock)));
+
+    actor.#{message}();                    // the constructor runs: the timer is armed
+    clock.advanceBy(#{interval_ms - 1});   // a millisecond short of the interval
+    assertEquals(before, sent.get());      // nothing has been sent
+    clock.advanceBy(1);                    // the interval, on the instant
+    assertEquals(before + 1, sent.get());  // and one send
     ```
 
-    ## Testing
+    Nothing in the test waits for a timer. The mailbox is still asynchronous, so the test waits
+    briefly — XOOM's `TestUntil` — for the delivery of what the clock made due, and for nothing else.
+    Production passes no scheduler and gets the stage's, so the same actor waits on the wall clock
+    unchanged.
 
-    ```bash
-    # Run all tests
-    mvn test
-
-    # Run with verbose output
-    mvn test -X
-
-    # Run specific test class
-    mvn test -Dtest=YourActorTest
-    ```
-
-    ## Customizing Behavior
-
-    The generated actor code uses callback interfaces to allow customization WITHOUT
-    modifying generated files:
-
-    1. Find the `*CallbacksImpl.java` files in `src/main/java`
-    2. Implement your custom logic in the callback methods
-    3. Rebuild the project
-
-    The generated actor code will automatically call your callbacks.
-
-    ## Project Structure
-
-    ```
-    src/
-    ├── main/
-    │   └── java/
-    │       ├── Main.java              # Entry point
-    │       ├── *Protocol.java         # Actor protocol interfaces (DO NOT EDIT)
-    │       ├── *Actor.java            # Actor implementations (DO NOT EDIT)
-    │       ├── *Callbacks.java        # Callback interfaces (DO NOT EDIT)
-    │       └── *CallbacksImpl.java    # Callback implementations (EDIT THIS!)
-    └── test/
-        └── java/
-            └── *ActorTest.java        # JUnit 5 tests (expand as needed)
-    ```
-
-    ## CI/CD
-
-    This project includes a GitHub Actions workflow that:
-    - Builds on Ubuntu, macOS, and Windows
-    - Tests with Java 11, 17, and 21
-    - Publishes test results
-    - Validates the build with each commit
-
-    ## Learn More
-
-    - [VLINGO XOOM Documentation](https://docs.vlingo.io/)
-    - [VLINGO XOOM Actors Guide](https://docs.vlingo.io/xoom-actors)
-    - [VLINGO XOOM GitHub](https://github.com/vlingo)
-    - [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
-
-    ## License
-
-    Generated code is provided as-is for your use.
     """
   end
 end

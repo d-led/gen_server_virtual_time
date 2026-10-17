@@ -3,28 +3,58 @@
 
 package com.example.actors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import io.vlingo.xoom.actors.Definition;
 import io.vlingo.xoom.actors.World;
-import io.vlingo.xoom.actors.testkit.AccessSafely;
-import org.junit.jupiter.api.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import io.vlingo.xoom.actors.testkit.TestUntil;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
- * Test class for LoadBalancerActor.
+ * Test class for LoadBalancerActor. The time the actor waits in is this test's:
+ * the scheduler it is handed is a ManualScheduler, so nothing is due until the
+ * test says how much time has passed.
  */
 public class LoadBalancerActorTest {
+  private static final long INTERVAL_MILLIS = 50L;
+  private static final long BOUND_MILLIS = 1000L;
+
   private World world;
+  private ManualScheduler clock;
   private LoadBalancerProtocol actor;
+  private final AtomicInteger sent = new AtomicInteger();
+  private final TestUntil handled = TestUntil.happenings(1);
+
+  private void count() {
+    sent.incrementAndGet();
+    handled.happened();
+  }
 
   @BeforeEach
   public void setUp() {
+    clock = new ManualScheduler();
     world = World.startWithDefaults("test-world");
-    actor = world.actorFor(
-      LoadBalancerProtocol.class,
-      Definition.has(LoadBalancerActor.class,
-        Definition.parameters((LoadBalancerCallbacks) null, new java.util.ArrayList<>()))
-    );
+
+    final LoadBalancerCallbacks counting = new LoadBalancerCallbacks() {
+      @Override
+      public void onDistributeWork() {
+        count();
+      }
+
+    };
+
+    actor =
+        world.actorFor(
+            LoadBalancerProtocol.class,
+            Definition.has(
+                LoadBalancerActor.class,
+                Definition.parameters(counting, new ArrayList<>(), clock)));
   }
 
   @AfterEach
@@ -40,19 +70,23 @@ public class LoadBalancerActorTest {
   }
 
   @Test
-  public void testDistributeWorkMessage() {
-    // Act
+  public void testTheActorSendsWhenTheTestSaysItsIntervalHasPassed() {
+    // The actor arms its timer in its constructor, which runs when its first
+    // message is handled: the test waits for that delivery, and for no time.
+    handled.resetHappeningsTo(1);
     actor.distributeWork();
+    assertTrue(
+        handled.completesWithin(BOUND_MILLIS), "the actor did not handle its first message");
 
-    // Wait a bit for async processing
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException e) {
-      fail("Test interrupted");
-    }
+    final int before = sent.get();
 
-    // Assert - actor should handle message without errors
-    assertTrue(true, "Message handled successfully");
+    clock.advanceBy(INTERVAL_MILLIS - 1);
+    assertEquals(before, sent.get(), "the actor sent before its interval was up");
+
+    handled.resetHappeningsTo(1);
+    clock.advanceBy(1);
+    assertTrue(
+        handled.completesWithin(BOUND_MILLIS), "the send the clock made due was not handled");
+    assertEquals(before + 1, sent.get(), "the actor did not send when its interval was up");
   }
-
 }

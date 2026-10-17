@@ -20,12 +20,14 @@ public class LoadBalancerActor extends Actor implements LoadBalancerProtocol, Sc
    * Constructor for LoadBalancerActor.
    */
   @SuppressWarnings("unchecked")
-  public LoadBalancerActor(LoadBalancerCallbacks callbacks, List<LoadBalancerProtocol> targets) {
+  public LoadBalancerActor(LoadBalancerCallbacks callbacks, List<LoadBalancerProtocol> targets, io.vlingo.xoom.common.Scheduler timers) {
     this.callbacks = (callbacks != null) ? callbacks : new LoadBalancerCallbacksImpl();
     this.targets = (targets != null) ? targets : new ArrayList<>();
 
+    final io.vlingo.xoom.common.Scheduler clock = (timers != null) ? timers : scheduler();
+
     // Schedule periodic message sending
-    scheduler().schedule(
+    clock.schedule(
       selfAs(Scheduled.class),
       null,
       50L,

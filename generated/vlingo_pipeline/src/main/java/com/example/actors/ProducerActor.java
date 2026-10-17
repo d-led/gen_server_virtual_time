@@ -20,12 +20,14 @@ public class ProducerActor extends Actor implements ProducerProtocol, Scheduled<
    * Constructor for ProducerActor.
    */
   @SuppressWarnings("unchecked")
-  public ProducerActor(ProducerCallbacks callbacks, List<ProducerProtocol> targets) {
+  public ProducerActor(ProducerCallbacks callbacks, List<ProducerProtocol> targets, io.vlingo.xoom.common.Scheduler timers) {
     this.callbacks = (callbacks != null) ? callbacks : new ProducerCallbacksImpl();
     this.targets = (targets != null) ? targets : new ArrayList<>();
 
+    final io.vlingo.xoom.common.Scheduler clock = (timers != null) ? timers : scheduler();
+
     // Schedule rate-based message sending
-    scheduler().schedule(
+    clock.schedule(
       selfAs(Scheduled.class),
       null,
       10L,

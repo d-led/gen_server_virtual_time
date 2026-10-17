@@ -24,8 +24,8 @@ public class ConsumerActor extends Actor implements ConsumerProtocol {
 
   @Override
   public void process() {
-    logger().info(getClass().getSimpleName() + " processing...");
-    // Send to targets
+  callbacks.onProcess();
+      // Send to targets
     sendToTargets();
   }
 

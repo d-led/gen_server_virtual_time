@@ -3,28 +3,52 @@
 
 package com.example.actors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import io.vlingo.xoom.actors.Definition;
 import io.vlingo.xoom.actors.World;
-import io.vlingo.xoom.actors.testkit.AccessSafely;
-import org.junit.jupiter.api.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import io.vlingo.xoom.actors.testkit.TestUntil;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test class for ProcessorActor.
  */
 public class ProcessorActorTest {
+  private static final long BOUND_MILLIS = 1000L;
+
   private World world;
   private ProcessorProtocol actor;
+  private final AtomicInteger sent = new AtomicInteger();
+  private final TestUntil handled = TestUntil.happenings(1);
+
+  private void count() {
+    sent.incrementAndGet();
+    handled.happened();
+  }
 
   @BeforeEach
   public void setUp() {
     world = World.startWithDefaults("test-world");
-    actor = world.actorFor(
-      ProcessorProtocol.class,
-      Definition.has(ProcessorActor.class,
-        Definition.parameters((ProcessorCallbacks) null, new java.util.ArrayList<>()))
-    );
+
+    final ProcessorCallbacks counting = new ProcessorCallbacks() {
+      @Override
+      public void onProcess() {
+        count();
+      }
+
+    };
+
+    actor =
+        world.actorFor(
+            ProcessorProtocol.class,
+            Definition.has(
+                ProcessorActor.class, Definition.parameters(counting, new ArrayList<>())));
   }
 
   @AfterEach
@@ -40,19 +64,10 @@ public class ProcessorActorTest {
   }
 
   @Test
-  public void testProcess() {
-    // Act
+  public void testTheActorHandlesItsMessage() {
+    handled.resetHappeningsTo(1);
     actor.process();
-
-    // Wait a bit for async processing
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException e) {
-      fail("Test interrupted");
-    }
-
-    // Assert
-    assertTrue(true, "Process completed successfully");
+    assertTrue(handled.completesWithin(BOUND_MILLIS), "the actor did not handle the message");
+    assertEquals(1, sent.get(), "the actor handled the message once");
   }
-
 }

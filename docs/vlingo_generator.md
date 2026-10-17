@@ -59,8 +59,9 @@ mvn clean compile
 # Run tests
 mvn test
 
-# Run application
-mvn exec:java
+# Run application, which runs for a moment and stops
+# (a forked JVM: VLINGO compiles an actor's proxy at runtime)
+mvn compile exec:exec
 
 # Package as JAR
 mvn package
@@ -83,7 +84,8 @@ vlingo_output/
     │   ├── LoadBalancerCallbacksImpl.java # Callback impl (EDIT THIS!)
     │   └── ... (other actors)
     └── test/java/com/example/actors/
-        ├── LoadBalancerActorTest.java   # JUnit 5 tests
+        ├── LoadBalancerActorTest.java   # JUnit 5 tests, on a clock the test owns
+        ├── ManualScheduler.java         # the clock the tests own
         └── ... (other tests)
 ```
 
@@ -113,24 +115,47 @@ public class LoadBalancerActor extends Actor
 
 ### Scheduler Integration
 
-Periodic patterns use VLINGO's built-in scheduler:
+Periodic patterns use a scheduler the actor is given, so the test decides how
+time passes and production gets the stage's scheduler, which is the wall clock:
 
 ```java
 // Automatically generated from:
 // send_pattern: {:periodic, 50, :distribute_work}
 
-this.scheduled = scheduler().schedule(
-  selfAs(Scheduled.class),
-  null,
-  50L,  // initial delay
-  50L   // period
-);
+public LoadBalancerActor(
+    LoadBalancerCallbacks callbacks, List<LoadBalancerProtocol> targets,
+    io.vlingo.xoom.common.Scheduler timers) {
+  ...
+  final io.vlingo.xoom.common.Scheduler clock =
+      (timers != null) ? timers : scheduler();
+
+  clock.schedule(
+    selfAs(Scheduled.class),
+    null,
+    50L,  // initial delay
+    50L   // period
+  );
+}
 
 @Override
 public void intervalSignal(Scheduled<Object> scheduled, Object data) {
   distributeWork();
 }
 ```
+
+The generated test hands the actor a `ManualScheduler` and says how much time
+has passed, instead of waiting for it:
+
+```java
+clock.advanceBy(INTERVAL_MILLIS - 1);
+assertEquals(before, sent.get());   // nothing yet
+clock.advanceBy(1);
+assertEquals(before + 1, sent.get());
+```
+
+Nothing in the test waits for a timer. The mailbox is still asynchronous, so the
+test waits briefly — VLINGO's `TestUntil` — for the delivery of what the clock
+made due, and for nothing else.
 
 ### Customizable Callbacks
 
@@ -152,27 +177,54 @@ public class LoadBalancerCallbacksImpl implements LoadBalancerCallbacks {
 
 ### JUnit 5 Tests
 
-Full test coverage generated automatically:
+The generated tests put the time in their own hands and assert what the actor
+did, with no sleep on the wall clock:
 
 ```java
 public class LoadBalancerActorTest {
+  private static final long INTERVAL_MILLIS = 50L;
+  private static final long BOUND_MILLIS = 1000L;
+
   private World world;
+  private ManualScheduler clock;
   private LoadBalancerProtocol actor;
+  private final AtomicInteger sent = new AtomicInteger();
+  private final TestUntil handled = TestUntil.happenings(1);
+
+  private void count() {
+    sent.incrementAndGet();
+    handled.happened();
+  }
 
   @BeforeEach
   public void setUp() {
+    clock = new ManualScheduler();
     world = World.startWithDefaults("test-world");
-    actor = world.actorFor(
-      LoadBalancerProtocol.class,
-      Definition.has(LoadBalancerActor.class,
-        Definition.parameters(null, null))
-    );
+
+    final LoadBalancerCallbacks counting = new LoadBalancerCallbacks() { /* count() */ };
+
+    actor =
+        world.actorFor(
+            LoadBalancerProtocol.class,
+            Definition.has(
+                LoadBalancerActor.class, Definition.parameters(counting, clock)));
   }
 
   @Test
-  public void testDistributeWorkMessage() {
+  public void testTheActorSendsWhenTheTestSaysItsIntervalHasPassed() {
+    handled.resetHappeningsTo(1);
     actor.distributeWork();
-    // Assertions...
+    assertTrue(handled.completesWithin(BOUND_MILLIS));
+
+    final int before = sent.get();
+
+    clock.advanceBy(INTERVAL_MILLIS - 1);
+    assertEquals(before, sent.get(), "the actor sent before its interval was up");
+
+    handled.resetHappeningsTo(1);
+    clock.advanceBy(1);
+    assertTrue(handled.completesWithin(BOUND_MILLIS));
+    assertEquals(before + 1, sent.get(), "the actor did not send when its interval was up");
   }
 }
 ```
@@ -202,15 +254,15 @@ The generator supports all ActorSimulation send patterns:
 ```elixir
 # Periodic: Every N milliseconds
 send_pattern: {:periodic, 100, :tick}
-# Generates: scheduler().schedule(..., 100L, 100L)
+# Generates: clock.schedule(..., 100L, 100L)
 
 # Rate-based: N messages per second
 send_pattern: {:rate, 50, :event}
-# Generates: scheduler().schedule(..., 20L, 20L)
+# Generates: clock.schedule(..., 20L, 20L)
 
 # Burst: N messages every interval
 send_pattern: {:burst, 10, 500, :batch}
-# Generates: scheduler().schedule(..., 500L, 500L)
+# Generates: clock.schedule(..., 500L, 500L)
 ```
 
 ## Maven Dependencies

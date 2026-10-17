@@ -27,8 +27,8 @@ public class ProcessorActor extends Actor implements ProcessorProtocol {
 
   @Override
   public void process() {
-    logger().info(getClass().getSimpleName() + " processing...");
-    // Send to targets
+  callbacks.onProcess();
+      // Send to targets
     sendToTargets();
   }
 

@@ -1,103 +1,55 @@
 # vlingo-loadbalanced
 
-Generated from ActorSimulation DSL using VLINGO XOOM Actors.
+Generated from the [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time) with
+[VLINGO XOOM Actors](https://docs.vlingo.io/xoom-actors).
 
-## About
-
-This project uses [VLINGO XOOM Actors](https://docs.vlingo.io/xoom-actors), a Java actor framework that provides:
-
-- **Type Safety** - Protocol-based messaging with interfaces
-- **Reactive Foundation** - Built for distributed, event-driven systems
-- **Scheduler Integration** - Built-in scheduling for periodic tasks
-- **Production Ready** - Battle-tested in enterprise applications
-
-The code is generated from a high-level Elixir DSL and provides:
-- Type-safe actor implementations
-- Protocol interfaces for messaging
-- Callback interfaces for customization
-- JUnit 5 test suites
-- Production-ready code
-
-## Prerequisites
-
-- **Java 11+** (Java 17 or 21 recommended)
-- **Maven 3.6+**
-
-## Building
+## Run it
 
 ```bash
-# Build the project
-mvn clean compile
-
-# Package as JAR
-mvn package
+mvn test                     # the tests, which own time: none of them waits for a timer
+mvn compile exec:exec        # the same actors on the wall clock, briefly, then it stops
 ```
 
-## Running
+Requires Java 11+ and Maven 3.6+.
 
-```bash
-# Run with Maven
-mvn exec:java
+## What is where
 
-# Or run the packaged JAR
-java -jar target/vlingo-loadbalanced-1.0-SNAPSHOT-jar-with-dependencies.jar
+| file | what |
+|------|------|
+| `src/main/java/**/Main.java` | the actors on the wall clock, for a moment |
+| `src/main/java/**/*Actor.java` | the generated actors, each taking its `Scheduler` |
+| `src/main/java/**/*Protocol.java` | the messages an actor takes |
+| `src/main/java/**/*CallbacksImpl.java` | **your behaviour goes here** |
+| `src/test/java/**/ManualScheduler.java` | the clock the tests own |
+| `src/test/java/**/*ActorTest.java` | the tests |
+
+## The time the actors wait in belongs to the tests
+
+An actor that sends every 50ms would make a test of it take as long as the test runs.
+The generated actors take their `Scheduler` as a constructor argument, so a test hands them one
+whose time it controls, and says how much time has passed:
+
+```java
+clock = new ManualScheduler();
+actor =
+    world.actorFor(
+        LoadBalancerProtocol.class,
+        Definition.has(
+            LoadBalancerActor.class, Definition.parameters(counting, new ArrayList<>(), clock)));
+
+actor.distributeWork();                    // the constructor runs: the timer is armed
+clock.advanceBy(49);   // a millisecond short of the interval
+assertEquals(before, sent.get());      // nothing has been sent
+clock.advanceBy(1);                    // the interval, on the instant
+assertEquals(before + 1, sent.get());  // and one send
 ```
 
-## Testing
+Nothing in the test waits for a timer. The mailbox is still asynchronous, so the test waits
+briefly — XOOM's `TestUntil` — for the delivery of what the clock made due, and for nothing else.
+Production passes no scheduler and gets the stage's, so the same actor waits on the wall clock
+unchanged.
 
-```bash
-# Run all tests
-mvn test
+## Learn more
 
-# Run with verbose output
-mvn test -X
-
-# Run specific test class
-mvn test -Dtest=YourActorTest
-```
-
-## Customizing Behavior
-
-The generated actor code uses callback interfaces to allow customization WITHOUT
-modifying generated files:
-
-1. Find the `*CallbacksImpl.java` files in `src/main/java`
-2. Implement your custom logic in the callback methods
-3. Rebuild the project
-
-The generated actor code will automatically call your callbacks.
-
-## Project Structure
-
-```
-src/
-├── main/
-│   └── java/
-│       ├── Main.java              # Entry point
-│       ├── *Protocol.java         # Actor protocol interfaces (DO NOT EDIT)
-│       ├── *Actor.java            # Actor implementations (DO NOT EDIT)
-│       ├── *Callbacks.java        # Callback interfaces (DO NOT EDIT)
-│       └── *CallbacksImpl.java    # Callback implementations (EDIT THIS!)
-└── test/
-    └── java/
-        └── *ActorTest.java        # JUnit 5 tests (expand as needed)
-```
-
-## CI/CD
-
-This project includes a GitHub Actions workflow that:
-- Builds on Ubuntu, macOS, and Windows
-- Tests with Java 11, 17, and 21
-- Publishes test results
-- Validates the build with each commit
-
-## Learn More
-
-- [VLINGO XOOM Documentation](https://docs.vlingo.io/)
-- [VLINGO XOOM Actors Guide](https://docs.vlingo.io/xoom-actors)
-- [VLINGO XOOM GitHub](https://github.com/vlingo)
-- [ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)
-
-## License
-
-Generated code is provided as-is for your use.
+- [VLINGO XOOM documentation](https://docs.vlingo.io/xoom-actors)
+- [The ActorSimulation DSL](https://github.com/d-led/gen_server_virtual_time)

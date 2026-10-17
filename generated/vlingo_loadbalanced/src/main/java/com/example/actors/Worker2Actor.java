@@ -20,12 +20,14 @@ public class Worker2Actor extends Actor implements Worker2Protocol, Scheduled<Ob
    * Constructor for Worker2Actor.
    */
   @SuppressWarnings("unchecked")
-  public Worker2Actor(Worker2Callbacks callbacks, List<Worker2Protocol> targets) {
+  public Worker2Actor(Worker2Callbacks callbacks, List<Worker2Protocol> targets, io.vlingo.xoom.common.Scheduler timers) {
     this.callbacks = (callbacks != null) ? callbacks : new Worker2CallbacksImpl();
     this.targets = (targets != null) ? targets : new ArrayList<>();
 
+    final io.vlingo.xoom.common.Scheduler clock = (timers != null) ? timers : scheduler();
+
     // Schedule periodic message sending
-    scheduler().schedule(
+    clock.schedule(
       selfAs(Scheduled.class),
       null,
       200L,

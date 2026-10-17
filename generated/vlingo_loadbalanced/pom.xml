@@ -79,7 +79,14 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.6.4</version>
         <configuration>
-          <mainClass>com.example.actors.Main</mainClass>
+          <!-- A forked JVM, not exec:java: VLINGO compiles an actor's proxy at
+               runtime, and that compiler needs the project's classpath. -->
+          <executable>java</executable>
+          <arguments>
+            <argument>-classpath</argument>
+            <classpath />
+            <argument>com.example.actors.Main</argument>
+          </arguments>
         </configuration>
       </plugin>
 

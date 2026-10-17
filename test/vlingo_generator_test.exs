@@ -123,7 +123,8 @@ defmodule VlingoGeneratorTest do
       assert actor =~
                "public class GeneratorActor extends Actor implements GeneratorProtocol, Scheduled<Object>"
 
-      assert actor =~ "scheduler().schedule"
+      assert actor =~ "Scheduler timers"
+      assert actor =~ "clock.schedule"
     end
 
     test "generates periodic pattern using scheduled messages" do
@@ -146,7 +147,7 @@ defmodule VlingoGeneratorTest do
           name == "src/main/java/com/example/GeneratorActor.java"
         end)
 
-      assert actor =~ "scheduler().schedule"
+      assert actor =~ "clock.schedule"
       assert actor =~ "100L"
       assert actor =~ "intervalSignal"
     end
@@ -238,10 +239,10 @@ defmodule VlingoGeneratorTest do
 
       assert readme =~ "# my-actors"
       assert readme =~ "VLINGO XOOM"
-      assert readme =~ "mvn clean compile"
+      assert readme =~ "## Run it"
       assert readme =~ "mvn test"
-      assert readme =~ "mvn exec:java"
-      assert readme =~ "Generated from ActorSimulation DSL"
+      assert readme =~ "mvn compile exec:exec"
+      assert readme =~ "CallbacksImpl"
     end
 
     test "generates JUnit 5 test classes" do
@@ -264,14 +265,38 @@ defmodule VlingoGeneratorTest do
         end)
 
       assert test_file =~ "package com.example;"
-      assert test_file =~ "import org.junit.jupiter.api.*;"
+      assert test_file =~ "import org.junit.jupiter.api.Test;"
       assert test_file =~ "import io.vlingo.xoom.actors.World;"
       assert test_file =~ "public class WorkerActorTest"
       assert test_file =~ "@BeforeEach"
       assert test_file =~ "@AfterEach"
       assert test_file =~ "@Test"
       assert test_file =~ "testActorCreation"
-      assert test_file =~ "testTickMessage"
+      assert test_file =~ "testTheActorSendsWhenTheTestSaysItsIntervalHasPassed"
+      assert test_file =~ "clock.advanceBy(INTERVAL_MILLIS - 1)"
+      assert test_file =~ "ManualScheduler"
+      # The test says how much time has passed; it does not wait for it.
+      refute test_file =~ "Thread.sleep"
+    end
+
+    test "generates the clock the tests own only for actors that wait" do
+      waiting =
+        ActorSimulation.new()
+        |> ActorSimulation.add_actor(:ticker, send_pattern: {:periodic, 50, :tick})
+
+      {:ok, files} = VlingoGenerator.generate(waiting, project_name: "t", group_id: "com.example")
+
+      assert Enum.any?(files, fn {name, _} ->
+               name == "src/test/java/com/example/ManualScheduler.java"
+             end)
+
+      {:ok, plain} =
+        VlingoGenerator.generate(ActorSimulation.new() |> ActorSimulation.add_actor(:node),
+          project_name: "t",
+          group_id: "com.example"
+        )
+
+      refute Enum.any?(plain, fn {name, _} -> name =~ "ManualScheduler" end)
     end
 
     test "pom.xml includes test plugins" do
@@ -350,7 +375,7 @@ defmodule VlingoGeneratorTest do
           name == "src/main/java/com/example/BurstSenderActor.java"
         end)
 
-      assert actor =~ "scheduler().schedule"
+      assert actor =~ "clock.schedule"
       assert actor =~ "1000L"
     end
   end
@@ -424,7 +449,7 @@ defmodule VlingoGeneratorTest do
 
       # Should use scheduler for delayed self-message
       assert actor =~ "// Schedule one-shot self-message"
-      assert actor =~ "scheduler().scheduleOnce"
+      assert actor =~ "clock.scheduleOnce"
       assert actor =~ "500L"
     end
   end

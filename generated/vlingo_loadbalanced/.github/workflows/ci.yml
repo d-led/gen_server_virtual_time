@@ -42,7 +42,5 @@ jobs:
           target/surefire-reports/*.xml
         check_name: "Test Results (Java ${{ matrix.java }}, ${{ matrix.os }})"
 
-    - name: Run application (with timeout)
-      shell: bash
-      run: |
-        timeout 10 mvn exec:java || true
+    - name: Run the application
+      run: mvn -B -q compile exec:exec

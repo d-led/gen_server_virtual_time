@@ -8,6 +8,24 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- the VLINGO XOOM generator's actors take their `Scheduler` as a constructor
+  argument, so a test hands them a clock it owns: the generated tests advance a
+  `ManualScheduler` and assert what the actor did, instead of sleeping 100ms and
+  asserting `true`. Production passes no scheduler and gets the stage's, so the
+  same actor waits on the wall clock unchanged
+- the generated `Main` runs the actors for a moment and stops, and the generated
+  project runs it with `mvn compile exec:exec` (a forked JVM, because VLINGO
+  compiles an actor's proxy at runtime, which the in-process `exec:java` cannot
+  do); the generated README is a short page instead of boilerplate
+
+### Fixed
+
+- `process()` of an actor without messages never called its callbacks, so nothing
+  outside it could observe it; found by the generated test, which now asserts on
+  what the actor did
+
 ## [0.6.1] - 2026-10-15
 
 ### Added

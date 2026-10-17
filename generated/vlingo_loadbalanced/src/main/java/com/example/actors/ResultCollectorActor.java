@@ -18,11 +18,13 @@ public class ResultCollectorActor extends Actor implements ResultCollectorProtoc
    * Constructor for ResultCollectorActor.
    */
   @SuppressWarnings("unchecked")
-  public ResultCollectorActor(ResultCollectorCallbacks callbacks) {
+  public ResultCollectorActor(ResultCollectorCallbacks callbacks, io.vlingo.xoom.common.Scheduler timers) {
     this.callbacks = (callbacks != null) ? callbacks : new ResultCollectorCallbacksImpl();
 
+    final io.vlingo.xoom.common.Scheduler clock = (timers != null) ? timers : scheduler();
+
     // Schedule rate-based message sending
-    scheduler().schedule(
+    clock.schedule(
       selfAs(Scheduled.class),
       null,
       500L,

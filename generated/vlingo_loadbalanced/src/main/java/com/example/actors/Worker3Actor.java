@@ -20,12 +20,14 @@ public class Worker3Actor extends Actor implements Worker3Protocol, Scheduled<Ob
    * Constructor for Worker3Actor.
    */
   @SuppressWarnings("unchecked")
-  public Worker3Actor(Worker3Callbacks callbacks, List<Worker3Protocol> targets) {
+  public Worker3Actor(Worker3Callbacks callbacks, List<Worker3Protocol> targets, io.vlingo.xoom.common.Scheduler timers) {
     this.callbacks = (callbacks != null) ? callbacks : new Worker3CallbacksImpl();
     this.targets = (targets != null) ? targets : new ArrayList<>();
 
+    final io.vlingo.xoom.common.Scheduler clock = (timers != null) ? timers : scheduler();
+
     // Schedule periodic message sending
-    scheduler().schedule(
+    clock.schedule(
       selfAs(Scheduled.class),
       null,
       200L,
