@@ -1278,6 +1278,12 @@ defmodule ActorSimulation.VlingoGenerator do
       pull_request:
         branches: [ main ]
 
+    # The test-result action publishes a check run, which needs checks: write.
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+
     jobs:
       build:
         runs-on: ${{ matrix.os }}
@@ -1307,7 +1313,8 @@ defmodule ActorSimulation.VlingoGenerator do
           run: mvn package
 
         - name: Publish Test Results
-          if: always()
+          # The action is a container, so it runs on Linux only.
+          if: always() && runner.os == 'Linux'
           uses: EnricoMi/publish-unit-test-result-action@#{TemplateVersions.get(:publish_test_results_action)}
           with:
             files: |

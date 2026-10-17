@@ -27,6 +27,9 @@ and this project adheres to
 
 ### Fixed
 
+- the generated CI ran a container action on macOS and Windows, and without
+  `checks: write` on Linux, so every job failed at the test-report step; the
+  action now runs on Linux only, with the permissions it needs
 - `process()` of an actor without messages never called its callbacks, so nothing
   outside it could observe it; found by the generated test, which now asserts on
   what the actor did
