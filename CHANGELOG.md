@@ -13,8 +13,13 @@ and this project adheres to
 - the VLINGO XOOM generator's actors take their `Scheduler` as a constructor
   argument, so a test hands them a clock it owns: the generated tests advance a
   `ManualScheduler` and assert what the actor did, instead of sleeping 100ms and
-  asserting `true`. Production passes no scheduler and gets the stage's, so the
-  same actor waits on the wall clock unchanged
+  asserting `true`, and now hold their actor to a count: three intervals give
+  three sends, a one-shot gives exactly one. Production passes no scheduler and
+  gets the stage's, so the same actor waits on the wall clock unchanged
+- the Go examples' tests assert the count their pattern makes (the burst the DSL
+  asked for, one message for a one-shot, the range three intervals can produce for
+  a repeating actor) instead of sleeping 10ms and checking that a struct is not
+  nil; the generated READMEs show what the programs print, not assertions
 - the generated `Main` runs the actors for a moment and stops, and the generated
   project runs it with `mvn compile exec:exec` (a forked JVM, because VLINGO
   compiles an actor's proxy at runtime, which the in-process `exec:java` cannot

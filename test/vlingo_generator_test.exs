@@ -272,8 +272,9 @@ defmodule VlingoGeneratorTest do
       assert test_file =~ "@AfterEach"
       assert test_file =~ "@Test"
       assert test_file =~ "testActorCreation"
-      assert test_file =~ "testTheActorSendsWhenTheTestSaysItsIntervalHasPassed"
+      assert test_file =~ "testTheActorSendsOncePerIntervalTheTestSaysHasPassed"
       assert test_file =~ "clock.advanceBy(INTERVAL_MILLIS - 1)"
+      assert test_file =~ "before + REPEATS"
       assert test_file =~ "ManualScheduler"
       # The test says how much time has passed; it does not wait for it.
       refute test_file =~ "Thread.sleep"

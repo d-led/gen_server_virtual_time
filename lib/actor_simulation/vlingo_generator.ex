@@ -845,6 +845,15 @@ defmodule ActorSimulation.VlingoGenerator do
   # the test says how much time has passed instead of waiting for it.
   defp generate_timed_test_class(class_name, messages, definition, group_id, interval_ms) do
     target_param = if definition.targets != [], do: ", new ArrayList<>()", else: ""
+    one_shot? = match?({:self_message, _, _}, definition.send_pattern)
+
+    repeats_constant =
+      if one_shot?, do: "", else: "\n      private static final int REPEATS = 3;"
+
+    count_test_name =
+      if one_shot?,
+        do: "testTheActorSendsOnceWhenTheTestSaysItsDelayHasPassed",
+        else: "testTheActorSendsOncePerIntervalTheTestSaysHasPassed"
 
     """
     // Generated from ActorSimulation DSL
@@ -872,7 +881,7 @@ defmodule ActorSimulation.VlingoGenerator do
      */
     public class #{class_name}ActorTest {
       private static final long INTERVAL_MILLIS = #{interval_ms}L;
-      private static final long BOUND_MILLIS = 1000L;
+      private static final long BOUND_MILLIS = 1000L;#{repeats_constant}
 
       private World world;
       private ManualScheduler clock;
@@ -915,7 +924,7 @@ defmodule ActorSimulation.VlingoGenerator do
       }
 
       @Test
-      public void testTheActorSendsWhenTheTestSaysItsIntervalHasPassed() {
+      public void #{count_test_name}() {
         // The actor arms its timer in its constructor, which runs when its first
         // message is handled: the test waits for that delivery, and for no time.
         handled.resetHappeningsTo(1);
@@ -927,14 +936,39 @@ defmodule ActorSimulation.VlingoGenerator do
 
         clock.advanceBy(INTERVAL_MILLIS - 1);
         assertEquals(before, sent.get(), "the actor sent before its interval was up");
+    #{timed_count_test(one_shot?)}    }
+    }
+    """
+  end
+
+  # timed_count_test answers the part of a timed test that holds the actor to the
+  # number of sends its clock made due: one per interval, or one in all for a
+  # one-shot.
+  defp timed_count_test(true) do
+    """
 
         handled.resetHappeningsTo(1);
         clock.advanceBy(1);
         assertTrue(
             handled.completesWithin(BOUND_MILLIS), "the send the clock made due was not handled");
-        assertEquals(before + 1, sent.get(), "the actor did not send when its interval was up");
-      }
-    }
+        assertEquals(before + 1, sent.get(), "the actor did not send when its delay was up");
+
+        clock.advanceBy(INTERVAL_MILLIS); // a one-shot has nothing left to send
+        assertEquals(before + 1, sent.get(), "the actor sent again, and was asked for one send");
+    """
+  end
+
+  defp timed_count_test(false) do
+    """
+
+        handled.resetHappeningsTo(REPEATS);
+        clock.advanceBy(REPEATS * INTERVAL_MILLIS);
+        assertTrue(
+            handled.completesWithin(BOUND_MILLIS), "the sends the clock made due were not handled");
+        assertEquals(
+            before + REPEATS,
+            sent.get(),
+            "one interval, one send: " + REPEATS + " intervals, " + REPEATS + " sends");
     """
   end
 
@@ -1330,38 +1364,29 @@ defmodule ActorSimulation.VlingoGenerator do
 
   defp generate_readme_clock_section({name, definition}) do
     class_name = GeneratorUtils.to_pascal_case(name)
-    messages = GeneratorUtils.extract_messages(definition.send_pattern)
-    message = first_message(messages)
     interval_ms = interval_of(definition)
-    target_param = if definition.targets != [], do: ", new ArrayList<>()", else: ""
 
     """
     ## The time the actors wait in belongs to the tests
 
     An actor that sends every #{interval_ms}ms would make a test of it take as long as the test runs.
-    The generated actors take their `Scheduler` as a constructor argument, so a test hands them one
-    whose time it controls, and says how much time has passed:
+    The generated actors take their `Scheduler` as a constructor argument: production passes none and
+    gets the stage's, which is the wall clock, and a test hands the actor a `ManualScheduler` — the
+    clock the test owns, in `src/test/java` — which fires nothing until the test calls `advanceBy`.
+    The tests assert the counts that clock produces, down to the millisecond before an interval;
+    what is left here is what the same actors print on the wall clock:
 
-    ```java
-    clock = new ManualScheduler();
-    actor =
-        world.actorFor(
-            #{class_name}Protocol.class,
-            Definition.has(
-                #{class_name}Actor.class, Definition.parameters(counting#{target_param}, clock)));
-
-    actor.#{message}();                    // the constructor runs: the timer is armed
-    clock.advanceBy(#{interval_ms - 1});   // a millisecond short of the interval
-    assertEquals(before, sent.get());      // nothing has been sent
-    clock.advanceBy(1);                    // the interval, on the instant
-    assertEquals(before + 1, sent.get());  // and one send
+    ```shell
+    $ mvn compile exec:exec
+    Starting VLINGO XOOM actor system...
+    #{class_name}: Sending #{first_message(messages_of(definition))} message
+    #{class_name}: Sending #{first_message(messages_of(definition))} message
+    Running for 300ms...
+    Stopped.
     ```
-
-    Nothing in the test waits for a timer. The mailbox is still asynchronous, so the test waits
-    briefly — XOOM's `TestUntil` — for the delivery of what the clock made due, and for nothing else.
-    Production passes no scheduler and gets the stage's, so the same actor waits on the wall clock
-    unchanged.
 
     """
   end
+
+  defp messages_of(definition), do: GeneratorUtils.extract_messages(definition.send_pattern)
 end

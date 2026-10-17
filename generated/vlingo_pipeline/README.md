@@ -26,28 +26,20 @@ Requires Java 11+ and Maven 3.6+.
 ## The time the actors wait in belongs to the tests
 
 An actor that sends every 10ms would make a test of it take as long as the test runs.
-The generated actors take their `Scheduler` as a constructor argument, so a test hands them one
-whose time it controls, and says how much time has passed:
+The generated actors take their `Scheduler` as a constructor argument: production passes none and
+gets the stage's, which is the wall clock, and a test hands the actor a `ManualScheduler` — the
+clock the test owns, in `src/test/java` — which fires nothing until the test calls `advanceBy`.
+The tests assert the counts that clock produces, down to the millisecond before an interval;
+what is left here is what the same actors print on the wall clock:
 
-```java
-clock = new ManualScheduler();
-actor =
-    world.actorFor(
-        ProducerProtocol.class,
-        Definition.has(
-            ProducerActor.class, Definition.parameters(counting, new ArrayList<>(), clock)));
-
-actor.data();                    // the constructor runs: the timer is armed
-clock.advanceBy(9);   // a millisecond short of the interval
-assertEquals(before, sent.get());      // nothing has been sent
-clock.advanceBy(1);                    // the interval, on the instant
-assertEquals(before + 1, sent.get());  // and one send
+```shell
+$ mvn compile exec:exec
+Starting VLINGO XOOM actor system...
+Producer: Sending data message
+Producer: Sending data message
+Running for 300ms...
+Stopped.
 ```
-
-Nothing in the test waits for a timer. The mailbox is still asynchronous, so the test waits
-briefly — XOOM's `TestUntil` — for the delivery of what the clock made due, and for nothing else.
-Production passes no scheduler and gets the stage's, so the same actor waits on the wall clock
-unchanged.
 
 ## Learn more
 

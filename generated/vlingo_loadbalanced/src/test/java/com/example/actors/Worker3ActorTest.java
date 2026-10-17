@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 public class Worker3ActorTest {
   private static final long INTERVAL_MILLIS = 200L;
   private static final long BOUND_MILLIS = 1000L;
+      private static final int REPEATS = 3;
 
   private World world;
   private ManualScheduler clock;
@@ -70,7 +71,7 @@ public class Worker3ActorTest {
   }
 
   @Test
-  public void testTheActorSendsWhenTheTestSaysItsIntervalHasPassed() {
+  public void testTheActorSendsOncePerIntervalTheTestSaysHasPassed() {
     // The actor arms its timer in its constructor, which runs when its first
     // message is handled: the test waits for that delivery, and for no time.
     handled.resetHappeningsTo(1);
@@ -83,10 +84,13 @@ public class Worker3ActorTest {
     clock.advanceBy(INTERVAL_MILLIS - 1);
     assertEquals(before, sent.get(), "the actor sent before its interval was up");
 
-    handled.resetHappeningsTo(1);
-    clock.advanceBy(1);
+    handled.resetHappeningsTo(REPEATS);
+    clock.advanceBy(REPEATS * INTERVAL_MILLIS);
     assertTrue(
-        handled.completesWithin(BOUND_MILLIS), "the send the clock made due was not handled");
-    assertEquals(before + 1, sent.get(), "the actor did not send when its interval was up");
-  }
+        handled.completesWithin(BOUND_MILLIS), "the sends the clock made due were not handled");
+    assertEquals(
+        before + REPEATS,
+        sent.get(),
+        "one interval, one send: " + REPEATS + " intervals, " + REPEATS + " sends");
+    }
 }

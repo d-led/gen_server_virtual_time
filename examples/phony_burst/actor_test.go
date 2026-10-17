@@ -6,6 +6,8 @@ package main
 import (
 	"testing"
 	"time"
+
+	"github.com/Arceliar/phony"
 )
 
 func TestActorSystem(t *testing.T) {
@@ -15,28 +17,44 @@ func TestActorSystem(t *testing.T) {
 	}
 }
 
+// waitFor waits until what asks for holds, or until the time it was given is up.
+func waitFor(t *testing.T, within time.Duration, what func() bool) {
+	t.Helper()
+
+	deadline := time.Now().Add(within)
+	for time.Now().Before(deadline) {
+		if what() {
+			return
+		}
+
+		time.Sleep(time.Millisecond)
+	}
+}
+
 func TestProcessor(t *testing.T) {
 	actor := &Processor{}
 	actor.Start()
-	
-	// Wait a bit for actor to initialize
-	time.Sleep(10 * time.Millisecond)
-	
-	if actor == nil {
-		t.Fatal("Actor should not be nil")
-	}
+
+	// The actor's inbox takes work: this returns when it has run it, which it
+	// never does if the actor is broken.
+	phony.Block(actor.Actor(), func() {})
 }
 
 
 func TestBurstGenerator(t *testing.T) {
 	actor := &BurstGenerator{}
 	actor.Start()
-	
-	// Wait a bit for actor to initialize
-	time.Sleep(10 * time.Millisecond)
-	
-	if actor == nil {
-		t.Fatal("Actor should not be nil")
+
+	// One burst is due an interval from now, and it is the count the DSL asked
+	// for: wait for it, then hold the actor to it.
+	waitFor(t, 2*1000*time.Millisecond, func() bool {
+		phony.Block(actor.Actor(), func() {})
+		return actor.sendCount >= 10
+	})
+
+	phony.Block(actor.Actor(), func() {})
+	if actor.sendCount != 10 {
+		t.Fatalf("the burst sent %d messages, want 10", actor.sendCount)
 	}
 }
 

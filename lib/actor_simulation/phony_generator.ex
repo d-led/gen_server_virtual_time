@@ -386,22 +386,9 @@ defmodule ActorSimulation.PhonyGenerator do
     simulated = GeneratorUtils.simulated_actors(actors)
 
     test_cases =
-      Enum.map_join(simulated, "\n\n", fn {name, _def} ->
+      Enum.map_join(simulated, "\n\n", fn {name, definition} ->
         type_name = GeneratorUtils.to_pascal_case(name)
-
-        """
-        func Test#{type_name}(t *testing.T) {
-        \tactor := &#{type_name}{}
-        \tactor.Start()
-        \t
-        \t// Wait a bit for actor to initialize
-        \ttime.Sleep(10 * time.Millisecond)
-        \t
-        \tif actor == nil {
-        \t\tt.Fatal("Actor should not be nil")
-        \t}
-        }
-        """
+        generate_actor_test(type_name, definition)
       end)
 
     """
@@ -413,6 +400,8 @@ defmodule ActorSimulation.PhonyGenerator do
     import (
     \t"testing"
     \t"time"
+
+    \t"github.com/Arceliar/phony"
     )
 
     func TestActorSystem(t *testing.T) {
@@ -422,7 +411,105 @@ defmodule ActorSimulation.PhonyGenerator do
     \t}
     }
 
+    // waitFor waits until what asks for holds, or until the time it was given is up.
+    func waitFor(t *testing.T, within time.Duration, what func() bool) {
+    \tt.Helper()
+
+    \tdeadline := time.Now().Add(within)
+    \tfor time.Now().Before(deadline) {
+    \t\tif what() {
+    \t\t\treturn
+    \t\t}
+
+    \t\ttime.Sleep(time.Millisecond)
+    \t}
+    }
+
     #{test_cases}
+    """
+  end
+
+  # generate_actor_test answers the test of one actor: it holds the actor to the
+  # number of messages its pattern makes, which is what a test of an actor that
+  # waits is for. An actor with no pattern is held to taking a message at all.
+  defp generate_actor_test(type_name, definition) do
+    case definition.send_pattern do
+      {:burst, count, interval_ms, _message} ->
+        """
+        func Test#{type_name}(t *testing.T) {
+        \tactor := &#{type_name}{}
+        \tactor.Start()
+
+        \t// One burst is due an interval from now, and it is the count the DSL asked
+        \t// for: wait for it, then hold the actor to it.
+        \twaitFor(t, 2*#{interval_ms}*time.Millisecond, func() bool {
+        \t\tphony.Block(actor.Actor(), func() {})
+        \t\treturn actor.sendCount >= #{count}
+        \t})
+
+        \tphony.Block(actor.Actor(), func() {})
+        \tif actor.sendCount != #{count} {
+        \t\tt.Fatalf("the burst sent %d messages, want #{count}", actor.sendCount)
+        \t}
+        }
+        """
+
+      {:self_message, delay_ms, _message} ->
+        """
+        func Test#{type_name}(t *testing.T) {
+        \tactor := &#{type_name}{}
+        \tactor.Start()
+
+        \t// The one message is due #{delay_ms}ms from now.
+        \twaitFor(t, 2*#{delay_ms}*time.Millisecond, func() bool {
+        \t\tphony.Block(actor.Actor(), func() {})
+        \t\treturn actor.sendCount >= 1
+        \t})
+
+        \tphony.Block(actor.Actor(), func() {})
+        \tif actor.sendCount != 1 {
+        \t\tt.Fatalf("the actor sent %d messages, want 1", actor.sendCount)
+        \t}
+        }
+        """
+
+      {:periodic, interval_ms, _message} ->
+        periodic_test(type_name, interval_ms)
+
+      {:rate, per_second, _message} ->
+        periodic_test(type_name, div(1000, per_second))
+
+      _ ->
+        """
+        func Test#{type_name}(t *testing.T) {
+        \tactor := &#{type_name}{}
+        \tactor.Start()
+
+        \t// The actor's inbox takes work: this returns when it has run it, which it
+        \t// never does if the actor is broken.
+        \tphony.Block(actor.Actor(), func() {})
+        }
+        """
+    end
+  end
+
+  # A repeating actor sends once per interval, and how many intervals the wall
+  # clock fits into a wait is the machine's business, so the test holds the count
+  # to the range three intervals can produce and not to one number.
+  defp periodic_test(type_name, interval_ms) do
+    """
+    func Test#{type_name}(t *testing.T) {
+    \tactor := &#{type_name}{}
+    \tactor.Start()
+
+    \tconst intervals = 3
+    \ttime.Sleep(intervals*#{interval_ms}*time.Millisecond + #{interval_ms}/2*time.Millisecond)
+
+    \tphony.Block(actor.Actor(), func() {})
+    \tif actor.sendCount < intervals || actor.sendCount > intervals+1 {
+    \t\tt.Fatalf("the actor sent %d messages in %d intervals, want %d or %d", actor.sendCount, intervals, intervals, intervals+1)
+    \t}
+    }
     """
   end
 
