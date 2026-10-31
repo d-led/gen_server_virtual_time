@@ -5,9 +5,10 @@ Status: **phases 0, 1, 2 (as a move, without the renames), 4 and 5 landed in
 · Date: 2026-10-31
 
 `gen_server_virtual_time_migrate` (§7.1, `mix virtual_time.migrate`) landed in
-1.0.1. What is still open is §7.2 (`mix virtual_time.upgrade` for the
-`ActorSimulation.Codegen.*` renames), the renames with deprecation shims, and
-per-package coverage gating in CI (only the clock's coverage is merged today).
+1.0.1, and §7.2/§7.3 (the `ActorSimulation.Codegen.*` renames with their
+deprecation shims, and `mix virtual_time.upgrade`) in 1.1.0. What is still open
+is per-package coverage gating in CI — the clock's coverage is merged, and the
+other three packages now fail their own `mix coveralls` run when they slip.
 
 ## 0. Summary of decisions
 
@@ -518,19 +519,32 @@ Testing (this is the part the release depends on):
 - An end-to-end test that runs the task against a copy of this repo's own
   `test/` tree and asserts it never touches files outside the given paths.
 
-### 7.2 `mix virtual_time.upgrade` — the split's renames
+### 7.2 `mix virtual_time.upgrade` — the split's renames (landed in 1.1.0)
 
-- `ActorSimulation.CAFGenerator` → `ActorSimulation.Codegen.CAF` (and the five
-  siblings), `ActorSimulation.TemplateVersions` →
-  `ActorSimulation.Codegen.TemplateVersions`, `mix templates.upgrade` →
-  `mix actor_simulation.upgrade` in docs and aliases.
-- Report-only by default; `--write` rewrites module references only, and
-  **prints** the dependency lines to add rather than editing `mix.exs` (a
-  `deps/0` function is arbitrary Elixir; guessing is how migration tools lose
-  trust).
-- `--write` also rewrites `Mix.install([...])` lists in `*.exs` scripts, where
-  the list is a literal and safe.
-- Same fixture/golden/idempotency test harness as §7.1.
+The six generators are
+`ActorSimulation.Codegen.{CAF,OMNeTPP,Phony,Pony,Ractor,Vlingo}` as of 1.1, and
+the old names are deprecated shims that forward to them (§7.3).
+`mix virtual_time.upgrade` moves a project across, and `mix templates.upgrade`
+is now `mix actor_simulation.upgrade` — the old task name forwards with a
+message.
+
+Two decisions differ from the sketch:
+
+- **`TemplateVersions` keeps its name.** It lives in `actor_simulation`, and
+  `ActorSimulation.GeneratorMetadata` reads it; naming it
+  `ActorSimulation.Codegen.*` would put a codegen module in the simulation
+  package, and moving the file would make simulation depend on codegen. A rename
+  is not worth a dependency cycle.
+- **`Mix.install([...])` lists are not rewritten**. The dependency line did not
+  change for the generator rename — the modules stayed in the same package — so
+  there is nothing to rewrite, and editing a user's `mix.exs` remains out of
+  scope.
+
+What the task does rewrite, and only when it can prove it: a fully qualified
+`ActorSimulation.CAFGenerator.generate(...)`, and an `alias` plus the bare short
+name it introduced in that file, when the name it becomes is free. An alias with
+`as:`, a file where the new short name is taken, and a bare name with no alias
+are reported, not guessed.
 
 ### 7.3 Deprecation shims make the tool optional
 

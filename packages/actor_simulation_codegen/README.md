@@ -28,7 +28,7 @@ This package depends on `actor_simulation`, which brings
 
 ```elixir
 def deps do
-  [{:actor_simulation_codegen, "~> 1.0.1"}]
+  [{:actor_simulation_codegen, "~> 1.1.0"}]
 end
 ```
 
@@ -55,22 +55,22 @@ simulation = ActorSimulation.new()
 |> ActorSimulation.add_actor(:sub3)
 
 # C++ with the C++ Actor Framework
-{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.CAF.generate(simulation,
   project_name: "PubSubActors",
   enable_callbacks: true)
-ActorSimulation.CAFGenerator.write_to_directory(files, "caf_output/")
+ActorSimulation.Codegen.CAF.write_to_directory(files, "caf_output/")
 
 # Go with Phony
-{:ok, files} = ActorSimulation.PhonyGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Phony.generate(simulation,
   project_name: "pubsub",
   enable_callbacks: true)
-ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_output/")
+ActorSimulation.Codegen.Phony.write_to_directory(files, "phony_output/")
 
 # Rust with Ractor
-{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Ractor.generate(simulation,
   project_name: "pubsub",
   enable_callbacks: true)
-ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_output/")
+ActorSimulation.Codegen.Ractor.write_to_directory(files, "ractor_output/")
 ```
 
 Then build the output with its own toolchain — each generated project ships a

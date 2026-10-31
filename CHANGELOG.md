@@ -8,11 +8,31 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-31
+
 ### Added
 
+- The six generators are
+  `ActorSimulation.Codegen.{CAF,OMNeTPP,Phony,Pony,Ractor,Vlingo}`. The 1.0
+  names still work: they forward to the new modules and carry a `@deprecated`
+  message, so nothing has to change before 2.0. Doing nothing is a supported
+  answer; `mix virtual_time.upgrade` is the convenience that turns the warnings
+  into silence
+- `mix virtual_time.upgrade` (in `gen_server_virtual_time_migrate`) renames
+  those modules in a project: fully qualified references, and an alias together
+  with the bare short name it introduced, when the name it becomes is free. An
+  alias with `as:`, a taken short name and a bare name with no alias are
+  reported instead of guessed
+- `mix actor_simulation.upgrade` replaces `mix templates.upgrade`, which still
+  forwards with a message
 - `examples/ticker_erlang` and `examples/ticker_gleam`: the same one-minute
   ticker in Erlang (a `VirtualTimeGenServer` on a rebar3 project) and in Gleam
   (the clock reached through externals), each asserted without waiting
+
+### Changed
+
+- `docs/generators.md` installs `actor_simulation_codegen` instead of the
+  pre-split `gen_server_virtual_time`, so its snippets run as printed
 
 ### Fixed
 
@@ -22,6 +42,8 @@ and this project adheres to
   file
 - The build caches key on `VERSION`, so a release no longer makes CI restore a
   `_build` that still believes the sibling packages are a version behind
+- CI now enforces the coverage threshold of `actor_simulation`,
+  `actor_simulation_codegen` and the migrator, not just the clock's
 - The orphaned `lib/mix/tasks/precommit.ex` is gone; the gate lives in `dev/`
 
 ## [1.0.1] - 2026-10-31
@@ -475,7 +497,9 @@ truncated, so a simulation can now report more messages than before.
 - Message tracing and Mermaid diagram generation
 
 [Unreleased]:
-  https://github.com/d-led/gen_server_virtual_time/compare/v1.0.1...HEAD
+  https://github.com/d-led/gen_server_virtual_time/compare/v1.1.0...HEAD
+[1.1.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v1.0.1...v1.1.0
 [1.0.1]:
   https://github.com/d-led/gen_server_virtual_time/compare/v1.0.0...v1.0.1
 [1.0.0]:

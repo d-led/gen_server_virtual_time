@@ -11,7 +11,7 @@ defmodule GenServerVirtualTime.Workspace.MixProject do
 
   use Mix.Project
 
-  @version "1.0.1"
+  @version "1.1.0"
 
   def project do
     [
@@ -28,7 +28,7 @@ defmodule GenServerVirtualTime.Workspace.MixProject do
   end
 
   # `dev/` holds the maintainer tooling: the precommit gate, the coverage task
-  # and `mix templates.upgrade`, which talks to package registries over TLS and
+  # and `mix actor_simulation.upgrade`, which talks to package registries over TLS and
   # regenerates the checked-in examples, so it only makes sense at the root.
   defp elixirc_paths(:test), do: ["dev"]
   defp elixirc_paths(:dev), do: ["dev"]
@@ -42,7 +42,7 @@ defmodule GenServerVirtualTime.Workspace.MixProject do
       {:gen_server_virtual_time_migrate, "~> #{@version}",
        path: "packages/gen_server_virtual_time_migrate"},
 
-      # `mix templates.upgrade` and the scripts it runs
+      # `mix actor_simulation.upgrade` and the scripts it runs
       {:jason, "~> 1.4"},
 
       # Benchmarks
