@@ -1,7 +1,13 @@
 #!/bin/bash
-# Combined coverage report from all test types (fast, slow, diagram generation)
-
+# Combined coverage report for the clock package: its fast and slow tests merged
+# into one report.
+#
+# The package is named here rather than assumed: coverage is per project, and the
+# repository root is only a workspace. The diagram tests live in
+# `actor_simulation`, so they are not part of this report.
 set -e
+
+cd "$(dirname "$0")/../packages/gen_server_virtual_time"
 
 echo "🧪 Running combined coverage analysis..."
 echo ""
@@ -10,16 +16,12 @@ echo ""
 rm -f cover/*.coverdata 2>/dev/null || true
 
 # Run fast tests (default)
-echo "📊 [1/3] Running fast tests..."
+echo "📊 [1/2] Running fast tests..."
 MIX_ENV=test mix coveralls --export-coverage fast
 
 # Run slow tests
-echo "⏳ [2/3] Running slow tests..."
+echo "⏳ [2/2] Running slow tests..."
 MIX_ENV=test mix coveralls --only slow --export-coverage slow
-
-# Run diagram generation tests
-echo "📈 [3/3] Running diagram generation tests..."
-MIX_ENV=test mix coveralls --only diagram_generation --export-coverage diagram
 
 # Merge coverage data
 echo ""
@@ -33,6 +35,6 @@ MIX_ENV=test mix coveralls.html --import-cover cover
 
 echo ""
 echo "✅ Combined coverage report generated!"
-echo "📂 Open: cover/excoveralls.html"
+echo "📂 Open: packages/gen_server_virtual_time/cover/excoveralls.html"
 echo ""
 

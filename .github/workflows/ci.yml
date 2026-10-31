@@ -163,13 +163,6 @@ jobs:
         continue-on-error: true
         run: mix coveralls --only slow --export-coverage slow
       
-      - name: Run diagram generation tests with coverage export
-        env:
-          MIX_ENV: test
-        working-directory: packages/gen_server_virtual_time
-        continue-on-error: true
-        run: mix coveralls --only diagram_generation --export-coverage diagram
-      
       - name: Merge coverage and report to GitHub
         env:
           MIX_ENV: test

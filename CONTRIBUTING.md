@@ -60,8 +60,8 @@ This project follows a simple code of conduct:
 3. **Verify the setup:**
 
    ```bash
-   mix test
-   mix docs
+   ./scripts/test.sh    # every package, then the tooling tests
+   mix precommit        # the CI checks, per package; --all adds dialyzer
    ```
 
 4. **Create a branch:**
@@ -75,44 +75,48 @@ This project follows a simple code of conduct:
 
 ### Running Tests
 
+Each package under `packages/` is a Mix project of its own; the root is only a
+workspace that runs the maintainer tooling.
+
 ```bash
 # Run all tests (default - excludes slow and diagram_generation)
-mix test
+./scripts/test.sh
+
+# One package
+cd packages/gen_server_virtual_time && mix test
 
 # Fast tests only (excludes slow, diagram_generation, ridiculous)
 mix test --exclude slow --exclude diagram_generation --exclude ridiculous
 
 # Slow tests only
-mix test --include slow
+mix test --only slow
 
-# Diagram generation tests
-mix test --include diagram_generation
+# Diagram generation tests (they live in actor_simulation)
+cd packages/actor_simulation && mix test --only diagram_generation
 
-# Ridiculous tests (very long-running)
-mix test --include ridiculous
-
-# Run specific test file
-mix test test/virtual_clock_test.exs
+# Run specific test file, from the package it belongs to
+cd packages/gen_server_virtual_time && mix test test/virtual_clock_test.exs
 
 # Run with coverage
 mix test --cover
 
-# Run with detailed coverage
-mix coveralls.html
-open cover/excoveralls.html
-
-# Combined coverage (all test types)
+# Combined coverage report for the clock package
 ./scripts/coverage_combined.sh
+```
 
 # Run failed tests
+
 mix test --failed
 
 # Run tests matching a pattern
+
 mix test --only focus
 
 # Run tests with specific tag
+
 mix test --only integration
-```
+
+````
 
 ### Test Tags
 
@@ -136,7 +140,7 @@ suite, using [`stream_data`](https://hex.pm/packages/stream_data):
 ```bash
 # Run just the property suites
 mix test test/virtual_clock_property_test.exs test/actor_simulation_property_test.exs
-```
+````
 
 Property tests state the rules virtual time must obey — advancing is additive,
 an event fires exactly once at its due time, and events due at the same instant
