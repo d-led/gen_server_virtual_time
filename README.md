@@ -34,7 +34,7 @@ TEST_PACKAGES=actor_simulation ./scripts/test.sh   # one package
 
 cd packages/actor_simulation && mix test           # work on one package
 mix run benchmarks/virtual_time_speedup.exs        # benchmarks run from the root
-mix precommit                                      # the gate CI runs
+mix precommit                                      # every CI check; --all adds dialyzer
 ```
 
 | What               | Where                                                                          |
