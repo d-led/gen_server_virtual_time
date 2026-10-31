@@ -24,7 +24,7 @@ defmodule ActorSimulation.TemplateVersions.Upgrade do
 
   alias ActorSimulation.TemplateVersions, as: Versions
 
-  @module_path "lib/actor_simulation/template_versions.ex"
+  @module_path "packages/actor_simulation/lib/actor_simulation/template_versions.ex"
   @versions_begin "  # --- versions:begin (managed by `mix templates.upgrade`) ---"
   @versions_end "  # --- versions:end ---"
   @semver ~r/(\d+)\.(\d+)\.(\d+)/

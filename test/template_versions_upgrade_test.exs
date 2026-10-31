@@ -142,7 +142,7 @@ defmodule ActorSimulation.TemplateVersions.UpgradeTest do
       source = File.read!(Upgrade.module_path())
 
       assert Upgrade.rewrite(source, TemplateVersions.versions()) == source,
-             "run `mix templates.upgrade` to re-render lib/actor_simulation/template_versions.ex"
+             "run `mix templates.upgrade` to re-render packages/actor_simulation/lib/actor_simulation/template_versions.ex"
     end
 
     test "changes only the version block, and produces a file that still parses" do

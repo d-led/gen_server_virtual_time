@@ -304,7 +304,7 @@ defmodule TerminationIndicatorTest do
         )
 
       # Save to file for visual verification
-      File.mkdir_p!("generated/examples")
+      ActorSimulation.SitePages.ensure_dir("generated/examples")
 
       # Add generator metadata
       metadata = ActorSimulation.GeneratorMetadata.from_stacktrace()
@@ -363,7 +363,12 @@ defmodule TerminationIndicatorTest do
       </html>
       """
 
-      File.write!("generated/examples/dining_philosophers_condition_terminated.html", html)
+      File.write!(
+        ActorSimulation.SitePages.path(
+          "generated/examples/dining_philosophers_condition_terminated.html"
+        ),
+        html
+      )
 
       IO.puts(
         "\n✅ Generated fork-contention diagram: generated/examples/dining_philosophers_condition_terminated.html"
@@ -419,7 +424,10 @@ defmodule TerminationIndicatorTest do
             "Demonstrates quiescence detection: simulation stops naturally when no more events are scheduled"
         )
 
-      File.write!("generated/examples/dining_philosophers_quiescence.html", html)
+      File.write!(
+        ActorSimulation.SitePages.path("generated/examples/dining_philosophers_quiescence.html"),
+        html
+      )
 
       IO.puts(
         "\n✅ Generated quiescence demonstration: generated/examples/dining_philosophers_quiescence.html"

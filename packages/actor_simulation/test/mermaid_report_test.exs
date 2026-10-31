@@ -4,7 +4,7 @@ defmodule MermaidReportTest do
 
   alias ActorSimulation.MermaidReportGenerator
 
-  @output_dir "generated/examples/reports"
+  @output_dir ActorSimulation.SitePages.path("generated/examples/reports")
 
   setup_all do
     File.mkdir_p!(@output_dir)

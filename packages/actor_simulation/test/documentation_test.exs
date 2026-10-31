@@ -447,4 +447,44 @@ defmodule DocumentationTest do
       assert VirtualTimeGenStateMachine.get_time_backend() == RealTimeBackend
     end
   end
+
+  describe "README observing example" do
+    defmodule MessageCounter do
+      @behaviour VirtualTimeGenServer.Instrumentation
+
+      def on_receive({_kind, _message}, _meta), do: bump(:received)
+      def on_send({_kind, _message}, _meta), do: bump(:sent)
+
+      def snapshot(_context), do: counters()
+
+      defp bump(counter) do
+        Process.put(:counters, Map.update!(counters(), counter, &(&1 + 1)))
+        :ok
+      end
+
+      defp counters, do: Process.get(:counters, %{sent: 0, received: 0})
+    end
+
+    defmodule CountedServer do
+      use VirtualTimeGenServer
+
+      def init(:ok), do: {:ok, %{count: 0}}
+
+      def handle_call(:get_count, _from, state), do: {:reply, state.count, state}
+    end
+
+    test "an observer installed on a server reports what the server received" do
+      {:ok, clock} = VirtualClock.start_link()
+
+      {:ok, server} =
+        VirtualTimeGenServer.start_link(CountedServer, :ok,
+          virtual_clock: clock,
+          instrumentation: MessageCounter
+        )
+
+      VirtualTimeGenServer.call(server, :get_count)
+
+      assert VirtualTimeGenServer.snapshot(server) == {:ok, %{sent: 0, received: 1}}
+    end
+  end
 end

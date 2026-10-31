@@ -1,11 +1,13 @@
-# Used by "mix format"
+# Used by "mix format" at the repository root: it formats the maintainer tooling
+# and the tooling tests here, and every package's own sources.
 [
-  # test/fixtures holds deliberately malformed input, so test/ is listed by
-  # extension rather than by directory.
   inputs: [
     "{mix,.formatter}.exs",
-    "{config,lib,dev}/**/*.{ex,exs}",
-    "test/**/*.exs",
-    "test/support/**/*.ex"
+    "dev/**/*.ex",
+    "test/**/*.{ex,exs}",
+    "packages/*/mix.exs",
+    "packages/*/{lib,dev}/**/*.{ex,exs}",
+    "packages/*/test/**/*.exs",
+    "packages/*/test/support/**/*.ex"
   ]
 ]

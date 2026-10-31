@@ -39,7 +39,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
   ## Example output
 
-      Template versions (lib/actor_simulation/template_versions.ex)
+      Template versions (packages/actor_simulation/lib/actor_simulation/template_versions.ex)
 
       key              current  latest  upstream
       ──────────────────────────────────────────────────────────────────────

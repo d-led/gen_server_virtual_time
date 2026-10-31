@@ -22,13 +22,16 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-# Get current version from mix.exs
-VERSION=$(grep '@version "' $MIX_FILE | head -1 | sed 's/.*"\(.*\)".*/\1/')
+# Get the version every package shares
+VERSION=$(tr -d '[:space:]' < VERSION)
 
 if [ -z "$VERSION" ]; then
-  echo "Error: Could not find version in $MIX_FILE"
+  echo "Error: Could not read the version from VERSION"
   exit 1
 fi
+
+# The three packages are published from this one tag, so they have to agree
+elixir scripts/release.exs check || exit 1
 
 TAG="v$VERSION"
 

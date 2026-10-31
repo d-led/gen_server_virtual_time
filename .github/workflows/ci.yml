@@ -4,42 +4,59 @@ on:
   push:
     branches: [main]
     paths:
-      - 'lib/**'
+      - 'packages/**'
+      - 'dev/**'
       - 'test/**'
       - 'mix.exs'
       - 'mix.lock'
+      - 'VERSION'
       - '.github/workflows/ci.yml'
       - 'scripts/**'
       - 'examples/**'
   pull_request:
     branches: [main]
     paths:
-      - 'lib/**'
+      - 'packages/**'
+      - 'dev/**'
       - 'test/**'
       - 'mix.exs'
       - 'mix.lock'
+      - 'VERSION'
       - '.github/workflows/ci.yml'
       - 'scripts/**'
       - 'examples/**'
 
 jobs:
   test:
-    name: Test (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    name: Test ${{ matrix.package }} (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       checks: write
       pull-requests: write
-    
+
+    defaults:
+      run:
+        working-directory: packages/${{ matrix.package }}
+
     strategy:
       matrix:
         # Deliberately small: the versions we actually support.
-        # Explicit pairs, because OTP support is per Elixir minor.
+        # Explicit pairs, because OTP support is per Elixir minor. The clock gets
+        # the whole matrix; the packages that build on it get the newest pair.
         include:
-          - elixir: '1.19'
+          - package: gen_server_virtual_time
+            elixir: '1.19'
             otp: '28'
-          - elixir: '1.20'
+          - package: gen_server_virtual_time
+            elixir: '1.20'
+            otp: '29'
+          - package: actor_simulation
+            elixir: '1.20'
+            otp: '29'
+          - package: actor_simulation_codegen
+            elixir: '1.20'
             otp: '29'
     
     env:
@@ -83,15 +100,15 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: test-results-${{ matrix.elixir }}-${{ matrix.otp }}
-          path: _build/test/lib/gen_server_virtual_time/test-junit-report.xml
+          name: test-results-${{ matrix.package }}-${{ matrix.elixir }}-${{ matrix.otp }}
+          path: packages/${{ matrix.package }}/_build/test/lib/${{ matrix.package }}/test-junit-report.xml
       
       - name: Publish test report
         uses: mikepenz/action-junit-report@6ef3fdcfcd5f0b5d14df3e659ef19b8c6820f93d # v6.6.1
         if: always()
         with:
-          report_paths: '_build/test/lib/gen_server_virtual_time/test-junit-report.xml'
-          check_name: 'Test Report (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})'
+          report_paths: 'packages/${{ matrix.package }}/_build/test/lib/${{ matrix.package }}/test-junit-report.xml'
+          check_name: 'Test Report (${{ matrix.package }}, Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})'
           detailed_summary: true
           include_passed: true
   
@@ -124,21 +141,25 @@ jobs:
       
       - name: Install dependencies
         run: mix deps.get
+        working-directory: packages/gen_server_virtual_time
       
       - name: Run fast tests with coverage export
         env:
           MIX_ENV: test
+        working-directory: packages/gen_server_virtual_time
         run: mix coveralls --export-coverage fast
       
       - name: Run slow tests with coverage export (for coverage completeness)
         env:
           MIX_ENV: test
+        working-directory: packages/gen_server_virtual_time
         continue-on-error: true
         run: mix coveralls --only slow --export-coverage slow
       
       - name: Run diagram generation tests with coverage export
         env:
           MIX_ENV: test
+        working-directory: packages/gen_server_virtual_time
         continue-on-error: true
         run: mix coveralls --only diagram_generation --export-coverage diagram
       
@@ -146,9 +167,29 @@ jobs:
         env:
           MIX_ENV: test
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: packages/gen_server_virtual_time
         run: |
           mix test.coverage
           mix coveralls.github --import-cover cover
+
+  package-tests:
+    name: Test remaining packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          elixir-version: '1.20'
+          otp-version: '29'
+
+      - name: Run every package suite and the workspace tooling tests
+        env:
+          MIX_ENV: test
+        run: ./scripts/test.sh
   
   quality:
     name: Code Quality
@@ -173,23 +214,31 @@ jobs:
           key: ${{ runner.os }}-mix-quality-${{ hashFiles('**/mix.lock') }}
       
       - name: Install dependencies
-        run: mix deps.get
-      
-      - name: Run code quality checks
         run: |
-          echo "🔍 Running code quality analysis"
-          echo "📊 Checking: formatting, Credo analysis, Dialyzer type checking"
-          echo ""
-      
-      - name: Check formatting
-        run: mix format --check-formatted
-      
+          mix deps.get
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix deps.get)
+          done
+
+      - name: Check formatting (the workspace and every package)
+        run: |
+          mix format --check-formatted
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix format --check-formatted)
+          done
+
       - name: Run Credo
-        run: mix credo --strict
+        run: |
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix credo --strict)
+          done
         continue-on-error: true
-      
+
       - name: Run Dialyzer
-        run: mix dialyzer --format github
+        run: |
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix dialyzer --format github)
+          done
   
   generated-vlingo:
     name: Test Generated VLINGO XOOM Code

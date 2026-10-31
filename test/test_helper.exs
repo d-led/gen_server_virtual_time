@@ -1,12 +1,8 @@
-# Exclude diagram generation tests by default to avoid generating HTML files
-# Run them explicitly with: mix test --include diagram_generation
-# Exclude slow tests by default (they can be run with: mix test --include slow)
-ExUnit.start(exclude: [:diagram_generation, :slow])
+# The root project is the repository workspace: its tests cover the maintainer
+# tooling in `dev/` (the template-version upgrade planner). The packages in
+# `packages/` have their own suites — run `./scripts/test.sh` for all of them.
+ExUnit.start()
 
-# Configure JUnit formatter for CI
 if System.get_env("CI") do
-  ExUnit.configure(
-    formatters: [JUnitFormatter, ExUnit.CLIFormatter],
-    slowest: 10
-  )
+  ExUnit.configure(formatters: [JUnitFormatter, ExUnit.CLIFormatter], slowest: 10)
 end

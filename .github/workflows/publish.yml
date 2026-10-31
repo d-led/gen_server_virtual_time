@@ -41,37 +41,40 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-mix-publish-
 
-      - name: Install dependencies
-        run: |
-          mix deps.get --only prod
-          MIX_ENV=dev mix deps.get --only dev
-          # The test step below runs in the test env, which needs its own deps:
-          # stream_data and junit_formatter are only fetched for :test.
-          MIX_ENV=test mix deps.get --only test
+      - name: Check that every package is at the tagged version
+        run: elixir scripts/release.exs check
 
-      - name: Compile project
-        run: |
-          mix compile
-          MIX_ENV=dev mix compile
-
-      - name: Run tests
+      - name: Test, document and publish each package in dependency order
         env:
           # The workflow-level MIX_ENV is prod, under which test/support is not
-          # compiled, so any test that imports a support module fails to compile.
-          MIX_ENV: test
-        run: mix test --exclude slow --exclude omnetpp
-
-      - name: Build documentation
-        env:
-          MIX_ENV: dev
-        run: mix docs
-
-      - name: Publish to Hex
-        env:
+          # compiled, so the test step below sets it explicitly.
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
           MIX_ENV: dev
+          # With this set the package's mix.exs resolves a sibling as a plain
+          # version requirement instead of a local path, which is what Hex
+          # accepts.
+          HEX_PUBLISH: "1"
         run: |
-          mix hex.publish --yes --replace
+          set -e
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            echo ""
+            echo "=== $package ==="
+            cd "packages/$package"
+            # The packages are published in dependency order, so a dependency may
+            # take a moment to become resolvable after it was published.
+            for attempt in 1 2 3 4 5; do
+              if mix deps.get; then break; fi
+              echo "waiting for the packages this one depends on..."
+              sleep 10
+            done
+            mix deps.get
+            mix compile --warnings-as-errors
+            MIX_ENV=test mix deps.get --only test
+            (MIX_ENV=test mix test --exclude slow --exclude omnetpp)
+            MIX_ENV=dev mix docs
+            mix hex.publish --yes --replace
+            cd -
+          done
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')

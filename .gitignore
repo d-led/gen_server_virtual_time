@@ -341,6 +341,14 @@ examples/*/*.sca
 *.bak
 
 
+# Every package under packages/ is a Mix project of its own
+/packages/*/_build
+/packages/*/deps
+/packages/*/cover
+/packages/*/doc
+/packages/*/priv/plts
+/packages/*/erl_crash.dump
+
 # Dialyzer PLT files
 /priv/plts/
 tmp/
