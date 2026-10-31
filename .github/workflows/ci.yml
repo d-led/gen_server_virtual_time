@@ -186,6 +186,13 @@ jobs:
           elixir-version: '1.20'
           otp-version: '29'
 
+      - name: Install dependencies
+        run: |
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix deps.get)
+          done
+          mix deps.get
+
       - name: Run every package suite and the workspace tooling tests
         env:
           MIX_ENV: test
