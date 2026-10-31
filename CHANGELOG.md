@@ -8,6 +8,22 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `examples/ticker_erlang` and `examples/ticker_gleam`: the same one-minute
+  ticker in Erlang (a `VirtualTimeGenServer` on a rebar3 project) and in Gleam
+  (the clock reached through externals), each asserted without waiting
+
+### Fixed
+
+- Six GitHub workflows watched paths that moved into `packages/` at the split,
+  so the generator validations and the diagram deployment had not run since
+  1.0.0; `test/workflow_paths_test.exs` now fails when a filter names a missing
+  file
+- The build caches key on `VERSION`, so a release no longer makes CI restore a
+  `_build` that still believes the sibling packages are a version behind
+- The orphaned `lib/mix/tasks/precommit.ex` is gone; the gate lives in `dev/`
+
 ## [1.0.1] - 2026-10-31
 
 ### Added
