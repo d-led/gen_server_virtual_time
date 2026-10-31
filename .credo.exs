@@ -10,7 +10,9 @@
         excluded: [
           ~r"/_build/",
           ~r"/deps/",
-          ~r"/node_modules/"
+          ~r"/node_modules/",
+          # Fixtures are the task's input, not code we hold to our style.
+          ~r"/test/fixtures/"
         ]
       },
       plugins: [],

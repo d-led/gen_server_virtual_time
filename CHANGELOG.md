@@ -10,6 +10,10 @@ and this project adheres to
 
 ### Added
 
+- `mix virtual_time.doctor` reads the project's own module references and says
+  which package of the family a missing module lives in, with the `mix.exs` line
+  that fixes the build (`--check` fails instead of reporting, for CI); it also
+  reports calls that were removed together with what to write instead
 - `VirtualTimeGenServer.Instrumentation`: a port for observing what an
   instrumented process does (`on_receive/2`, `on_send/2`, `snapshot/1`),
   installed per process with the `:instrumentation` start option or with
