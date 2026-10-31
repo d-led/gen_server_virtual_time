@@ -37,9 +37,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-publish-${{ hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-publish-
+          key: ${{ runner.os }}-mix-publish-${{ hashFiles('**/mix.lock', 'VERSION') }}
 
       - name: Check that every package is at the tagged version
         run: elixir scripts/release.exs check

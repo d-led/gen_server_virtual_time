@@ -87,9 +87,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-
+          key: ${{ runner.os }}-mix-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('**/mix.lock', 'VERSION') }}
       
       - name: Install dependencies
         run: mix deps.get
@@ -145,7 +143,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-coverage-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-coverage-${{ hashFiles('**/mix.lock', 'VERSION') }}
       
       - name: Install dependencies
         run: mix deps.get
@@ -225,7 +223,7 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-quality-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-quality-${{ hashFiles('**/mix.lock', 'VERSION') }}
       
       - name: Install dependencies
         run: |
