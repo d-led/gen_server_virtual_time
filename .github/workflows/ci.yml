@@ -268,6 +268,8 @@ jobs:
 
       - name: Setup Gleam
         uses: gleam-lang/setup-gleam@878921dcd2d242262b80a6e10e0dd12af285298c # v1.0.2
+        with:
+          gleam-version: '1.19.2'
 
       # rebar_mix drives `mix` for the Elixir dependency, so the runner needs Hex.
       - name: Install Hex for rebar_mix
