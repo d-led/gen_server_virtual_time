@@ -8,7 +8,7 @@ set -e
 
 cd "$(dirname "$0")/.."
 
-packages=${TEST_PACKAGES:-"gen_server_virtual_time actor_simulation actor_simulation_codegen"}
+packages=${TEST_PACKAGES:-"gen_server_virtual_time actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate"}
 
 for package in $packages; do
   echo ""

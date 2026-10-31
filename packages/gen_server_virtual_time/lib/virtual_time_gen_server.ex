@@ -509,9 +509,16 @@ defmodule VirtualTimeGenServer do
     backend.sleep(duration_ms)
   end
 
-  defmacro __using__(_opts) do
+  @doc """
+  Turns the module into a virtual-time server.
+
+  The options are handed to `GenServer`, so `use VirtualTimeGenServer, restart:
+  :transient` means what `use GenServer, restart: :transient` means — which is
+  also what makes `use GenServer` a mechanical rewrite.
+  """
+  defmacro __using__(opts) do
     quote do
-      use GenServer
+      use GenServer, unquote(opts)
 
       @doc """
       Sends a message to this process after a delay in milliseconds.

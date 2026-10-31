@@ -8,6 +8,26 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-31
+
+### Added
+
+- `gen_server_virtual_time_migrate`, a package with one task:
+  `mix virtual_time.migrate` rewrites existing `GenServer` code for the virtual
+  clock — `use GenServer` → `use VirtualTimeGenServer` with its options kept,
+  `Process.send_after/3`, `Process.sleep/1`, `:erlang.send_after/3` and
+  `:timer.sleep/1` inside a converted module, and `GenServer.call/cast/stop/…`
+  whose target is a module the project converts. It reports by default,
+  `--write` applies, `--check` exits non-zero for CI, and it never touches a
+  call it cannot prove safe (a pid, a variable, an unconverted target)
+- `VirtualTimeGenServer` keeps the options `use GenServer` was given, so
+  `restart:` and friends reach the generated `child_spec`
+
+### Changed
+
+- `GenServerVirtualTime.version/0` reports the version the package was compiled
+  at, so it cannot drift from the code that is running
+
 ## [1.0.0] - 2026-10-31
 
 The library is published as a family of packages that share this version. A
@@ -439,7 +459,11 @@ truncated, so a simulation can now report more messages than before.
 - Message tracing and Mermaid diagram generation
 
 [Unreleased]:
-  https://github.com/d-led/gen_server_virtual_time/compare/v0.7.1...HEAD
+  https://github.com/d-led/gen_server_virtual_time/compare/v1.0.1...HEAD
+[1.0.1]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v1.0.0...v1.0.1
+[1.0.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.7.1...v1.0.0
 [0.7.1]:
   https://github.com/d-led/gen_server_virtual_time/compare/v0.7.0...v0.7.1
 [0.7.0]:

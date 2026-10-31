@@ -28,6 +28,8 @@ env:
   MIX_ENV: dev
   ELIXIR_VERSION: "1.20"
   OTP_VERSION: "29"
+  # Every package in the repo, so a new one cannot be missed in the loops below.
+  PACKAGES: 'gen_server_virtual_time actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate'
 
 jobs:
   build-docs:
@@ -58,27 +60,28 @@ jobs:
       
       - name: Install dependencies
         run: |
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix deps.get)
           done
-      
+
       - name: Build documentation
         run: |
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix docs)
           done
           mkdir -p site
           cp -R packages/gen_server_virtual_time/doc/. site/
-          mkdir -p site/actor_simulation site/actor_simulation_codegen
-          cp -R packages/actor_simulation/doc/. site/actor_simulation/
-          cp -R packages/actor_simulation_codegen/doc/. site/actor_simulation_codegen/
-      
+          for package in $PACKAGES; do
+            if [ "$package" != "gen_server_virtual_time" ]; then
+              mkdir -p "site/$package"
+              cp -R "packages/$package/doc/." "site/$package/"
+            fi
+          done
+
       - name: Check for documentation warnings
         run: |
           failed=0
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
-            output=$(cd "packages/$package" && mix docs 2>&1)
-            echo "$output"
+          for package in $PACKAGES; do
             if echo "$output" | grep -q "warning:.*does not exist"; then
               echo "❌ $package documentation has broken links"
               failed=1

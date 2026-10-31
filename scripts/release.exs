@@ -7,11 +7,11 @@
 #
 # The packages share one version and are released together from one tag, so the
 # version lives in VERSION and is written into each mix.exs and each README's
-# dependency snippet by this script. A tag `vX.Y.Z` publishes all three in
+# dependency snippet by this script. A tag `vX.Y.Z` publishes all of them in
 # dependency order (.github/workflows/publish.yml).
 
 defmodule Release do
-  @packages ~w(gen_server_virtual_time actor_simulation actor_simulation_codegen)
+  @packages ~w(gen_server_virtual_time actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate)
   @version_file "VERSION"
 
   def main(["bump", kind]) do
@@ -20,10 +20,15 @@ defmodule Release do
 
     File.write!(@version_file, next <> "\n")
     each_package(fn dir -> rewriter(dir, next) end)
-    rewrite_changelog(next)
+    rewrite_workspace_version(next)
+    rewrite_changelog(current, next)
 
     IO.puts("#{current} -> #{next}")
-    IO.puts("Updated #{@version_file}, three mix.exs files, three READMEs and CHANGELOG.md")
+
+    IO.puts(
+      "Updated #{@version_file}, #{length(@packages)} mix.exs files, #{length(@packages)} READMEs and CHANGELOG.md"
+    )
+
     IO.puts("Next: review the diff, commit, then ./scripts/tag_and_push_version.sh")
   end
 
@@ -74,6 +79,12 @@ defmodule Release do
 
   defp each_package(fun), do: Enum.each(@packages, &fun.("packages/#{&1}"))
 
+  # The workspace app is not published, but its version is the requirement each of
+  # its path deps has to satisfy, so it has to move with the packages.
+  defp rewrite_workspace_version(version) do
+    replace!("mix.exs", ~r/@version "[^"]+"/, ~s(@version "#{version}"))
+  end
+
   defp rewriter(dir, version) do
     replace!("#{dir}/mix.exs", ~r/@version "[^"]+"/, ~s(@version "#{version}"))
 
@@ -84,9 +95,10 @@ defmodule Release do
     end
   end
 
-  defp rewrite_changelog(version) do
+  defp rewrite_changelog(previous, version) do
     path = "CHANGELOG.md"
     today = Date.utc_today() |> Date.to_iso8601()
+    compare = "https://github.com/d-led/gen_server_virtual_time/compare"
 
     contents =
       path
@@ -96,9 +108,12 @@ defmodule Release do
         "## [Unreleased]\n\n## [#{version}] - #{today}\n",
         global: false
       )
+      # The released version gets its own compare link, and `Unreleased` moves on
+      # to the new tag, so the file keeps working with Keep a Changelog.
       |> String.replace(
         ~r/^\[Unreleased\]:\n  \S+$/m,
-        "[Unreleased]:\n  https://github.com/d-led/gen_server_virtual_time/compare/v#{version}...HEAD",
+        "[Unreleased]:\n  #{compare}/v#{version}...HEAD\n" <>
+          "[#{version}]:\n  #{compare}/v#{previous}...v#{version}",
         global: false
       )
 

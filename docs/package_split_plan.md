@@ -1,11 +1,13 @@
 # Plan: split `gen_server_virtual_time` into a family of packages
 
-Status: **phases 0, 1, 2 (as a move, without the renames), 4 and 5 landed in 1.0.0** ·
-Target release: **1.0.0** (published 2026-10-31) · Author: maintainers · Date: 2026-10-31
+Status: **phases 0, 1, 2 (as a move, without the renames), 4 and 5 landed in
+1.0.0** · Target release: **1.0.0** (published 2026-10-31) · Author: maintainers
+· Date: 2026-10-31
 
-What is still open is §7.1/§7.2 (the source-rewriting tasks), the
-`ActorSimulation.Codegen.*` renames with deprecation shims, and per-package
-coverage gating in CI (only the clock's coverage is merged today).
+`gen_server_virtual_time_migrate` (§7.1, `mix virtual_time.migrate`) landed in
+1.0.1. What is still open is §7.2 (`mix virtual_time.upgrade` for the
+`ActorSimulation.Codegen.*` renames), the renames with deprecation shims, and
+per-package coverage gating in CI (only the clock's coverage is merged today).
 
 ## 0. Summary of decisions
 
@@ -25,27 +27,38 @@ Nothing in the plan requires an umbrella project. See §5 for the mechanics.
 
 **Goals**
 
-1. Someone who wants "test my GenServer without waiting" adds one dependency and reads one page. Today they add a package whose description mentions C++, Pony, Go, Rust, Java and OMNeT++.
-2. Code generation and simulation stop influencing the core's dependency list, compile time and release cadence.
-3. Adoption-friendly release: `1.0.0` of the core does **not** force code changes — only `mix.exs`.
+1. Someone who wants "test my GenServer without waiting" adds one dependency and
+   reads one page. Today they add a package whose description mentions C++,
+   Pony, Go, Rust, Java and OMNeT++.
+2. Code generation and simulation stop influencing the core's dependency list,
+   compile time and release cadence.
+3. Adoption-friendly release: `1.0.0` of the core does **not** force code
+   changes — only `mix.exs`.
 4. A tested migration path, including a source-rewriting task.
 
 **Non-goals**
 
-- Rewriting the clock or changing its semantics. The clock keeps working exactly as it does now.
-- Splitting per generator target (six packages) — revisited only if compile time or dependency cost becomes a real complaint.
+- Rewriting the clock or changing its semantics. The clock keeps working exactly
+  as it does now.
+- Splitting per generator target (six packages) — revisited only if compile time
+  or dependency cost becomes a real complaint.
 - An umbrella project (§5.3 explains why not).
 
 **Success criteria** (measured 3 months after 1.0.0)
 
-- Core package: `mix hex.info` dependency list is `logger` only; `mix docs` builds without the generator pages.
-- A scratch project can `Mix.install([{:gen_server_virtual_time, "~> 1.0"}])` and run the README's first test in under a minute.
-- `mix virtual_time.upgrade --check` reports clean on a project that followed the upgrade guide.
-- No user reported "module not available" caused by the split in the first month.
+- Core package: `mix hex.info` dependency list is `logger` only; `mix docs`
+  builds without the generator pages.
+- A scratch project can `Mix.install([{:gen_server_virtual_time, "~> 1.0"}])`
+  and run the README's first test in under a minute.
+- `mix virtual_time.upgrade --check` reports clean on a project that followed
+  the upgrade guide.
+- No user reported "module not available" caused by the split in the first
+  month.
 
 ## 2. Where we are today
 
-`mix.exs` publishes `lib/` of a single project — 11,363 lines across four unrelated concerns:
+`mix.exs` publishes `lib/` of a single project — 11,363 lines across four
+unrelated concerns:
 
 | Concern                        | Files                                                                                                                                  | LOC   | Current location    |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------------------- |
@@ -56,9 +69,21 @@ Nothing in the plan requires an umbrella project. See §5 for the mechanics.
 
 Three couplings have to be dealt with before anything moves:
 
-1. **Instrumentation was baked into the wrappers — fixed, see §4.1.** `VirtualTimeGenServer.Wrapper` and `.call/3` reached into the process dictionary (`:__vtgs_stats_enabled__`, `:__vtgs_stats__`, `:__vtgs_actor_name__`, `:global_trace_collector`) and exposed `:__vtgs_get_stats__` as a protocol between the clock and the simulation. That is a _simulation_ concern living inside the core. It was also subtly broken: `ActorSimulation.add_process/3` did `Process.put(:__vtgs_actor_name__, name)` in the **caller**, while the wrapper read it in the **server** process.
-2. **The core's version comes from `Mix.Project.config()`** (`GenServerVirtualTime.version/0`), which at runtime returns the _consumer's_ version, and `PonyGenerator` embeds that value into generated projects.
-3. **`use VirtualTimeGenServer` ignores its options** (`__using__/1` matches `_opts`), so `use GenServer, restart: :transient` cannot be migrated mechanically today — the option would be silently dropped.
+1. **Instrumentation was baked into the wrappers — fixed, see §4.1.**
+   `VirtualTimeGenServer.Wrapper` and `.call/3` reached into the process
+   dictionary (`:__vtgs_stats_enabled__`, `:__vtgs_stats__`,
+   `:__vtgs_actor_name__`, `:global_trace_collector`) and exposed
+   `:__vtgs_get_stats__` as a protocol between the clock and the simulation.
+   That is a _simulation_ concern living inside the core. It was also subtly
+   broken: `ActorSimulation.add_process/3` did
+   `Process.put(:__vtgs_actor_name__, name)` in the **caller**, while the
+   wrapper read it in the **server** process.
+2. **The core's version comes from `Mix.Project.config()`**
+   (`GenServerVirtualTime.version/0`), which at runtime returns the _consumer's_
+   version, and `PonyGenerator` embeds that value into generated projects.
+3. **`use VirtualTimeGenServer` ignores its options** (`__using__/1` matches
+   `_opts`), so `use GenServer, restart: :transient` cannot be migrated
+   mechanically today — the option would be silently dropped.
 
 ## 3. Target shape
 
@@ -84,30 +109,50 @@ graph LR
 
 Notes:
 
-- `ActorSimulation.GeneratorMetadata` sounds like codegen but is provenance for HTML reports; it goes to `actor_simulation`. Keeping the name avoids a pointless rename.
-- `mix templates.upgrade` becomes `mix actor_simulation.upgrade` (old name kept as an alias task) and lives in the codegen package, so `:inets`/`:ssl` never enter the core.
-- `DiningPhilosophers` moves to `packages/actor_simulation/test/support/`. `Mix.Tasks.Cover` / `Mix.Tasks.Precommit` move to `dev/` in the core package (they leave the published set — intentional).
-- `VirtualClock` stays in the core package for now. Extracting it later (`virtual_clock` package, name is free on Hex) is a _non-breaking_ follow-up: the module name does not change, users only add a dependency. Do not do it in 1.0.
+- `ActorSimulation.GeneratorMetadata` sounds like codegen but is provenance for
+  HTML reports; it goes to `actor_simulation`. Keeping the name avoids a
+  pointless rename.
+- `mix templates.upgrade` becomes `mix actor_simulation.upgrade` (old name kept
+  as an alias task) and lives in the codegen package, so `:inets`/`:ssl` never
+  enter the core.
+- `DiningPhilosophers` moves to `packages/actor_simulation/test/support/`.
+  `Mix.Tasks.Cover` / `Mix.Tasks.Precommit` move to `dev/` in the core package
+  (they leave the published set — intentional).
+- `VirtualClock` stays in the core package for now. Extracting it later
+  (`virtual_clock` package, name is free on Hex) is a _non-breaking_ follow-up:
+  the module name does not change, users only add a dependency. Do not do it in
+  1.0.
 
 ### 3.2 What is genuinely breaking in 1.0.0
 
-1. `ActorSimulation*` no longer comes from `gen_server_virtual_time` — add `{:actor_simulation, "~> 1.0"}`. `mix virtual_time.doctor` says so, with the file and line that need it.
-2. `ActorSimulation.{CAF,Phony,Pony,Ractor,Vlingo,OMNeTpp}Generator` and `.TemplateVersions` warn as deprecated; canonical names are `ActorSimulation.Codegen.*` (removal in 2.0).
-3. Simulation statistics/tracing moved from process-dictionary hooks to the `VirtualTimeGenServer.Instrumentation` behaviour (§4.1, landed).
-4. `Mix.Tasks.Cover` and `Mix.Tasks.Precommit` are no longer shipped; `DiningPhilosophers` is no longer shipped.
-5. `GenServerVirtualTime.version/0` returns the library version it always should have (compile-time), not the caller's project version.
+1. `ActorSimulation*` no longer comes from `gen_server_virtual_time` — add
+   `{:actor_simulation, "~> 1.0"}`. `mix virtual_time.doctor` says so, with the
+   file and line that need it.
+2. `ActorSimulation.{CAF,Phony,Pony,Ractor,Vlingo,OMNeTpp}Generator` and
+   `.TemplateVersions` warn as deprecated; canonical names are
+   `ActorSimulation.Codegen.*` (removal in 2.0).
+3. Simulation statistics/tracing moved from process-dictionary hooks to the
+   `VirtualTimeGenServer.Instrumentation` behaviour (§4.1, landed).
+4. `Mix.Tasks.Cover` and `Mix.Tasks.Precommit` are no longer shipped;
+   `DiningPhilosophers` is no longer shipped.
+5. `GenServerVirtualTime.version/0` returns the library version it always should
+   have (compile-time), not the caller's project version.
 
-Everything else — `VirtualClock`, `VirtualTimeGenServer`, `VirtualTimeGenStateMachine`, `TimeBackend` and friends — keeps its name and behaviour. That is the headline of the release.
+Everything else — `VirtualClock`, `VirtualTimeGenServer`,
+`VirtualTimeGenStateMachine`, `TimeBackend` and friends — keeps its name and
+behaviour. That is the headline of the release.
 
 ## 4. Prerequisite refactor — **landed**
 
-The instrumentation port is implemented: `lib/virtual_time_gen_server/instrumentation.ex`
-(the behaviour), the wrapper's observer hooks, `VirtualTimeGenServer.instrument/1` and
-`snapshot/1`, and `lib/actor_simulation/observer.ex` for the numbers a simulation reports.
-`test/instrumentation_test.exs` specifies the port; `test/process_in_loop_test.exs` holds
-`ActorSimulation` to it.
+The instrumentation port is implemented:
+`lib/virtual_time_gen_server/instrumentation.ex` (the behaviour), the wrapper's
+observer hooks, `VirtualTimeGenServer.instrument/1` and `snapshot/1`, and
+`lib/actor_simulation/observer.ex` for the numbers a simulation reports.
+`test/instrumentation_test.exs` specifies the port;
+`test/process_in_loop_test.exs` holds `ActorSimulation` to it.
 
-Do this **before** moving files; it is the only real design work and it must be reviewed on its own.
+Do this **before** moving files; it is the only real design work and it must be
+reviewed on its own.
 
 ### 4.1 `VirtualTimeGenServer.Instrumentation` — as implemented
 
@@ -129,20 +174,45 @@ Installed per process, never globally:
 
 Decisions taken while implementing:
 
-- **The library's own traffic is invisible.** The wrapper answers `snapshot/1` before the observer is told anything, so reading statistics cannot change them — without this, `ActorSimulation`'s "read until the totals settle" loop would never settle.
-- **The observed message, not the transport.** A clock delivery arrives as `{:info, the_message}`; `{:__vtgs_delivered__, token, msg}` never reaches an observer.
-- **No `rescue` around observers.** An observer that raises raises in the process running it (documented on the behaviour). Swallowing it would hide the bug, and the library is not in the business of guessing which observer errors are benign.
-- **`ActorSimulation.Observer` counts in the process it observes**, keeping the counters under its own key. That is the shape of the library state that legitimately belongs to the simulation, and it is not visible to the core.
-- **Removed, not deprecated**: `enable_stats_tracking/0,2`, `get_process_stats/0`, `generate_incoming_trace_event/2`, `set_global_trace_collector/1,3`, `get_global_trace_collector/0`, the `:stats_enabled` start option and the `:__vtgs_*` keys. Keeping them would have meant keeping a counter implementation in the core, which is the coupling being removed. `enable_stats_tracking` and `generate_incoming_trace_event` had no callers outside `ActorSimulation`; the global trace collector had none at all.
+- **The library's own traffic is invisible.** The wrapper answers `snapshot/1`
+  before the observer is told anything, so reading statistics cannot change them
+  — without this, `ActorSimulation`'s "read until the totals settle" loop would
+  never settle.
+- **The observed message, not the transport.** A clock delivery arrives as
+  `{:info, the_message}`; `{:__vtgs_delivered__, token, msg}` never reaches an
+  observer.
+- **No `rescue` around observers.** An observer that raises raises in the
+  process running it (documented on the behaviour). Swallowing it would hide the
+  bug, and the library is not in the business of guessing which observer errors
+  are benign.
+- **`ActorSimulation.Observer` counts in the process it observes**, keeping the
+  counters under its own key. That is the shape of the library state that
+  legitimately belongs to the simulation, and it is not visible to the core.
+- **Removed, not deprecated**: `enable_stats_tracking/0,2`,
+  `get_process_stats/0`, `generate_incoming_trace_event/2`,
+  `set_global_trace_collector/1,3`, `get_global_trace_collector/0`, the
+  `:stats_enabled` start option and the `:__vtgs_*` keys. Keeping them would
+  have meant keeping a counter implementation in the core, which is the coupling
+  being removed. `enable_stats_tracking` and `generate_incoming_trace_event` had
+  no callers outside `ActorSimulation`; the global trace collector had none at
+  all.
 
-Tests: `test/instrumentation_test.exs` (order of events, scheduled messages, the library's query being invisible, the server process running the observer, opaque terms passed through, uninstrumented servers, send-side instrumentation and its removal, spec normalization) and a new `process_in_loop_test.exs` case that a real server's statistics come from its observer.
+Tests: `test/instrumentation_test.exs` (order of events, scheduled messages, the
+library's query being invisible, the server process running the observer, opaque
+terms passed through, uninstrumented servers, send-side instrumentation and its
+removal, spec normalization) and a new `process_in_loop_test.exs` case that a
+real server's statistics come from its observer.
 
 ### 4.2 Still to do in this phase
 
-- `VirtualTimeGenServer.__using__(opts)` forwards `opts` to `GenServer.__using__` (needed by §7.1).
+- `VirtualTimeGenServer.__using__(opts)` forwards `opts` to
+  `GenServer.__using__` (needed by §7.1).
 - `version/0` becomes compile-time (`@version Mix.Project.config()[:version]`).
 
-Exit criteria: `mix test`, `mix test --only slow`, `mix test --only diagram_generation`, `mix format --check-formatted`, `mix credo --strict`, `mix dialyzer`, `mix docs` green; published as 0.7.0 with a CHANGELOG "no action required" note.
+Exit criteria: `mix test`, `mix test --only slow`,
+`mix test --only diagram_generation`, `mix format --check-formatted`,
+`mix credo --strict`, `mix dialyzer`, `mix docs` green; published as 0.7.0 with
+a CHANGELOG "no action required" note.
 
 ## 5. Repository mechanics
 
@@ -163,11 +233,18 @@ Exit criteria: `mix test`, `mix test --only slow`, `mix test --only diagram_gene
   docs/                       # design notes + this plan + upgrade guide
 ```
 
-The root `mix.exs` stays a Mix project with `aliases` only, e.g. `mix test.all`, `mix format.all`, `mix versions.check`. It declares no `:app` and no deps, so `mix compile` there is a no-op and nothing can silently depend on the workspace.
+The root `mix.exs` stays a Mix project with `aliases` only, e.g. `mix test.all`,
+`mix format.all`, `mix versions.check`. It declares no `:app` and no deps, so
+`mix compile` there is a no-op and nothing can silently depend on the workspace.
 
 ### 5.2 Sibling dependencies without breaking publishing
 
-Hex drops non-Hex dependencies from published metadata ("non-Hex dependencies will not be used during dependency resolution and neither will they be listed as dependencies of the package"). So a published package must declare a plain version requirement, while day-to-day work must use the sibling sources. One helper, duplicated in each `mix.exs` (10 lines; a shared file would have to be packaged, and `mix.exs` is evaluated in isolation):
+Hex drops non-Hex dependencies from published metadata ("non-Hex dependencies
+will not be used during dependency resolution and neither will they be listed as
+dependencies of the package"). So a published package must declare a plain
+version requirement, while day-to-day work must use the sibling sources. One
+helper, duplicated in each `mix.exs` (10 lines; a shared file would have to be
+packaged, and `mix.exs` is evaluated in isolation):
 
 ```elixir
 @version "1.0.0"
@@ -184,24 +261,49 @@ defp sibling(app) do
 end
 ```
 
-`{:dep, "~> 1.0", path: nil}` is a valid dependency spec, and `Mix.Dep` ignores a nil path. The residual risk — a consumer having an unrelated `../gen_server_virtual_time` next to the package — is what §5.4 catches.
+`{:dep, "~> 1.0", path: nil}` is a valid dependency spec, and `Mix.Dep` ignores
+a nil path. The residual risk — a consumer having an unrelated
+`../gen_server_virtual_time` next to the package — is what §5.4 catches.
 
 ### 5.3 Why not an umbrella
 
-Umbrella children depend on siblings with `in_umbrella: true`, which is not publishable, and umbrella children share the parent's `_build`/config — fine for apps, wrong for independently versioned libraries. Flat sibling directories with explicit sibling deps are what Elixir's own multi-package repos do, and they keep `mix hex.build` semantics obvious.
+Umbrella children depend on siblings with `in_umbrella: true`, which is not
+publishable, and umbrella children share the parent's `_build`/config — fine for
+apps, wrong for independently versioned libraries. Flat sibling directories with
+explicit sibling deps are what Elixir's own multi-package repos do, and they
+keep `mix hex.build` semantics obvious.
 
 ### 5.4 Version sync and release
 
 - `VERSION` at the root, plus a literal `@version` in each `mix.exs`.
-- `scripts/bump_version.sh <major|minor|patch|rc|release>` writes all five places, the README pins, and the CHANGELOG heading.
-- `mix versions.check` (root alias) fails if: any `@version` differs from `VERSION`, or `VERSION` differs from the `v*` tag being built.
-- `.github/workflows/publish.yml` publishes in dependency order — core → simulation → codegen → migrate — each with `source_url: ".../tree/v<version>/packages/<pkg>"` so ExDoc "View source" links point into the monorepo. Publishing all four on every tag keeps the invariant trivially true; the workflow skips a package whose version is already on Hex (`mix hex.info <pkg> <version>`), so a re-run after a partial failure is safe.
-- `scripts/verify_packaging.sh` (the load-bearing test, run in CI before publishing):
-  1. `mix hex.build` each package, `--unpack`, and assert no `path:` dependency survived into the package metadata;
-  2. publish all four into a **local Hex repository** (`mix hex.repo add local file://…`);
-  3. create a scratch project (no sibling directories anywhere), add only `{:gen_server_virtual_time, "~> x.y.z"}` and then only `{:actor_simulation_codegen, "~> x.y.z"}`, run `mix deps.get`, compile with `--warnings-as-errors`, and run a two-line smoke test (`VirtualClock.advance/2` reaching a tick; `ActorSimulation.Codegen.CAF.generate/2` returning files).
+- `scripts/bump_version.sh <major|minor|patch|rc|release>` writes all five
+  places, the README pins, and the CHANGELOG heading.
+- `mix versions.check` (root alias) fails if: any `@version` differs from
+  `VERSION`, or `VERSION` differs from the `v*` tag being built.
+- `.github/workflows/publish.yml` publishes in dependency order — core →
+  simulation → codegen → migrate — each with
+  `source_url: ".../tree/v<version>/packages/<pkg>"` so ExDoc "View source"
+  links point into the monorepo. Publishing all four on every tag keeps the
+  invariant trivially true; the workflow skips a package whose version is
+  already on Hex (`mix hex.info <pkg> <version>`), so a re-run after a partial
+  failure is safe.
+- `scripts/verify_packaging.sh` (the load-bearing test, run in CI before
+  publishing):
+  1. `mix hex.build` each package, `--unpack`, and assert no `path:` dependency
+     survived into the package metadata;
+  2. publish all four into a **local Hex repository**
+     (`mix hex.repo add local file://…`);
+  3. create a scratch project (no sibling directories anywhere), add only
+     `{:gen_server_virtual_time, "~> x.y.z"}` and then only
+     `{:actor_simulation_codegen, "~> x.y.z"}`, run `mix deps.get`, compile with
+     `--warnings-as-errors`, and run a two-line smoke test
+     (`VirtualClock.advance/2` reaching a tick;
+     `ActorSimulation.Codegen.CAF.generate/2` returning files).
 
-  Spike step (half a day, first thing in Phase 4): confirm the local-repository round trip works offline and that Hex accepts four packages with the same version in one session. If it does not, fall back to (1) plus installing from unpacked tarballs through `path:` in the scratch project, and record the gap.
+  Spike step (half a day, first thing in Phase 4): confirm the local-repository
+  round trip works offline and that Hex accepts four packages with the same
+  version in one session. If it does not, fall back to (1) plus installing from
+  unpacked tarballs through `path:` in the scratch project, and record the gap.
 
 ### 5.5 CI changes
 
@@ -221,9 +323,17 @@ Umbrella children depend on siblings with `in_umbrella: true`, which is not publ
 >
 > **Test time-based GenServers instantly — no waiting, no flaky timing.**
 >
-> This is the [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler) idea applied to the BEAM: the clock is yours to advance, so a test describes the timeline it wants instead of sleeping through it.
+> This is the [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler)
+> idea applied to the BEAM: the clock is yours to advance, so a test describes
+> the timeline it wants instead of sleeping through it.
 >
-> > **This release is a breaking change in packaging only.** `VirtualClock`, `VirtualTimeGenServer` and `VirtualTimeGenStateMachine` keep their names and behaviour. The actor-simulation DSL and the code generators moved to their own packages, so the library you add for testing a GenServer no longer carries six code generators. Migration is usually one line in `mix.exs` — see [Upgrading to 1.0](docs/upgrading_to_1_0.md) and run `mix virtual_time.upgrade --check`.
+> > **This release is a breaking change in packaging only.** `VirtualClock`,
+> > `VirtualTimeGenServer` and `VirtualTimeGenStateMachine` keep their names and
+> > behaviour. The actor-simulation DSL and the code generators moved to their
+> > own packages, so the library you add for testing a GenServer no longer
+> > carries six code generators. Migration is usually one line in `mix.exs` —
+> > see [Upgrading to 1.0](docs/upgrading_to_1_0.md) and run
+> > `mix virtual_time.upgrade --check`.
 >
 > ### The family
 >
@@ -248,7 +358,9 @@ Umbrella children depend on siblings with `in_umbrella: true`, which is not publ
 > end
 > ```
 >
-> Then `mix deps.get` and run your tests. If you used the generators directly, `mix virtual_time.upgrade --write` renames the modules for you; the old names still work but warn.
+> Then `mix deps.get` and run your tests. If you used the generators directly,
+> `mix virtual_time.upgrade --write` renames the modules for you; the old names
+> still work but warn.
 >
 > ### Start here
 >
@@ -264,25 +376,40 @@ Umbrella children depend on siblings with `in_umbrella: true`, which is not publ
 | `packages/gen_server_virtual_time/lib/gen_server_virtual_time.ex` | Moduledoc rewritten as the family hub with `@moduledoc` cross-links                              |
 | `CONTRIBUTING.md`                                                 | "which package does this belong to" decision rule; how to run all tests                          |
 
-`test/documentation_test.exs` already executes README snippets, so it moves into the core package and keeps the README honest — extend it with a test that the dependency snippet in the README matches `VERSION`.
+`test/documentation_test.exs` already executes README snippets, so it moves into
+the core package and keeps the README honest — extend it with a test that the
+dependency snippet in the README matches `VERSION`.
 
 ## 7. Migration tooling
 
 There are two levels, and the first one needs no extra package:
 
-- **`mix virtual_time.doctor` ships in the core package** (landed, §7.0). It reads the project's own module references, and for every module that is not available tells the maintainer which package of the family it lives in and the `mix.exs` line to add — plus, for calls that were removed, what to write instead. That is the answer to "the build broke, now what" without installing anything.
-- **`gen_server_virtual_time_migrate`** (below) rewrites code, which the doctor deliberately does not.
+- **`mix virtual_time.doctor` ships in the core package** (landed, §7.0). It
+  reads the project's own module references, and for every module that is not
+  available tells the maintainer which package of the family it lives in and the
+  `mix.exs` line to add — plus, for calls that were removed, what to write
+  instead. That is the answer to "the build broke, now what" without installing
+  anything.
+- **`gen_server_virtual_time_migrate`** (below) rewrites code, which the doctor
+  deliberately does not.
 
-Why the doctor rather than a compile-time message: a dependency cannot add text to another project's compile error. When `ActorSimulation` is not installed, the error is Elixir's (`module ActorSimulation is not available`), and nothing we ship can change it. What we can control is (a) that a module keeps its name, so the only fix is a dependency, and (b) that one command explains the fix. Both are true.
+Why the doctor rather than a compile-time message: a dependency cannot add text
+to another project's compile error. When `ActorSimulation` is not installed, the
+error is Elixir's (`module ActorSimulation is not available`), and nothing we
+ship can change it. What we can control is (a) that a module keeps its name, so
+the only fix is a dependency, and (b) that one command explains the fix. Both
+are true.
 
-Published in `gen_server_virtual_time_migrate`, dev-only by nature (`{:gen_server_virtual_time_migrate, "~> 1.0", only: :dev}`). Two tasks, both **report-only by default**.
+Published in `gen_server_virtual_time_migrate`, dev-only by nature
+(`{:gen_server_virtual_time_migrate, "~> 1.0", only: :dev}`). Two tasks, both
+**report-only by default**.
 
 ### 7.0 `mix virtual_time.doctor` — shipped in the core package (landed)
 
-| Flag | Meaning |
-| --- | --- |
-| _(none)_ | Report what the project has to change; exit 0 either way |
-| `--check` | Exit 1 when something has to change (CI guard) |
+| Flag                      | Meaning                                                   |
+| ------------------------- | --------------------------------------------------------- |
+| _(none)_                  | Report what the project has to change; exit 0 either way  |
+| `--check`                 | Exit 1 when something has to change (CI guard)            |
 | `--paths lib,test,config` | Default; files that do not parse are reported and skipped |
 
 What it does: scans the tree for remote calls and struct literals
@@ -317,7 +444,24 @@ not; the most specific package wins; a removed call carries its replacement;
 `format/1` says "nothing to do" on an empty report and offers each dependency
 once; and the task reads a tree end to end.
 
-### 7.1 `mix virtual_time.migrate` — `GenServer` → `VirtualTimeGenServer`
+### 7.1 `mix virtual_time.migrate` — `GenServer` → `VirtualTimeGenServer` (landed in 1.0.1)
+
+What shipped differs from the sketch below in three ways, each for a reason:
+
+- **Token replacement instead of `Code.quoted_to_algebra/2`.** Rewriting the
+  quoted form reformats untouched lines, and the point of this task is a diff a
+  reviewer reads. Each edit carries the source text it expects at its position
+  and is checked against the source before it joins the plan, so a plan cannot
+  be applied to text it does not describe.
+- **No `--json` and no dirty-tree guard yet.** `--paths` is repeatable rather
+  than comma-separated, because a real path may contain a comma — the
+  comma-split version silently dropped paths in this very test suite.
+- **`@behaviour GenServer` modules are not reported yet**: they keep working,
+  and a report line without a rewrite is better added once someone asks for it.
+
+Rule 4 stayed a rewrite (it is the reason to run the task at all); the plan's
+open question 3 is answered "keep it", with the safety net that the whole run
+aborts before writing if a rewrite would not parse.
 
 | Flag               | Meaning                                                                                                       |
 | ------------------ | ------------------------------------------------------------------------------------------------------------- |
@@ -329,33 +473,71 @@ once; and the task reads a tree end to end.
 
 Rules, in order:
 
-1. **Parse** every file with `Code.string_to_quoted_with_comments/2`; files that fail to parse are reported and skipped.
-2. **Discover** modules that `use GenServer` / `use GenStateMachine` / `use :gen_statem`, and modules carrying `@behaviour GenServer` (report-only: "written by hand").
-3. **Rewrite declarations**: `use GenServer` → `use VirtualTimeGenServer`, preserving options (works only after §4.2 lands).
-4. **Rewrite intra-module time calls**: `Process.send_after(...)` and `:erlang.send_after(...)` inside converted modules → `VirtualTimeGenServer.send_after/3`; `:timer.sleep`, `Process.sleep` → `VirtualTimeGenServer.sleep/1`. Report-only when the module also runs in production and the caller has not opted into `use_real_time/0` (the migration plan's core promise: same code, both clocks).
-5. **Rewrite cross-module calls** — only when the target resolves to a converted module: `GenServer.call/cast/stop/reply/start_link/start/child_spec`. Targets that are variables, pids, `__MODULE__`, remote modules or unknown → listed as "needs a human", never guessed.
-6. **Report** a per-file table plus a `git diff --stat`-style summary; `--write` refuses to run with a dirty tree unless `--force` (this repo's git discipline, extended to the user's repo).
+1. **Parse** every file with `Code.string_to_quoted_with_comments/2`; files that
+   fail to parse are reported and skipped.
+2. **Discover** modules that `use GenServer` / `use GenStateMachine` /
+   `use :gen_statem`, and modules carrying `@behaviour GenServer` (report-only:
+   "written by hand").
+3. **Rewrite declarations**: `use GenServer` → `use VirtualTimeGenServer`,
+   preserving options (works only after §4.2 lands).
+4. **Rewrite intra-module time calls**: `Process.send_after(...)` and
+   `:erlang.send_after(...)` inside converted modules →
+   `VirtualTimeGenServer.send_after/3`; `:timer.sleep`, `Process.sleep` →
+   `VirtualTimeGenServer.sleep/1`. Report-only when the module also runs in
+   production and the caller has not opted into `use_real_time/0` (the migration
+   plan's core promise: same code, both clocks).
+5. **Rewrite cross-module calls** — only when the target resolves to a converted
+   module: `GenServer.call/cast/stop/reply/start_link/start/child_spec`. Targets
+   that are variables, pids, `__MODULE__`, remote modules or unknown → listed as
+   "needs a human", never guessed.
+6. **Report** a per-file table plus a `git diff --stat`-style summary; `--write`
+   refuses to run with a dirty tree unless `--force` (this repo's git
+   discipline, extended to the user's repo).
 
-Rewrite mechanics: the quoted form with comments is passed to `Code.quoted_to_algebra/2` — the same pipeline as `mix format` — so the output is well-formed and idempotent. A rewrite that changes formatting of untouched lines is acceptable and expected (the diff shows it); a rewrite that fails `Code.string_to_quoted!` is a bug and must abort the whole run without writing.
+Rewrite mechanics: the quoted form with comments is passed to
+`Code.quoted_to_algebra/2` — the same pipeline as `mix format` — so the output
+is well-formed and idempotent. A rewrite that changes formatting of untouched
+lines is acceptable and expected (the diff shows it); a rewrite that fails
+`Code.string_to_quoted!` is a bug and must abort the whole run without writing.
 
 Testing (this is the part the release depends on):
 
-- `test/fixtures/migrate/<case>/{before,after}.ex` golden files covering: plain `use GenServer`; `use GenServer, restart: :transient`; a converted module calling another converted module; a call to an _unconverted_ module (must stay); dynamic target (must be reported, not rewritten); a file with `# comments` and `~s`/`~S` sigils; a module already using `VirtualTimeGenServer` (no-op).
-- Every fixture also asserts: `--write` twice changes nothing the second time; `--check` on the `after` file exits 0; the `after` file compiles in a temp project together with a stub of the library.
-- A property test: for any fixture, `report(before)` describes exactly the set of `after`-vs-`before` edits.
-- A test asserting `--write` leaves the file byte-identical when the only match is inside a string literal or a comment.
-- An end-to-end test that runs the task against a copy of this repo's own `test/` tree and asserts it never touches files outside the given paths.
+- `test/fixtures/migrate/<case>/{before,after}.ex` golden files covering: plain
+  `use GenServer`; `use GenServer, restart: :transient`; a converted module
+  calling another converted module; a call to an _unconverted_ module (must
+  stay); dynamic target (must be reported, not rewritten); a file with
+  `# comments` and `~s`/`~S` sigils; a module already using
+  `VirtualTimeGenServer` (no-op).
+- Every fixture also asserts: `--write` twice changes nothing the second time;
+  `--check` on the `after` file exits 0; the `after` file compiles in a temp
+  project together with a stub of the library.
+- A property test: for any fixture, `report(before)` describes exactly the set
+  of `after`-vs-`before` edits.
+- A test asserting `--write` leaves the file byte-identical when the only match
+  is inside a string literal or a comment.
+- An end-to-end test that runs the task against a copy of this repo's own
+  `test/` tree and asserts it never touches files outside the given paths.
 
 ### 7.2 `mix virtual_time.upgrade` — the split's renames
 
-- `ActorSimulation.CAFGenerator` → `ActorSimulation.Codegen.CAF` (and the five siblings), `ActorSimulation.TemplateVersions` → `ActorSimulation.Codegen.TemplateVersions`, `mix templates.upgrade` → `mix actor_simulation.upgrade` in docs and aliases.
-- Report-only by default; `--write` rewrites module references only, and **prints** the dependency lines to add rather than editing `mix.exs` (a `deps/0` function is arbitrary Elixir; guessing is how migration tools lose trust).
-- `--write` also rewrites `Mix.install([...])` lists in `*.exs` scripts, where the list is a literal and safe.
+- `ActorSimulation.CAFGenerator` → `ActorSimulation.Codegen.CAF` (and the five
+  siblings), `ActorSimulation.TemplateVersions` →
+  `ActorSimulation.Codegen.TemplateVersions`, `mix templates.upgrade` →
+  `mix actor_simulation.upgrade` in docs and aliases.
+- Report-only by default; `--write` rewrites module references only, and
+  **prints** the dependency lines to add rather than editing `mix.exs` (a
+  `deps/0` function is arbitrary Elixir; guessing is how migration tools lose
+  trust).
+- `--write` also rewrites `Mix.install([...])` lists in `*.exs` scripts, where
+  the list is a literal and safe.
 - Same fixture/golden/idempotency test harness as §7.1.
 
 ### 7.3 Deprecation shims make the tool optional
 
-Because the old module names keep working for one major version, the tasks are a convenience, not a prerequisite. That is deliberate: a user who only edits `mix.exs` gets a green build with warnings; a user who runs `mix virtual_time.upgrade --write` gets a clean one.
+Because the old module names keep working for one major version, the tasks are a
+convenience, not a prerequisite. That is deliberate: a user who only edits
+`mix.exs` gets a green build with warnings; a user who runs
+`mix virtual_time.upgrade --write` gets a clean one.
 
 ## 8. Execution phases
 
@@ -368,7 +550,8 @@ Because the old module names keep working for one major version, the tasks are a
 | 4     | release engineering: local-repo round trip, publish workflow, per-package docs with monorepo `source_url`, coverage merge                                                    | `1.0.0-rc.0` published for all four packages; scratch-project install verified by CI                             | 2 d    |
 | 5     | READMEs, upgrade guide, examples, `generated/` regeneration, docs hub                                                                                                        | docs build with 0 warnings per package; README tests green                                                       | 1–2 d  |
 
-Total ≈ 2.5–3 weeks of focused work. Phases 0 and 1 are the only ones that block everything else.
+Total ≈ 2.5–3 weeks of focused work. Phases 0 and 1 are the only ones that block
+everything else.
 
 ## 9. Risks
 
@@ -385,6 +568,10 @@ Total ≈ 2.5–3 weeks of focused work. Phases 0 and 1 are the only ones that b
 
 ## 10. Open questions
 
-1. Should `virtual_clock` be its own package (non-breaking, post-1.0)? Recommended: not yet.
-2. Is `actor_simulation_codegen` the name we want long-term, or `actor_codegen`? (Both free on Hex.)
-3. Do we cut `mix virtual_time.migrate`'s rule 4 (rewriting `Process.send_after`) to report-only in the first release? It is the riskiest rewrite; it may deserve one release of soak time.
+1. Should `virtual_clock` be its own package (non-breaking, post-1.0)?
+   Recommended: not yet.
+2. Is `actor_simulation_codegen` the name we want long-term, or `actor_codegen`?
+   (Both free on Hex.)
+3. Do we cut `mix virtual_time.migrate`'s rule 4 (rewriting
+   `Process.send_after`) to report-only in the first release? It is the riskiest
+   rewrite; it may deserve one release of soak time.

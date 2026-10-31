@@ -3,7 +3,7 @@ defmodule GenServerVirtualTime.Workspace.MixProject do
   The repository workspace, not a package.
 
   It exists so that the checked-in `scripts/`, `benchmarks/`, `examples/` and the
-  maintainer tooling in `dev/` can run against the three packages with one `mix`
+  maintainer tooling in `dev/` can run against the packages with one `mix`
   invocation (and so `mix test` at the root covers the tooling tests). Each
   package in `packages/` is a project of its own: run `mix test` inside it, or
   `./scripts/test.sh` from here for all of them.
@@ -11,7 +11,7 @@ defmodule GenServerVirtualTime.Workspace.MixProject do
 
   use Mix.Project
 
-  @version "1.0.0"
+  @version "1.0.1"
 
   def project do
     [
@@ -39,6 +39,8 @@ defmodule GenServerVirtualTime.Workspace.MixProject do
       {:gen_server_virtual_time, "~> #{@version}", path: "packages/gen_server_virtual_time"},
       {:actor_simulation, "~> #{@version}", path: "packages/actor_simulation"},
       {:actor_simulation_codegen, "~> #{@version}", path: "packages/actor_simulation_codegen"},
+      {:gen_server_virtual_time_migrate, "~> #{@version}",
+       path: "packages/gen_server_virtual_time_migrate"},
 
       # `mix templates.upgrade` and the scripts it runs
       {:jason, "~> 1.4"},

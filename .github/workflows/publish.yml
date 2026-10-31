@@ -57,7 +57,7 @@ jobs:
         run: |
           set -e
           version=$(tr -d '[:space:]' < VERSION)
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate; do
             echo ""
             echo "=== $package ==="
             cd "packages/$package"

@@ -16,17 +16,18 @@ a model into a runnable C++, Go, Pony, Rust or Java project is
 
 ## The family
 
-| Package                                                                   | What it is for                                               | Add it when                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------- |
-| [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)   | virtual clock, `GenServer`/`gen_statem` wrappers              | you test code with timers (this package brings it) |
-| **`actor_simulation`** (this one)                                         | actor-system DSL, statistics, sequence diagrams               | you model parts of a system talking to each other |
-| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen) | generate runnable C++, Go, Pony, Rust, Java, OMNeT++ projects | you want the same model in another runtime        |
+| Package                                                                                 | What it is for                                                | Add it when                                        |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)                 | virtual clock, `GenServer`/`gen_statem` wrappers              | you test code with timers (this package brings it) |
+| [`gen_server_virtual_time_migrate`](https://hexdocs.pm/gen_server_virtual_time_migrate) | `mix virtual_time.migrate` rewrites `GenServer` code          | you already have servers and want to keep them     |
+| **`actor_simulation`** (this one)                                                       | actor-system DSL, statistics, sequence diagrams               | you model parts of a system talking to each other  |
+| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen)               | generate runnable C++, Go, Pony, Rust, Java, OMNeT++ projects | you want the same model in another runtime         |
 
 ## Install
 
 ```elixir
 def deps do
-  [{:actor_simulation, "~> 1.0.0"}]
+  [{:actor_simulation, "~> 1.0.1"}]
 end
 ```
 
@@ -114,8 +115,8 @@ ActorSimulation.new()
 
 ### Process-in-the-loop (mix real and simulated)
 
-A real `VirtualTimeGenServer` is counted by
-`ActorSimulation.Observer`, so its statistics look like a simulated actor's.
+A real `VirtualTimeGenServer` is counted by `ActorSimulation.Observer`, so its
+statistics look like a simulated actor's.
 
 ```elixir
 defmodule MyRealServer do

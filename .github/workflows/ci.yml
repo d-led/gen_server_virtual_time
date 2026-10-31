@@ -26,6 +26,11 @@ on:
       - 'scripts/**'
       - 'examples/**'
 
+env:
+  # Every package in the repo. One list, so adding a package cannot be forgotten
+  # in one of the loops below.
+  PACKAGES: 'gen_server_virtual_time actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate'
+
 jobs:
   test:
     name: Test ${{ matrix.package }} (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
@@ -56,6 +61,9 @@ jobs:
             elixir: '1.20'
             otp: '29'
           - package: actor_simulation_codegen
+            elixir: '1.20'
+            otp: '29'
+          - package: gen_server_virtual_time_migrate
             elixir: '1.20'
             otp: '29'
     
@@ -188,7 +196,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix deps.get)
           done
           mix deps.get
@@ -196,8 +204,7 @@ jobs:
       - name: Run every package suite and the workspace tooling tests
         env:
           MIX_ENV: test
-        run: ./scripts/test.sh
-  
+        run: ./scripts/test.sh  
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
@@ -223,27 +230,27 @@ jobs:
       - name: Install dependencies
         run: |
           mix deps.get
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix deps.get)
           done
 
       - name: Check formatting (the workspace and every package)
         run: |
           mix format --check-formatted
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix format --check-formatted)
           done
 
       - name: Run Credo
         run: |
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix credo --strict)
           done
         continue-on-error: true
 
       - name: Run Dialyzer
         run: |
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+          for package in $PACKAGES; do
             (cd "packages/$package" && mix dialyzer --format github)
           done
   

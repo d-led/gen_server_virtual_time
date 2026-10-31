@@ -2,8 +2,8 @@
 
 Test time-based GenServers instantly — no waiting, no flaky timing.
 
-This is the [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler) idea
-applied to the BEAM: the clock is yours to advance, so a test describes the
+This is the [RxJS TestScheduler](https://rxjs.dev/api/testing/TestScheduler)
+idea applied to the BEAM: the clock is yours to advance, so a test describes the
 timeline it wants instead of sleeping through it. It does the same for
 `GenServer` and `:gen_statem`, and nothing else — modelling whole actor systems
 and generating code in other languages are separate packages.
@@ -16,13 +16,15 @@ and generating code in other languages are separate packages.
 ## The family
 
 The library is published as packages that share one version. A module keeps its
-name wherever it lives, so choosing what you need is a dependency, not a rewrite.
+name wherever it lives, so choosing what you need is a dependency, not a
+rewrite.
 
-| Package                                                                                   | What it is for                                                                  | Add it when                                        |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **`gen_server_virtual_time`** (this one)                                                  | virtual clock, `GenServer`/`gen_statem` wrappers, time backends                 | you test code with timers                          |
-| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                                 | actor-system DSL, statistics, sequence diagrams                                 | you model parts of a system talking to each other  |
-| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen)                 | generate runnable C++, Go, Pony, Rust, Java, OMNeT++ projects from a simulation | you want the same model in another runtime         |
+| Package                                                                                 | What it is for                                                                  | Add it when                                       |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **`gen_server_virtual_time`** (this one)                                                | virtual clock, `GenServer`/`gen_statem` wrappers, time backends                 | you test code with timers                         |
+| [`gen_server_virtual_time_migrate`](https://hexdocs.pm/gen_server_virtual_time_migrate) | `mix virtual_time.migrate` rewrites `GenServer` code for the virtual clock      | you already have servers and want to keep them    |
+| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                               | actor-system DSL, statistics, sequence diagrams                                 | you model parts of a system talking to each other |
+| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen)               | generate runnable C++, Go, Pony, Rust, Java, OMNeT++ projects from a simulation | you want the same model in another runtime        |
 
 ## ⚡ Start here
 
@@ -30,7 +32,7 @@ name wherever it lives, so choosing what you need is a dependency, not a rewrite
 
    ```elixir
    def deps do
-     [{:gen_server_virtual_time, "~> 1.0.0"}]
+     [{:gen_server_virtual_time, "~> 1.0.1"}]
    end
    ```
 
@@ -56,16 +58,16 @@ name wherever it lives, so choosing what you need is a dependency, not a rewrite
 
 ## Which page do I need?
 
-| I want to…                                    | Go to                                                                    |
-| --------------------------------------------- | ------------------------------------------------------------------------ |
-| Test a GenServer with timers                  | [100 seconds in milliseconds](#test-100-seconds-of-behavior-in-milliseconds) |
-| Test a state machine with timeouts            | [State machine example](#test-state-machines-with-virtual-time)          |
-| Measure a server's traffic                    | [Observing a server](#observing-a-server)                                |
-| Upgrade from 0.7                               | [Upgrading and the doctor](#upgrading-and-the-doctor)                    |
-| Understand how the clock works                | [VirtualClock design](docs/virtual_clock_design.md)                      |
-| Keep tests isolated from each other           | [Local clock injection](docs/local_clock_injection_feature.md)           |
-| Simulate actors talking to each other         | [`actor_simulation`](https://hexdocs.pm/actor_simulation)                |
-| Generate C++ / Go / Pony / Rust / Java        | [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen) |
+| I want to…                             | Go to                                                                        |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| Test a GenServer with timers           | [100 seconds in milliseconds](#test-100-seconds-of-behavior-in-milliseconds) |
+| Test a state machine with timeouts     | [State machine example](#test-state-machines-with-virtual-time)              |
+| Measure a server's traffic             | [Observing a server](#observing-a-server)                                    |
+| Upgrade from 0.7                       | [Upgrading and the doctor](#upgrading-and-the-doctor)                        |
+| Understand how the clock works         | [VirtualClock design](docs/virtual_clock_design.md)                          |
+| Keep tests isolated from each other    | [Local clock injection](docs/local_clock_injection_feature.md)               |
+| Simulate actors talking to each other  | [`actor_simulation`](https://hexdocs.pm/actor_simulation)                    |
+| Generate C++ / Go / Pony / Rust / Java | [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen)    |
 
 ## Show Me The Code
 
@@ -148,17 +150,17 @@ end
 
 ## What you get
 
-| Module                                  | Use it to                                     |
-| --------------------------------------- | --------------------------------------------- |
-| `VirtualTimeGenServer`                  | Test real GenServers with timers              |
-| `VirtualTimeGenStateMachine`            | Test state machines with timeouts             |
-| `VirtualTimeGenServer.Instrumentation`  | Measure a server's traffic — counters, traces |
-| `VirtualClock`                          | Drive time yourself, for anything else        |
+| Module                                 | Use it to                                     |
+| -------------------------------------- | --------------------------------------------- |
+| `VirtualTimeGenServer`                 | Test real GenServers with timers              |
+| `VirtualTimeGenStateMachine`           | Test state machines with timeouts             |
+| `VirtualTimeGenServer.Instrumentation` | Measure a server's traffic — counters, traces |
+| `VirtualClock`                         | Drive time yourself, for anything else        |
 
 Both wrappers are drop-in replacements: `use VirtualTimeGenServer` instead of
-`use GenServer`, `use VirtualTimeGenStateMachine` instead of `use GenStateMachine`.
-Every standard callback keeps working — `handle_call`, `handle_cast`,
-`handle_info`, `handle_continue`, `handle_event`, timeouts.
+`use GenServer`, `use VirtualTimeGenStateMachine` instead of
+`use GenStateMachine`. Every standard callback keeps working — `handle_call`,
+`handle_cast`, `handle_info`, `handle_continue`, `handle_event`, timeouts.
 
 ## Quick API Reference
 
@@ -250,18 +252,27 @@ The code refers to modules this project does not have.
 
 Add to your deps:
 
-    {:actor_simulation, "~> 1.0.0"}
+    {:actor_simulation, "~> 1.0.1"}
+```
+
+To move existing servers onto the virtual clock, the
+[`gen_server_virtual_time_migrate`](https://hexdocs.pm/gen_server_virtual_time_migrate)
+package does the edits:
+
+```bash
+mix virtual_time.migrate           # what it would change, and what needs a human
+mix virtual_time.migrate --write   # apply it
 ```
 
 ## Why virtual time?
 
-| Problem            | Real time   | Virtual time                                 |
-| ------------------ | ----------- | -------------------------------------------- |
-| Test 1 hour behavior | 1 hour wait | ~33 ms (measured)                          |
-| Flaky timing issues | Common     | None: the clock is a value you advance       |
-| Precise assertions  | `>= 10`    | `== 10`                                      |
-| Deterministic       | No         | Yes                                          |
-| Throughput          | 1x         | ~60,000 virtual events per real second       |
+| Problem              | Real time   | Virtual time                           |
+| -------------------- | ----------- | -------------------------------------- |
+| Test 1 hour behavior | 1 hour wait | ~33 ms (measured)                      |
+| Flaky timing issues  | Common      | None: the clock is a value you advance |
+| Precise assertions   | `>= 10`     | `== 10`                                |
+| Deterministic        | No          | Yes                                    |
+| Throughput           | 1x          | ~60,000 virtual events per real second |
 
 The clock is what is deterministic: the same run produces the same message
 counts and the same timestamps. Tracing is an observation of a run rather than
@@ -276,7 +287,8 @@ scheduled.
 - [Local clock injection](docs/local_clock_injection_feature.md) — isolated,
   race-free tests
 - [API reference](https://hexdocs.pm/gen_server_virtual_time) ·
-  [Changelog](https://github.com/d-led/gen_server_virtual_time/blob/main/CHANGELOG.md) ·
+  [Changelog](https://github.com/d-led/gen_server_virtual_time/blob/main/CHANGELOG.md)
+  ·
   [Contributing guide](https://github.com/d-led/gen_server_virtual_time/blob/main/CONTRIBUTING.md)
 
 ## Inspiration

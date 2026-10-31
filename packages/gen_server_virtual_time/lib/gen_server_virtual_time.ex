@@ -1,14 +1,20 @@
 defmodule GenServerVirtualTime do
   @moduledoc """
-  A library for testing time-dependent GenServers and simulating actor systems using virtual time.
+  Virtual time for `GenServer` and `:gen_statem`: test time-dependent processes
+  by advancing a clock a test owns, instead of sleeping through the timeline.
 
-  This library provides two main capabilities:
+  This package is the clock and the OTP wrappers, and nothing else. The rest of
+  the library is published separately, with the same module names, so what you
+  need is a dependency rather than a rewrite:
 
-  1. **VirtualTimeGenServer**: A drop-in replacement for GenServer that supports virtual time,
-     allowing you to test time-dependent behaviors instantly without waiting for real time to pass.
+  | Package | Add it when |
+  | --- | --- |
+  | `gen_server_virtual_time` (this one) | you test code with timers |
+  | `actor_simulation` | you model parts of a system talking to each other |
+  | `actor_simulation_codegen` | you want the same model in C++, Go, Pony, Rust, Java or OMNeT++ |
 
-  2. **ActorSimulation**: A DSL for defining and simulating complex actor systems with message
-     rates, patterns, and comprehensive statistics collection.
+  `mix virtual_time.doctor` reads a project and says which of them a missing
+  module needs.
 
   ## Quick Example
 
@@ -39,15 +45,19 @@ defmodule GenServerVirtualTime do
 
   ## Modules
 
-  - `VirtualClock` - Manages virtual time and scheduled events
-  - `VirtualTimeGenServer` - GenServer with virtual time support
-  - `ActorSimulation` - DSL for actor system simulation
+  - `VirtualClock` - the virtual timeline and its scheduled events
+  - `VirtualTimeGenServer` - a `GenServer` that schedules on that timeline
+  - `VirtualTimeGenStateMachine` - the same for `:gen_statem`
+  - `VirtualTimeGenServer.Instrumentation` - the port for measuring a server
+  - `VirtualTimeGenServer.Doctor` - reports modules a project is missing
 
-  See the README for comprehensive examples and usage patterns.
+  See the README for examples and the design docs for the clock.
   """
+
+  @app_version Mix.Project.config()[:version]
 
   @doc """
   Returns the version of the library.
   """
-  def version, do: Mix.Project.config()[:version]
+  def version, do: @app_version
 end

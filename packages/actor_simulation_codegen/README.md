@@ -3,8 +3,8 @@
 Turn an `actor_simulation` model into a runnable project in another language:
 C++ (CAF or OMNeT++), Go (Phony), Pony, Rust (Ractor) or Java (VLINGO XOOM).
 Each generated project comes with build files, a CI workflow, a test suite and,
-for every target but OMNeT++, callback interfaces, so behaviour can be customised
-without editing generated code.
+for every target but OMNeT++, callback interfaces, so behaviour can be
+customised without editing generated code.
 
 Prototype in Elixir where a simulated hour takes a millisecond, then take the
 same model to production.
@@ -14,11 +14,12 @@ same model to production.
 
 ## The family
 
-| Package                                                                   | What it is for                                               | Add it when                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------- |
-| [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)   | virtual clock, `GenServer`/`gen_statem` wrappers              | you test code with timers                          |
-| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                 | actor-system DSL, statistics, sequence diagrams               | you model parts of a system talking to each other |
-| **`actor_simulation_codegen`** (this one)                                 | generate runnable projects in six runtimes                     | you want the same model in another language        |
+| Package                                                                                 | What it is for                                       | Add it when                                       |
+| --------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------- |
+| [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)                 | virtual clock, `GenServer`/`gen_statem` wrappers     | you test code with timers                         |
+| [`gen_server_virtual_time_migrate`](https://hexdocs.pm/gen_server_virtual_time_migrate) | `mix virtual_time.migrate` rewrites `GenServer` code | you already have servers and want to keep them    |
+| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                               | actor-system DSL, statistics, sequence diagrams      | you model parts of a system talking to each other |
+| **`actor_simulation_codegen`** (this one)                                               | generate runnable projects in six runtimes           | you want the same model in another language       |
 
 This package depends on `actor_simulation`, which brings
 `gen_server_virtual_time` with it.
@@ -27,20 +28,20 @@ This package depends on `actor_simulation`, which brings
 
 ```elixir
 def deps do
-  [{:actor_simulation_codegen, "~> 1.0.0"}]
+  [{:actor_simulation_codegen, "~> 1.0.1"}]
 end
 ```
 
 ## Targets
 
-| Generator   | Language | Framework                                                | Output                                       |
-| ----------- | -------- | -------------------------------------------------------- | -------------------------------------------- |
-| **CAF**     | C++      | [C++ Actor Framework](https://www.actor-framework.org/)   | Typed actors, CMake build, Conan deps, tests |
-| **Phony**   | Go       | [Phony](https://github.com/Arceliar/phony)                | Zero-alloc actors, Go modules, tests         |
-| **Pony**    | Pony     | [Pony Language](https://www.ponylang.io/)                 | Type-safe actors, Corral deps, PonyTest      |
-| **Ractor**  | Rust     | [Ractor](https://github.com/slawlor/ractor)               | Gen_server-inspired, Cargo, async/await      |
-| **VLINGO**  | Java     | [VLINGO XOOM](https://docs.vlingo.io/)                    | Protocol actors, Maven, JUnit 5              |
-| **OMNeT++** | C++      | [OMNeT++](https://omnetpp.org/)                           | Discrete-event simulation, NED files, CMake  |
+| Generator   | Language | Framework                                               | Output                                       |
+| ----------- | -------- | ------------------------------------------------------- | -------------------------------------------- |
+| **CAF**     | C++      | [C++ Actor Framework](https://www.actor-framework.org/) | Typed actors, CMake build, Conan deps, tests |
+| **Phony**   | Go       | [Phony](https://github.com/Arceliar/phony)              | Zero-alloc actors, Go modules, tests         |
+| **Pony**    | Pony     | [Pony Language](https://www.ponylang.io/)               | Type-safe actors, Corral deps, PonyTest      |
+| **Ractor**  | Rust     | [Ractor](https://github.com/slawlor/ractor)             | Gen_server-inspired, Cargo, async/await      |
+| **VLINGO**  | Java     | [VLINGO XOOM](https://docs.vlingo.io/)                  | Protocol actors, Maven, JUnit 5              |
+| **OMNeT++** | C++      | [OMNeT++](https://omnetpp.org/)                         | Discrete-event simulation, NED files, CMake  |
 
 Each is generated from the same simulation:
 
@@ -75,9 +76,9 @@ ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_output/")
 Then build the output with its own toolchain — each generated project ships a
 `README.md` with the exact commands:
 
-| Target  | Build                                    |
-| ------- | ---------------------------------------- |
-| CAF     | `cmake` + `conan`                        |
+| Target  | Build                                     |
+| ------- | ----------------------------------------- |
+| CAF     | `cmake` + `conan`                         |
 | OMNeT++ | `cmake` (NED files and a runnable config) |
 | Pony    | `make` (Corral for dependencies)          |
 | Phony   | `go test ./...`                           |
