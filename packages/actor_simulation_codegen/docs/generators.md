@@ -3,8 +3,8 @@
 This library includes **six production-ready code generators** that translate
 ActorSimulation DSL into different languages and frameworks.
 
-Each snippet pins the version that was current when this page was written; check
-[Hex](https://hex.pm/packages/gen_server_virtual_time) for the latest.
+The snippets below install `actor_simulation_codegen`, which brings the
+simulation DSL and the clock with it.
 
 ## Single-File Script Examples
 
@@ -16,7 +16,7 @@ you can generate complete projects with just `Mix.install`!
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
+Mix.install([{:actor_simulation_codegen, "~> 1.1"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:sender,
@@ -24,17 +24,17 @@ simulation = ActorSimulation.new()
       targets: [:receiver])
   |> ActorSimulation.add_actor(:receiver)
 
-{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.OMNeTPP.generate(simulation,
   network_name: "SimpleNetwork")
 
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_out/")
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, "omnetpp_out/")
 ```
 
 ### CAF (C++ Actor Framework)
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
+Mix.install([{:actor_simulation_codegen, "~> 1.1"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:worker,
@@ -42,18 +42,18 @@ simulation = ActorSimulation.new()
       targets: [:processor])
   |> ActorSimulation.add_actor(:processor)
 
-{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.CAF.generate(simulation,
   project_name: "MyActors",
   enable_callbacks: true)  # Callback interfaces!
 
-ActorSimulation.CAFGenerator.write_to_directory(files, "caf_out/")
+ActorSimulation.Codegen.CAF.write_to_directory(files, "caf_out/")
 ```
 
 ### Pony (Capabilities-Secure)
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
+Mix.install([{:actor_simulation_codegen, "~> 1.1"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:sender,
@@ -61,18 +61,18 @@ simulation = ActorSimulation.new()
       targets: [:receiver])
   |> ActorSimulation.add_actor(:receiver)
 
-{:ok, files} = ActorSimulation.PonyGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Pony.generate(simulation,
   project_name: "my_actors",
   enable_callbacks: true)
 
-ActorSimulation.PonyGenerator.write_to_directory(files, "pony_out/")
+ActorSimulation.Codegen.Pony.write_to_directory(files, "pony_out/")
 ```
 
 ### Phony (Go Actors)
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
+Mix.install([{:actor_simulation_codegen, "~> 1.1"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:worker,
@@ -80,18 +80,18 @@ simulation = ActorSimulation.new()
       targets: [:processor])
   |> ActorSimulation.add_actor(:processor)
 
-{:ok, files} = ActorSimulation.PhonyGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Phony.generate(simulation,
   project_name: "my_actors",
   enable_callbacks: true)
 
-ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
+ActorSimulation.Codegen.Phony.write_to_directory(files, "phony_out/")
 ```
 
 ### Ractor (Rust Actors)
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
+Mix.install([{:actor_simulation_codegen, "~> 1.1"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:producer,
@@ -99,18 +99,18 @@ simulation = ActorSimulation.new()
       targets: [:consumer])
   |> ActorSimulation.add_actor(:consumer)
 
-{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Ractor.generate(simulation,
   project_name: "my_actors",
   enable_callbacks: true)
 
-ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_out/")
+ActorSimulation.Codegen.Ractor.write_to_directory(files, "ractor_out/")
 ```
 
 ### VLINGO XOOM (Java Actors)
 
 ```elixir
 #!/usr/bin/env elixir
-Mix.install([{:gen_server_virtual_time, "~> 0.6.0"}])
+Mix.install([{:actor_simulation_codegen, "~> 1.1"}])
 
 simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:publisher,
@@ -118,12 +118,12 @@ simulation = ActorSimulation.new()
       targets: [:subscriber])
   |> ActorSimulation.add_actor(:subscriber)
 
-{:ok, files} = ActorSimulation.VlingoGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Vlingo.generate(simulation,
   project_name: "my-actors",
   group_id: "com.example",
   enable_callbacks: true)
 
-ActorSimulation.VlingoGenerator.write_to_directory(files, "vlingo_out/")
+ActorSimulation.Codegen.Vlingo.write_to_directory(files, "vlingo_out/")
 ```
 
 ## Complete Examples

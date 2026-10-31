@@ -11,11 +11,11 @@ simulation = ActorSimulation.new()
       targets: [:processor])
   |> ActorSimulation.add_actor(:processor)
 
-{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Ractor.generate(simulation,
   project_name: "my_actors",
   enable_callbacks: true)
 
-ActorSimulation.RactorGenerator.write_to_directory(files, "ractor_out/")
+ActorSimulation.Codegen.Ractor.write_to_directory(files, "ractor_out/")
 ```
 
 ## Why Ractor?
@@ -174,7 +174,7 @@ One-shot delayed message (1 second delay) using `tokio::time::sleep`.
 ## Configuration
 
 ```elixir
-{:ok, files} = ActorSimulation.RactorGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Ractor.generate(simulation,
   project_name: "my_actors",      # Cargo package name
   enable_callbacks: true,          # Generate callback traits
   rust_edition: "2021",            # Rust edition (2015, 2018, 2021)

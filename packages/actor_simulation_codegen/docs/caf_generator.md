@@ -17,11 +17,11 @@ simulation = ActorSimulation.new()
   |> ActorSimulation.add_actor(:subscriber3)
 
 # Generate CAF project with callback interfaces
-{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.CAF.generate(simulation,
   project_name: "PubSubActors",
   enable_callbacks: true)
 
-ActorSimulation.CAFGenerator.write_to_directory(files, "caf_output/")
+ActorSimulation.Codegen.CAF.write_to_directory(files, "caf_output/")
 ```
 
 ## Generated Files
@@ -113,7 +113,7 @@ simulation =
       targets: [:sink])
   |> ActorSimulation.add_actor(:sink)
 
-{:ok, files} = ActorSimulation.CAFGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.CAF.generate(simulation,
   project_name: "PipelineActors",
   enable_callbacks: true)
 ```

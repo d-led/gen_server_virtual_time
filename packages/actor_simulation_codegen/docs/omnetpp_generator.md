@@ -17,11 +17,11 @@ simulation =
   |> ActorSimulation.add_actor(:subscriber3)
 
 # Generate complete OMNeT++ project
-{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.OMNeTPP.generate(simulation,
   network_name: "PubSubNetwork",
   sim_time_limit: 10)
 
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_output/")
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, "omnetpp_output/")
 ```
 
 ## Generated Files
@@ -119,11 +119,11 @@ simulation =
   |> ActorSimulation.add_actor(:sub2)
   |> ActorSimulation.add_actor(:sub3)
 
-{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.OMNeTPP.generate(simulation,
   network_name: "PubSubNetwork",
   sim_time_limit: 10)
 
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, "omnetpp_pubsub/")
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, "omnetpp_pubsub/")
 ```
 
 **Generated NED topology:**
@@ -177,7 +177,7 @@ void Publisher::handleMessage(cMessage *msg) {
 ## Advanced Options
 
 ```elixir
-{:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.OMNeTPP.generate(simulation,
   network_name: "MyNetwork",      # Network name (required)
   sim_time_limit: 60.0,           # Simulation duration in seconds
   output_dir: "custom/path/"      # Custom output path (documentation only)

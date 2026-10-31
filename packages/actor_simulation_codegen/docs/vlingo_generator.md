@@ -20,7 +20,7 @@ Maven projects with:
 
 ```elixir
 alias ActorSimulation, as: Sim
-alias ActorSimulation.VlingoGenerator, as: VG
+alias ActorSimulation.Codegen.Vlingo, as: VG
 
 # Define your actor system
 simulation = Sim.new()
@@ -232,7 +232,7 @@ public class LoadBalancerActorTest {
 ## Generator Options
 
 ```elixir
-VlingoGenerator.generate(simulation,
+Vlingo.generate(simulation,
   # Required: Maven artifact name (kebab-case)
   project_name: "my-actors",
 

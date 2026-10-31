@@ -11,11 +11,11 @@ simulation = ActorSimulation.new()
       targets: [:processor])
   |> ActorSimulation.add_actor(:processor)
 
-{:ok, files} = ActorSimulation.PhonyGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Phony.generate(simulation,
   project_name: "my_actors",
   enable_callbacks: true)
 
-ActorSimulation.PhonyGenerator.write_to_directory(files, "phony_out/")
+ActorSimulation.Codegen.Phony.write_to_directory(files, "phony_out/")
 ```
 
 ## Why Phony?

@@ -12,11 +12,11 @@ simulation = ActorSimulation.new()
       targets: [:receiver])
   |> ActorSimulation.add_actor(:receiver)
 
-{:ok, files} = ActorSimulation.PonyGenerator.generate(simulation,
+{:ok, files} = ActorSimulation.Codegen.Pony.generate(simulation,
   project_name: "my_actors",
   enable_callbacks: true)
 
-ActorSimulation.PonyGenerator.write_to_directory(files, "pony_out/")
+ActorSimulation.Codegen.Pony.write_to_directory(files, "pony_out/")
 ```
 
 ## Why Pony?
