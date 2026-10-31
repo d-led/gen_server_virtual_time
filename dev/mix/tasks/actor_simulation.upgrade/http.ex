@@ -1,6 +1,6 @@
-defmodule Mix.Tasks.Templates.Upgrade.Http do
+defmodule Mix.Tasks.ActorSimulation.Upgrade.Http do
   @moduledoc """
-  The one part of `mix templates.upgrade` that needs the network: an HTTP GET
+  The one part of `mix actor_simulation.upgrade` that needs the network: an HTTP GET
   with certificate verification, plus a token when one is in the environment.
 
   It lives in its own module so the task around it stays testable: everything

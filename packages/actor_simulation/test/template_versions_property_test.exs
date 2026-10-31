@@ -1,6 +1,6 @@
 defmodule ActorSimulation.TemplateVersionsPropertyTest do
   @moduledoc """
-  Laws for the version table that `mix templates.upgrade` reads and writes.
+  Laws for the version table that `mix actor_simulation.upgrade` reads and writes.
 
   The table is data, and the upgrade task derives decisions from it: how much of
   an upstream version to take, and what the "major" of the current pin is. A pin

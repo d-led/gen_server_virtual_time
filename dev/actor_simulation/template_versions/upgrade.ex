@@ -4,7 +4,7 @@ defmodule ActorSimulation.TemplateVersions.Upgrade do
   `ActorSimulation.TemplateVersions.sources/0` and rewrites the version table.
 
   This module is pure: it never talks to the network itself. `plan/1` takes a
-  `fetch` function and a table, and returns what would change. `Mix.Tasks.Templates.Upgrade`
+  `fetch` function and a table, and returns what would change. `Mix.Tasks.ActorSimulation.Upgrade`
   supplies the HTTP client; the tests supply a stub.
 
   `sources/0` describes where each version comes from, so this module only has to
@@ -25,7 +25,7 @@ defmodule ActorSimulation.TemplateVersions.Upgrade do
   alias ActorSimulation.TemplateVersions, as: Versions
 
   @module_path "packages/actor_simulation/lib/actor_simulation/template_versions.ex"
-  @versions_begin "  # --- versions:begin (managed by `mix templates.upgrade`) ---"
+  @versions_begin "  # --- versions:begin (managed by `mix actor_simulation.upgrade`) ---"
   @versions_end "  # --- versions:end ---"
   @semver ~r/(\d+)\.(\d+)\.(\d+)/
 

@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Templates.Upgrade.HttpTest do
+defmodule Mix.Tasks.ActorSimulation.Upgrade.HttpTest do
   @moduledoc """
   The task's HTTP client is the only part of the upgrade tooling that needs the
   network, so it is the part worth checking: that requests identify the tool,
@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Templates.Upgrade.HttpTest do
 
   use ExUnit.Case, async: false
 
-  alias Mix.Tasks.Templates.Upgrade.Http
+  alias Mix.Tasks.ActorSimulation.Upgrade.Http
 
   setup do
     %{url: serve(%{"versions.json" => ~s({"version":"1.2.3"})})}

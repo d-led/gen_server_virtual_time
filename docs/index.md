@@ -67,7 +67,7 @@ These live in the repository, not in the published docs:
 - [Benchmarks](https://github.com/d-led/gen_server_virtual_time/blob/main/benchmarks/README.md)
 
 Maintainer tooling lives in [`dev/`](https://github.com/d-led/gen_server_virtual_time/tree/main/dev)
-and is not part of the published package: it includes `mix templates.upgrade`,
+and is not part of the published package: it includes `mix actor_simulation.upgrade`,
 which keeps the versions the code generators pin up to date.
 
 Historical records live in

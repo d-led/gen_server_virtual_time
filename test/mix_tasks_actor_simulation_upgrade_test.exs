@@ -1,6 +1,6 @@
-defmodule Mix.Tasks.Templates.UpgradeTest do
+defmodule Mix.Tasks.ActorSimulation.UpgradeTest do
   @moduledoc """
-  `mix templates.upgrade` is the only thing that writes the version table, so its
+  `mix actor_simulation.upgrade` is the only thing that writes the version table, so its
   own behaviour is exercised here: reporting, refusing to pass a check it cannot
   pass, and rewriting a table file.
 
@@ -146,11 +146,11 @@ defmodule Mix.Tasks.Templates.UpgradeTest do
   end
 
   defp run_task(args, fetch, path, run_script) do
-    capture_io(fn -> Mix.Tasks.Templates.Upgrade.run(args, fetch, path, run_script) end)
+    capture_io(fn -> Mix.Tasks.ActorSimulation.Upgrade.run(args, fetch, path, run_script) end)
   end
 
   defp run_task(args, fetch, path) do
-    capture_io(fn -> Mix.Tasks.Templates.Upgrade.run(args, fetch, path) end)
+    capture_io(fn -> Mix.Tasks.ActorSimulation.Upgrade.run(args, fetch, path) end)
   end
 
   defp offline(_url), do: {:error, :offline}

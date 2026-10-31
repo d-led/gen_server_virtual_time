@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Templates.Upgrade do
+defmodule Mix.Tasks.ActorSimulation.Upgrade do
   @shortdoc "Checks and upgrades the versions the code generators pin"
 
   @moduledoc """
@@ -11,11 +11,11 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
   This task asks each upstream for its latest release and reports the drift.
 
-      $ mix templates.upgrade --check
+      $ mix actor_simulation.upgrade --check
 
   and, unless `--check` is given, rewrites the table:
 
-      $ mix templates.upgrade
+      $ mix actor_simulation.upgrade
 
   ## Options
 
@@ -35,7 +35,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
   about a dozen of them. Export `GH_TOKEN` (or `GITHUB_TOKEN`) to raise the
   limit:
 
-      $ GH_TOKEN=$(gh auth token) mix templates.upgrade --check
+      $ GH_TOKEN=$(gh auth token) mix actor_simulation.upgrade --check
 
   ## Example output
 
@@ -55,7 +55,7 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
   alias ActorSimulation.TemplateVersions, as: Versions
   alias ActorSimulation.TemplateVersions.Upgrade
-  alias Mix.Tasks.Templates.Upgrade.Http
+  alias Mix.Tasks.ActorSimulation.Upgrade.Http
 
   @impl Mix.Task
   def run(args), do: run(args, &Http.get/1, Upgrade.module_path())
@@ -101,9 +101,9 @@ defmodule Mix.Tasks.Templates.Upgrade do
 
       #{Enum.count(plan, &(&1.status == :update))} template version(s) are out of date.
 
-      Run `mix templates.upgrade` to update
+      Run `mix actor_simulation.upgrade` to update
       #{path}, then
-      `mix templates.upgrade --examples` to regenerate the checked-in projects.
+      `mix actor_simulation.upgrade --examples` to regenerate the checked-in projects.
       """)
     else
       Mix.shell().info("\nTemplates are up to date.")

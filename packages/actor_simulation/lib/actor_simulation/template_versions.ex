@@ -15,13 +15,13 @@ defmodule ActorSimulation.TemplateVersions do
 
   ## Checking for drift
 
-      mix templates.upgrade --check
+      mix actor_simulation.upgrade --check
 
   ## Upgrading
 
-      mix templates.upgrade
+      mix actor_simulation.upgrade
 
-  `sources/0` records where each version comes from, so `mix templates.upgrade`
+  `sources/0` records where each version comes from, so `mix actor_simulation.upgrade`
   can ask upstream for the latest release. Versions marked `:manual` have no
   meaningful upstream (a language level, a minimum CMake, a floating release
   channel) and are reported but never rewritten automatically.
@@ -30,10 +30,10 @@ defmodule ActorSimulation.TemplateVersions do
 
   The generated project templates and the projects checked into `examples/` and
   `generated/` come from the same generators, so after upgrading run
-  `mix templates.upgrade --examples` to regenerate the checked-in ones.
+  `mix actor_simulation.upgrade --examples` to regenerate the checked-in ones.
   """
 
-  # --- versions:begin (managed by `mix templates.upgrade`) ---
+  # --- versions:begin (managed by `mix actor_simulation.upgrade`) ---
   @versions %{
     # conan center: caf
     caf: "1.1.0",
