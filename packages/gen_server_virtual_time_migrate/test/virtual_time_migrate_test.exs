@@ -19,7 +19,14 @@ defmodule VirtualTimeMigrateTest do
 
       assert migrated =~ "VirtualTimeGenServer.send_after(self(), :tick, 1000)"
       assert migrated =~ "VirtualTimeGenServer.sleep(10)"
-      assert migrated =~ "VirtualTimeGenServer.send_after(500, self(), :tick)"
+    end
+
+    test "report :erlang.send_after/3, whose arguments are in another order" do
+      migrated = migrate(read("before_options_and_time"))
+      {:ok, %{notes: notes}} = VirtualTimeMigrate.plan(read("before_options_and_time"))
+
+      assert migrated =~ ":erlang.send_after(500, self(), :tick)"
+      assert Enum.any?(notes, &(&1.message =~ "takes the delay first"))
     end
   end
 

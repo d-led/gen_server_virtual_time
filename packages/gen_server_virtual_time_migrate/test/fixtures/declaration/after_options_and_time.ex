@@ -8,7 +8,7 @@ defmodule MyApp.Ticker do
 
   def handle_info(:tick, state) do
     VirtualTimeGenServer.sleep(10)
-    VirtualTimeGenServer.send_after(500, self(), :tick)
+    :erlang.send_after(500, self(), :tick)
     {:noreply, state}
   end
 end

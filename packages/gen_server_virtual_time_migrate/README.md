@@ -60,7 +60,6 @@ A rewrite that would not parse aborts the run before anything is written, so a
 | `use GenStateMachine`                    | `use VirtualTimeGenStateMachine`                      |
 | `Process.send_after(pid, :tick, 1_000)`  | `VirtualTimeGenServer.send_after(pid, :tick, 1_000)`  |
 | `Process.sleep(10)`                      | `VirtualTimeGenServer.sleep(10)`                      |
-| `:erlang.send_after(500, self(), :tick)` | `VirtualTimeGenServer.send_after(500, self(), :tick)` |
 | `:timer.sleep(10)`                       | `VirtualTimeGenServer.sleep(10)`                      |
 | `GenServer.call(MyApp.Counter, :get)`    | `VirtualTimeGenServer.call(MyApp.Counter, :get)`      |
 
@@ -73,6 +72,9 @@ The tool never guesses, and it says what it skipped:
 
 - `GenServer.call/2` on a pid, a variable, or a module that stays a plain
   `GenServer` — the call may still be right, the tool just cannot prove it;
+- `:erlang.send_after/3`, whose delay is its _first_ argument while
+  `VirtualTimeGenServer.send_after/3` wants it last — swapping arguments is not
+  a token replacement, so the line is reported with the fix spelled out;
 - anything outside a converted module;
 - `:gen_statem` timeouts, which the virtual-time state machine handles through
   its own options — see `VirtualTimeGenStateMachine`.

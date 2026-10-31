@@ -11,16 +11,18 @@ defmodule VirtualTimeMigrate do
 
     * `use GenServer` becomes `use VirtualTimeGenServer`, options untouched
       (`use GenStateMachine` → `use VirtualTimeGenStateMachine`);
-    * inside a converted module, `Process.send_after/3`, `Process.sleep/1`,
-      `:erlang.send_after/3` and `:timer.sleep/1` become `VirtualTimeGenServer`
-      calls, because that is what puts the module on the virtual clock;
+    * inside a converted module, `Process.send_after/3`, `Process.sleep/1` and
+      `:timer.sleep/1` become `VirtualTimeGenServer` calls, because that is what
+      puts the module on the virtual clock;
     * `GenServer.call/cast/stop/reply/start_link/start/child_spec` is rewritten
       only when its target is a literal module that is converted somewhere in the
       project, or `__MODULE__` inside a converted module.
 
   Anything else — a pid, a variable, a module that stays a plain `GenServer` — is
   left alone, and reported when the caller is a converted module and the tool
-  cannot tell.
+  cannot tell. `:erlang.send_after/3` is in that group: it takes the delay
+  first where the virtual-time call takes it last, and swapping arguments is not
+  a token replacement, so it is reported for a human to reorder.
 
   Every edit carries the exact source text it expects to find at its position,
   and is checked against the source before it joins the plan, so a plan can never
@@ -180,6 +182,17 @@ defmodule VirtualTimeMigrate do
   defp rewrite(state, {"GenServer", "GenServer", function, args, meta}, converted)
        when function in @server_calls do
     server_call(state, meta, function, args, converted)
+  end
+
+  # `:erlang.send_after/3` and `Process.send_after/3` disagree about where the
+  # delay goes, so the only honest plan is to point at the line.
+  defp rewrite(state, {"erlang", _token, "send_after", _args, meta}, _converted) do
+    Edits.note(
+      state,
+      meta,
+      ":erlang.send_after/3 takes the delay first, VirtualTimeGenServer.send_after/3 " <>
+        "takes it last — reorder this call by hand"
+    )
   end
 
   defp rewrite(state, {module, token, function, _args, meta}, _converted)
