@@ -57,13 +57,13 @@ defmodule PonyExampleGenerator do
 
     try do
       {:ok, files} =
-        ActorSimulation.PonyGenerator.generate(simulation,
+        ActorSimulation.Codegen.Pony.generate(simulation,
           project_name: project_name,
           enable_callbacks: true
         )
 
       output_dir = "examples/pony_#{name}"
-      :ok = ActorSimulation.PonyGenerator.write_to_directory(files, output_dir)
+      :ok = ActorSimulation.Codegen.Pony.write_to_directory(files, output_dir)
 
       file_count = length(files)
       IO.puts("✅ Generated #{file_count} files in #{output_dir}/")

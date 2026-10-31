@@ -1,9 +1,9 @@
-defmodule OMNeTPPGeneratorTest do
+defmodule OMNeTPPTest do
   use ExUnit.Case, async: true
-  doctest ActorSimulation.OMNeTPPGenerator
+  doctest ActorSimulation.Codegen.OMNeTPP
 
   alias ActorSimulation
-  alias ActorSimulation.OMNeTPPGenerator
+  alias ActorSimulation.Codegen.OMNeTPP
 
   describe "generate/2" do
     test "generates complete OMNeT++ project files" do
@@ -16,7 +16,7 @@ defmodule OMNeTPPGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        OMNeTPPGenerator.generate(simulation,
+        OMNeTPP.generate(simulation,
           network_name: "SimpleNetwork",
           sim_time_limit: 10
         )
@@ -43,7 +43,7 @@ defmodule OMNeTPPGeneratorTest do
         |> ActorSimulation.add_actor(:server)
 
       {:ok, files} =
-        OMNeTPPGenerator.generate(simulation,
+        OMNeTPP.generate(simulation,
           network_name: "ClientServer"
         )
 
@@ -64,7 +64,7 @@ defmodule OMNeTPPGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
       {_name, header} = Enum.find(files, fn {name, _} -> name == "Worker.h" end)
 
@@ -85,7 +85,7 @@ defmodule OMNeTPPGeneratorTest do
         )
         |> ActorSimulation.add_actor(:consumer)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "Generator.cc" end)
 
@@ -104,7 +104,7 @@ defmodule OMNeTPPGeneratorTest do
         )
         |> ActorSimulation.add_actor(:processor)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "Producer.cc" end)
 
@@ -120,7 +120,7 @@ defmodule OMNeTPPGeneratorTest do
         )
         |> ActorSimulation.add_actor(:processor)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "Burster.cc" end)
 
@@ -135,7 +135,7 @@ defmodule OMNeTPPGeneratorTest do
         |> ActorSimulation.add_actor(:bob)
 
       {:ok, files} =
-        OMNeTPPGenerator.generate(simulation,
+        OMNeTPP.generate(simulation,
           network_name: "TestNetwork"
         )
 
@@ -152,7 +152,7 @@ defmodule OMNeTPPGeneratorTest do
     test "generates conanfile.txt" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
       {_name, conan} = Enum.find(files, fn {name, _} -> name == "conanfile.txt" end)
 
@@ -164,7 +164,7 @@ defmodule OMNeTPPGeneratorTest do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        OMNeTPPGenerator.generate(simulation,
+        OMNeTPP.generate(simulation,
           network_name: "MyNetwork",
           sim_time_limit: 42
         )
@@ -185,7 +185,7 @@ defmodule OMNeTPPGeneratorTest do
         |> ActorSimulation.add_actor(:sub2)
         |> ActorSimulation.add_actor(:sub3)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "PubSub")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "PubSub")
 
       {_name, ned} = Enum.find(files, fn {name, _} -> name == "PubSub.ned" end)
 
@@ -200,7 +200,7 @@ defmodule OMNeTPPGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "TestNetwork")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "TestNetwork")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "Timer.cc" end)
 
@@ -224,9 +224,9 @@ defmodule OMNeTPPGeneratorTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
-      :ok = OMNeTPPGenerator.write_to_directory(files, temp_dir)
+      :ok = OMNeTPP.write_to_directory(files, temp_dir)
 
       assert File.dir?(temp_dir)
 
@@ -243,9 +243,9 @@ defmodule OMNeTPPGeneratorTest do
 
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = OMNeTPPGenerator.generate(simulation, network_name: "Test")
+      {:ok, files} = OMNeTPP.generate(simulation, network_name: "Test")
 
-      :ok = OMNeTPPGenerator.write_to_directory(files, subdir)
+      :ok = OMNeTPP.write_to_directory(files, subdir)
 
       assert File.dir?(subdir)
     end

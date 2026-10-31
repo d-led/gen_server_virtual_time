@@ -37,14 +37,14 @@ simulation =
 
 # Generate Ractor (Rust) code with callback traits
 {:ok, files} =
-  ActorSimulation.RactorGenerator.generate(simulation,
+  ActorSimulation.Codegen.Ractor.generate(simulation,
     project_name: "pipeline_actors",
     enable_callbacks: true
   )
 
 # Write to output directory
 output_dir = "generated/ractor_pipeline"
-ActorSimulation.RactorGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Ractor.write_to_directory(files, output_dir)
 
 IO.puts("""
 

@@ -57,13 +57,13 @@ defmodule CAFExampleGenerator do
 
     try do
       {:ok, files} =
-        ActorSimulation.CAFGenerator.generate(simulation,
+        ActorSimulation.Codegen.CAF.generate(simulation,
           project_name: project_name,
           enable_callbacks: true
         )
 
       output_dir = "examples/caf_#{name}"
-      :ok = ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
+      :ok = ActorSimulation.Codegen.CAF.write_to_directory(files, output_dir)
 
       file_count = length(files)
       IO.puts("✅ Generated #{file_count} files in #{output_dir}/")

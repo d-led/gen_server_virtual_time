@@ -1,9 +1,9 @@
-defmodule PonyGeneratorTest do
+defmodule PonyTest do
   use ExUnit.Case, async: true
-  doctest ActorSimulation.PonyGenerator
+  doctest ActorSimulation.Codegen.Pony
 
   alias ActorSimulation
-  alias ActorSimulation.PonyGenerator
+  alias ActorSimulation.Codegen.Pony
 
   describe "generate/2" do
     test "generates complete Pony project files" do
@@ -16,7 +16,7 @@ defmodule PonyGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        PonyGenerator.generate(simulation,
+        Pony.generate(simulation,
           project_name: "simple_actors"
         )
 
@@ -43,7 +43,7 @@ defmodule PonyGeneratorTest do
         |> ActorSimulation.add_actor(:consumer)
 
       {:ok, files} =
-        PonyGenerator.generate(simulation,
+        Pony.generate(simulation,
           project_name: "workers",
           enable_callbacks: true
         )
@@ -63,7 +63,7 @@ defmodule PonyGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "worker.pony" end)
 
@@ -78,7 +78,7 @@ defmodule PonyGeneratorTest do
         |> ActorSimulation.add_actor(:alice, targets: [:bob])
         |> ActorSimulation.add_actor(:bob)
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
       {_name, main} = Enum.find(files, fn {name, _} -> name == "main.pony" end)
 
@@ -91,7 +91,7 @@ defmodule PonyGeneratorTest do
     test "generates corral.json for dependencies" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
       {_name, corral} = Enum.find(files, fn {name, _} -> name == "corral.json" end)
 
@@ -102,7 +102,7 @@ defmodule PonyGeneratorTest do
     test "generates CI pipeline for Pony" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
       {_name, ci} = Enum.find(files, fn {name, _} -> name == ".github/workflows/ci.yml" end)
 
@@ -121,7 +121,7 @@ defmodule PonyGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
       {_name, test_file} = Enum.find(files, fn {name, _} -> name == "test/test.pony" end)
 
@@ -133,7 +133,7 @@ defmodule PonyGeneratorTest do
     test "generates README with build instructions" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "MyActors")
+      {:ok, files} = Pony.generate(simulation, project_name: "MyActors")
 
       {_name, readme} = Enum.find(files, fn {name, _} -> name == "README.md" end)
 
@@ -153,7 +153,7 @@ defmodule PonyGeneratorTest do
         )
 
       {:ok, files} =
-        PonyGenerator.generate(simulation,
+        Pony.generate(simulation,
           project_name: "test",
           enable_callbacks: true
         )
@@ -173,7 +173,7 @@ defmodule PonyGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "timer.pony" end)
 
@@ -196,9 +196,9 @@ defmodule PonyGeneratorTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Pony.generate(simulation, project_name: "test")
 
-      :ok = PonyGenerator.write_to_directory(files, temp_dir)
+      :ok = Pony.write_to_directory(files, temp_dir)
 
       assert File.dir?(temp_dir)
 

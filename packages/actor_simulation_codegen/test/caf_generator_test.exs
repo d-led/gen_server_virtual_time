@@ -1,9 +1,9 @@
-defmodule CAFGeneratorTest do
+defmodule CAFTest do
   use ExUnit.Case, async: true
-  doctest ActorSimulation.CAFGenerator
+  doctest ActorSimulation.Codegen.CAF
 
   alias ActorSimulation
-  alias ActorSimulation.CAFGenerator
+  alias ActorSimulation.Codegen.CAF
 
   describe "generate/2" do
     test "generates complete CAF project files" do
@@ -16,7 +16,7 @@ defmodule CAFGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        CAFGenerator.generate(simulation,
+        CAF.generate(simulation,
           project_name: "SimpleActors"
         )
 
@@ -47,7 +47,7 @@ defmodule CAFGeneratorTest do
         |> ActorSimulation.add_actor(:consumer)
 
       {:ok, files} =
-        CAFGenerator.generate(simulation,
+        CAF.generate(simulation,
           project_name: "Workers",
           enable_callbacks: true
         )
@@ -90,7 +90,7 @@ defmodule CAFGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, header} = Enum.find(files, fn {name, _} -> name == "worker_actor.hpp" end)
 
@@ -109,7 +109,7 @@ defmodule CAFGeneratorTest do
         )
         |> ActorSimulation.add_actor(:consumer)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "generator_actor.cpp" end)
 
@@ -126,7 +126,7 @@ defmodule CAFGeneratorTest do
         |> ActorSimulation.add_actor(:alice, targets: [:bob])
         |> ActorSimulation.add_actor(:bob)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, main} = Enum.find(files, fn {name, _} -> name == "main.cpp" end)
 
@@ -143,7 +143,7 @@ defmodule CAFGeneratorTest do
         |> ActorSimulation.add_actor(:bob)
 
       {:ok, files} =
-        CAFGenerator.generate(simulation,
+        CAF.generate(simulation,
           project_name: "TestActors"
         )
 
@@ -161,7 +161,7 @@ defmodule CAFGeneratorTest do
     test "generates conanfile.txt with CAF and Catch2 packages" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, conan} = Enum.find(files, fn {name, _} -> name == "conanfile.txt" end)
 
@@ -175,7 +175,7 @@ defmodule CAFGeneratorTest do
     test "generates CI pipeline for testing builds" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, ci} = Enum.find(files, fn {name, _} -> name == ".github/workflows/ci.yml" end)
 
@@ -190,7 +190,7 @@ defmodule CAFGeneratorTest do
     test "generates README with build instructions" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "MyActors")
+      {:ok, files} = CAF.generate(simulation, project_name: "MyActors")
 
       {_name, readme} = Enum.find(files, fn {name, _} -> name == "README.md" end)
 
@@ -209,7 +209,7 @@ defmodule CAFGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, test_file} = Enum.find(files, fn {name, _} -> name == "test_actors.cpp" end)
 
@@ -222,7 +222,7 @@ defmodule CAFGeneratorTest do
     test "CMakeLists.txt includes test target" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, cmake} = Enum.find(files, fn {name, _} -> name == "CMakeLists.txt" end)
 
@@ -241,7 +241,7 @@ defmodule CAFGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "timer_actor.cpp" end)
       {_name, header} = Enum.find(files, fn {name, _} -> name == "timer_actor.hpp" end)
@@ -276,9 +276,9 @@ defmodule CAFGeneratorTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
-      :ok = CAFGenerator.write_to_directory(files, temp_dir)
+      :ok = CAF.write_to_directory(files, temp_dir)
 
       assert File.dir?(temp_dir)
 
@@ -298,9 +298,9 @@ defmodule CAFGeneratorTest do
 
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = CAFGenerator.generate(simulation, project_name: "Test")
+      {:ok, files} = CAF.generate(simulation, project_name: "Test")
 
-      :ok = CAFGenerator.write_to_directory(files, subdir)
+      :ok = CAF.write_to_directory(files, subdir)
 
       assert File.dir?(subdir)
     end

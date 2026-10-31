@@ -17,7 +17,7 @@ defmodule DoctorTest do
       modules =
         ModuleReferences.scan([fixture("generator.ex")]).references |> Enum.map(& &1.module)
 
-      assert modules == ["ActorSimulation.CAFGenerator", "ActorSimulation"]
+      assert modules == ["ActorSimulation.Codegen.CAF", "ActorSimulation"]
     end
 
     test "a file that does not parse is reported, and the rest is still read" do
@@ -44,7 +44,7 @@ defmodule DoctorTest do
     test "the code generators are reported against their own package" do
       [finding] = diagnose(fixture("generator.ex"), available: ["ActorSimulation"])
 
-      assert finding.module == "ActorSimulation.CAFGenerator"
+      assert finding.module == "ActorSimulation.Codegen.CAF"
       assert finding.dependency == ~s|{:actor_simulation_codegen, "~> 1.0"}|
     end
 

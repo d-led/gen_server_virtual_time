@@ -1,9 +1,9 @@
-defmodule PhonyGeneratorTest do
+defmodule PhonyTest do
   use ExUnit.Case, async: true
-  doctest ActorSimulation.PhonyGenerator
+  doctest ActorSimulation.Codegen.Phony
 
   alias ActorSimulation
-  alias ActorSimulation.PhonyGenerator
+  alias ActorSimulation.Codegen.Phony
   alias ActorSimulation.TemplateVersions
 
   describe "generate/2" do
@@ -17,7 +17,7 @@ defmodule PhonyGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        PhonyGenerator.generate(simulation,
+        Phony.generate(simulation,
           project_name: "simple_actors"
         )
 
@@ -42,7 +42,7 @@ defmodule PhonyGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "worker.go" end)
 
@@ -57,7 +57,7 @@ defmodule PhonyGeneratorTest do
         |> ActorSimulation.add_actor(:alice, targets: [:bob])
         |> ActorSimulation.add_actor(:bob)
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
       {_name, main} = Enum.find(files, fn {name, _} -> name == "main.go" end)
 
@@ -71,7 +71,7 @@ defmodule PhonyGeneratorTest do
     test "generates go.mod with Phony dependency" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test_actors")
+      {:ok, files} = Phony.generate(simulation, project_name: "test_actors")
 
       {_name, gomod} = Enum.find(files, fn {name, _} -> name == "go.mod" end)
 
@@ -83,7 +83,7 @@ defmodule PhonyGeneratorTest do
     test "generates CI pipeline for Go" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
       {_name, ci} = Enum.find(files, fn {name, _} -> name == ".github/workflows/ci.yml" end)
 
@@ -102,7 +102,7 @@ defmodule PhonyGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
       {_name, test_file} = Enum.find(files, fn {name, _} -> name == "actor_test.go" end)
 
@@ -114,7 +114,7 @@ defmodule PhonyGeneratorTest do
     test "generates README with build instructions" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "MyActors")
+      {:ok, files} = Phony.generate(simulation, project_name: "MyActors")
 
       {_name, readme} = Enum.find(files, fn {name, _} -> name == "README.md" end)
 
@@ -133,7 +133,7 @@ defmodule PhonyGeneratorTest do
         )
         |> ActorSimulation.add_actor(:consumer)
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "generator.go" end)
 
@@ -150,7 +150,7 @@ defmodule PhonyGeneratorTest do
         )
 
       {:ok, files} =
-        PhonyGenerator.generate(simulation,
+        Phony.generate(simulation,
           project_name: "test",
           enable_callbacks: true
         )
@@ -181,7 +181,7 @@ defmodule PhonyGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "timer.go" end)
 
@@ -204,9 +204,9 @@ defmodule PhonyGeneratorTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = PhonyGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Phony.generate(simulation, project_name: "test")
 
-      :ok = PhonyGenerator.write_to_directory(files, temp_dir)
+      :ok = Phony.write_to_directory(files, temp_dir)
 
       assert File.dir?(temp_dir)
       assert File.dir?(Path.join(temp_dir, ".github/workflows"))

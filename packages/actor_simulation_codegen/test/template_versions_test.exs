@@ -11,13 +11,13 @@ defmodule ActorSimulation.TemplateVersionsTest do
 
   doctest ActorSimulation.TemplateVersions
 
-  alias ActorSimulation.CAFGenerator
-  alias ActorSimulation.OMNeTPPGenerator
-  alias ActorSimulation.PhonyGenerator
-  alias ActorSimulation.PonyGenerator
-  alias ActorSimulation.RactorGenerator
+  alias ActorSimulation.Codegen.CAF
+  alias ActorSimulation.Codegen.OMNeTPP
+  alias ActorSimulation.Codegen.Phony
+  alias ActorSimulation.Codegen.Pony
+  alias ActorSimulation.Codegen.Ractor
+  alias ActorSimulation.Codegen.Vlingo
   alias ActorSimulation.TemplateVersions
-  alias ActorSimulation.VlingoGenerator
 
   describe "the table" do
     test "every version has a source" do
@@ -90,10 +90,10 @@ defmodule ActorSimulation.TemplateVersionsTest do
   describe "generated projects" do
     test "take the C++ pins from the table" do
       conan =
-        file("conanfile.txt", CAFGenerator.generate(simulation(), project_name: "TableActors"))
+        file("conanfile.txt", CAF.generate(simulation(), project_name: "TableActors"))
 
       cmake =
-        file("CMakeLists.txt", CAFGenerator.generate(simulation(), project_name: "TableActors"))
+        file("CMakeLists.txt", CAF.generate(simulation(), project_name: "TableActors"))
 
       assert conan =~ "caf/#{TemplateVersions.get(:caf)}"
       assert conan =~ "catch2/#{TemplateVersions.get(:catch2)}"
@@ -106,14 +106,14 @@ defmodule ActorSimulation.TemplateVersionsTest do
       ci =
         file(
           ".github/workflows/ci.yml",
-          OMNeTPPGenerator.generate(simulation(), network_name: "TableNetwork")
+          OMNeTPP.generate(simulation(), network_name: "TableNetwork")
         )
 
       assert ci =~ "opp_env install omnetpp-#{TemplateVersions.get(:omnetpp)}"
     end
 
     test "take the Go module pins from the table" do
-      gomod = file("go.mod", PhonyGenerator.generate(simulation(), project_name: "table_actors"))
+      gomod = file("go.mod", Phony.generate(simulation(), project_name: "table_actors"))
 
       assert gomod =~ "go #{TemplateVersions.get(:go)}"
       assert gomod =~ "require github.com/Arceliar/phony #{TemplateVersions.get(:phony)}"
@@ -121,7 +121,7 @@ defmodule ActorSimulation.TemplateVersionsTest do
 
     test "take the Rust crate pins from the table" do
       cargo =
-        file("Cargo.toml", RactorGenerator.generate(simulation(), project_name: "table_actors"))
+        file("Cargo.toml", Ractor.generate(simulation(), project_name: "table_actors"))
 
       assert cargo =~ ~s(ractor = "#{TemplateVersions.get(:ractor)}")
       assert cargo =~ ~s(tokio = { version = "#{TemplateVersions.get(:tokio)}")
@@ -132,7 +132,7 @@ defmodule ActorSimulation.TemplateVersionsTest do
       pom =
         file(
           "pom.xml",
-          VlingoGenerator.generate(simulation(),
+          Vlingo.generate(simulation(),
             project_name: "table-actors",
             group_id: "com.example"
           )
@@ -148,7 +148,7 @@ defmodule ActorSimulation.TemplateVersionsTest do
       ci =
         file(
           ".github/workflows/ci.yml",
-          PonyGenerator.generate(simulation(), project_name: "table_actors")
+          Pony.generate(simulation(), project_name: "table_actors")
         )
 
       assert ci =~ "ponyup update ponyc #{TemplateVersions.get(:ponyc_channel)}"
@@ -157,13 +157,12 @@ defmodule ActorSimulation.TemplateVersionsTest do
 
     test "pin the GitHub Actions used by every generated CI workflow" do
       workflows = %{
-        "CAF" => generation(CAFGenerator, project_name: "TableActors"),
-        "OMNeT++" => generation(OMNeTPPGenerator, network_name: "TableNetwork"),
-        "Phony" => generation(PhonyGenerator, project_name: "table_actors"),
-        "Pony" => generation(PonyGenerator, project_name: "table_actors"),
-        "Ractor" => generation(RactorGenerator, project_name: "table_actors"),
-        "VLINGO" =>
-          generation(VlingoGenerator, project_name: "table-actors", group_id: "com.example")
+        "CAF" => generation(CAF, project_name: "TableActors"),
+        "OMNeT++" => generation(OMNeTPP, network_name: "TableNetwork"),
+        "Phony" => generation(Phony, project_name: "table_actors"),
+        "Pony" => generation(Pony, project_name: "table_actors"),
+        "Ractor" => generation(Ractor, project_name: "table_actors"),
+        "VLINGO" => generation(Vlingo, project_name: "table-actors", group_id: "com.example")
       }
 
       for {language, files} <- workflows do
@@ -176,7 +175,7 @@ defmodule ActorSimulation.TemplateVersionsTest do
 
     test "refer to this repository, not a placeholder" do
       readme =
-        file("README.md", PhonyGenerator.generate(simulation(), project_name: "table_actors"))
+        file("README.md", Phony.generate(simulation(), project_name: "table_actors"))
 
       assert readme =~ "https://github.com/d-led/gen_server_virtual_time"
     end

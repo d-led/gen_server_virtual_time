@@ -1,6 +1,6 @@
 defmodule MyApp.Generator do
   def export(simulation) do
-    ActorSimulation.CAFGenerator.generate(simulation)
+    ActorSimulation.Codegen.CAF.generate(simulation)
   end
 
   def build(simulation) do

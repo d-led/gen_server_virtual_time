@@ -33,14 +33,14 @@ simulation =
 
 # Generate Phony (Go) code with callback interfaces
 {:ok, files} =
-  ActorSimulation.PhonyGenerator.generate(simulation,
+  ActorSimulation.Codegen.Phony.generate(simulation,
     project_name: "burst_actors",
     enable_callbacks: true
   )
 
 # Write to output directory
 output_dir = "generated/phony_burst"
-ActorSimulation.PhonyGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Phony.write_to_directory(files, output_dir)
 
 IO.puts("""
 

@@ -87,11 +87,11 @@ defmodule ActorSimulation.GeneratorMetadata do
     # Look for known generator modules in the stacktrace
     generator_modules = [
       ActorSimulation.MermaidReportGenerator,
-      ActorSimulation.OMNeTPPGenerator,
-      ActorSimulation.CAFGenerator,
-      ActorSimulation.PonyGenerator,
-      ActorSimulation.PhonyGenerator,
-      ActorSimulation.VlingoGenerator
+      ActorSimulation.Codegen.OMNeTPP,
+      ActorSimulation.Codegen.CAF,
+      ActorSimulation.Codegen.Pony,
+      ActorSimulation.Codegen.Phony,
+      ActorSimulation.Codegen.Vlingo
     ]
 
     stacktrace

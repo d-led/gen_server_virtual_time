@@ -217,8 +217,8 @@ end
 ### Generation Fails
 
 ```bash
-# Check if ActorSimulation.OMNeTPPGenerator module exists
-mix run -e "IO.inspect(ActorSimulation.OMNeTPPGenerator.module_info())"
+# Check if ActorSimulation.Codegen.OMNeTPP module exists
+mix run -e "IO.inspect(ActorSimulation.Codegen.OMNeTPP.module_info())"
 
 # Recompile
 mix clean && mix compile

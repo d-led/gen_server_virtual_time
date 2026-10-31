@@ -31,14 +31,14 @@ simulation =
 
 # Generate OMNeT++ C++ code
 {:ok, files} =
-  ActorSimulation.OMNeTPPGenerator.generate(simulation,
+  ActorSimulation.Codegen.OMNeTPP.generate(simulation,
     network_name: "PubSubNetwork",
     sim_time_limit: 10
   )
 
 # Write to output directory
 output_dir = "generated/omnetpp_pubsub"
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, output_dir)
 
 IO.puts("""
 

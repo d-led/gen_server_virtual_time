@@ -1,10 +1,10 @@
-defmodule VlingoGeneratorTest do
+defmodule VlingoTest do
   use ExUnit.Case, async: true
-  doctest ActorSimulation.VlingoGenerator
+  doctest ActorSimulation.Codegen.Vlingo
 
   alias ActorSimulation
+  alias ActorSimulation.Codegen.Vlingo
   alias ActorSimulation.TemplateVersions
-  alias ActorSimulation.VlingoGenerator
 
   describe "generate/2" do
     test "generates complete VLINGO XOOM project files" do
@@ -17,7 +17,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "simple-actors",
           group_id: "com.example"
         )
@@ -55,7 +55,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:consumer)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "workers",
           group_id: "com.test",
           enable_callbacks: true
@@ -81,7 +81,7 @@ defmodule VlingoGeneratorTest do
         )
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.myapp"
         )
@@ -106,7 +106,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:consumer)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -137,7 +137,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:consumer)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -159,7 +159,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:bob)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -183,7 +183,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:bob)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test-actors",
           group_id: "com.example",
           vlingo_version: "1.11.1"
@@ -206,7 +206,7 @@ defmodule VlingoGeneratorTest do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -230,7 +230,7 @@ defmodule VlingoGeneratorTest do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "my-actors",
           group_id: "com.example"
         )
@@ -254,7 +254,7 @@ defmodule VlingoGeneratorTest do
         )
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -285,14 +285,14 @@ defmodule VlingoGeneratorTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:ticker, send_pattern: {:periodic, 50, :tick})
 
-      {:ok, files} = VlingoGenerator.generate(waiting, project_name: "t", group_id: "com.example")
+      {:ok, files} = Vlingo.generate(waiting, project_name: "t", group_id: "com.example")
 
       assert Enum.any?(files, fn {name, _} ->
                name == "src/test/java/com/example/ManualScheduler.java"
              end)
 
       {:ok, plain} =
-        VlingoGenerator.generate(ActorSimulation.new() |> ActorSimulation.add_actor(:node),
+        Vlingo.generate(ActorSimulation.new() |> ActorSimulation.add_actor(:node),
           project_name: "t",
           group_id: "com.example"
         )
@@ -304,7 +304,7 @@ defmodule VlingoGeneratorTest do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -326,7 +326,7 @@ defmodule VlingoGeneratorTest do
         )
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example",
           enable_callbacks: true
@@ -345,7 +345,7 @@ defmodule VlingoGeneratorTest do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example",
           vlingo_version: "1.10.0"
@@ -366,7 +366,7 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
@@ -395,12 +395,12 @@ defmodule VlingoGeneratorTest do
         |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )
 
-      :ok = VlingoGenerator.write_to_directory(files, temp_dir)
+      :ok = Vlingo.write_to_directory(files, temp_dir)
 
       assert File.dir?(temp_dir)
 
@@ -420,12 +420,12 @@ defmodule VlingoGeneratorTest do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.mycompany.actors"
         )
 
-      :ok = VlingoGenerator.write_to_directory(files, temp_dir)
+      :ok = Vlingo.write_to_directory(files, temp_dir)
 
       package_dir = Path.join([temp_dir, "src", "main", "java", "com", "mycompany", "actors"])
       assert File.dir?(package_dir)
@@ -440,7 +440,7 @@ defmodule VlingoGeneratorTest do
         )
 
       {:ok, files} =
-        VlingoGenerator.generate(simulation,
+        Vlingo.generate(simulation,
           project_name: "test",
           group_id: "com.example"
         )

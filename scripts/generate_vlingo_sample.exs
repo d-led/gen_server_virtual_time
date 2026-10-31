@@ -4,7 +4,7 @@
 # Run: mix run scripts/generate_vlingo_sample.exs
 
 alias ActorSimulation
-alias ActorSimulation.VlingoGenerator
+alias ActorSimulation.Codegen.Vlingo
 
 # Create a more complex simulation: Load Balanced Worker Pool
 simulation =
@@ -33,7 +33,7 @@ simulation =
 IO.puts("Generating VLINGO XOOM Actors project: generated/vlingo_loadbalanced...")
 
 {:ok, files} =
-  VlingoGenerator.generate(simulation,
+  Vlingo.generate(simulation,
     project_name: "vlingo-loadbalanced",
     group_id: "com.example.actors",
     vlingo_version: "1.11.1",
@@ -47,7 +47,7 @@ if File.exists?(output_dir) do
   File.rm_rf!(output_dir)
 end
 
-:ok = VlingoGenerator.write_to_directory(files, output_dir)
+:ok = Vlingo.write_to_directory(files, output_dir)
 
 IO.puts("✓ Generated #{length(files)} files")
 IO.puts("✓ Output directory: #{output_dir}")

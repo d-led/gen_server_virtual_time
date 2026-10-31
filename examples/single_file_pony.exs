@@ -36,14 +36,14 @@ simulation =
 
 # Generate Pony code with callback traits
 {:ok, files} =
-  ActorSimulation.PonyGenerator.generate(simulation,
+  ActorSimulation.Codegen.Pony.generate(simulation,
     project_name: "loadbalanced_actors",
     enable_callbacks: true
   )
 
 # Write to output directory
 output_dir = "generated/pony_loadbalanced"
-ActorSimulation.PonyGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Pony.write_to_directory(files, output_dir)
 
 IO.puts("""
 

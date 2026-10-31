@@ -27,13 +27,13 @@ pubsub_simulation =
   |> ActorSimulation.add_actor(:subscriber3)
 
 {:ok, files} =
-  ActorSimulation.RactorGenerator.generate(pubsub_simulation,
+  ActorSimulation.Codegen.Ractor.generate(pubsub_simulation,
     project_name: "pubsub_actors",
     enable_callbacks: true
   )
 
 output_dir = "examples/ractor_pubsub"
-ActorSimulation.RactorGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Ractor.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -67,13 +67,13 @@ pipeline_simulation =
   |> ActorSimulation.add_actor(:sink)
 
 {:ok, files} =
-  ActorSimulation.RactorGenerator.generate(pipeline_simulation,
+  ActorSimulation.Codegen.Ractor.generate(pipeline_simulation,
     project_name: "pipeline_actors",
     enable_callbacks: true
   )
 
 output_dir = "examples/ractor_pipeline"
-ActorSimulation.RactorGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Ractor.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -98,13 +98,13 @@ burst_simulation =
   |> ActorSimulation.add_actor(:processor)
 
 {:ok, files} =
-  ActorSimulation.RactorGenerator.generate(burst_simulation,
+  ActorSimulation.Codegen.Ractor.generate(burst_simulation,
     project_name: "burst_actors",
     enable_callbacks: true
   )
 
 output_dir = "examples/ractor_burst"
-ActorSimulation.RactorGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Ractor.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -138,13 +138,13 @@ complex_simulation =
   |> ActorSimulation.add_actor(:database)
 
 {:ok, files} =
-  ActorSimulation.RactorGenerator.generate(complex_simulation,
+  ActorSimulation.Codegen.Ractor.generate(complex_simulation,
     project_name: "loadbalanced_actors",
     enable_callbacks: true
   )
 
 output_dir = "examples/ractor_loadbalanced"
-ActorSimulation.RactorGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Ractor.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->

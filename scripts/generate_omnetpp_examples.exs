@@ -56,11 +56,11 @@ defmodule OMNeTPPExampleGenerator do
     IO.puts "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     try do
-      {:ok, files} = ActorSimulation.OMNeTPPGenerator.generate(simulation,
+      {:ok, files} = ActorSimulation.Codegen.OMNeTPP.generate(simulation,
         [network_name: network_name, sim_time_limit: time_limit] ++ opts)
 
       output_dir = "examples/omnetpp_#{name}"
-      :ok = ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
+      :ok = ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, output_dir)
 
       file_count = length(files)
       IO.puts "✅ Generated #{file_count} files in #{output_dir}/"

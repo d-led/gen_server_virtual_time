@@ -37,7 +37,7 @@ simulation =
 
 # Generate VLINGO XOOM (Java) code with callback interfaces
 {:ok, files} =
-  ActorSimulation.VlingoGenerator.generate(simulation,
+  ActorSimulation.Codegen.Vlingo.generate(simulation,
     project_name: "pipeline-actors",
     group_id: "com.example.actors",
     enable_callbacks: true
@@ -45,7 +45,7 @@ simulation =
 
 # Write to output directory
 output_dir = "generated/vlingo_pipeline"
-ActorSimulation.VlingoGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.Vlingo.write_to_directory(files, output_dir)
 
 IO.puts("""
 

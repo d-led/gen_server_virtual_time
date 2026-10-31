@@ -57,13 +57,13 @@ defmodule PhonyExampleGenerator do
 
     try do
       {:ok, files} =
-        ActorSimulation.PhonyGenerator.generate(simulation,
+        ActorSimulation.Codegen.Phony.generate(simulation,
           project_name: project_name,
           enable_callbacks: true
         )
 
       output_dir = "examples/phony_#{name}"
-      :ok = ActorSimulation.PhonyGenerator.write_to_directory(files, output_dir)
+      :ok = ActorSimulation.Codegen.Phony.write_to_directory(files, output_dir)
 
       file_count = length(files)
       IO.puts("✅ Generated #{file_count} files in #{output_dir}/")

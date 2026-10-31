@@ -34,14 +34,14 @@ simulation =
 
 # Generate CAF C++ code with callbacks and tests
 {:ok, files} =
-  ActorSimulation.CAFGenerator.generate(simulation,
+  ActorSimulation.Codegen.CAF.generate(simulation,
     project_name: "PipelineActors",
     enable_callbacks: true
   )
 
 # Write to output directory
 output_dir = "generated/caf_pipeline"
-ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.CAF.write_to_directory(files, output_dir)
 
 IO.puts("""
 

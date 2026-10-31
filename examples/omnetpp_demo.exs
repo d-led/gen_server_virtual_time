@@ -27,13 +27,13 @@ pubsub_simulation =
   |> ActorSimulation.add_actor(:subscriber3)
 
 {:ok, files} =
-  ActorSimulation.OMNeTPPGenerator.generate(pubsub_simulation,
+  ActorSimulation.Codegen.OMNeTPP.generate(pubsub_simulation,
     network_name: "PubSubNetwork",
     sim_time_limit: 10
   )
 
 output_dir = "examples/omnetpp_pubsub"
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -67,13 +67,13 @@ pipeline_simulation =
   |> ActorSimulation.add_actor(:sink)
 
 {:ok, files} =
-  ActorSimulation.OMNeTPPGenerator.generate(pipeline_simulation,
+  ActorSimulation.Codegen.OMNeTPP.generate(pipeline_simulation,
     network_name: "PipelineNetwork",
     sim_time_limit: 5
   )
 
 output_dir = "examples/omnetpp_pipeline"
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -98,13 +98,13 @@ burst_simulation =
   |> ActorSimulation.add_actor(:processor)
 
 {:ok, files} =
-  ActorSimulation.OMNeTPPGenerator.generate(burst_simulation,
+  ActorSimulation.Codegen.OMNeTPP.generate(burst_simulation,
     network_name: "BurstNetwork",
     sim_time_limit: 30
   )
 
 output_dir = "examples/omnetpp_burst"
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -138,13 +138,13 @@ complex_simulation =
   |> ActorSimulation.add_actor(:database)
 
 {:ok, files} =
-  ActorSimulation.OMNeTPPGenerator.generate(complex_simulation,
+  ActorSimulation.Codegen.OMNeTPP.generate(complex_simulation,
     network_name: "LoadBalancedSystem",
     sim_time_limit: 60
   )
 
 output_dir = "examples/omnetpp_loadbalanced"
-ActorSimulation.OMNeTPPGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.OMNeTPP.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->

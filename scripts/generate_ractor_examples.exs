@@ -56,13 +56,13 @@ defmodule RactorExampleGenerator do
 
     try do
       {:ok, files} =
-        ActorSimulation.RactorGenerator.generate(simulation,
+        ActorSimulation.Codegen.Ractor.generate(simulation,
           project_name: project_name,
           enable_callbacks: true
         )
 
       output_dir = "examples/ractor_#{name}"
-      :ok = ActorSimulation.RactorGenerator.write_to_directory(files, output_dir)
+      :ok = ActorSimulation.Codegen.Ractor.write_to_directory(files, output_dir)
 
       file_count = length(files)
       IO.puts("✅ Generated #{file_count} files in #{output_dir}/")

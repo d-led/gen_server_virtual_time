@@ -30,13 +30,21 @@ defmodule VirtualTimeGenServer.Packages do
       package: :actor_simulation_codegen,
       dependency: ~s|{:actor_simulation_codegen, "~> 1.0"}|,
       modules: [
-        "ActorSimulation.CAFGenerator",
+        "ActorSimulation.Codegen.CAF",
+        "ActorSimulation.Codegen.OMNeTPP",
+        "ActorSimulation.Codegen.Phony",
+        "ActorSimulation.Codegen.Pony",
+        "ActorSimulation.Codegen.Ractor",
+        "ActorSimulation.Codegen.Vlingo",
         "ActorSimulation.GeneratorUtils",
+        "ActorSimulation.TemplateVersions",
+        # The 1.0 names, deprecated since 1.1: kept so that code which still uses
+        # them is attributed to this package once the shims are gone.
+        "ActorSimulation.CAFGenerator",
         "ActorSimulation.OMNeTPPGenerator",
         "ActorSimulation.PhonyGenerator",
         "ActorSimulation.PonyGenerator",
         "ActorSimulation.RactorGenerator",
-        "ActorSimulation.TemplateVersions",
         "ActorSimulation.VlingoGenerator"
       ]
     }
@@ -82,7 +90,7 @@ defmodule VirtualTimeGenServer.Packages do
   package or to nothing we know.
 
   A module matches a family entry when it is that entry's module or a module
-  under it. The most specific entry wins, so `ActorSimulation.CAFGenerator` is
+  under it. The most specific entry wins, so `ActorSimulation.Codegen.CAF` is
   the codegen package's even though `ActorSimulation` is the simulation's.
   """
   @spec owner(String.t()) :: package | nil

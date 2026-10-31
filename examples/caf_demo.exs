@@ -27,13 +27,13 @@ pubsub_simulation =
   |> ActorSimulation.add_actor(:subscriber3)
 
 {:ok, files} =
-  ActorSimulation.CAFGenerator.generate(pubsub_simulation,
+  ActorSimulation.Codegen.CAF.generate(pubsub_simulation,
     project_name: "PubSubActors",
     enable_callbacks: true
   )
 
 output_dir = "examples/caf_pubsub"
-ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.CAF.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -67,13 +67,13 @@ pipeline_simulation =
   |> ActorSimulation.add_actor(:sink)
 
 {:ok, files} =
-  ActorSimulation.CAFGenerator.generate(pipeline_simulation,
+  ActorSimulation.Codegen.CAF.generate(pipeline_simulation,
     project_name: "PipelineActors",
     enable_callbacks: true
   )
 
 output_dir = "examples/caf_pipeline"
-ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.CAF.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -98,13 +98,13 @@ burst_simulation =
   |> ActorSimulation.add_actor(:processor)
 
 {:ok, files} =
-  ActorSimulation.CAFGenerator.generate(burst_simulation,
+  ActorSimulation.Codegen.CAF.generate(burst_simulation,
     project_name: "BurstActors",
     enable_callbacks: true
   )
 
 output_dir = "examples/caf_burst"
-ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.CAF.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->
@@ -138,13 +138,13 @@ complex_simulation =
   |> ActorSimulation.add_actor(:database)
 
 {:ok, files} =
-  ActorSimulation.CAFGenerator.generate(complex_simulation,
+  ActorSimulation.Codegen.CAF.generate(complex_simulation,
     project_name: "LoadBalancedActors",
     enable_callbacks: true
   )
 
 output_dir = "examples/caf_loadbalanced"
-ActorSimulation.CAFGenerator.write_to_directory(files, output_dir)
+ActorSimulation.Codegen.CAF.write_to_directory(files, output_dir)
 
 IO.puts("✅ Generated #{length(files)} files:")
 Enum.each(files, fn {filename, _} ->

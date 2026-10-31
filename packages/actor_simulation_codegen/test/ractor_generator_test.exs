@@ -1,9 +1,9 @@
-defmodule RactorGeneratorTest do
+defmodule RactorTest do
   use ExUnit.Case, async: true
-  doctest ActorSimulation.RactorGenerator
+  doctest ActorSimulation.Codegen.Ractor
 
   alias ActorSimulation
-  alias ActorSimulation.RactorGenerator
+  alias ActorSimulation.Codegen.Ractor
 
   describe "generate/2" do
     test "generates complete Ractor (Rust) project files" do
@@ -16,7 +16,7 @@ defmodule RactorGeneratorTest do
         |> ActorSimulation.add_actor(:receiver)
 
       {:ok, files} =
-        RactorGenerator.generate(simulation,
+        Ractor.generate(simulation,
           project_name: "simple_actors"
         )
 
@@ -42,7 +42,7 @@ defmodule RactorGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "src/actors/worker.rs" end)
 
@@ -58,7 +58,7 @@ defmodule RactorGeneratorTest do
         |> ActorSimulation.add_actor(:alice, targets: [:bob])
         |> ActorSimulation.add_actor(:bob)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, main} = Enum.find(files, fn {name, _} -> name == "src/main.rs" end)
 
@@ -72,7 +72,7 @@ defmodule RactorGeneratorTest do
     test "generates Cargo.toml with Ractor dependency" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test_actors")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test_actors")
 
       {_name, cargo} = Enum.find(files, fn {name, _} -> name == "Cargo.toml" end)
 
@@ -85,7 +85,7 @@ defmodule RactorGeneratorTest do
     test "generates CI pipeline for Rust" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, ci} = Enum.find(files, fn {name, _} -> name == ".github/workflows/ci.yml" end)
 
@@ -104,7 +104,7 @@ defmodule RactorGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, test_file} =
         Enum.find(files, fn {name, _} -> name == "tests/integration_test.rs" end)
@@ -116,7 +116,7 @@ defmodule RactorGeneratorTest do
     test "generates README with build instructions" do
       simulation = ActorSimulation.new() |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "MyActors")
+      {:ok, files} = Ractor.generate(simulation, project_name: "MyActors")
 
       {_name, readme} = Enum.find(files, fn {name, _} -> name == "README.md" end)
 
@@ -135,7 +135,7 @@ defmodule RactorGeneratorTest do
         )
         |> ActorSimulation.add_actor(:consumer)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "src/actors/generator.rs" end)
 
@@ -152,7 +152,7 @@ defmodule RactorGeneratorTest do
         )
 
       {:ok, files} =
-        RactorGenerator.generate(simulation,
+        Ractor.generate(simulation,
           project_name: "test",
           enable_callbacks: true
         )
@@ -186,7 +186,7 @@ defmodule RactorGeneratorTest do
           targets: []
         )
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "src/actors/timer.rs" end)
 
@@ -202,7 +202,7 @@ defmodule RactorGeneratorTest do
         |> ActorSimulation.add_actor(:alice)
         |> ActorSimulation.add_actor(:bob)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, mod_file} = Enum.find(files, fn {name, _} -> name == "src/actors/mod.rs" end)
 
@@ -219,7 +219,7 @@ defmodule RactorGeneratorTest do
         )
         |> ActorSimulation.add_actor(:consumer)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "src/actors/producer.rs" end)
 
@@ -236,7 +236,7 @@ defmodule RactorGeneratorTest do
         )
         |> ActorSimulation.add_actor(:sink)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
       {_name, source} = Enum.find(files, fn {name, _} -> name == "src/actors/bursty.rs" end)
 
@@ -257,9 +257,9 @@ defmodule RactorGeneratorTest do
         ActorSimulation.new()
         |> ActorSimulation.add_actor(:node)
 
-      {:ok, files} = RactorGenerator.generate(simulation, project_name: "test")
+      {:ok, files} = Ractor.generate(simulation, project_name: "test")
 
-      :ok = RactorGenerator.write_to_directory(files, temp_dir)
+      :ok = Ractor.write_to_directory(files, temp_dir)
 
       assert File.dir?(temp_dir)
       assert File.dir?(Path.join(temp_dir, "src/actors"))
