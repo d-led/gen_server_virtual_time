@@ -1,6 +1,11 @@
 # Plan: split `gen_server_virtual_time` into a family of packages
 
-Status: **proposal** · Target release: **1.0.0** · Author: maintainers · Date: 2026-10-31
+Status: **phases 0, 1, 2 (as a move, without the renames), 4 and 5 landed in 1.0.0** ·
+Target release: **1.0.0** (published 2026-10-31) · Author: maintainers · Date: 2026-10-31
+
+What is still open is §7.1/§7.2 (the source-rewriting tasks), the
+`ActorSimulation.Codegen.*` renames with deprecation shims, and per-package
+coverage gating in CI (only the clock's coverage is merged today).
 
 ## 0. Summary of decisions
 
