@@ -251,6 +251,35 @@ jobs:
           for package in $PACKAGES; do
             (cd "packages/$package" && mix dialyzer --format github)
           done
+
+  example-tickers:
+    name: Examples in Erlang and Gleam
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          elixir-version: '1.20'
+          otp-version: '29'
+
+      - name: Setup Gleam
+        uses: gleam-lang/setup-gleam@878921dcd2d242262b80a6e10e0dd12af285298c # v1.0.2
+
+      # rebar_mix drives `mix` for the Elixir dependency, so the runner needs Hex.
+      - name: Install Hex for rebar_mix
+        run: mix local.hex --force
+
+      - name: Erlang example (rebar3 eunit)
+        working-directory: examples/ticker_erlang
+        run: rebar3 eunit
+
+      - name: Gleam example (gleam test)
+        working-directory: examples/ticker_gleam
+        run: ./run.sh
   
   generated-vlingo:
     name: Test Generated VLINGO XOOM Code

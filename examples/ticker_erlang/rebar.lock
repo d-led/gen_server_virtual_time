@@ -1,0 +1,10 @@
+{"1.2.0",
+[{<<"gen_server_virtual_time">>,
+  {pkg,<<"gen_server_virtual_time">>,<<"1.0.1">>},
+  0}]}.
+[
+{pkg_hash,[
+ {<<"gen_server_virtual_time">>, <<"D74239ADC0CFBEB9F1AAE676F34396CA782C97AB09D845060D13A7222BCA355D">>}]},
+{pkg_hash_ext,[
+ {<<"gen_server_virtual_time">>, <<"AEE840FF25C123BD3B8612880169A5B4038E55763907B5933461806A54ADC82A">>}]}
+].

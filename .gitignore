@@ -351,4 +351,26 @@ examples/*/*.sca
 
 # Dialyzer PLT files
 /priv/plts/
+
+# Erlang / rebar3
+# From https://www.toptal.com/developers/gitignore/api/erlang,elixir,visualstudiocode
+.eunit
+*.plt
+.concrete/DEV_MODE
+
+# rebar 2.x
+.rebar
+rel/example_project
+ebin/*.beam
+
+# rebar 3
+.rebar3
+_build/
+_checkouts/
+
+# Gleam
+/examples/ticker_gleam/build
+*.beam
+
 tmp/
+rebar3.crashdump

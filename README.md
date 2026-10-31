@@ -22,6 +22,18 @@ timeline it wants instead of sleeping through it.
 VirtualClock.advance(clock, 100_000)   # 100 virtual seconds, ~10ms real
 ```
 
+## Other languages
+
+The clock is a plain OTP process, so it does not care what the code around it is
+written in. Two examples show the same ticker in other languages, and a test
+that asserts a minute of ticks without waiting for it:
+
+- [`examples/ticker_erlang`](examples/ticker_erlang) — a `VirtualTimeGenServer`
+  written in Erlang, on a rebar3 project that pulls the Elixir package with
+  `rebar_mix`
+- [`examples/ticker_gleam`](examples/ticker_gleam) — Gleam driving the clock
+  through externals
+
 ## Working in this repository
 
 Each package is a Mix project of its own; the root project is only a workspace
