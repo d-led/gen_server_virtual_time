@@ -58,20 +58,27 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-
+            packages/*/deps
+            packages/*/_build
+          key: ${{ runner.os }}-mix-diagrams-v2-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-diagrams-v2-
 
       - name: Install dependencies
-        run: mix deps.get
+        run: |
+          for package in gen_server_virtual_time actor_simulation; do
+            (cd "packages/$package" && mix deps.get)
+          done
 
       - name: Run diagram generation tests
         env:
           MIX_ENV: test
+        working-directory: packages/actor_simulation
         run: mix test --only diagram_generation
       
       - name: Run flowchart report tests  
         env:
           MIX_ENV: test
+        working-directory: packages/actor_simulation
         run: mix test test/mermaid_report_test.exs
 
       - name: Copy sequence diagrams to reports directory

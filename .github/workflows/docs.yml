@@ -50,38 +50,54 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-docs-${{ hashFiles('**/mix.lock') }}
+            packages/*/deps
+            packages/*/_build
+          key: ${{ runner.os }}-mix-docs-v2-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-docs-
+            ${{ runner.os }}-mix-docs-v2-
       
       - name: Install dependencies
-        run: mix deps.get
+        run: |
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix deps.get)
+          done
       
       - name: Build documentation
-        run: mix docs
+        run: |
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            (cd "packages/$package" && mix docs)
+          done
+          mkdir -p site
+          cp -R packages/gen_server_virtual_time/doc/. site/
+          mkdir -p site/actor_simulation site/actor_simulation_codegen
+          cp -R packages/actor_simulation/doc/. site/actor_simulation/
+          cp -R packages/actor_simulation_codegen/doc/. site/actor_simulation_codegen/
       
       - name: Check for documentation warnings
         run: |
-          output=$(mix docs 2>&1)
-          echo "$output"
-          if echo "$output" | grep -q "warning:.*does not exist"; then
-            echo "❌ Documentation has broken links"
-            exit 1
-          fi
-          echo "✅ Documentation builds without warnings"
+          failed=0
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
+            output=$(cd "packages/$package" && mix docs 2>&1)
+            echo "$output"
+            if echo "$output" | grep -q "warning:.*does not exist"; then
+              echo "❌ $package documentation has broken links"
+              failed=1
+            fi
+          done
+          exit $failed
       
       - name: Upload documentation
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: documentation
-          path: doc/
+          path: site/
           retention-days: 7
       
       - name: Upload EPUB
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: documentation-epub
-          path: doc/GenServerVirtualTime.epub
+          path: packages/gen_server_virtual_time/doc/GenServerVirtualTime.epub
           retention-days: 7
   
   generate-diagrams:
@@ -111,14 +127,20 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-diagrams-${{ hashFiles('**/mix.lock') }}
+            packages/*/deps
+            packages/*/_build
+          key: ${{ runner.os }}-mix-diagrams-v2-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-diagrams-
+            ${{ runner.os }}-mix-diagrams-v2-
       
       - name: Install dependencies
-        run: mix deps.get
+        run: |
+          for package in gen_server_virtual_time actor_simulation; do
+            (cd "packages/$package" && mix deps.get)
+          done
       
       - name: Generate sequence diagrams
+        working-directory: packages/actor_simulation
         run: mix test --only diagram_generation
       
       - name: Upload diagrams
