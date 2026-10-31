@@ -172,6 +172,49 @@ jobs:
           mix test.coverage
           mix coveralls.github --import-cover cover
 
+  coverage-packages:
+    name: Coverage gate for the other packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Elixir
+        uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          elixir-version: '1.20'
+          otp-version: '29'
+
+      - name: Cache dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            deps
+            _build
+            packages/*/deps
+            packages/*/_build
+          key: ${{ runner.os }}-mix-coverage-packages-${{ hashFiles('**/mix.lock', 'VERSION') }}
+
+      - name: Install dependencies
+        run: |
+          for package in actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate; do
+            (cd "packages/$package" && mix deps.get)
+          done
+
+      # Each package's coveralls.json carries the threshold, so this fails the
+      # build instead of merely printing a number. The slow and diagram tests are
+      # included: excluding them would measure a fifth of actor_simulation.
+      - name: Enforce the coverage threshold in every package
+        env:
+          MIX_ENV: test
+        run: |
+          for package in actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate; do
+            echo ""
+            echo "=== $package ==="
+            (cd "packages/$package" && mix coveralls --include slow --include diagram_generation)
+          done
+
   package-tests:
     name: Test remaining packages
     runs-on: ubuntu-latest
