@@ -56,10 +56,18 @@ jobs:
           HEX_PUBLISH: "1"
         run: |
           set -e
+          version=$(tr -d '[:space:]' < VERSION)
           for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
             echo ""
             echo "=== $package ==="
             cd "packages/$package"
+            # Publishing is resumable: a package that already carries this
+            # version is left alone, so a failed run can simply be re-run.
+            if mix hex.info "$package" "$version" > /dev/null 2>&1; then
+              echo "$package $version is already published — skipping"
+              cd -
+              continue
+            fi
             # The packages are published in dependency order, so a dependency may
             # take a moment to become resolvable after it was published.
             for attempt in 1 2 3 4 5; do
@@ -72,7 +80,7 @@ jobs:
             MIX_ENV=test mix deps.get --only test
             (MIX_ENV=test mix test --exclude slow --exclude omnetpp)
             MIX_ENV=dev mix docs
-            mix hex.publish --yes --replace
+            mix hex.publish --yes
             cd -
           done
 

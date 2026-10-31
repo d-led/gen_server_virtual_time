@@ -56,7 +56,7 @@ defmodule ActorSimulation.MixProject do
   defp deps do
     [
       # The clock this simulation runs on
-      {:gen_server_virtual_time, "~> #{@version}", path: sibling(:gen_server_virtual_time)},
+      sibling_dep(:gen_server_virtual_time, "~> #{@version}"),
 
       # Test reporting
       {:junit_formatter, "~> 3.4", only: :test, runtime: false},
@@ -78,14 +78,15 @@ defmodule ActorSimulation.MixProject do
 
   # Inside this repository the sibling package is right there and wins; in a
   # consumer's deps/ tree it is not, so the version requirement resolves from
-  # Hex. Hex refuses to build a package that depends on a non-Hex dependency, so
-  # packaging runs with HEX_PUBLISH=1 and sees the requirement alone.
-  defp sibling(app) do
+  # Hex. Packaging runs with HEX_PUBLISH=1 and gets a spec without the :path
+  # option at all — Hex refuses to build a package whose dependency is not a Hex
+  # package, and it counts a `path: nil` as one.
+  defp sibling_dep(app, requirement) do
     path = Path.expand("../#{app}", __DIR__)
 
     if System.get_env("HEX_PUBLISH") != "1" and File.dir?(Path.join(path, "lib")),
-      do: path,
-      else: nil
+      do: {app, requirement, path: path},
+      else: {app, requirement}
   end
 
   defp description do
