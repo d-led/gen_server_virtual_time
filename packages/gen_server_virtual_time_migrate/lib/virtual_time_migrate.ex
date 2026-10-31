@@ -27,6 +27,8 @@ defmodule VirtualTimeMigrate do
   be applied to text it does not describe.
   """
 
+  alias VirtualTimeMigrate.Edits
+
   @typedoc """
   One replacement: `from` is the exact source text at `column` on `line`, and
   `to` is what replaces it.
@@ -71,7 +73,7 @@ defmodule VirtualTimeMigrate do
           known -> MapSet.union(known, converted_modules(source))
         end
 
-      {:ok, ast |> collect(converted, lines(source)) |> to_plan()}
+      {:ok, ast |> collect(converted, source) |> Edits.to_plan()}
     end
   end
 
@@ -82,16 +84,7 @@ defmodule VirtualTimeMigrate do
   moves a later one.
   """
   @spec apply_edits(String.t(), [edit]) :: String.t()
-  def apply_edits(source, edits) do
-    edits_by_line = Enum.group_by(edits, & &1.line)
-
-    source
-    |> String.split("\n")
-    |> Enum.with_index(1)
-    |> Enum.map_join("\n", fn {line, number} ->
-      replace_in_line(line, Map.get(edits_by_line, number, []))
-    end)
-  end
+  def apply_edits(source, edits), do: Edits.apply(source, edits)
 
   @doc """
   The modules a source (or an AST) converts, as dotted names.
@@ -118,10 +111,6 @@ defmodule VirtualTimeMigrate do
     MapSet.new(names)
   end
 
-  defp lines(source), do: source |> String.split("\n") |> List.to_tuple()
-
-  defp to_plan(state), do: %{edits: Enum.reverse(state.edits), notes: Enum.reverse(state.notes)}
-
   defp block({:__block__, _meta, forms}) when is_list(forms), do: forms
   defp block(body) when is_list(body), do: body
   defp block(body), do: [body]
@@ -131,8 +120,8 @@ defmodule VirtualTimeMigrate do
 
   defp declaration?(_other), do: false
 
-  defp collect(ast, converted, lines) do
-    walk(%{edits: [], notes: [], lines: lines}, ast, nil, converted)
+  defp collect(ast, converted, source) do
+    walk(Edits.new(source), ast, nil, converted)
   end
 
   # The enclosing module is carried down, because a conversion is only safe
@@ -171,7 +160,7 @@ defmodule VirtualTimeMigrate do
     name = dotted(parts)
 
     case Map.fetch(@declarations, name) do
-      {:ok, replacement} -> add_edit(state, alias_meta, token(parts), replacement, "use #{name}")
+      {:ok, replacement} -> Edits.add(state, alias_meta, token(parts), replacement, "use #{name}")
       :error -> state
     end
   end
@@ -195,11 +184,11 @@ defmodule VirtualTimeMigrate do
 
   defp rewrite(state, {module, token, function, _args, meta}, _converted)
        when module in ["Process", "erlang"] and function in @process_calls do
-    add_edit(state, meta, token, "VirtualTimeGenServer", "#{token}.#{function}")
+    Edits.add(state, meta, token, "VirtualTimeGenServer", "#{token}.#{function}")
   end
 
   defp rewrite(state, {"timer", ":timer", "sleep", _args, meta}, _converted) do
-    add_edit(state, meta, ":timer", "VirtualTimeGenServer", ":timer.sleep")
+    Edits.add(state, meta, ":timer", "VirtualTimeGenServer", ":timer.sleep")
   end
 
   defp rewrite(state, _call, _converted), do: state
@@ -210,7 +199,7 @@ defmodule VirtualTimeMigrate do
     case target_of(target) do
       {:module, name} ->
         if MapSet.member?(converted, name) do
-          add_edit(
+          Edits.add(
             state,
             meta,
             "GenServer",
@@ -222,7 +211,7 @@ defmodule VirtualTimeMigrate do
         end
 
       :self ->
-        add_edit(
+        Edits.add(
           state,
           meta,
           "GenServer",
@@ -231,7 +220,7 @@ defmodule VirtualTimeMigrate do
         )
 
       :unknown ->
-        note(
+        Edits.note(
           state,
           meta,
           "GenServer.#{function} on a target that is not a literal module — left alone"
@@ -265,47 +254,6 @@ defmodule VirtualTimeMigrate do
   end
 
   defp module_of(_other, _dot_meta), do: :error
-
-  defp add_edit(state, meta, from, to, change) do
-    line = Keyword.fetch!(meta, :line)
-    column = Keyword.fetch!(meta, :column)
-
-    if anchored?(state.lines, line, column, from) do
-      edit = %{line: line, column: column, from: from, to: to, change: change}
-      %{state | edits: [edit | state.edits]}
-    else
-      note(state, meta, "expected `#{from}` at line #{line}, column #{column} — left alone")
-    end
-  end
-
-  defp anchored?(lines, line, column, from) do
-    case elem(lines, line - 1) do
-      nil -> false
-      text -> text |> String.slice(column - 1, String.length(text)) |> String.starts_with?(from)
-    end
-  end
-
-  defp note(state, meta, message) do
-    %{state | notes: [%{line: Keyword.fetch!(meta, :line), message: message} | state.notes]}
-  end
-
-  # Right to left, so an earlier replacement does not move a later one.
-  defp replace_in_line(line, []), do: line
-
-  defp replace_in_line(line, edits) do
-    edits
-    |> Enum.sort_by(& &1.column, :desc)
-    |> Enum.reduce(line, fn %{column: column, from: from, to: to}, acc ->
-      prefix = String.slice(acc, 0, column - 1)
-      rest = String.slice(acc, column - 1, String.length(acc))
-
-      if String.starts_with?(rest, from) do
-        prefix <> to <> String.slice(rest, String.length(from)..-1//1)
-      else
-        acc
-      end
-    end)
-  end
 
   defp dotted(parts), do: Enum.join(parts, ".")
 

@@ -1,8 +1,10 @@
 # GenServerVirtualTimeMigrate
 
-Move existing `GenServer` code onto the virtual clock without hand-editing every
-file. The task reads your tree, shows exactly what it would change, and writes
-only when you ask.
+Two dev-only rewrite tasks: move existing `GenServer` code onto the virtual
+clock, and move a project off the module names that were renamed in 1.1.
+
+Both read your tree, show exactly what they would change, and write only when
+you ask.
 
 ```console
 $ mix virtual_time.migrate
@@ -17,12 +19,12 @@ lib/my_app/counter.ex
 
 ## The family
 
-| Package                                                                   | What it is for                                   | Add it when                                       |
-| ------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
-| [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)   | virtual clock, `GenServer`/`gen_statem` wrappers | you test code with timers                         |
-| **`gen_server_virtual_time_migrate`** (this one)                          | rewrite `GenServer` code for the virtual clock   | you already have servers and want virtual time    |
-| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                 | actor-system DSL, statistics, sequence diagrams  | you model parts of a system talking to each other |
-| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen) | generate runnable projects in six runtimes       | you want the same model in another language       |
+| Package                                                                   | What it is for                                                | Add it when                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
+| [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)   | virtual clock, `GenServer`/`gen_statem` wrappers              | you test code with timers                           |
+| **`gen_server_virtual_time_migrate`** (this one)                          | rewrite code for the virtual clock, rename deprecated modules | you already have servers, or code that predates 1.1 |
+| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                 | actor-system DSL, statistics, sequence diagrams               | you model parts of a system talking to each other   |
+| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen) | generate runnable projects in six runtimes                    | you want the same model in another language         |
 
 This package is standalone: it only rewrites text, so it needs nothing at
 runtime. The rewritten code needs `gen_server_virtual_time`.
@@ -32,7 +34,7 @@ runtime. The rewritten code needs `gen_server_virtual_time`.
 ```elixir
 def deps do
   [
-    {:gen_server_virtual_time, "~> 1.0.1"},
+    {:gen_server_virtual_time, "~> 1.1.0"},
     {:gen_server_virtual_time_migrate, "~> 1.0.0", only: :dev}
   ]
 end
@@ -77,6 +79,29 @@ The tool never guesses, and it says what it skipped:
 
 Comments, strings and formatting elsewhere in the file are untouched: the
 rewrite is a token replacement, so `git diff` shows only the lines that changed.
+
+## The other task: deprecated generator names
+
+`ActorSimulation.CAFGenerator` and its five siblings became
+`ActorSimulation.Codegen.*` in 1.1. The old names still work — they forward, and
+warn — so this is optional: it is the difference between a build with
+deprecation warnings and one without.
+
+```console
+mix virtual_time.upgrade                # report only
+mix virtual_time.upgrade --write        # apply
+mix virtual_time.upgrade --check        # exit 1 if anything would change
+```
+
+| Before                                           | After                                       |
+| ------------------------------------------------ | ------------------------------------------- |
+| `ActorSimulation.CAFGenerator.generate(sim)`     | `ActorSimulation.Codegen.CAF.generate(sim)` |
+| `alias ActorSimulation.PonyGenerator`            | `alias ActorSimulation.Codegen.Pony`        |
+| `PonyGenerator.generate(sim)` (under that alias) | `Pony.generate(sim)`                        |
+
+It reports instead of guessing when an alias uses `as:`, when the name it would
+introduce is already in use in that file, and when a bare short name has no
+alias it can point at.
 
 ## Compatibility
 
