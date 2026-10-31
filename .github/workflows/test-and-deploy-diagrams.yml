@@ -60,8 +60,7 @@ jobs:
             _build
             packages/*/deps
             packages/*/_build
-          key: ${{ runner.os }}-mix-diagrams-v2-${{ hashFiles('**/mix.lock') }}
-          restore-keys: ${{ runner.os }}-mix-diagrams-v2-
+          key: ${{ runner.os }}-mix-diagrams-v2-${{ hashFiles('**/mix.lock', 'VERSION') }}
 
       - name: Install dependencies
         run: |
