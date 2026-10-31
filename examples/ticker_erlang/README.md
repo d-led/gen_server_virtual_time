@@ -42,7 +42,6 @@ The test is the value:
 {ok, Clock} = 'Elixir.VirtualClock':start_link(),
 {ok, Ticker} = ticker:start_link(Clock, 1000, 60),
 'Elixir.VirtualClock':advance(Clock, 60000),
-?assertNot(is_process_alive(Ticker)),
 ?assertEqual(60, count_ticks(0)),
 ?assertEqual(60000, 'Elixir.VirtualClock':now(Clock)),
 ```

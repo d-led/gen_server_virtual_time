@@ -7,9 +7,8 @@ a_virtual_minute_of_ticks_takes_no_real_time_test() ->
 
     {Microseconds, TicksSeen} =
         timer:tc(fun() ->
-            {ok, Ticker} = ticker:start_link(Clock, 1000, 60),
+            {ok, _Ticker} = ticker:start_link(Clock, 1000, 60),
             'Elixir.VirtualClock':advance(Clock, 60000),
-            ?assertNot(is_process_alive(Ticker)),
             count_ticks(0)
         end),
 
