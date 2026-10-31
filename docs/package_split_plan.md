@@ -1,14 +1,15 @@
 # Plan: split `gen_server_virtual_time` into a family of packages
 
-Status: **phases 0, 1, 2 (as a move, without the renames), 4 and 5 landed in
-1.0.0** · Target release: **1.0.0** (published 2026-10-31) · Author: maintainers
-· Date: 2026-10-31
+Status: **every phase closed** — 0, 1, 2 (as a move, without the renames), 4 and
+5 landed in 1.0.0; the renames with their shims, the migration and upgrade tasks
+and the per-package coverage gate followed in 1.0.1 and 1.1.0 · Target release:
+**1.0.0** (published 2026-10-31) · Author: maintainers · Date: 2026-10-31
 
 `gen_server_virtual_time_migrate` (§7.1, `mix virtual_time.migrate`) landed in
 1.0.1, and §7.2/§7.3 (the `ActorSimulation.Codegen.*` renames with their
-deprecation shims, and `mix virtual_time.upgrade`) in 1.1.0. What is still open
-is per-package coverage gating in CI — the clock's coverage is merged, and the
-other three packages now fail their own `mix coveralls` run when they slip.
+deprecation shims, and `mix virtual_time.upgrade`) in 1.1.0, together with the
+per-package coverage gate. What remains open is not work but judgement: the
+three questions in §10, which this plan deliberately left to the maintainers.
 
 ## 0. Summary of decisions
 
@@ -569,16 +570,16 @@ everything else.
 
 ## 9. Risks
 
-| Risk                                                                                 | Impact | Mitigation                                                                                                                                 |
-| ------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Hex silently drops `path:` deps from metadata → consumers get "module not available" | high   | `scripts/verify_packaging.sh` (§5.4) — the definitive test; it fails the build, not the user's                                             |
-| Local Hex repository round trip does not work the way we assume                      | medium | half-day spike at the start of Phase 4, with the documented fallback                                                                       |
-| Users on `~> 0.6` get a major bump they did not ask for                              | medium | 0.7.0 first (non-breaking), a `### Breaking` section that leads with "packaging only", and `mix virtual_time.upgrade --check` in the guide |
-| Generator output embeds the library version (`PonyGenerator`)                        | low    | the codegen package reads its own `@version`; regenerate `generated/` and assert in a test                                                 |
-| Four dialyzer PLTs / four test runs slow CI                                          | low    | shared `plt_core_path`; full matrix on the core only                                                                                       |
-| Long-lived feature branches conflict during the `git mv`                             | low    | do Phase 1 in one sitting on a quiet day, document the `git blame` follow (`--follow`)                                                     |
-| Docs fragmentation across four hexdocs sites                                         | medium | family table on every README and moduledoc hub; consistent first paragraph structure                                                       |
-| Users copy process-dictionary stats hacks from old blog posts                        | low    | the deprecated wrappers keep working in 1.0 and log a one-time upgrade hint                                                                |
+| Risk                                                                                 | Impact | Mitigation                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Hex silently drops `path:` deps from metadata → consumers get "module not available" | high   | `scripts/verify_packaging.sh` (§5.4) — the definitive test; it fails the build, not the user's                                                                                                                                                                                                                                                               |
+| Local Hex repository round trip does not work the way we assume                      | medium | half-day spike at the start of Phase 4, with the documented fallback                                                                                                                                                                                                                                                                                         |
+| Users on `~> 0.6` get a major bump they did not ask for                              | medium | 0.7.0 first (non-breaking), a `### Breaking` section that leads with "packaging only", and `mix virtual_time.upgrade --check` in the guide                                                                                                                                                                                                                   |
+| Generator output embeds the library version (`PonyGenerator`)                        | low    | the codegen package reads its own `@version`; regenerate `generated/` and assert in a test                                                                                                                                                                                                                                                                   |
+| Four dialyzer PLTs / four test runs slow CI                                          | low    | cache `packages/*/priv/plts` in CI, keyed on `mix.lock` (a PLT describes the toolchain, not our version) — done in 1.1.0. A shared `plt_core_path` was tried and measured: dialyxir rebuilds the Elixir core PLT whenever a package's target PLT is missing, so sharing the directory saved nothing and was reverted. The matrix still runs on the core only |
+| Long-lived feature branches conflict during the `git mv`                             | low    | do Phase 1 in one sitting on a quiet day, document the `git blame` follow (`--follow`)                                                                                                                                                                                                                                                                       |
+| Docs fragmentation across four hexdocs sites                                         | medium | family table on every README and moduledoc hub; consistent first paragraph structure                                                                                                                                                                                                                                                                         |
+| Users copy process-dictionary stats hacks from old blog posts                        | low    | the deprecated wrappers keep working in 1.0 and log a one-time upgrade hint                                                                                                                                                                                                                                                                                  |
 
 ## 10. Open questions
 
