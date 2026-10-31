@@ -483,11 +483,13 @@ Rules, in order:
 3. **Rewrite declarations**: `use GenServer` → `use VirtualTimeGenServer`,
    preserving options (works only after §4.2 lands).
 4. **Rewrite intra-module time calls**: `Process.send_after(...)` and
-   `:erlang.send_after(...)` inside converted modules →
-   `VirtualTimeGenServer.send_after/3`; `:timer.sleep`, `Process.sleep` →
-   `VirtualTimeGenServer.sleep/1`. Report-only when the module also runs in
-   production and the caller has not opted into `use_real_time/0` (the migration
-   plan's core promise: same code, both clocks).
+   `:timer.sleep` / `Process.sleep` inside converted modules →
+   `VirtualTimeGenServer`; `:erlang.send_after/3` is reported instead of
+   rewritten, because it puts the delay first where the virtual-time call puts
+   it last, and swapping arguments is not a token replacement (1.1.1).
+   Report-only when the module also runs in production and the caller has not
+   opted into `use_real_time/0` (the migration plan's core promise: same code,
+   both clocks).
 5. **Rewrite cross-module calls** — only when the target resolves to a converted
    module: `GenServer.call/cast/stop/reply/start_link/start/child_spec`. Targets
    that are variables, pids, `__MODULE__`, remote modules or unknown → listed as
