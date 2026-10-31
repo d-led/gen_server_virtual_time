@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- `gen_server_virtual_time_migrate` is no longer published to Hex: the release
+  workflow ships the three libraries only, and the package claims nothing from a
+  consumer's dependency list. The tasks stay in the repository — a one-off text
+  rewrite does not need to be a dependency, and four packages from every tag is
+  churn the ecosystem has no use for
+
 ## [1.1.1] - 2026-10-31
 
 ### Fixed

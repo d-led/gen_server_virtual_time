@@ -19,12 +19,12 @@ The library is published as packages that share one version. A module keeps its
 name wherever it lives, so choosing what you need is a dependency, not a
 rewrite.
 
-| Package                                                                                 | What it is for                                                                  | Add it when                                       |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **`gen_server_virtual_time`** (this one)                                                | virtual clock, `GenServer`/`gen_statem` wrappers, time backends                 | you test code with timers                         |
-| [`gen_server_virtual_time_migrate`](https://hexdocs.pm/gen_server_virtual_time_migrate) | `mix virtual_time.migrate` rewrites `GenServer` code for the virtual clock      | you already have servers and want to keep them    |
-| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                               | actor-system DSL, statistics, sequence diagrams                                 | you model parts of a system talking to each other |
-| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen)               | generate runnable C++, Go, Pony, Rust, Java, OMNeT++ projects from a simulation | you want the same model in another runtime        |
+| Package                                                                                                                                  | What it is for                                                                                              | Add it when                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **`gen_server_virtual_time`** (this one)                                                                                                 | virtual clock, `GenServer`/`gen_statem` wrappers, time backends                                             | you test code with timers                         |
+| [`gen_server_virtual_time_migrate`](https://github.com/d-led/gen_server_virtual_time/tree/main/packages/gen_server_virtual_time_migrate) | `mix virtual_time.migrate` rewrites `GenServer` code for the virtual clock (repository tool, not a package) | you already have servers and want to keep them    |
+| [`actor_simulation`](https://hexdocs.pm/actor_simulation)                                                                                | actor-system DSL, statistics, sequence diagrams                                                             | you model parts of a system talking to each other |
+| [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen)                                                                | generate runnable C++, Go, Pony, Rust, Java, OMNeT++ projects from a simulation                             | you want the same model in another runtime        |
 
 ## ⚡ Start here
 
@@ -256,8 +256,8 @@ Add to your deps:
 ```
 
 To move existing servers onto the virtual clock, the
-[`gen_server_virtual_time_migrate`](https://hexdocs.pm/gen_server_virtual_time_migrate)
-package does the edits:
+[`gen_server_virtual_time_migrate`](https://github.com/d-led/gen_server_virtual_time/tree/main/packages/gen_server_virtual_time_migrate)
+task does the edits (it is a repository tool, not a package):
 
 ```bash
 mix virtual_time.migrate           # what it would change, and what needs a human

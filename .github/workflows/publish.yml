@@ -55,7 +55,11 @@ jobs:
         run: |
           set -e
           version=$(tr -d '[:space:]' < VERSION)
-          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen gen_server_virtual_time_migrate; do
+          # The migrator is deliberately absent: it is a one-off text rewrite that
+          # runs from a checkout, and its published versions are retired on Hex.
+          # Publishing four packages from every tag is churn the ecosystem does not
+          # need, and the tool gains nothing from being a dependency.
+          for package in gen_server_virtual_time actor_simulation actor_simulation_codegen; do
             echo ""
             echo "=== $package ==="
             cd "packages/$package"

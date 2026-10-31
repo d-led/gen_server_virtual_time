@@ -6,6 +6,11 @@ clock, and move a project off the module names that were renamed in 1.1.
 Both read your tree, show exactly what they would change, and write only when
 you ask.
 
+This package is **not published to Hex** — it was, for a few hours in 1.1.0, and
+those releases are withdrawn. A one-off tool that rewrites text does not need to
+be a dependency: it is run from a checkout of
+github.com/d-led/gen_server_virtual_time.
+
 ```console
 $ mix virtual_time.migrate
 lib/my_app/counter.ex
@@ -14,31 +19,29 @@ lib/my_app/counter.ex
 1 file(s) would change. Re-run with --write to apply.
 ```
 
-[![Hex.pm](https://img.shields.io/hexpm/v/gen_server_virtual_time_migrate.svg)](https://hex.pm/packages/gen_server_virtual_time_migrate)
-[![Documentation](https://img.shields.io/badge/docs-hexdocs-blue.svg)](https://hexdocs.pm/gen_server_virtual_time_migrate)
-
 ## The family
 
 | Package                                                                   | What it is for                                                | Add it when                                         |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
 | [`gen_server_virtual_time`](https://hexdocs.pm/gen_server_virtual_time)   | virtual clock, `GenServer`/`gen_statem` wrappers              | you test code with timers                           |
-| **`gen_server_virtual_time_migrate`** (this one)                          | rewrite code for the virtual clock, rename deprecated modules | you already have servers, or code that predates 1.1 |
+| **`gen_server_virtual_time_migrate`** (this one, repository only)         | rewrite code for the virtual clock, rename deprecated modules | you already have servers, or code that predates 1.1 |
 | [`actor_simulation`](https://hexdocs.pm/actor_simulation)                 | actor-system DSL, statistics, sequence diagrams               | you model parts of a system talking to each other   |
 | [`actor_simulation_codegen`](https://hexdocs.pm/actor_simulation_codegen) | generate runnable projects in six runtimes                    | you want the same model in another language         |
 
 This package is standalone: it only rewrites text, so it needs nothing at
 runtime. The rewritten code needs `gen_server_virtual_time`.
 
-## Install
+## Run it from the repository
 
-```elixir
-def deps do
-  [
-    {:gen_server_virtual_time, "~> 1.1.1"},
-    {:gen_server_virtual_time_migrate, "~> 1.0.0", only: :dev}
-  ]
-end
+```console
+git clone https://github.com/d-led/gen_server_virtual_time
+cd gen_server_virtual_time/packages/gen_server_virtual_time_migrate
+mix deps.get
+mix virtual_time.migrate --paths /path/to/your/project/lib
 ```
+
+`--paths` defaults to `lib` and `test` of the directory you run it in, so point
+it at the project you are migrating.
 
 ## Use
 
@@ -54,14 +57,14 @@ A rewrite that would not parse aborts the run before anything is written, so a
 
 ## What it rewrites
 
-| Before                                   | After                                                 |
-| ---------------------------------------- | ----------------------------------------------------- |
-| `use GenServer`                          | `use VirtualTimeGenServer`                            |
-| `use GenStateMachine`                    | `use VirtualTimeGenStateMachine`                      |
-| `Process.send_after(pid, :tick, 1_000)`  | `VirtualTimeGenServer.send_after(pid, :tick, 1_000)`  |
-| `Process.sleep(10)`                      | `VirtualTimeGenServer.sleep(10)`                      |
-| `:timer.sleep(10)`                       | `VirtualTimeGenServer.sleep(10)`                      |
-| `GenServer.call(MyApp.Counter, :get)`    | `VirtualTimeGenServer.call(MyApp.Counter, :get)`      |
+| Before                                  | After                                                |
+| --------------------------------------- | ---------------------------------------------------- |
+| `use GenServer`                         | `use VirtualTimeGenServer`                           |
+| `use GenStateMachine`                   | `use VirtualTimeGenStateMachine`                     |
+| `Process.send_after(pid, :tick, 1_000)` | `VirtualTimeGenServer.send_after(pid, :tick, 1_000)` |
+| `Process.sleep(10)`                     | `VirtualTimeGenServer.sleep(10)`                     |
+| `:timer.sleep(10)`                      | `VirtualTimeGenServer.sleep(10)`                     |
+| `GenServer.call(MyApp.Counter, :get)`   | `VirtualTimeGenServer.call(MyApp.Counter, :get)`     |
 
 The time calls are only rewritten inside a module that is itself converted —
 that is what puts the module on the virtual clock.

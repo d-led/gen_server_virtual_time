@@ -19,14 +19,14 @@ defmodule Release do
     next = bump(kind, current)
 
     File.write!(@version_file, next <> "\n")
-    each_package(fn dir -> rewriter(dir, next) end)
+    readmes = @packages |> Enum.map(&rewriter("packages/#{&1}", next)) |> Enum.count(&(&1 == :pinned))
     rewrite_workspace_version(next)
     rewrite_changelog(current, next)
 
     IO.puts("#{current} -> #{next}")
 
     IO.puts(
-      "Updated #{@version_file}, #{length(@packages)} mix.exs files, #{length(@packages)} READMEs and CHANGELOG.md"
+      "Updated #{@version_file}, #{length(@packages)} mix.exs files, #{readmes} README(s) and CHANGELOG.md"
     )
 
     IO.puts("Next: review the diff, commit, then ./scripts/tag_and_push_version.sh")
@@ -50,17 +50,23 @@ defmodule Release do
   end
 
   defp bump("major", version), do: version |> parts() |> then(fn [m, _, _] -> "#{m + 1}.0.0" end)
-  defp bump("minor", version), do: version |> parts() |> then(fn [m, n, _] -> "#{m}.#{n + 1}.0" end)
+
+  defp bump("minor", version),
+    do: version |> parts() |> then(fn [m, n, _] -> "#{m}.#{n + 1}.0" end)
 
   defp bump("patch", version),
     do: version |> parts() |> then(fn [m, n, p] -> "#{m}.#{n}.#{p + 1}" end)
 
-  defp bump(kind, _version), do: Mix.raise("Unknown bump #{inspect(kind)}; use major, minor or patch")
+  defp bump(kind, _version),
+    do: Mix.raise("Unknown bump #{inspect(kind)}; use major, minor or patch")
 
   defp parts(version) do
     case String.split(version, ".") do
-      [major, minor, patch] -> [String.to_integer(major), String.to_integer(minor), String.to_integer(patch)]
-      _ -> Mix.raise("Cannot parse version #{version}")
+      [major, minor, patch] ->
+        [String.to_integer(major), String.to_integer(minor), String.to_integer(patch)]
+
+      _ ->
+        Mix.raise("Cannot parse version #{version}")
     end
   end
 
@@ -77,8 +83,6 @@ defmodule Release do
     end
   end
 
-  defp each_package(fun), do: Enum.each(@packages, &fun.("packages/#{&1}"))
-
   # The workspace app is not published, but its version is the requirement each of
   # its path deps has to satisfy, so it has to move with the packages.
   defp rewrite_workspace_version(version) do
@@ -90,8 +94,20 @@ defmodule Release do
 
     readme = "#{dir}/README.md"
 
-    if File.exists?(readme) do
-      replace!(readme, ~r/\{:(\w+), "~> [^"]+"\}/, ~s({:\\1, "~> #{version}"}))
+    # A package whose README carries no dependency snippet — the migrator is a
+    # repository tool and does not have one — has nothing to pin.
+    if File.exists?(readme), do: pin(readme, version), else: :no_pin
+  end
+
+  defp pin(path, version) do
+    pattern = ~r/\{:(\w+), "~> [^"]+"\}/
+    contents = File.read!(path)
+
+    if Regex.match?(pattern, contents) do
+      File.write!(path, Regex.replace(pattern, contents, ~s({:\\1, "~> #{version}"})))
+      :pinned
+    else
+      :no_pin
     end
   end
 

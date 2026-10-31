@@ -11,6 +11,14 @@ deprecation shims, and `mix virtual_time.upgrade`) in 1.1.0, together with the
 per-package coverage gate. What remains open is not work but judgement: the
 three questions in §10, which this plan deliberately left to the maintainers.
 
+One decision was reversed the same day: the migrator is **not published** any
+more. Its three releases (1.0.1, 1.1.0, 1.1.1) are being retired on Hex — a
+retirement needs the maintainer's 2FA — and the release workflow publishes the
+three libraries only. A dev-only tool that rewrites text gains nothing from
+being a dependency, and it does not justify four packages, and four sets of
+release churn, from every tag. The tasks and their tests stay in
+`packages/gen_server_virtual_time_migrate`, run from a checkout.
+
 ## 0. Summary of decisions
 
 | Decision              | Choice                                                                                       | Why                                                                                                   |
