@@ -24,6 +24,8 @@ on:
       - 'lib/**/*.ex'
       - '.github/workflows/docs.yml'
 
+  workflow_dispatch:
+
 env:
   MIX_ENV: dev
   ELIXIR_VERSION: "1.20"

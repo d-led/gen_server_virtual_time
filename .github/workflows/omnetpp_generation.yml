@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'lib/actor_simulation/omnetpp_generator.ex'
+      - 'packages/actor_simulation_codegen/lib/actor_simulation/omnetpp_generator.ex'
       - 'examples/omnetpp_*/**'
       - 'scripts/generate_omnetpp_examples.exs'
       - '.github/workflows/omnetpp_generation.yml'

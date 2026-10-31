@@ -5,11 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'lib/actor_simulation/mermaid_report_generator.ex'
-      - 'test/diagram_generation_test.exs'
-      - 'test/termination_indicator_test.exs'
-      - 'test/mermaid_report_test.exs'
-      - 'test/dining_philosophers_test.exs'
+      - 'packages/actor_simulation/lib/actor_simulation/mermaid_report_generator.ex'
+      - 'packages/actor_simulation/test/diagram_generation_test.exs'
+      - 'packages/actor_simulation/test/termination_indicator_test.exs'
+      - 'packages/actor_simulation/test/mermaid_report_test.exs'
+      - 'packages/actor_simulation/test/dining_philosophers_test.exs'
       - 'generated/examples/**/*.html'
       - 'generated/examples/**/*.md'
       - '.github/workflows/test-and-deploy-diagrams.yml'
@@ -17,11 +17,11 @@ on:
     branches:
       - main
     paths:
-      - 'lib/actor_simulation/mermaid_report_generator.ex'
-      - 'test/diagram_generation_test.exs'
-      - 'test/termination_indicator_test.exs'
-      - 'test/mermaid_report_test.exs'
-      - 'test/dining_philosophers_test.exs'
+      - 'packages/actor_simulation/lib/actor_simulation/mermaid_report_generator.ex'
+      - 'packages/actor_simulation/test/diagram_generation_test.exs'
+      - 'packages/actor_simulation/test/termination_indicator_test.exs'
+      - 'packages/actor_simulation/test/mermaid_report_test.exs'
+      - 'packages/actor_simulation/test/dining_philosophers_test.exs'
       - 'generated/examples/**/*.html'
       - 'generated/examples/**/*.md'
       - '.github/workflows/test-and-deploy-diagrams.yml'

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'lib/actor_simulation/phony_generator.ex'
+      - 'packages/actor_simulation_codegen/lib/actor_simulation/phony_generator.ex'
       - 'examples/phony_*/**'
       - 'scripts/generate_phony_examples.exs'
       - 'scripts/test_phony_demo.sh'

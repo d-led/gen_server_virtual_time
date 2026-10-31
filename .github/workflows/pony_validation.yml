@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'lib/actor_simulation/pony_generator.ex'
+      - 'packages/actor_simulation_codegen/lib/actor_simulation/pony_generator.ex'
       - 'examples/pony_*/**'
       - 'scripts/generate_pony_examples.exs'
       - 'scripts/test_pony_demo.sh'

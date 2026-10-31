@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'lib/actor_simulation/caf_generator.ex'
+      - 'packages/actor_simulation_codegen/lib/actor_simulation/caf_generator.ex'
       - 'examples/caf_*/**'
       - 'scripts/generate_caf_examples.exs'
       - 'scripts/test_caf_demo.sh'
