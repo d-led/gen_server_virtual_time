@@ -261,7 +261,19 @@ jobs:
             deps
             _build
           key: ${{ runner.os }}-mix-quality-${{ hashFiles('**/mix.lock', 'VERSION') }}
-      
+
+      # A PLT describes the OTP, Elixir and dependency beams it was built from,
+      # not this project's version, so it outlives a release. Dialyxir rebuilds
+      # one that no longer matches the toolchain; four of them from cold is half
+      # an hour of runner time.
+      - name: Cache dialyzer PLTs
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: packages/*/priv/plts
+          key: ${{ runner.os }}-plts-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-plts-
+
       - name: Install dependencies
         run: |
           mix deps.get
@@ -281,7 +293,6 @@ jobs:
           for package in $PACKAGES; do
             (cd "packages/$package" && mix credo --strict)
           done
-        continue-on-error: true
 
       - name: Run Dialyzer
         run: |
