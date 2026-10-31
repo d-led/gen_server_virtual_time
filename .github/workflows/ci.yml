@@ -25,6 +25,7 @@ on:
       - '.github/workflows/ci.yml'
       - 'scripts/**'
       - 'examples/**'
+  workflow_dispatch:
 
 env:
   # Every package in the repo. One list, so adding a package cannot be forgotten
