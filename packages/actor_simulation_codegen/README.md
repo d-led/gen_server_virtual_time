@@ -28,7 +28,7 @@ This package depends on `actor_simulation`, which brings
 
 ```elixir
 def deps do
-  [{:actor_simulation_codegen, "~> 1.1.0"}]
+  [{:actor_simulation_codegen, "~> 1.1.1"}]
 end
 ```
 

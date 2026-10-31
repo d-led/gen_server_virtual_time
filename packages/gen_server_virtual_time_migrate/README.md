@@ -34,7 +34,7 @@ runtime. The rewritten code needs `gen_server_virtual_time`.
 ```elixir
 def deps do
   [
-    {:gen_server_virtual_time, "~> 1.1.0"},
+    {:gen_server_virtual_time, "~> 1.1.1"},
     {:gen_server_virtual_time_migrate, "~> 1.0.0", only: :dev}
   ]
 end

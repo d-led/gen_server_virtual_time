@@ -32,7 +32,7 @@ rewrite.
 
    ```elixir
    def deps do
-     [{:gen_server_virtual_time, "~> 1.1.0"}]
+     [{:gen_server_virtual_time, "~> 1.1.1"}]
    end
    ```
 
@@ -252,7 +252,7 @@ The code refers to modules this project does not have.
 
 Add to your deps:
 
-    {:actor_simulation, "~> 1.1.0"}
+    {:actor_simulation, "~> 1.1.1"}
 ```
 
 To move existing servers onto the virtual clock, the

@@ -8,6 +8,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-31
+
+### Fixed
+
+- `mix virtual_time.migrate` no longer renames `:erlang.send_after/3` in place:
+  that function takes the delay first where `VirtualTimeGenServer.send_after/3`
+  takes it last, so the rewrite compiled and then failed at runtime with "not an
+  integer / not a pid". Such a line is now reported with the reordering spelled
+  out, like every other call the tool cannot prove
+
 ## [1.1.0] - 2026-10-31
 
 ### Added
@@ -497,7 +507,9 @@ truncated, so a simulation can now report more messages than before.
 - Message tracing and Mermaid diagram generation
 
 [Unreleased]:
-  https://github.com/d-led/gen_server_virtual_time/compare/v1.1.0...HEAD
+  https://github.com/d-led/gen_server_virtual_time/compare/v1.1.1...HEAD
+[1.1.1]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v1.1.0...v1.1.1
 [1.1.0]:
   https://github.com/d-led/gen_server_virtual_time/compare/v1.0.1...v1.1.0
 [1.0.1]:

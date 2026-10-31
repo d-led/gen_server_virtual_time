@@ -27,7 +27,7 @@ a model into a runnable C++, Go, Pony, Rust or Java project is
 
 ```elixir
 def deps do
-  [{:actor_simulation, "~> 1.1.0"}]
+  [{:actor_simulation, "~> 1.1.1"}]
 end
 ```
 
