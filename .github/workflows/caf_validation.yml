@@ -23,7 +23,7 @@ jobs:
         example: [caf_pubsub, caf_pipeline, caf_burst, caf_loadbalanced]
 
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install build tools
       run: |
@@ -35,7 +35,7 @@ jobs:
         fi
 
     - name: Install Conan
-      uses: conan-io/setup-conan@v1
+      uses: conan-io/setup-conan@5db0275587014d13a5ca698db681ce4782a6e052 # v1.5.0
 
     - name: Configure Conan profile
       run: |
