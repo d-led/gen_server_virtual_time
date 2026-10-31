@@ -14,9 +14,10 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     @impl true
     def init(opts) do
       mode = Keyword.get(opts, :mode, :normal)
+      notify = Keyword.get(opts, :notify)
 
       case mode do
-        :normal -> {:ok, %{mode: mode, data: []}}
+        :normal -> {:ok, %{mode: mode, data: [], notify: notify}}
         :with_timeout -> {:ok, %{mode: mode}, 100}
         :with_continue -> {:ok, %{mode: mode}, {:continue, :init_complete}}
         :error -> {:error, :init_failed}
@@ -78,7 +79,7 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
       end
 
       case state do
-        %{notify: pid} -> send_if_exists.(pid, {:terminated, reason})
+        %{notify: pid} when is_pid(pid) -> send_if_exists.(pid, {:terminated, reason})
         _ -> :ok
       end
     end
@@ -345,12 +346,7 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
       test_pid = self()
 
       Process.flag(:trap_exit, true)
-      {:ok, server} = TestServer.start_link()
-
-      # Ask the server to notify this test process when it terminates
-      :sys.replace_state(server, fn {module, state} ->
-        {module, Map.put(state, :notify, test_pid)}
-      end)
+      {:ok, server} = TestServer.start_link(notify: test_pid)
 
       GenServer.stop(server, :shutdown)
 
@@ -490,50 +486,22 @@ defmodule VirtualTimeGenServer.EdgeCasesTest do
     end
   end
 
-  describe "VirtualTimeGenServer stats tracking" do
-    test "tracks sent and received messages in simulation" do
-      defmodule StatsServer do
+  describe "VirtualTimeGenServer self-inspection" do
+    test "a server without an observer reports that it has nothing to show" do
+      defmodule UnobservedServer do
         use VirtualTimeGenServer
 
-        def start_link do
-          VirtualTimeGenServer.start_link(__MODULE__, :ok, [])
-        end
+        def start_link, do: VirtualTimeGenServer.start_link(__MODULE__, :ok, [])
 
-        def init(:ok) do
-          # Enable stats tracking
-          Process.put(:__vtgs_stats_enabled__, true)
-          Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-          {:ok, %{}}
-        end
-
-        def handle_call(:get_internal_stats, _from, state) do
-          stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-          {:reply, stats, state}
-        end
-
-        def handle_call(_msg, _from, state) do
-          {:reply, :ok, state}
-        end
-
-        def handle_cast(_msg, state) do
-          {:noreply, state}
-        end
-
-        def handle_info(_msg, state) do
-          {:noreply, state}
-        end
+        def init(:ok), do: {:ok, %{}}
+        def handle_call(_msg, _from, state), do: {:reply, :ok, state}
+        def handle_cast(_msg, state), do: {:noreply, state}
+        def handle_info(_msg, state), do: {:noreply, state}
       end
 
-      {:ok, server} = StatsServer.start_link()
+      {:ok, server} = UnobservedServer.start_link()
 
-      # Make some calls
-      GenServer.call(server, :test_message)
-      GenServer.cast(server, :test_cast)
-
-      # The stats call is handled after the cast above
-      stats = GenServer.call(server, :get_internal_stats)
-      # Should have tracked the received messages (excluding internal stats queries)
-      assert stats.received_count >= 1
+      assert VirtualTimeGenServer.snapshot(server) == {:error, :not_instrumented}
 
       GenServer.stop(server)
     end

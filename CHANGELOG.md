@@ -8,8 +8,36 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `VirtualTimeGenServer.Instrumentation`: a port for observing what an
+  instrumented process does (`on_receive/2`, `on_send/2`, `snapshot/1`),
+  installed per process with the `:instrumentation` start option or with
+  `VirtualTimeGenServer.instrument/1`, and read back with
+  `VirtualTimeGenServer.snapshot/1`
+
 ### Changed
 
+- measuring a system is no longer the clock's job: the wrappers and
+  `call/3`/`cast/2` report events to an observer instead of counting into the
+  process dictionary, so the library knows nothing about statistics or traces.
+  `ActorSimulation` now ships `ActorSimulation.Observer`, which is what counts
+  for a real server in the loop; the numbers a simulation reports are unchanged
+- the library's own query (`VirtualTimeGenServer.snapshot/1`) is never reported
+  to the observer, so reading a server's statistics cannot change them
+
+### Removed
+
+- `VirtualTimeGenServer.enable_stats_tracking/0,2`, `get_process_stats/0`,
+  `generate_incoming_trace_event/2`, `set_global_trace_collector/1,3` and
+  `get_global_trace_collector/0`, together with the `:stats_enabled` start
+  option and the `:__vtgs_*` process-dictionary keys they used. Use the
+  instrumentation port instead
+
+### Fixed
+
+- the wrapper now supports `{:reply, reply, state, {:continue, arg}}` and
+  passes any third element of `{:noreply, state, action}` through untouched
 - the VLINGO XOOM generator's actors take their `Scheduler` as a constructor
   argument, so a test hands them a clock it owns: the generated tests advance a
   `ManualScheduler` and assert what the actor did, instead of sleeping 100ms and

@@ -24,13 +24,11 @@ defmodule ActorSimulation.Actor do
 
   def start_link(definition, clock, opts \\ []) do
     # Use test-local virtual clock injection instead of global
-    # Also support trace collector injection and stats tracking
+    # Also support trace collector injection
     trace_collector = Keyword.get(opts, :trace_collector)
-    stats_enabled = Keyword.get(opts, :stats_enabled, false)
 
     VirtualTimeGenServer.start_link(__MODULE__, {definition, trace_collector},
-      virtual_clock: clock,
-      stats_enabled: stats_enabled
+      virtual_clock: clock
     )
   end
 

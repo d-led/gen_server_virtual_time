@@ -2,63 +2,59 @@ defmodule VirtualTimeGenServer.Wrapper do
   @moduledoc false
   use GenServer
 
-  def init({init_fun, module}) do
+  defmodule State do
+    @moduledoc false
+    defstruct [:module, :module_state, :instrumentation]
+
+    def new(module, module_state, instrumentation) do
+      %__MODULE__{module: module, module_state: module_state, instrumentation: instrumentation}
+    end
+  end
+
+  # The library's own query. It is deliberately not reported to the observer:
+  # an observer sees the traffic of the observed code, not of the library.
+  @snapshot_request :__virtual_time_gen_server_snapshot__
+
+  @impl true
+  def init({init_fun, module, instrumentation}) do
     case init_fun.() do
-      {:ok, {^module, state}} -> {:ok, {module, state}}
-      {:ok, {^module, state}, timeout} -> {:ok, {module, state}, timeout}
-      {:ok, {^module, state}, {:continue, arg}} -> {:ok, {module, state}, {:continue, arg}}
-      other -> other
+      {:ok, module_state} ->
+        {:ok, State.new(module, module_state, instrumentation)}
+
+      {:ok, module_state, action} ->
+        {:ok, State.new(module, module_state, instrumentation), action}
+
+      other ->
+        other
     end
   end
 
-  def handle_call(request, from, {module, state}) do
-    # Handle internal requests
-    case request do
-      :__vtgs_get_stats__ ->
-        stats = VirtualTimeGenServer.get_process_stats()
-        {:reply, stats, {module, state}}
-
-      _ ->
-        # Track incoming call only if stats tracking is enabled (in simulations)
-        if Process.get(:__vtgs_stats_enabled__) do
-          track_received_message(request, :call)
-          # Generate trace event for incoming message
-          VirtualTimeGenServer.generate_incoming_trace_event(request, :call)
-        end
-
-        result =
-          case module.handle_call(request, from, state) do
-            {:reply, reply, new_state} -> {:reply, reply, {module, new_state}}
-            {:reply, reply, new_state, timeout} -> {:reply, reply, {module, new_state}, timeout}
-            {:noreply, new_state} -> {:noreply, {module, new_state}}
-            {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-            {:stop, reason, reply, new_state} -> {:stop, reason, reply, {module, new_state}}
-            {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
-          end
-
-        result
-    end
+  @impl true
+  def handle_call(@snapshot_request, _from, %State{instrumentation: nil} = state) do
+    {:reply, {:error, :not_instrumented}, state}
   end
 
-  def handle_cast(request, {module, state}) do
-    # Track incoming cast only if stats tracking is enabled (in simulations)
-    if Process.get(:__vtgs_stats_enabled__) do
-      track_received_message(request, :cast)
-      # Generate trace event for incoming message
-      VirtualTimeGenServer.generate_incoming_trace_event(request, :cast)
-    end
+  def handle_call(@snapshot_request, _from, %State{} = state) do
+    {:reply, {:ok, snapshot(state)}, state}
+  end
 
-    case module.handle_cast(request, state) do
-      {:noreply, new_state} -> {:noreply, {module, new_state}}
-      {:noreply, new_state, timeout} -> {:noreply, {module, new_state}, timeout}
-      {:stop, reason, new_state} -> {:stop, reason, {module, new_state}}
-    end
+  def handle_call(request, from, %State{} = state) do
+    observe_receive(state, {:call, request})
+    reply(state, state.module.handle_call(request, from, state.module_state))
+  end
+
+  @impl true
+  def handle_cast(request, %State{} = state) do
+    observe_receive(state, {:cast, request})
+    noreply(state, state.module.handle_cast(request, state.module_state))
   end
 
   # A delivery from the VirtualClock. The token identifies this exact delivery;
   # acknowledging it is what lets the clock move past the event's timestamp.
-  def handle_info({:__vtgs_delivered__, token, msg}, {module, state}) do
-    result = delegate_info(msg, {module, state})
+  @impl true
+  def handle_info({:__vtgs_delivered__, token, message}, %State{} = state) do
+    observe_receive(state, {:info, message})
+    result = noreply(state, state.module.handle_info(message, state.module_state))
     send_ack_to_virtual_clock(token)
     result
   end
@@ -66,49 +62,90 @@ defmodule VirtualTimeGenServer.Wrapper do
   # Anything else an actor receives (calls, casts, messages from other actors)
   # is not a clock delivery, so it must not be acknowledged - an acknowledgement
   # here would let the clock advance while the delivered event is still queued.
-  def handle_info(msg, {module, state}) do
-    delegate_info(msg, {module, state})
+  def handle_info(message, %State{} = state) do
+    observe_receive(state, {:info, message})
+    noreply(state, state.module.handle_info(message, state.module_state))
   end
 
-  def handle_continue(arg, {module, state}) do
-    if function_exported?(module, :handle_continue, 2) do
-      case module.handle_continue(arg, state) do
-        {:noreply, new_state} ->
-          {:noreply, {module, new_state}}
-
-        {:noreply, new_state, {:continue, next_arg}} ->
-          {:noreply, {module, new_state}, {:continue, next_arg}}
-
-        {:noreply, new_state, timeout} ->
-          {:noreply, {module, new_state}, timeout}
-
-        {:stop, reason, new_state} ->
-          {:stop, reason, {module, new_state}}
-      end
+  @impl true
+  def handle_continue(arg, %State{} = state) do
+    if function_exported?(state.module, :handle_continue, 2) do
+      noreply(state, state.module.handle_continue(arg, state.module_state))
     else
-      # Module doesn't implement handle_continue, just continue with no-op
-      {:noreply, {module, state}}
+      {:noreply, state}
     end
   end
 
-  def terminate(reason, {module, state}) do
+  @impl true
+  def terminate(reason, %State{module: module, module_state: module_state}) do
     if function_exported?(module, :terminate, 2) do
-      module.terminate(reason, state)
+      module.terminate(reason, module_state)
     else
       :ok
     end
   end
 
-  def code_change(old_vsn, {module, state}, extra) do
-    if function_exported?(module, :code_change, 3) do
-      case module.code_change(old_vsn, state, extra) do
-        {:ok, new_state} -> {:ok, {module, new_state}}
+  @impl true
+  def code_change(old_vsn, %State{} = state, extra) do
+    if function_exported?(state.module, :code_change, 3) do
+      case state.module.code_change(old_vsn, state.module_state, extra) do
+        {:ok, module_state} -> {:ok, keep(state, module_state)}
         other -> other
       end
     else
-      {:ok, {module, state}}
+      {:ok, state}
     end
   end
+
+  @doc false
+  def snapshot_request, do: @snapshot_request
+
+  # Re-wraps what the observed module returned for a call, keeping the observed
+  # state next to the observer's configuration.
+  defp reply(state, result) do
+    case result do
+      {:reply, reply, module_state} ->
+        {:reply, reply, keep(state, module_state)}
+
+      {:reply, reply, module_state, action} ->
+        {:reply, reply, keep(state, module_state), action}
+
+      {:noreply, module_state} ->
+        {:noreply, keep(state, module_state)}
+
+      {:noreply, module_state, action} ->
+        {:noreply, keep(state, module_state), action}
+
+      {:stop, reason, reply, module_state} ->
+        {:stop, reason, reply, keep(state, module_state)}
+
+      {:stop, reason, module_state} ->
+        {:stop, reason, keep(state, module_state)}
+    end
+  end
+
+  defp noreply(state, result) do
+    case result do
+      {:noreply, module_state} ->
+        {:noreply, keep(state, module_state)}
+
+      {:noreply, module_state, action} ->
+        {:noreply, keep(state, module_state), action}
+
+      {:stop, reason, module_state} ->
+        {:stop, reason, keep(state, module_state)}
+    end
+  end
+
+  defp keep(state, module_state), do: %{state | module_state: module_state}
+
+  defp observe_receive(%State{instrumentation: nil}, _event), do: :ok
+
+  defp observe_receive(%State{instrumentation: {observer, context}} = state, event) do
+    observer.on_receive(event, %{module: state.module, server: self(), context: context})
+  end
+
+  defp snapshot(%State{instrumentation: {observer, context}}), do: observer.snapshot(context)
 
   # Send acknowledgment to VirtualClock that this actor finished processing
   defp send_ack_to_virtual_clock(token) do
@@ -119,50 +156,6 @@ defmodule VirtualTimeGenServer.Wrapper do
 
       _ ->
         :ok
-    end
-  end
-
-  # Delegates a message to the wrapped module, re-wrapping its state.
-  defp delegate_info(msg, {module, state}) do
-    case module.handle_info(msg, state) do
-      {:noreply, new_state} ->
-        {:noreply, {module, new_state}}
-
-      {:noreply, new_state, {:continue, arg}} ->
-        {:noreply, {module, new_state}, {:continue, arg}}
-
-      {:noreply, new_state, timeout} ->
-        {:noreply, {module, new_state}, timeout}
-
-      {:stop, reason, new_state} ->
-        {:stop, reason, {module, new_state}}
-    end
-  end
-
-  # Message tracking helpers (only used in simulations)
-  defp track_received_message(message, _type) do
-    # Skip internal messages
-    case message do
-      :get_stats ->
-        :ok
-
-      :__vtgs_get_stats__ ->
-        :ok
-
-      {:start_sending, _, _} ->
-        :ok
-
-      # Skip internal scheduled messages
-      :send_random_message ->
-        :ok
-
-      _ ->
-        # Only track if stats are enabled (in simulations)
-        if Process.get(:__vtgs_stats_enabled__) do
-          stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-          new_stats = %{stats | received_count: stats.received_count + 1}
-          Process.put(:__vtgs_stats__, new_stats)
-        end
     end
   end
 end
@@ -251,7 +244,19 @@ defmodule VirtualTimeGenServer do
 
   See the "Development Documentation" for a detailed explanation of when to use
   global vs local clocks.
+
+  ## Observing a server
+
+  Counting messages, tracing them or drawing diagrams of them is a different
+  concern from controlling time, so this library does none of it. It offers a
+  port instead: a module implementing `VirtualTimeGenServer.Instrumentation`
+  sees every message a server receives and sends, and `snapshot/1` asks it what
+  it collected.
   """
+
+  alias VirtualTimeGenServer.Instrumentation
+
+  @instrumentation_key :virtual_time_gen_server_instrumentation
 
   @doc """
   Sets the virtual clock for the current process.
@@ -375,67 +380,68 @@ defmodule VirtualTimeGenServer do
   end
 
   @doc """
-  Sets a GLOBAL trace collector for all child processes.
+  Instruments the calling process with `instrumentation`.
 
-  ⚠️  WARNING: This can cause race conditions in tests and production!
+  Every message the calling process sends through `call/3` or `cast/2` is then
+  reported to the observer's `on_send/2` callback. Starting a server with the
+  `:instrumentation` option instruments that server in the same way, so a server
+  reports both what it sends and what it receives.
 
-  Consider using test-local trace injection instead:
+  `instrumentation` is a module implementing `VirtualTimeGenServer.Instrumentation`,
+  or `{module, context}` when the callbacks need context. Pass `nil` to stop
+  observing.
 
-  ```elixir
-  # ❌ Global (can cause race conditions)
-  VirtualTimeGenServer.set_global_trace_collector(collector_pid)
-  {:ok, server} = MyServer.start_link([])
+  ## Example
 
-  # ✅ Test-local (isolated, safe)
-  {:ok, server} = MyServer.start_link([], trace_collector: collector_pid)
-  ```
+      defmodule MyServer do
+        use VirtualTimeGenServer
+        # ...
+      end
 
-  For coordinated tracing, use global collectors intentionally.
-  For isolated testing, use test-local trace injection.
+      {:ok, clock} = VirtualClock.start_link()
+      VirtualTimeGenServer.instrument({MessageCounter, %{label: :test}})
+
+      {:ok, server} =
+        VirtualTimeGenServer.start_link(MyServer, :ok, virtual_clock: clock)
+
+      VirtualTimeGenServer.call(server, :ping)
   """
-  def set_global_trace_collector(collector_pid) do
-    # Get caller information from stacktrace
-    caller_info = get_caller_info()
+  @spec instrument(VirtualTimeGenServer.Instrumentation.t()) :: :ok
+  def instrument(instrumentation) do
+    case Instrumentation.normalize(instrumentation) do
+      nil ->
+        Process.delete(@instrumentation_key)
+        :ok
 
-    # Emit a compilation warning to alert users about potential race conditions
-    IO.warn(
-      """
-      ⚠️  GLOBAL TRACE COLLECTOR INJECTION DETECTED ⚠️
-
-      VirtualTimeGenServer.set_global_trace_collector/1 sets a GLOBAL trace collector that affects
-      ALL child processes. This can cause race conditions in tests and production!
-
-      Consider using test-local trace collectors instead:
-
-      # ❌ Global (can cause race conditions)
-      VirtualTimeGenServer.set_global_trace_collector(collector_pid)
-      {:ok, server} = MyServer.start_link([])
-
-      # ✅ Test-local (isolated, safe)
-      {:ok, server} = MyServer.start_link([], trace_collector: collector_pid)
-
-      For coordinated tracing, use global collectors intentionally.
-      For isolated testing, use test-local trace collectors.
-      """,
-      caller_info
-    )
-
-    Process.put(:global_trace_collector, collector_pid)
+      normalized ->
+        Process.put(@instrumentation_key, normalized)
+        :ok
+    end
   end
 
   @doc """
-  Warning-free version of set_global_trace_collector/1 for intentional global usage.
-  """
-  def set_global_trace_collector(collector_pid, :i_know_what_i_am_doing, explanation)
-      when is_binary(explanation) do
-    Process.put(:global_trace_collector, collector_pid)
-  end
+  Asks an instrumented server what its observer collected.
 
-  @doc """
-  Gets the current global trace collector.
+  The observer's `snapshot/1` runs in the server process, so it can read state
+  the observer keeps there. The result is the observer's own term, handed back
+  unchanged.
+
+  ## Example
+
+      {:ok, clock} = VirtualClock.start_link()
+
+      {:ok, server} =
+        VirtualTimeGenServer.start_link(MyServer, :ok,
+          virtual_clock: clock,
+          instrumentation: MessageCounter
+        )
+
+      VirtualTimeGenServer.call(server, :ping)
+      {:ok, %{received: 1}} = VirtualTimeGenServer.snapshot(server)
   """
-  def get_global_trace_collector do
-    Process.get(:global_trace_collector)
+  @spec snapshot(GenServer.server()) :: {:ok, term} | {:error, :not_instrumented}
+  def snapshot(server) do
+    GenServer.call(server, VirtualTimeGenServer.Wrapper.snapshot_request())
   end
 
   @doc """
@@ -522,14 +528,12 @@ defmodule VirtualTimeGenServer do
     # Extract time-related options from opts
     {virtual_clock, opts} = Keyword.pop(opts, :virtual_clock)
     {real_time, opts} = Keyword.pop(opts, :real_time, false)
-    {stats_enabled, opts} = Keyword.pop(opts, :stats_enabled, false)
+    {instrumentation, opts} = Keyword.pop(opts, :instrumentation)
+    instrumentation = Instrumentation.normalize(instrumentation)
 
     # Determine which clock and backend to use
     # Priority: local options > global Process dictionary
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
-
-    # Use injected stats_enabled option, fallback to parent process if not provided
-    final_stats_enabled = stats_enabled || Process.get(:__vtgs_stats_enabled__, false)
 
     # Use a wrapper to inject virtual clock into spawned process
     init_fun = fn ->
@@ -538,24 +542,17 @@ defmodule VirtualTimeGenServer do
       end
 
       Process.put(:time_backend, final_backend)
+      instrument(instrumentation)
 
-      # Propagate stats tracking to child process
-      if final_stats_enabled do
-        Process.put(:__vtgs_stats_enabled__, true)
-        Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-      end
-
-      case module.init(init_arg) do
-        {:ok, state} -> {:ok, {module, state}}
-        {:ok, state, {:continue, arg}} -> {:ok, {module, state}, {:continue, arg}}
-        {:ok, state, timeout} -> {:ok, {module, state}, timeout}
-        :ignore -> :ignore
-        {:stop, reason} -> {:stop, reason}
-      end
+      module.init(init_arg)
     end
 
     # Start with wrapper module
-    case GenServer.start_link(VirtualTimeGenServer.Wrapper, {init_fun, module}, opts) do
+    case GenServer.start_link(
+           VirtualTimeGenServer.Wrapper,
+           {init_fun, module, instrumentation},
+           opts
+         ) do
       {:ok, pid} -> {:ok, pid}
       error -> error
     end
@@ -565,13 +562,11 @@ defmodule VirtualTimeGenServer do
     # Extract time-related options from opts
     {virtual_clock, opts} = Keyword.pop(opts, :virtual_clock)
     {real_time, opts} = Keyword.pop(opts, :real_time, false)
-    {stats_enabled, opts} = Keyword.pop(opts, :stats_enabled, false)
+    {instrumentation, opts} = Keyword.pop(opts, :instrumentation)
+    instrumentation = Instrumentation.normalize(instrumentation)
 
     # Determine which clock and backend to use
     {final_clock, final_backend} = determine_time_config(virtual_clock, real_time)
-
-    # Use injected stats_enabled option, fallback to parent process if not provided
-    final_stats_enabled = stats_enabled || Process.get(:__vtgs_stats_enabled__, false)
 
     init_fun = fn ->
       if final_clock do
@@ -579,23 +574,12 @@ defmodule VirtualTimeGenServer do
       end
 
       Process.put(:time_backend, final_backend)
+      instrument(instrumentation)
 
-      # Propagate stats tracking to child process
-      if final_stats_enabled do
-        Process.put(:__vtgs_stats_enabled__, true)
-        Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-      end
-
-      case module.init(init_arg) do
-        {:ok, state} -> {:ok, {module, state}}
-        {:ok, state, {:continue, arg}} -> {:ok, {module, state}, {:continue, arg}}
-        {:ok, state, timeout} -> {:ok, {module, state}, timeout}
-        :ignore -> :ignore
-        {:stop, reason} -> {:stop, reason}
-      end
+      module.init(init_arg)
     end
 
-    GenServer.start(VirtualTimeGenServer.Wrapper, {init_fun, module}, opts)
+    GenServer.start(VirtualTimeGenServer.Wrapper, {init_fun, module, instrumentation}, opts)
   end
 
   # Private helper to determine time configuration
@@ -620,161 +604,34 @@ defmodule VirtualTimeGenServer do
   @doc """
   Makes a synchronous call to a server.
 
-  When stats tracking is enabled (in simulations), this tracks the sent message.
-  Otherwise, it's a direct passthrough to GenServer.call with zero overhead.
+  If the calling process is instrumented (see `instrument/1`), the message is
+  reported to the observer before it leaves. Otherwise this is a direct
+  passthrough to `GenServer.call/3`.
   """
   def call(server, request, timeout \\ 5000) do
-    # Only track if explicitly enabled - zero overhead otherwise
-    if Process.get(:__vtgs_stats_enabled__) do
-      track_sent_message(request, :call)
-    end
-
+    report_send({:call, request})
     GenServer.call(server, request, timeout)
   end
 
   @doc """
   Sends an asynchronous request to a server.
 
-  When stats tracking is enabled (in simulations), this tracks the sent message.
-  Otherwise, it's a direct passthrough to GenServer.cast with zero overhead.
+  If the calling process is instrumented (see `instrument/1`), the message is
+  reported to the observer before it leaves. Otherwise this is a direct
+  passthrough to `GenServer.cast/2`.
   """
   def cast(server, request) do
-    # Only track if explicitly enabled - zero overhead otherwise
-    if Process.get(:__vtgs_stats_enabled__) do
-      track_sent_message(request, :cast)
-    end
-
+    report_send({:cast, request})
     GenServer.cast(server, request)
   end
 
   defdelegate stop(server, reason \\ :normal, timeout \\ :infinity), to: GenServer
 
-  # Message tracking helpers (only used in simulations)
-  defp track_sent_message(message, _type) do
-    # Skip internal messages
-    case message do
-      :get_stats ->
-        :ok
-
-      :__vtgs_get_stats__ ->
-        :ok
-
-      {:start_sending, _, _} ->
-        :ok
-
-      _ ->
-        stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-        new_stats = %{stats | sent_count: stats.sent_count + 1}
-        Process.put(:__vtgs_stats__, new_stats)
+  defp report_send(event) do
+    case Process.get(@instrumentation_key) do
+      nil -> :ok
+      {observer, context} -> observer.on_send(event, %{sender: self(), context: context})
     end
-  end
-
-  @doc """
-  Sets GLOBAL stats tracking for all child processes.
-
-  ⚠️  WARNING: This can cause race conditions in tests and production!
-
-  Consider using test-local stats injection instead:
-
-  ```elixir
-  # ❌ Global (can cause race conditions)
-  VirtualTimeGenServer.enable_stats_tracking()
-  {:ok, server} = MyServer.start_link([])
-
-  # ✅ Test-local (isolated, safe)
-  {:ok, server} = MyServer.start_link([], stats_enabled: true)
-  ```
-
-  For coordinated stats tracking, use global tracking intentionally.
-  For isolated testing, use test-local stats injection.
-  """
-  def enable_stats_tracking do
-    # Get caller information from stacktrace
-    caller_info = get_caller_info()
-
-    # Emit a compilation warning to alert users about potential race conditions
-    IO.warn(
-      """
-      ⚠️  GLOBAL STATS TRACKING DETECTED ⚠️
-
-      VirtualTimeGenServer.enable_stats_tracking/0 sets GLOBAL stats tracking that affects
-      ALL child processes. This can cause race conditions in tests and production!
-
-      Consider using test-local stats injection instead:
-
-      # ❌ Global (can cause race conditions)
-      VirtualTimeGenServer.enable_stats_tracking()
-      {:ok, server} = MyServer.start_link([])
-
-      # ✅ Test-local (isolated, safe)
-      {:ok, server} = MyServer.start_link([], stats_enabled: true)
-
-      For coordinated stats tracking, use global tracking intentionally.
-      For isolated testing, use test-local stats injection.
-      """,
-      caller_info
-    )
-
-    Process.put(:__vtgs_stats_enabled__, true)
-    Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-  end
-
-  @doc """
-  Warning-free version of enable_stats_tracking/0 for intentional global usage.
-  """
-  def enable_stats_tracking(:i_know_what_i_am_doing, explanation) when is_binary(explanation) do
-    Process.put(:__vtgs_stats_enabled__, true)
-    Process.put(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-  end
-
-  @doc false
-  # Generate trace events for incoming messages (only used in simulations)
-  def generate_incoming_trace_event(message, type) do
-    # Skip internal messages
-    case message do
-      :get_stats -> :ok
-      :__vtgs_get_stats__ -> :ok
-      {:start_sending, _, _} -> :ok
-      _ -> send_incoming_trace_event(message, type)
-    end
-  end
-
-  defp send_incoming_trace_event(message, type) do
-    case Process.whereis(:trace_collector) do
-      nil ->
-        :ok
-
-      pid ->
-        # Get actor name from process context
-        actor_name = Process.get(:__vtgs_actor_name__)
-
-        if actor_name do
-          # For incoming messages, we don't know the sender, so we use a generic source
-          # The diagram generator can infer connections from the message patterns
-          VirtualTimeGenServer.send_immediately(pid, {:trace,
-           %{
-             timestamp: VirtualClock.now(Process.get(:virtual_clock)),
-             # We don't know the sender for incoming messages
-             from: :unknown,
-             to: actor_name,
-             message: message,
-             type: type
-           }})
-        end
-    end
-  end
-
-  @doc false
-  # Internal API for ActorSimulation to get process stats
-  def get_process_stats do
-    stats = Process.get(:__vtgs_stats__, %{sent_count: 0, received_count: 0})
-
-    %{
-      sent_count: stats.sent_count,
-      received_count: stats.received_count,
-      sent_messages: [],
-      received_messages: []
-    }
   end
 
   # Helper function to get caller information from stacktrace

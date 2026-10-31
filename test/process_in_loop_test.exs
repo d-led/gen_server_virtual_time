@@ -58,6 +58,25 @@ defmodule ProcessInLoopTest do
       ActorSimulation.stop(simulation)
     end
 
+    test "the statistics count what the real server received" do
+      simulation =
+        ActorSimulation.new()
+        |> ActorSimulation.add_process(:counter, module: RealCounter, args: 0)
+        |> ActorSimulation.add_actor(:incrementer,
+          send_pattern: {:periodic, 100, :increment},
+          targets: [:counter]
+        )
+        |> ActorSimulation.run(duration: 1000)
+
+      stats = ActorSimulation.get_stats(simulation)
+      received = stats.actors[:counter].received_count
+
+      assert received == stats.actors[:incrementer].sent_count
+      assert received > 0
+
+      ActorSimulation.stop(simulation)
+    end
+
     test "synchronous calls to real process work" do
       simulation =
         ActorSimulation.new()

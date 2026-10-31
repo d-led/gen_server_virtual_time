@@ -84,18 +84,7 @@ defmodule ActorSimulation do
   Note: This is a live snapshot and may be called multiple times during run/2.
   """
   def collect_current_stats(simulation) do
-    Enum.reduce(simulation.actors, Stats.new(), fn {name, actor_info}, stats ->
-      case actor_info.type do
-        :simulated ->
-          actor_stats = Actor.get_stats(actor_info.pid)
-          Stats.add_actor_stats(stats, name, actor_stats)
-
-        :real_process ->
-          # Get stats from VirtualTimeGenServer's built-in tracking
-          real_stats = GenServer.call(actor_info.pid, :__vtgs_get_stats__)
-          Stats.add_actor_stats(stats, name, real_stats)
-      end
-    end)
+    read_actor_stats(simulation)
   end
 
   @doc """
@@ -124,9 +113,9 @@ defmodule ActorSimulation do
     # Inject trace collector if tracing is enabled and stats tracking
     actor_opts =
       if simulation.trace_enabled do
-        [trace_collector: self(), stats_enabled: true]
+        [trace_collector: self()]
       else
-        [stats_enabled: true]
+        []
       end
 
     {:ok, pid} = Actor.start_link(actor_def, simulation.clock, actor_opts)
@@ -167,17 +156,15 @@ defmodule ActorSimulation do
     args = Keyword.get(opts, :args, nil)
     targets = Keyword.get(opts, :targets, [])
 
-    # Start the real GenServer with the simulation's local virtual clock and stats injection
-    # This avoids setting global state and affecting other tests
+    # A real server keeps no simulation state, so it is observed instead: the
+    # observer counts in the server process and is read back via snapshot/1.
+    # The local virtual clock keeps the global clock untouched.
     {:ok, pid} =
       VirtualTimeGenServer.start_link(module, args,
         name: name,
         virtual_clock: simulation.clock,
-        stats_enabled: true
+        instrumentation: ActorSimulation.Observer
       )
-
-    # Set up actor name context for trace generation
-    Process.put(:__vtgs_actor_name__, name)
 
     actors =
       Map.put(simulation.actors, name, %{
@@ -643,20 +630,19 @@ defmodule ActorSimulation do
 
   defp read_actor_stats(simulation) do
     Enum.reduce(simulation.actors, Stats.new(), fn {name, actor_info}, stats ->
-      case actor_info.type do
-        :simulated ->
-          Stats.add_actor_stats(stats, name, Actor.get_stats(actor_info.pid))
-
-        :real_process ->
-          # Get stats from VirtualTimeGenServer's built-in tracking
-          Stats.add_actor_stats(
-            stats,
-            name,
-            GenServer.call(actor_info.pid, :__vtgs_get_stats__)
-          )
+      case actor_stats(actor_info) do
+        {:ok, actor_stats} -> Stats.add_actor_stats(stats, name, actor_stats)
+        {:error, :not_instrumented} -> stats
       end
     end)
   end
+
+  # A simulated actor counts in its own state; a real server is counted by its
+  # observer. An actor no observer can see contributes nothing rather than
+  # invented zeroes.
+  defp actor_stats(%{type: :simulated, pid: pid}), do: {:ok, Actor.get_stats(pid)}
+
+  defp actor_stats(%{type: :real_process, pid: pid}), do: VirtualTimeGenServer.snapshot(pid)
 
   defp collect_trace do
     # Collect all trace messages
