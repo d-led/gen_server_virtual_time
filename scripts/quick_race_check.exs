@@ -14,10 +14,10 @@ defmodule QuickRaceChecker do
 
     # Files that are most likely to have race conditions
     problematic_files = [
-      "test/process_in_loop_test.exs",
-      "test/documentation_test.exs",
-      "test/show_me_code_examples_test.exs",
-      "test/actor_simulation_test.exs"
+      "packages/actor_simulation/test/process_in_loop_test.exs",
+      "packages/actor_simulation/test/documentation_test.exs",
+      "packages/actor_simulation/test/show_me_code_examples_test.exs",
+      "packages/actor_simulation/test/actor_simulation_test.exs"
     ]
 
     # Test with different concurrency levels
@@ -68,14 +68,24 @@ defmodule QuickRaceChecker do
   end
 
   defp run_test_file(file, max_cases, seed) do
+    # Each package is a Mix project of its own, so the test runs from the package
+    # the file lives in, with the path relative to it.
+    ["packages", package | rest] = String.split(file, "/")
+    relative = Path.join(rest, "")
+
     cmd = [
-      "mix", "test", file,
-      "--seed", to_string(seed),
-      "--max-cases", to_string(max_cases),
-      "--exclude", "diagram_generation,slow"
+      "mix",
+      "test",
+      relative,
+      "--seed",
+      to_string(seed),
+      "--max-cases",
+      to_string(max_cases),
+      "--exclude",
+      "diagram_generation,slow"
     ]
 
-    System.cmd("elixir", ["-S"] ++ cmd, stderr_to_stdout: true)
+    System.cmd("elixir", ["-S"] ++ cmd, cd: package, stderr_to_stdout: true)
   end
 end
 
