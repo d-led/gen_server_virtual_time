@@ -275,6 +275,15 @@ jobs:
       - name: Install Hex for rebar_mix
         run: mix local.hex --force
 
+      # setup-beam keeps rebar3 inside ~/.mix, where only mix finds it.
+      - name: Install rebar3 on the PATH
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/rebar3" \
+            https://github.com/erlang/rebar3/releases/download/3.28.0/rebar3
+          chmod +x "$RUNNER_TEMP/rebar3"
+          sudo mv "$RUNNER_TEMP/rebar3" /usr/local/bin/rebar3
+          rebar3 --version
+
       - name: Erlang example (rebar3 eunit)
         working-directory: examples/ticker_erlang
         run: rebar3 eunit
