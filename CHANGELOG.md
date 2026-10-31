@@ -8,12 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-31
+
 ### Added
 
 - `mix virtual_time.doctor` reads the project's own module references and says
   which package of the family a missing module lives in, with the `mix.exs` line
-  that fixes the build (`--check` fails instead of reporting, for CI); it also
-  reports calls that were removed together with what to write instead
+  that fixes the build (`--check` exits non-zero, for CI); it also reports calls
+  that were removed together with what to write instead
 - `VirtualTimeGenServer.Instrumentation`: a port for observing what an
   instrumented process does (`on_receive/2`, `on_send/2`, `snapshot/1`),
   installed per process with the `:instrumentation` start option or with
@@ -373,7 +375,9 @@ truncated, so a simulation can now report more messages than before.
 - Message tracing and Mermaid diagram generation
 
 [Unreleased]:
-  https://github.com/d-led/gen_server_virtual_time/compare/v0.6.1...HEAD
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.7.0...HEAD
+[0.7.0]:
+  https://github.com/d-led/gen_server_virtual_time/compare/v0.6.1...v0.7.0
 [0.6.1]:
   https://github.com/d-led/gen_server_virtual_time/compare/v0.6.0...v0.6.1
 [0.6.0]:

@@ -25,7 +25,7 @@ generators that turn those models into runnable projects in six languages.
 
    ```elixir
    def deps do
-     [{:gen_server_virtual_time, "~> 0.6.1"}]
+     [{:gen_server_virtual_time, "~> 0.7.0"}]
    end
    ```
 
